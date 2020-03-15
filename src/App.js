@@ -28,11 +28,9 @@ function App() {
 
     function handleConnection(connection) {
       connection.on("open", () => {
-        connection.on("data", data => {
-          console.log(data);
-        });
-
-        connection.send(`You've connected to ${id}`);
+        if (imgRef.current) {
+          connection.send(imgRef.current);
+        }
       });
     }
 
@@ -45,16 +43,22 @@ function App() {
   }, [id]);
 
   const [connectId, setConnectId] = useState("");
-
   const connectToId = () => {
     const connection = peer.current.connect(connectId);
     connection.on("open", () => {
       connection.on("data", data => {
-        console.log(data);
+        const blob = new Blob([data]);
+        imgRef.current = blob;
+        setImgSrc(URL.createObjectURL(imgRef.current));
       });
-
-      connection.send(`${id} connecting`);
     });
+  };
+
+  const [imgSrc, setImgSrc] = useState("");
+  const imgRef = useRef(null);
+  const loadImage = e => {
+    imgRef.current = e.target.files[0];
+    setImgSrc(URL.createObjectURL(imgRef.current));
   };
 
   return (
@@ -62,6 +66,19 @@ function App() {
       <Box width={256}>
         <Heading as="h3">Your ID</Heading>
         <Text>{id}</Text>
+
+        <Box>
+          <img src={imgSrc} />
+          <Label htmlFor="image">Image</Label>
+          <Input
+            type="file"
+            accept="image/*"
+            name="image"
+            id="file"
+            onChange={loadImage}
+          />
+        </Box>
+
         <Box
           as="form"
           width={1 / 2}
