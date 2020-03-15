@@ -20,6 +20,7 @@ function App() {
     peer.current = new Peer();
   }, []);
 
+  const connectionRef = useRef(null);
   useEffect(() => {
     function handleOpen(id) {
       console.log("My peer ID is: " + id);
@@ -27,6 +28,7 @@ function App() {
     }
 
     function handleConnection(connection) {
+      connectionRef.current = connection;
       connection.on("open", () => {
         if (imgRef.current) {
           connection.send(imgRef.current);
@@ -59,6 +61,9 @@ function App() {
   const loadImage = e => {
     imgRef.current = e.target.files[0];
     setImgSrc(URL.createObjectURL(imgRef.current));
+    if(connectionRef.current) {
+      connectionRef.current.send(imgRef.current);
+    }
   };
 
   return (
