@@ -1,7 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import Peer from "peerjs";
 
-import "./App.css";
+import {
+  ThemeProvider,
+  Box,
+  Heading,
+  Text,
+  Label,
+  Input,
+  Button
+} from "theme-ui";
+import theme from "./theme.js";
 
 function App() {
   const [id, setId] = useState("");
@@ -49,19 +58,30 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h3>ID:</h3>
-        <p>{id}</p>
-        <br />
-        <h4>Connect to ID:</h4>
-        <input
-          value={connectId}
-          onChange={e => setConnectId(e.target.value)}
-        ></input>
-        <button onClick={connectToId}>Connect</button>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <Box width={256}>
+        <Heading as="h3">Your ID</Heading>
+        <Text>{id}</Text>
+        <Box
+          as="form"
+          width={1 / 2}
+          onSubmit={e => {
+            e.preventDefault();
+            connectToId();
+          }}
+          py={3}
+        >
+          <Label htmlFor="connectId">Connect to</Label>
+          <Input
+            id="connectId"
+            name="connectId"
+            value={connectId}
+            onChange={e => setConnectId(e.target.value)}
+          />
+          <Button>Connect</Button>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
 
