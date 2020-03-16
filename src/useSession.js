@@ -20,11 +20,22 @@ function useSession(imgRef) {
         ...prevConnnections,
         [connection.peer]: connection
       }));
+
       connection.on("open", () => {
         if (imgRef.current) {
           connection.send(imgRef.current);
         }
       });
+
+      function removeConnection() {
+        setConnections(prevConnections => {
+          const { [connection.peer]: old, ...rest } = prevConnections;
+          return rest;
+        });
+      }
+
+      connection.on("close", removeConnection);
+      connection.on("error", removeConnection);
     }
 
     if (!peer) {
@@ -37,7 +48,7 @@ function useSession(imgRef) {
       peer.removeListener("open", handleOpen);
       peer.removeListener("connection", handleConnection);
     };
-  }, [peer, peerId, connections]);
+  }, [peer, peerId, connections, imgRef]);
 
   return [peer, peerId, connections];
 }
