@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import Peer from "peerjs";
 
 import {
   ThemeProvider,
@@ -12,41 +11,12 @@ import {
 } from "theme-ui";
 import theme from "./theme.js";
 
+import useSession from "./useSession";
+
 function App() {
-  const [id, setId] = useState("");
-  const peer = useRef(null);
-
-  useEffect(() => {
-    peer.current = new Peer();
-  }, []);
-
-  const connectionRef = useRef(null);
-  useEffect(() => {
-    function handleOpen(id) {
-      console.log("My peer ID is: " + id);
-      setId(id);
-    }
-
-    function handleConnection(connection) {
-      connectionRef.current = connection;
-      connection.on("open", () => {
-        if (imgRef.current) {
-          connection.send(imgRef.current);
-        }
-      });
-    }
-
-    peer.current.on("open", handleOpen);
-    peer.current.on("connection", handleConnection);
-    return () => {
-      peer.current.removeListener("open", handleOpen);
-      peer.current.removeListener("connection", handleConnection);
-    };
-  }, [id]);
-
   const [connectId, setConnectId] = useState("");
   const connectToId = () => {
-    const connection = peer.current.connect(connectId);
+    const connection = peer.connect(connectId);
     connection.on("open", () => {
       connection.on("data", data => {
         const blob = new Blob([data]);
@@ -61,16 +31,18 @@ function App() {
   const loadImage = e => {
     imgRef.current = e.target.files[0];
     setImgSrc(URL.createObjectURL(imgRef.current));
-    if(connectionRef.current) {
-      connectionRef.current.send(imgRef.current);
+    for (let connection of Object.values(connections)) {
+      connection.send(imgRef.current);
     }
   };
+
+  const [peer, peerId, connections] = useSession(imgRef);
 
   return (
     <ThemeProvider theme={theme}>
       <Box width={256}>
         <Heading as="h3">Your ID</Heading>
-        <Text>{id}</Text>
+        <Text>{peerId}</Text>
 
         <Box>
           <img src={imgSrc} />
