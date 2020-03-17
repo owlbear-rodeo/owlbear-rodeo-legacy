@@ -5,8 +5,7 @@ import React, {
   useRef,
   useCallback
 } from "react";
-import { A } from "hookrouter";
-import { Container, Box, Image, Input, Label } from "theme-ui";
+import { Container, Box, Image, Input, Flex, Heading } from "theme-ui";
 
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
@@ -36,6 +35,9 @@ function Game() {
   }
 
   function handleConnectionOpen(connection) {
+    if (imageSource) {
+      connection.send({ id: "image", data: imageDataRef.current });
+    }
     connection.on("data", data => {
       if (data.id === "image") {
         const blob = new Blob([data.data]);
@@ -47,24 +49,23 @@ function Game() {
 
   return (
     <Container>
-      <Image src={imageSource} />
-      <Box>
-        <Label htmlFor="image">Shove an image in me</Label>
-        <Input
-          my={4}
-          id="image"
-          name="image"
-          onChange={handleImageChange}
-          type="file"
-          accept="image/*"
-        />
-      </Box>
-      <div>
-        {gameId
-          ? `You've joined ${gameId}`
-          : `You've started a new game: ${peerId}`}
-        <A href="/">GO TO HOME</A>GAME!
-      </div>
+      <Flex p={2} sx={{ justifyContent: "space-between" }}>
+        <Heading>
+          {gameId ? `Game ID: ${gameId}` : peerId ? `ID: ${peerId}` : "Loading"}
+        </Heading>
+        <Box>
+          <Input
+            id="image"
+            name="image"
+            onChange={handleImageChange}
+            type="file"
+            accept="image/*"
+          />
+        </Box>
+      </Flex>
+      <Flex sx={{ justifyContent: "center" }}>
+        <Image src={imageSource} />
+      </Flex>
     </Container>
   );
 }
