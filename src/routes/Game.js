@@ -10,6 +10,8 @@ import { Container, Box, Image, Input, Flex, Heading } from "theme-ui";
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
 
+import Token from "../components/Token";
+
 function Game() {
   const [gameId, setGameId] = useContext(GameContext);
   const handleConnectionOpenCallback = useCallback(handleConnectionOpen);
@@ -38,20 +40,34 @@ function Game() {
     if (imageSource) {
       connection.send({ id: "image", data: imageDataRef.current });
     }
+    connection.send({ id: "token", data: tokenPosition });
     connection.on("data", data => {
       if (data.id === "image") {
         const blob = new Blob([data.data]);
         imageDataRef.current = blob;
         setImageSource(URL.createObjectURL(imageDataRef.current));
       }
+      if (data.id === "token") {
+        setTokenPosition(data.data);
+      }
     });
+  }
+
+  const [tokenPosition, setTokenPosition] = useState({ x: 0, y: 0 });
+
+  function handleTokenDrag(event, data) {
+    const position = { x: data.x, y: data.y };
+    setTokenPosition(position);
+    for (let connection of Object.values(connections)) {
+      connection.send({ id: "token", data: position });
+    }
   }
 
   return (
     <Container>
       <Flex p={2} sx={{ justifyContent: "space-between" }}>
         <Heading>
-          {gameId ? `Game ID: ${gameId}` : peerId ? `ID: ${peerId}` : "Loading"}
+          {peerId ? peerId : "Loading"}
         </Heading>
         <Box>
           <Input
@@ -66,6 +82,7 @@ function Game() {
       <Flex sx={{ justifyContent: "center" }}>
         <Image src={imageSource} />
       </Flex>
+      <Token onDrag={handleTokenDrag} position={tokenPosition} />
     </Container>
   );
 }
