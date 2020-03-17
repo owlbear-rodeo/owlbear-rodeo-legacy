@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { navigate } from "hookrouter";
 import { Container, Box, Label, Input, Button } from "theme-ui";
 

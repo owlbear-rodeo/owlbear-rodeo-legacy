@@ -23,17 +23,15 @@ function useSession(onConnectionOpen) {
 
     function handleConnection(connection) {
       connection.on("open", () => {
-        connection.send(
-          JSON.stringify({
-            id: "sync",
-            data: Object.keys(connections)
-          })
-        );
+        connection.send({
+          id: "sync",
+          data: Object.keys(connections)
+        });
 
         addConnection(connection);
 
         if (onConnectionOpen) {
-          onConnectionOpen();
+          onConnectionOpen(connection);
         }
       });
 
@@ -58,7 +56,7 @@ function useSession(onConnectionOpen) {
       peer.removeListener("open", handleOpen);
       peer.removeListener("connection", handleConnection);
     };
-  }, [peer, peerId, connections]);
+  }, [peer, peerId, connections, onConnectionOpen]);
 
   function sync(connectionIds) {
     for (let connectionId of connectionIds) {
@@ -76,12 +74,14 @@ function useSession(onConnectionOpen) {
     }
     const connection = peer.connect(connectionId);
     connection.on("open", () => {
-      connection.on("data", json => {
-        const data = JSON.parse(json);
+      connection.on("data", data => {
         if (data.id === "sync") {
           sync(data.data);
         }
       });
+      if (onConnectionOpen) {
+        onConnectionOpen(connection);
+      }
     });
     addConnection(connection);
   }
