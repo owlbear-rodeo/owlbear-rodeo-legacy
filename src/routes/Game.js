@@ -1,10 +1,18 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { A } from "hookrouter";
 
 import GameContext from "../contexts/GameContext";
+import useSession from "../helpers/useSession";
 
 function Game() {
   const [gameId, setGameId] = useContext(GameContext);
+  const [peer, peerId, connections, connectTo] = useSession();
+
+  useEffect(() => {
+    if (gameId !== null && peerId !== null) {
+      connectTo(gameId);
+    }
+  }, [gameId, peerId]);
 
   return (
     <div>

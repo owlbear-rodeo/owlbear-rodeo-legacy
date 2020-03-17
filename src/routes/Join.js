@@ -24,7 +24,7 @@ function Join() {
           my={4}
           id="id"
           name="id"
-          value={gameId}
+          value={gameId || ""}
           onChange={handleChange}
         />
         <Button>Go ʕ•ᴥ•ʔ</Button>
