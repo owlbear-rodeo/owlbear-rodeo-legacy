@@ -15,8 +15,10 @@ import Token from "../components/Token";
 function Game() {
   const [gameId, setGameId] = useContext(GameContext);
   const handleConnectionOpenCallback = useCallback(handleConnectionOpen);
+  const handleConnectionSyncCallback = useCallback(handleConnectionSync);
   const [peer, peerId, connections, connectTo] = useSession(
-    handleConnectionOpenCallback
+    handleConnectionOpenCallback,
+    handleConnectionSyncCallback
   );
 
   useEffect(() => {
@@ -37,10 +39,6 @@ function Game() {
   }
 
   function handleConnectionOpen(connection) {
-    if (imageSource) {
-      connection.send({ id: "image", data: imageDataRef.current });
-    }
-    connection.send({ id: "token", data: tokenPosition });
     connection.on("data", data => {
       if (data.id === "image") {
         const blob = new Blob([data.data]);
@@ -51,6 +49,13 @@ function Game() {
         setTokenPosition(data.data);
       }
     });
+  }
+
+  function handleConnectionSync(connection) {
+    if (imageSource) {
+      connection.send({ id: "image", data: imageDataRef.current });
+    }
+    connection.send({ id: "token", data: tokenPosition });
   }
 
   const [tokenPosition, setTokenPosition] = useState({ x: 0, y: 0 });
@@ -66,9 +71,7 @@ function Game() {
   return (
     <Container>
       <Flex p={2} sx={{ justifyContent: "space-between" }}>
-        <Heading>
-          {peerId ? peerId : "Loading"}
-        </Heading>
+        <Heading>{peerId ? peerId : "Loading"}</Heading>
         <Box>
           <Input
             id="image"

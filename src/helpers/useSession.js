@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 
-function useSession(onConnectionOpen) {
+function useSession(onConnectionOpen, onConnectionSync) {
   const [peerId, setPeerId] = useState(null);
   const [peer, setPeer] = useState(null);
   const [connections, setConnections] = useState({});
@@ -23,10 +23,16 @@ function useSession(onConnectionOpen) {
 
     function handleConnection(connection) {
       connection.on("open", () => {
-        connection.send({
-          id: "sync",
-          data: Object.keys(connections)
-        });
+        const metadata = connection.metadata;
+        if (metadata.sync) {
+          connection.send({
+            id: "sync",
+            data: Object.keys(connections)
+          });
+          if (onConnectionSync) {
+            onConnectionSync(connection);
+          }
+        }
 
         addConnection(connection);
 
@@ -63,7 +69,9 @@ function useSession(onConnectionOpen) {
       if (connectionId in connections) {
         continue;
       }
-      const connection = peer.connect(connectionId);
+      const connection = peer.connect(connectionId, {
+        metadata: { sync: false }
+      });
       addConnection(connection);
     }
   }
@@ -72,7 +80,9 @@ function useSession(onConnectionOpen) {
     if (connectionId in connections) {
       return;
     }
-    const connection = peer.connect(connectionId);
+    const connection = peer.connect(connectionId, {
+      metadata: { sync: true }
+    });
     connection.on("open", () => {
       connection.on("data", data => {
         if (data.id === "sync") {
