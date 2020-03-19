@@ -85,7 +85,9 @@ function Game() {
       >
         <AddMapButton handleMapChange={handleMapChange} />
       </Box>
-      <Flex sx={{ justifyContent: "space-between", flexGrow: 1 }}>
+      <Flex
+        sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
+      >
         <Party streams={streams} localStreamId={peerId} />
         <Map imageSource={imageSource} />
         <Tokens />
