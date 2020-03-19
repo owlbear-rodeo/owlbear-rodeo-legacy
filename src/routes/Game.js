@@ -83,7 +83,7 @@ function Game() {
           />
         </Box>
       </Flex>
-      <Party streams={streams} />
+      <Party streams={streams} localStreamId={peerId} />
       <Flex sx={{ justifyContent: "center" }}>
         <Image src={imageSource} />
       </Flex>

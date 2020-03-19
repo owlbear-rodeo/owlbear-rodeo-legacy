@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 
-function PartyVideo({ stream }) {
+function PartyVideo({ stream, muted }) {
   const videoRef = useRef();
 
   useEffect(() => {
@@ -9,7 +9,7 @@ function PartyVideo({ stream }) {
     }
   }, [stream]);
 
-  return <video ref={videoRef} autoPlay muted />;
+  return <video ref={videoRef} autoPlay muted={muted} />;
 }
 
 export default PartyVideo;
