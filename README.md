@@ -1,10 +1,10 @@
-### Owlbear Rodeo 
+# Owlbear Rodeo 
 
 Tooling:
  - [Peer JS](https://peerjs.com/docs.html)
  - [Theme UI](https://theme-ui.com/)
 
-### Create React App Yarn bootstrapping information
+# Create React App Yarn bootstrapping information
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
