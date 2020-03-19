@@ -3,6 +3,7 @@ import React from "react";
 import { Flex } from "theme-ui";
 
 import PartyVideo from "./PartyVideo";
+import AddPartyMemberButton from "./AddPartyMemberButton";
 
 function Party({ streams, localStreamId }) {
   return (
@@ -14,6 +15,7 @@ function Party({ streams, localStreamId }) {
       {Object.entries(streams).map(([id, stream]) => (
         <PartyVideo key={id} stream={stream} muted={id === localStreamId} />
       ))}
+      <AddPartyMemberButton streamId={localStreamId} />
     </Flex>
   );
 }
