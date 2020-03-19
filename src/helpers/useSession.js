@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Peer from "peerjs";
 
 const getUserMedia =
@@ -11,6 +11,8 @@ function useSession(onConnectionOpen, onConnectionSync) {
   const [peer, setPeer] = useState(null);
   const [connections, setConnections] = useState({});
   const [streams, setStreams] = useState({});
+  // Keep a ref to the streams in order to clean them up on unmount
+  const streamsRef = useRef(streams);
 
   function addConnection(connection) {
     setConnections(prevConnnections => ({
@@ -28,18 +30,20 @@ function useSession(onConnectionOpen, onConnectionSync) {
 
   useEffect(() => {
     setPeer(new Peer());
-  }, []);
 
-  // Clean up stream on dismount
-  useEffect(() => {
     return () => {
-      for (let stream of Object.values(streams)) {
+      for (let stream of Object.values(streamsRef.current)) {
         for (let track of stream.getTracks()) {
           track.stop();
         }
       }
     };
-  }, [streams]);
+  }, []);
+
+  // Update stream refs
+  useEffect(() => {
+    streamsRef.current = streams;
+  }, [streams, streamsRef]);
 
   useEffect(() => {
     function handleOpen(id) {
@@ -134,8 +138,6 @@ function useSession(onConnectionOpen, onConnectionSync) {
         onConnectionOpen(connection);
       }
     });
-
-    console.log(streams);
 
     const call = peer.call(connectionId, streams[peerId]);
     call.on("stream", remoteStream => {
