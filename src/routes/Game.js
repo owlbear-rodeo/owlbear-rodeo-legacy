@@ -5,7 +5,7 @@ import React, {
   useRef,
   useCallback
 } from "react";
-import { Container, Box, Image, Input, Flex, Heading, Grid } from "theme-ui";
+import { Box, Flex } from "theme-ui";
 
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
