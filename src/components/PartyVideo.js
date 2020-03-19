@@ -9,7 +9,14 @@ function PartyVideo({ stream, muted }) {
     }
   }, [stream]);
 
-  return <video ref={videoRef} autoPlay muted={muted} />;
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      muted={muted}
+      style={{ width: "100%", borderRadius: "4px" }}
+    />
+  );
 }
 
 export default PartyVideo;

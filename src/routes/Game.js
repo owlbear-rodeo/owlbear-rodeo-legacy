@@ -5,13 +5,16 @@ import React, {
   useRef,
   useCallback
 } from "react";
-import { Container, Box, Image, Input, Flex, Heading } from "theme-ui";
+import { Container, Box, Image, Input, Flex, Heading, Grid } from "theme-ui";
 
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
 
 import Token from "../components/Token";
 import Party from "../components/Party";
+import Tokens from "../components/Tokens";
+import Map from "../components/Map";
+import AddMapButton from "../components/AddMapButton";
 
 function Game() {
   const { gameId } = useContext(GameContext);
@@ -31,7 +34,7 @@ function Game() {
   const [imageSource, setImageSource] = useState(null);
   const imageDataRef = useRef(null);
 
-  function handleImageChange(event) {
+  function handleMapChange(event) {
     imageDataRef.current = event.target.files[0];
     setImageSource(URL.createObjectURL(imageDataRef.current));
     for (let connection of Object.values(connections)) {
@@ -70,25 +73,25 @@ function Game() {
   }
 
   return (
-    <Container>
-      <Flex p={2} sx={{ justifyContent: "space-between" }}>
-        <Heading>{peerId ? peerId : "Loading"}</Heading>
-        <Box>
-          <Input
-            id="image"
-            name="image"
-            onChange={handleImageChange}
-            type="file"
-            accept="image/*"
-          />
-        </Box>
+    <Flex sx={{ flexDirection: "column", height: "100vh" }}>
+      <Box
+        p={2}
+        sx={{
+          position: "absolute",
+          top: "0",
+          left: "50%",
+          transform: "translateX(-50%)"
+        }}
+      >
+        <AddMapButton handleMapChange={handleMapChange} />
+      </Box>
+      <Flex sx={{ justifyContent: "space-between", flexGrow: 1 }}>
+        <Party streams={streams} localStreamId={peerId} />
+        <Map imageSource={imageSource} />
+        <Tokens />
+        {/* <Token onDrag={handleTokenDrag} position={tokenPosition} /> */}
       </Flex>
-      <Party streams={streams} localStreamId={peerId} />
-      <Flex sx={{ justifyContent: "center" }}>
-        <Image src={imageSource} />
-      </Flex>
-      <Token onDrag={handleTokenDrag} position={tokenPosition} />
-    </Container>
+    </Flex>
   );
 }
 

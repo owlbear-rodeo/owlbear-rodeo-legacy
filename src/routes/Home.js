@@ -17,8 +17,14 @@ function Home() {
   }
 
   return (
-    <Container p={4} sx={{ maxWidth: "300px" }}>
-      <Flex sx={{ flexDirection: "column" }}>
+    <Container sx={{ maxWidth: "300px" }}>
+      <Flex
+        sx={{
+          flexDirection: "column",
+          height: "100vh",
+          justifyContent: "center"
+        }}
+      >
         <Button m={2} onClick={handleStartGame}>
           Start Game
         </Button>
