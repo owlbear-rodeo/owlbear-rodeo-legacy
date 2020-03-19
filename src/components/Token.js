@@ -1,6 +1,5 @@
 import React from "react";
 import Draggable from "react-draggable";
-import { Styled } from "theme-ui";
 
 function Token({ onDrag, position }) {
   return (

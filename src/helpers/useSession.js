@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 
+const getUserMedia =
+  navigator.getUserMedia ||
+  navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia;
+
 function useSession(onConnectionOpen, onConnectionSync) {
   const [peerId, setPeerId] = useState(null);
   const [peer, setPeer] = useState(null);
   const [connections, setConnections] = useState({});
+  const [streams, setStreams] = useState({});
+
   function addConnection(connection) {
     setConnections(prevConnnections => ({
       ...prevConnnections,
@@ -12,13 +19,35 @@ function useSession(onConnectionOpen, onConnectionSync) {
     }));
   }
 
+  function addStream(stream, id) {
+    setStreams(prevStreams => ({
+      ...prevStreams,
+      [id]: stream
+    }));
+  }
+
   useEffect(() => {
     setPeer(new Peer());
   }, []);
 
+  // Clean up stream on dismount
+  useEffect(() => {
+    return () => {
+      for (let stream of Object.values(streams)) {
+        for (let track of stream.getTracks()) {
+          track.stop();
+        }
+      }
+    };
+  }, [streams]);
+
   useEffect(() => {
     function handleOpen(id) {
       setPeerId(id);
+
+      getUserMedia({ video: true, audio: true }, stream => {
+        addStream(stream, id);
+      });
     }
 
     function handleConnection(connection) {
@@ -34,7 +63,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
           }
         }
 
-        addConnection(connection);
+        addConnection(connection, false);
 
         if (onConnectionOpen) {
           onConnectionOpen(connection);
@@ -47,9 +76,15 @@ function useSession(onConnectionOpen, onConnectionSync) {
           return rest;
         });
       }
-
       connection.on("close", removeConnection);
       connection.on("error", removeConnection);
+    }
+
+    function handleCall(call) {
+      call.answer(streams[peerId]);
+      call.on("stream", remoteStream => {
+        addStream(remoteStream, call.peer);
+      });
     }
 
     if (!peer) {
@@ -58,11 +93,13 @@ function useSession(onConnectionOpen, onConnectionSync) {
 
     peer.on("open", handleOpen);
     peer.on("connection", handleConnection);
+    peer.on("call", handleCall);
     return () => {
       peer.removeListener("open", handleOpen);
       peer.removeListener("connection", handleConnection);
+      peer.removeListener("call", handleCall);
     };
-  }, [peer, peerId, connections, onConnectionOpen]);
+  }, [peer, peerId, connections, onConnectionOpen, onConnectionSync, streams]);
 
   function sync(connectionIds) {
     for (let connectionId of connectionIds) {
@@ -72,7 +109,11 @@ function useSession(onConnectionOpen, onConnectionSync) {
       const connection = peer.connect(connectionId, {
         metadata: { sync: false }
       });
-      addConnection(connection);
+      addConnection(connection, false);
+      const call = peer.call(connectionId, streams[peerId]);
+      call.on("stream", stream => {
+        addStream(stream, connectionId);
+      });
     }
   }
 
@@ -93,10 +134,18 @@ function useSession(onConnectionOpen, onConnectionSync) {
         onConnectionOpen(connection);
       }
     });
-    addConnection(connection);
+
+    console.log(streams);
+
+    const call = peer.call(connectionId, streams[peerId]);
+    call.on("stream", remoteStream => {
+      addStream(remoteStream, connectionId);
+    });
+
+    addConnection(connection, false);
   }
 
-  return [peer, peerId, connections, connectTo];
+  return { peer, peerId, streams, connections, connectTo };
 }
 
 export default useSession;

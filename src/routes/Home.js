@@ -5,7 +5,7 @@ import { Container, Flex, Button } from "theme-ui";
 import GameContext from "../contexts/GameContext";
 
 function Home() {
-  const [gameId, setGameId] = useContext(GameContext);
+  const { setGameId } = useContext(GameContext);
 
   function handleStartGame() {
     setGameId(null);

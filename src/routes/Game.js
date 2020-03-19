@@ -11,21 +11,22 @@ import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
 
 import Token from "../components/Token";
+import Party from "../components/Party";
 
 function Game() {
-  const [gameId, setGameId] = useContext(GameContext);
+  const { gameId } = useContext(GameContext);
   const handleConnectionOpenCallback = useCallback(handleConnectionOpen);
   const handleConnectionSyncCallback = useCallback(handleConnectionSync);
-  const [peer, peerId, connections, connectTo] = useSession(
+  const { peerId, connections, connectTo, streams } = useSession(
     handleConnectionOpenCallback,
     handleConnectionSyncCallback
   );
 
   useEffect(() => {
-    if (gameId !== null && peerId !== null) {
+    if (gameId !== null && peerId !== null && streams[peerId]) {
       connectTo(gameId);
     }
-  }, [gameId, peerId, connectTo]);
+  }, [gameId, peerId, connectTo, streams]);
 
   const [imageSource, setImageSource] = useState(null);
   const imageDataRef = useRef(null);
@@ -34,7 +35,7 @@ function Game() {
     imageDataRef.current = event.target.files[0];
     setImageSource(URL.createObjectURL(imageDataRef.current));
     for (let connection of Object.values(connections)) {
-      connection.send({ id: "image", data: imageDataRef.current });
+      connection.data.send({ id: "image", data: imageDataRef.current });
     }
   }
 
@@ -82,6 +83,7 @@ function Game() {
           />
         </Box>
       </Flex>
+      <Party streams={streams} />
       <Flex sx={{ justifyContent: "center" }}>
         <Image src={imageSource} />
       </Flex>

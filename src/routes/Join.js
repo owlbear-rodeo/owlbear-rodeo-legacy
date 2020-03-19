@@ -5,7 +5,7 @@ import { Container, Box, Label, Input, Button } from "theme-ui";
 import GameContext from "../contexts/GameContext";
 
 function Join() {
-  const [gameId, setGameId] = useContext(GameContext);
+  const { gameId, setGameId } = useContext(GameContext);
 
   function handleChange(event) {
     setGameId(event.target.value);
