@@ -35,7 +35,7 @@ function Game() {
     imageDataRef.current = event.target.files[0];
     setImageSource(URL.createObjectURL(imageDataRef.current));
     for (let connection of Object.values(connections)) {
-      connection.data.send({ id: "image", data: imageDataRef.current });
+      connection.send({ id: "image", data: imageDataRef.current });
     }
   }
 
