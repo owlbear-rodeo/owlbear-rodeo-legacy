@@ -10,7 +10,12 @@ function Party({ streams, localStreamId }) {
     <Flex
       p={3}
       bg="background"
-      sx={{ flexDirection: "column", width: "192px", minWidth: "192px" }}
+      sx={{
+        flexDirection: "column",
+        width: "192px",
+        minWidth: "192px",
+        overflowY: "auto"
+      }}
     >
       {Object.entries(streams).map(([id, stream]) => (
         <PartyVideo key={id} stream={stream} muted={id === localStreamId} />

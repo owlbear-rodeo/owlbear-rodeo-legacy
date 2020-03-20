@@ -25,7 +25,7 @@ function Tokens({ onCreateMapToken }) {
           width: "80px",
           minWidth: "80px",
           flexDirection: "column",
-          overflow: "auto"
+          overflowY: "auto"
         }}
         px={2}
       >
