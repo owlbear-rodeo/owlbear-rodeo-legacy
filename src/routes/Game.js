@@ -15,6 +15,7 @@ import useSession from "../helpers/useSession";
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
+import GameViewSwitch from "../components/GameViewSwitch";
 
 function Game() {
   const { gameId } = useContext(GameContext);
@@ -94,22 +95,41 @@ function Game() {
     connection.send({ id: "tokenEdit", data: mapTokens });
   }
 
+  const [gameView, setGameView] = useState("social");
+
   return (
     <Flex sx={{ flexDirection: "column", height: "100vh" }}>
       <Flex
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >
-        <Party streams={streams} localStreamId={peerId} />
-        <Map
-          mapSource={mapSource}
-          mapData={mapDataRef.current}
-          tokens={mapTokens}
-          onMapTokenMove={handleEditMapToken}
-          onMapTokenRemove={handleRemoveMapToken}
-          onMapChanged={handleMapChanged}
+        <Party
+          streams={streams}
+          localStreamId={peerId}
+          view={gameView}
+          onViewChange={setGameView}
         />
-        <Tokens onCreateMapToken={handleEditMapToken} />
+        {gameView === "encounter" && (
+          <Map
+            mapSource={mapSource}
+            mapData={mapDataRef.current}
+            tokens={mapTokens}
+            onMapTokenMove={handleEditMapToken}
+            onMapTokenRemove={handleRemoveMapToken}
+            onMapChanged={handleMapChanged}
+          />
+        )}
+        {gameView === "encounter" && (
+          <Tokens onCreateMapToken={handleEditMapToken} />
+        )}
       </Flex>
+      <Flex
+        sx={{
+          position: "absolute",
+          left: "50%",
+          bottom: 0,
+          transform: "translate(-50%, -50%)"
+        }}
+      ></Flex>
     </Flex>
   );
 }

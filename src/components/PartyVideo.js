@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import { Box } from "theme-ui";
 
 function PartyVideo({ stream, muted }) {
   const videoRef = useRef();
@@ -11,14 +10,12 @@ function PartyVideo({ stream, muted }) {
   }, [stream]);
 
   return (
-    <Box my={1}>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted={muted}
-        style={{ width: "100%", borderRadius: "4px" }}
-      />
-    </Box>
+    <video
+      ref={videoRef}
+      autoPlay
+      muted={muted}
+      style={{ width: "100%", borderRadius: "4px", maxWidth: "500px" }}
+    />
   );
 }
 

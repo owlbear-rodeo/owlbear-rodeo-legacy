@@ -14,7 +14,7 @@ function AddPartyMemberButton({ streamId }) {
 
   return (
     <>
-      <Flex sx={{ justifyContent: "center" }} p={2}>
+      <Flex sx={{ justifyContent: "center" }}>
         <IconButton aria-label="Add Party Member" onClick={openModal}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
