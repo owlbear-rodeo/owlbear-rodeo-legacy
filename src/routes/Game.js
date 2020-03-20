@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import { Box, Flex } from "theme-ui";
 
+import { omit } from "../helpers/shared";
+
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
 
@@ -43,14 +45,25 @@ function Game() {
 
   const [mapTokens, setMapTokens] = useState({});
 
-  function handleCreateMapToken(token) {
+  function handleEditMapToken(token) {
     setMapTokens(prevMapTokens => ({
       ...prevMapTokens,
       [token.id]: token
     }));
     for (let connection of Object.values(connections)) {
       const data = { [token.id]: token };
-      connection.send({ id: "token", data });
+      connection.send({ id: "tokenEdit", data });
+    }
+  }
+
+  function handleRemoveMapToken(token) {
+    setMapTokens(prevMapTokens => {
+      const { [token.id]: old, ...rest } = prevMapTokens;
+      return rest;
+    });
+    for (let connection of Object.values(connections)) {
+      const data = { [token.id]: token };
+      connection.send({ id: "tokenRemove", data });
     }
   }
 
@@ -61,11 +74,16 @@ function Game() {
         imageDataRef.current = blob;
         setImageSource(URL.createObjectURL(imageDataRef.current));
       }
-      if (data.id === "token") {
+      if (data.id === "tokenEdit") {
         setMapTokens(prevMapTokens => ({
           ...prevMapTokens,
           ...data.data
         }));
+      }
+      if (data.id === "tokenRemove") {
+        setMapTokens(prevMapTokens =>
+          omit(prevMapTokens, Object.keys(data.data))
+        );
       }
     });
   }
@@ -74,7 +92,7 @@ function Game() {
     if (imageSource) {
       connection.send({ id: "image", data: imageDataRef.current });
     }
-    connection.send({ id: "token", data: mapTokens });
+    connection.send({ id: "tokenEdit", data: mapTokens });
   }
 
   return (
@@ -94,8 +112,13 @@ function Game() {
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >
         <Party streams={streams} localStreamId={peerId} />
-        <Map imageSource={imageSource} tokens={mapTokens} />
-        <Tokens onCreateMapToken={handleCreateMapToken} />
+        <Map
+          imageSource={imageSource}
+          tokens={mapTokens}
+          onMapTokenMove={handleEditMapToken}
+          onMapTokenRemove={handleRemoveMapToken}
+        />
+        <Tokens onCreateMapToken={handleEditMapToken} />
       </Flex>
     </Flex>
   );

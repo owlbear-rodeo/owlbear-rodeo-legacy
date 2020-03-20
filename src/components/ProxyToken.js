@@ -67,12 +67,14 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           let proxy = imageRef.current;
           if (proxy) {
             if (onProxyDragEnd) {
-              const endX = parseFloat(proxy.getAttribute("data-x")) || 0;
-              const endY = parseFloat(proxy.getAttribute("data-y")) || 0;
+              const x = parseFloat(proxy.getAttribute("data-x")) || 0;
+              const y = parseFloat(proxy.getAttribute("data-y")) || 0;
+              const id = target.getAttribute("data-token-id");
               onProxyDragEnd(proxyOnMap.current, {
                 image: imageSource,
-                x: endX,
-                y: endY
+                x,
+                y,
+                id
               });
             }
 

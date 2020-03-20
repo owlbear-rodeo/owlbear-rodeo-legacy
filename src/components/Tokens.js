@@ -7,13 +7,13 @@ import * as tokens from "../tokens";
 import Token from "./Token";
 import ProxyToken from "./ProxyToken";
 
-function Tokens({ onCreateMapToken }) {
-  const tokenClassName = "list-token";
+const listTokenClassName = "list-token";
 
+function Tokens({ onCreateMapToken }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onCreateMapToken) {
       // Give the token an id
-      onCreateMapToken({ id: shortid.generate(), ...token });
+      onCreateMapToken({ ...token, id: shortid.generate() });
     }
   }
 
@@ -30,11 +30,11 @@ function Tokens({ onCreateMapToken }) {
         px={2}
       >
         {Object.entries(tokens).map(([id, image]) => (
-          <Token key={id} image={image} className={tokenClassName} />
+          <Token key={id} image={image} className={listTokenClassName} />
         ))}
       </Flex>
       <ProxyToken
-        tokenClassName={tokenClassName}
+        tokenClassName={listTokenClassName}
         onProxyDragEnd={handleProxyDragEnd}
       />
     </>
