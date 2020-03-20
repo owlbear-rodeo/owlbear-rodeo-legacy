@@ -49,7 +49,8 @@ function Game() {
       [token.id]: token
     }));
     for (let connection of Object.values(connections)) {
-      connection.send({ id: "token", data: token });
+      const data = { [token.id]: token };
+      connection.send({ id: "token", data });
     }
   }
 
@@ -61,10 +62,9 @@ function Game() {
         setImageSource(URL.createObjectURL(imageDataRef.current));
       }
       if (data.id === "token") {
-        const token = data.data;
         setMapTokens(prevMapTokens => ({
           ...prevMapTokens,
-          [token.id]: token
+          ...data.data
         }));
       }
     });
