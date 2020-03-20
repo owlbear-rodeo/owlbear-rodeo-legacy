@@ -15,7 +15,7 @@ function PartyVideo({ stream, muted }) {
       autoPlay
       muted={muted}
       style={{ width: "100%", borderRadius: "4px", maxWidth: "500px" }}
-      playsinline
+      playsInline
     />
   );
 }
