@@ -13,7 +13,7 @@ import Modal from "./Modal";
 
 const defaultMapSize = 22;
 
-function AddMapButton({ handleMapChange }) {
+function AddMapButton({ onMapChanged }) {
   const fileInputRef = useRef();
 
   function openImageDialog() {
@@ -54,7 +54,7 @@ function AddMapButton({ handleMapChange }) {
 
   function handleDone() {
     if (mapDataRef.current && mapSource) {
-      handleMapChange(mapDataRef.current, mapSource);
+      onMapChanged(mapDataRef.current, mapSource);
     }
     closeModal();
   }

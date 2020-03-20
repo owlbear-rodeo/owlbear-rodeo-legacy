@@ -3,11 +3,19 @@ import { Box, Image } from "theme-ui";
 
 import Token from "../components/Token";
 import ProxyToken from "../components/ProxyToken";
+import AddMapButton from "../components/AddMapButton";
 
 const mapTokenClassName = "map-token";
 const defaultTokenSize = 48;
 
-function Map({ mapSource, mapData, tokens, onMapTokenMove, onMapTokenRemove }) {
+function Map({
+  mapSource,
+  mapData,
+  tokens,
+  onMapTokenMove,
+  onMapTokenRemove,
+  onMapChanged
+}) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenMove) {
       onMapTokenMove(token);
@@ -27,7 +35,12 @@ function Map({ mapSource, mapData, tokens, onMapTokenMove, onMapTokenRemove }) {
     <>
       <Box
         className="map"
-        sx={{ flexGrow: 1, position: "relative", overflow: "hidden" }}
+        sx={{
+          flexGrow: 1,
+          position: "relative",
+          overflow: "hidden",
+          backgroundColor: "rgba(0, 0, 0, 0.1)"
+        }}
         bg="background"
       >
         <Box
@@ -82,6 +95,17 @@ function Map({ mapSource, mapData, tokens, onMapTokenMove, onMapTokenRemove }) {
               </Box>
             ))}
           </Box>
+        </Box>
+        <Box
+          p={2}
+          sx={{
+            position: "absolute",
+            top: "0",
+            left: "50%",
+            transform: "translateX(-50%)"
+          }}
+        >
+          <AddMapButton onMapChanged={onMapChanged} />
         </Box>
       </Box>
       <ProxyToken

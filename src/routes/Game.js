@@ -5,7 +5,7 @@ import React, {
   useRef,
   useCallback
 } from "react";
-import { Box, Flex } from "theme-ui";
+import { Flex } from "theme-ui";
 
 import { omit } from "../helpers/shared";
 
@@ -15,7 +15,6 @@ import useSession from "../helpers/useSession";
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
-import AddMapButton from "../components/AddMapButton";
 
 function Game() {
   const { gameId } = useContext(GameContext);
@@ -35,7 +34,7 @@ function Game() {
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
 
-  function handleMapChange(mapData, mapSource) {
+  function handleMapChanged(mapData, mapSource) {
     mapDataRef.current = mapData;
     setMapSource(mapSource);
     for (let connection of Object.values(connections)) {
@@ -107,20 +106,10 @@ function Game() {
           tokens={mapTokens}
           onMapTokenMove={handleEditMapToken}
           onMapTokenRemove={handleRemoveMapToken}
+          onMapChanged={handleMapChanged}
         />
         <Tokens onCreateMapToken={handleEditMapToken} />
       </Flex>
-      <Box
-        p={2}
-        sx={{
-          position: "absolute",
-          top: "0",
-          left: "50%",
-          transform: "translateX(-50%)"
-        }}
-      >
-        <AddMapButton handleMapChange={handleMapChange} />
-      </Box>
     </Flex>
   );
 }
