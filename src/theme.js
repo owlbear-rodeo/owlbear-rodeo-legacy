@@ -10,15 +10,14 @@ export default {
     gray: "hsl(210, 50%, 60%)"
   },
   fonts: {
-    body:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-    heading: "inherit",
+    body: "'Bree Serif', serif",
+    heading: "'Pacifico', cursive",
     monospace: "Menlo, monospace"
   },
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 72],
   fontWeights: {
     body: 400,
-    heading: 700,
+    heading: 400,
     display: 900
   },
   lineHeights: {
@@ -150,7 +149,62 @@ export default {
   },
   forms: {
     label: {
-      fontWeight: 700
+      fontWeight: 400
+    },
+    input: {
+      "&:focus": {
+        outlineColor: "primary"
+      }
+    }
+  },
+  buttons: {
+    primary: {
+      color: "text",
+      bg: "transparent",
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: "text",
+      "&:hover": {
+        borderColor: "highlight",
+        cursor: "pointer"
+      },
+      fontFamily: "body",
+      "&:focus": {
+        outline: "none"
+      },
+      "&:active": {
+        borderColor: "primary"
+      }
+    },
+    secondary: {
+      color: "secondary",
+      bg: "transparent",
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: "text",
+      fontFamily: "body"
+    },
+    icon: {
+      "&:hover": {
+        cursor: "pointer"
+      },
+      "&:focus": {
+        outline: "none"
+      },
+      "&:active": {
+        color: "primary"
+      }
+    },
+    close: {
+      "&:hover": {
+        cursor: "pointer"
+      },
+      "&:focus": {
+        outline: "none"
+      },
+      "&:active": {
+        color: "primary"
+      }
     }
   }
 };

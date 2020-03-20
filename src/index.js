@@ -5,6 +5,8 @@ import Modal from "react-modal";
 
 import * as serviceWorker from "./serviceWorker";
 
+import "./index.css";
+
 ReactDOM.render(<App />, document.getElementById("root"));
 Modal.setAppElement("#root");
 

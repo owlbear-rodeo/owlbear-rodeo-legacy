@@ -30,7 +30,7 @@ function AddPartyMemberButton({ streamId }) {
       </Flex>
       <Modal isOpen={isAddModalOpen} onRequestClose={closeModal}>
         <Box>
-          <Label p={2}>Other people can join using your ID (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Label>
+          <Label p={2}>Other people can join using your ID › ʕ•ᴥ•ʔ</Label>
           <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
             <Text>{streamId}</Text>
           </Box>

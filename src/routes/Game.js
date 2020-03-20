@@ -15,7 +15,6 @@ import useSession from "../helpers/useSession";
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
-import GameViewSwitch from "../components/GameViewSwitch";
 
 function Game() {
   const { gameId } = useContext(GameContext);

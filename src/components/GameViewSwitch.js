@@ -1,7 +1,5 @@
 import React from "react";
-import { Flex, IconButton, Box } from "theme-ui";
-
-import AddPartyMemberButton from "./AddPartyMemberButton";
+import { Flex, IconButton } from "theme-ui";
 
 function SocialIcon() {
   return (
@@ -70,22 +68,32 @@ function GameViewSwitch({ view, onViewChange }) {
   return (
     <Flex sx={{ width: "128px", height: "32px" }} m={2}>
       <Flex
-        bg={view === "social" ? "primary" : "highlight"}
+        color={view === "social" ? "text" : "highlight"}
         sx={{
           flexGrow: 1,
           borderRadius: "32px 0 0 32px",
-          justifyContent: "center"
+          justifyContent: "center",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: "text",
+          alignItems: "center",
+          transform: "translate(0.5px, 0)"
         }}
         onClick={() => onViewChange("social")}
       >
         <SocialIcon />
       </Flex>
       <Flex
-        bg={view === "encounter" ? "primary" : "highlight"}
+        color={view === "encounter" ? "text" : "highlight"}
         sx={{
           flexGrow: 1,
           borderRadius: "0 32px 32px 0",
-          justifyContent: "center"
+          justifyContent: "center",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: "text",
+          alignItems: "center",
+          transform: "translate(-0.5px, 0)"
         }}
         onClick={() => onViewChange("encounter")}
       >

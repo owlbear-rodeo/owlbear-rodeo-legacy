@@ -24,7 +24,7 @@ function StyledModal({ isOpen, onRequestClose, children }) {
     >
       {children}
       <Close
-        m={1}
+        m={0}
         sx={{ position: "absolute", top: 0, right: 0 }}
         onClick={onRequestClose}
       />

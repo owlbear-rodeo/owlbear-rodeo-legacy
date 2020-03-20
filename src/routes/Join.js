@@ -26,7 +26,7 @@ function Join() {
         }}
       >
         <Box as="form" onSubmit={handleSubmit}>
-          <Label htmlFor="id">Shove an ID in me</Label>
+          <Label htmlFor="id">Let me see your identification</Label>
           <Input
             my={4}
             id="id"
@@ -34,7 +34,7 @@ function Join() {
             value={gameId || ""}
             onChange={handleChange}
           />
-          <Button>Go ʕ•ᴥ•ʔ</Button>
+          <Button>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
         </Box>
       </Flex>
     </Container>
