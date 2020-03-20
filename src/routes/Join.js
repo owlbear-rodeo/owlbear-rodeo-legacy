@@ -34,7 +34,7 @@ function Join() {
             value={gameId || ""}
             onChange={handleChange}
           />
-          <Button>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
+          <Button disabled={!gameId}>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
         </Box>
       </Flex>
     </Container>
