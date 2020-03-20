@@ -89,6 +89,14 @@ function useSession(onConnectionOpen, onConnectionSync) {
       call.on("stream", remoteStream => {
         addStream(remoteStream, call.peer);
       });
+      function removeStream() {
+        setStreams(prevStreams => {
+          const { [call.peer]: old, ...rest } = prevStreams;
+          return rest;
+        });
+      }
+      call.on("close", removeStream);
+      call.on("error", removeStream);
     }
 
     if (!peer) {
