@@ -1,23 +1,13 @@
 import React, { useState } from "react";
-import Modal from "react-modal";
-import {
-  IconButton,
-  Flex,
-  Box,
-  Label,
-  Close,
-  useThemeUI,
-  Text
-} from "theme-ui";
+import { IconButton, Flex, Box, Label, Text } from "theme-ui";
+
+import Modal from "./Modal";
 
 function AddPartyMemberButton({ streamId }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { theme } = useThemeUI();
-
   function openModal() {
     setIsAddModalOpen(true);
   }
-
   function closeModal() {
     setIsAddModalOpen(false);
   }
@@ -38,32 +28,12 @@ function AddPartyMemberButton({ streamId }) {
           </svg>
         </IconButton>
       </Flex>
-      <Modal
-        isOpen={isAddModalOpen}
-        onRequestClose={closeModal}
-        style={{
-          overlay: { backgroundColor: "rgba(0, 0, 0, 0.73)" },
-          content: {
-            backgroundColor: theme.colors.background,
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)"
-          }
-        }}
-      >
+      <Modal isOpen={isAddModalOpen} onRequestClose={closeModal}>
         <Box>
           <Label p={2}>Other people can join using your ID (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Label>
           <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
             <Text>{streamId}</Text>
           </Box>
-          <Close
-            m={1}
-            sx={{ position: "absolute", top: 0, right: 0 }}
-            onClick={closeModal}
-          />
         </Box>
       </Modal>
     </>

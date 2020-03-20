@@ -32,14 +32,14 @@ function Game() {
     }
   }, [gameId, peerId, connectTo, streams]);
 
-  const [imageSource, setImageSource] = useState(null);
-  const imageDataRef = useRef(null);
+  const [mapSource, setMapSource] = useState(null);
+  const mapDataRef = useRef(null);
 
-  function handleMapChange(event) {
-    imageDataRef.current = event.target.files[0];
-    setImageSource(URL.createObjectURL(imageDataRef.current));
+  function handleMapChange(mapData, mapSource) {
+    mapDataRef.current = mapData;
+    setMapSource(mapSource);
     for (let connection of Object.values(connections)) {
-      connection.send({ id: "image", data: imageDataRef.current });
+      connection.send({ id: "map", data: mapDataRef.current });
     }
   }
 
@@ -69,10 +69,10 @@ function Game() {
 
   function handleConnectionOpen(connection) {
     connection.on("data", data => {
-      if (data.id === "image") {
-        const blob = new Blob([data.data]);
-        imageDataRef.current = blob;
-        setImageSource(URL.createObjectURL(imageDataRef.current));
+      if (data.id === "map") {
+        const blob = new Blob([data.data.file]);
+        mapDataRef.current = { ...data.data, file: blob };
+        setMapSource(URL.createObjectURL(mapDataRef.current.file));
       }
       if (data.id === "tokenEdit") {
         setMapTokens(prevMapTokens => ({
@@ -89,8 +89,8 @@ function Game() {
   }
 
   function handleConnectionSync(connection) {
-    if (imageSource) {
-      connection.send({ id: "image", data: imageDataRef.current });
+    if (mapSource) {
+      connection.send({ id: "map", data: mapDataRef.current });
     }
     connection.send({ id: "tokenEdit", data: mapTokens });
   }
@@ -113,7 +113,7 @@ function Game() {
       >
         <Party streams={streams} localStreamId={peerId} />
         <Map
-          imageSource={imageSource}
+          imageSource={mapSource}
           tokens={mapTokens}
           onMapTokenMove={handleEditMapToken}
           onMapTokenRemove={handleRemoveMapToken}
