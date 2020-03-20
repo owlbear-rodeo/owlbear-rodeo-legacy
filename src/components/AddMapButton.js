@@ -8,7 +8,7 @@ const defaultMapSize = 22;
 function AddMapButton({ handleMapChange }) {
   const fileInputRef = useRef();
 
-  function openImageDialog(e) {
+  function openImageDialog() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
