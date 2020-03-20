@@ -7,12 +7,13 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "hookrouter": "^1.2.3",
+    "interactjs": "^1.9.7",
     "peerjs": "^1.2.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
-    "react-draggable": "^4.2.0",
     "react-modal": "^3.11.2",
     "react-scripts": "3.4.0",
+    "shortid": "^2.2.15",
     "theme-ui": "^0.3.1"
   },
   "scripts": {

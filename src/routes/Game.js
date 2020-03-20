@@ -10,7 +10,6 @@ import { Box, Flex } from "theme-ui";
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
 
-import Token from "../components/Token";
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
@@ -42,6 +41,18 @@ function Game() {
     }
   }
 
+  const [mapTokens, setMapTokens] = useState({});
+
+  function handleCreateMapToken(token) {
+    setMapTokens(prevMapTokens => ({
+      ...prevMapTokens,
+      [token.id]: token
+    }));
+    for (let connection of Object.values(connections)) {
+      connection.send({ id: "token", data: token });
+    }
+  }
+
   function handleConnectionOpen(connection) {
     connection.on("data", data => {
       if (data.id === "image") {
@@ -50,7 +61,11 @@ function Game() {
         setImageSource(URL.createObjectURL(imageDataRef.current));
       }
       if (data.id === "token") {
-        setTokenPosition(data.data);
+        const token = data.data;
+        setMapTokens(prevMapTokens => ({
+          ...prevMapTokens,
+          [token.id]: token
+        }));
       }
     });
   }
@@ -59,17 +74,7 @@ function Game() {
     if (imageSource) {
       connection.send({ id: "image", data: imageDataRef.current });
     }
-    connection.send({ id: "token", data: tokenPosition });
-  }
-
-  const [tokenPosition, setTokenPosition] = useState({ x: 0, y: 0 });
-
-  function handleTokenDrag(event, data) {
-    const position = { x: data.x, y: data.y };
-    setTokenPosition(position);
-    for (let connection of Object.values(connections)) {
-      connection.send({ id: "token", data: position });
-    }
+    connection.send({ id: "token", data: mapTokens });
   }
 
   return (
@@ -89,9 +94,8 @@ function Game() {
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >
         <Party streams={streams} localStreamId={peerId} />
-        <Map imageSource={imageSource} />
-        <Tokens />
-        {/* <Token onDrag={handleTokenDrag} position={tokenPosition} /> */}
+        <Map imageSource={imageSource} tokens={mapTokens} />
+        <Tokens onCreateMapToken={handleCreateMapToken} />
       </Flex>
     </Flex>
   );

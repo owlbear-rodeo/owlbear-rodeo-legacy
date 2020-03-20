@@ -1,18 +1,17 @@
 import React from "react";
-import Draggable from "react-draggable";
+import { Image } from "theme-ui";
 
-function Token({ onDrag, position }) {
+function Token({ image, className }) {
   return (
-    <Draggable onDrag={onDrag} position={position}>
-      <div
-        style={{
-          borderRadius: "50%",
-          width: "50px",
-          height: "50px",
-          background: "blue"
-        }}
-      ></div>
-    </Draggable>
+    <Image
+      p={2}
+      className={className}
+      src={image}
+      sx={{
+        width: "64px",
+        height: "64px"
+      }}
+    />
   );
 }
 
