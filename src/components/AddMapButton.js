@@ -1,5 +1,13 @@
-import React, { useRef, useState } from "react";
-import { IconButton, Box, Button, Image, Flex, Label, Input } from "theme-ui";
+import React, { useRef, useState, useEffect } from "react";
+import {
+  IconButton,
+  Box,
+  Button,
+  Image as UIImage,
+  Flex,
+  Label,
+  Input
+} from "theme-ui";
 
 import Modal from "./Modal";
 
@@ -22,11 +30,26 @@ function AddMapButton({ handleMapChange }) {
     setIsAddModalOpen(false);
   }
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   const mapDataRef = useRef(null);
-  const [mapSource, setImageSource] = useState(null);
+  const [mapSource, setMapSource] = useState(null);
   function handleImageUpload(event) {
-    mapDataRef.current = { file: event.target.files[0], rows, columns };
-    setImageSource(URL.createObjectURL(mapDataRef.current.file));
+    const file = event.target.files[0];
+    const url = URL.createObjectURL(file);
+    let image = new Image();
+    image.onload = function() {
+      mapDataRef.current = {
+        file,
+        rows,
+        columns,
+        width: image.width,
+        height: image.height
+      };
+      setImageLoaded(true);
+    };
+    image.src = url;
+    setMapSource(url);
   }
 
   function handleDone() {
@@ -38,6 +61,12 @@ function AddMapButton({ handleMapChange }) {
 
   const [rows, setRows] = useState(defaultMapSize);
   const [columns, setColumns] = useState(defaultMapSize);
+  useEffect(() => {
+    if (mapDataRef.current) {
+      mapDataRef.current.rows = rows;
+      mapDataRef.current.columns = columns;
+    }
+  }, [rows, columns]);
 
   return (
     <>
@@ -70,7 +99,7 @@ function AddMapButton({ handleMapChange }) {
           />
 
           <Flex sx={{ flexDirection: "column" }}>
-            <Image
+            <UIImage
               my={2}
               sx={{
                 width: "500px",
@@ -104,7 +133,9 @@ function AddMapButton({ handleMapChange }) {
               </Box>
             </Flex>
             {mapSource ? (
-              <Button variant="primary">Done</Button>
+              <Button variant="primary" disabled={!imageLoaded}>
+                Done
+              </Button>
             ) : (
               <Button
                 varient="primary"

@@ -97,6 +97,19 @@ function Game() {
 
   return (
     <Flex sx={{ flexDirection: "column", height: "100vh" }}>
+      <Flex
+        sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
+      >
+        <Party streams={streams} localStreamId={peerId} />
+        <Map
+          mapSource={mapSource}
+          mapData={mapDataRef.current}
+          tokens={mapTokens}
+          onMapTokenMove={handleEditMapToken}
+          onMapTokenRemove={handleRemoveMapToken}
+        />
+        <Tokens onCreateMapToken={handleEditMapToken} />
+      </Flex>
       <Box
         p={2}
         sx={{
@@ -108,18 +121,6 @@ function Game() {
       >
         <AddMapButton handleMapChange={handleMapChange} />
       </Box>
-      <Flex
-        sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
-      >
-        <Party streams={streams} localStreamId={peerId} />
-        <Map
-          imageSource={mapSource}
-          tokens={mapTokens}
-          onMapTokenMove={handleEditMapToken}
-          onMapTokenRemove={handleRemoveMapToken}
-        />
-        <Tokens onCreateMapToken={handleEditMapToken} />
-      </Flex>
     </Flex>
   );
 }

@@ -5,7 +5,7 @@ import interact from "interactjs";
 
 import usePortal from "../helpers/usePortal";
 
-function ProxyToken({ tokenClassName, onProxyDragEnd }) {
+function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
@@ -67,8 +67,20 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           let proxy = imageRef.current;
           if (proxy) {
             if (onProxyDragEnd) {
-              const x = parseFloat(proxy.getAttribute("data-x")) || 0;
-              const y = parseFloat(proxy.getAttribute("data-y")) || 0;
+              // TODO: look at cleaning this up with a props instead of
+              // hard coding an id
+              const map = document.getElementById("map");
+              const mapRect = map.getBoundingClientRect();
+
+              let x = parseFloat(proxy.getAttribute("data-x")) || 0;
+              let y = parseFloat(proxy.getAttribute("data-y")) || 0;
+              // Convert coordiantes to be relative to the map
+              x = x - mapRect.left;
+              y = y - mapRect.top;
+              // Normalize to map width
+              x = x / (mapRect.right - mapRect.left);
+              y = y / (mapRect.bottom - mapRect.top);
+
               const id = target.getAttribute("data-token-id");
               onProxyDragEnd(proxyOnMap.current, {
                 image: imageSource,
@@ -109,11 +121,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
       }}
     >
       <Image
-        p={2}
         src={imageSource}
         sx={{
-          width: "64px",
-          height: "64px",
+          width: `${size}px`,
+          height: `${size}px`,
           touchAction: "none",
           userSelect: "none",
           position: "absolute"
@@ -124,5 +135,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
     proxyContainer
   );
 }
+
+ProxyToken.defaultProps = { size: 48 };
 
 export default ProxyToken;

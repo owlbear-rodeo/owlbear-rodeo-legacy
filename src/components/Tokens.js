@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex } from "theme-ui";
+import { Flex, Box } from "theme-ui";
 import shortid from "shortid";
 
 import * as tokens from "../tokens";
@@ -30,7 +30,9 @@ function Tokens({ onCreateMapToken }) {
         px={2}
       >
         {Object.entries(tokens).map(([id, image]) => (
-          <Token key={id} image={image} className={listTokenClassName} />
+          <Box key={id} m={2} sx={{ width: "48px", height: "48px" }}>
+            <Token image={image} className={listTokenClassName} />
+          </Box>
         ))}
       </Flex>
       <ProxyToken
