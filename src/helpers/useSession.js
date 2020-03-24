@@ -49,9 +49,17 @@ function useSession(onConnectionOpen, onConnectionSync) {
     function handleOpen(id) {
       setPeerId(id);
 
-      getUserMedia({ video: true, audio: true }, stream => {
-        addStream(stream, id);
-      });
+      getUserMedia(
+        {
+          video: {
+            frameRate: { ideal: 15, max: 20 }
+          },
+          audio: true
+        },
+        stream => {
+          addStream(stream, id);
+        }
+      );
     }
 
     function handleConnection(connection) {
