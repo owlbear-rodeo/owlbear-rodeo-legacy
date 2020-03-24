@@ -113,6 +113,13 @@ function useSession(onConnectionOpen, onConnectionSync) {
     };
   }, [peer, peerId, connections, onConnectionOpen, onConnectionSync, streams]);
 
+  function call(connectionId) {
+    const call = peer.call(connectionId, streams[peerId]);
+    call.on("stream", stream => {
+      addStream(stream, connectionId);
+    });
+  }
+
   function sync(connectionIds) {
     for (let connectionId of connectionIds) {
       if (connectionId in connections) {
@@ -122,10 +129,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
         metadata: { sync: false }
       });
       addConnection(connection, false);
-      const call = peer.call(connectionId, streams[peerId]);
-      call.on("stream", stream => {
-        addStream(stream, connectionId);
-      });
+      call(connectionId);
     }
   }
 
@@ -136,6 +140,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
     const connection = peer.connect(connectionId, {
       metadata: { sync: true }
     });
+    addConnection(connection, false);
     connection.on("open", () => {
       connection.on("data", data => {
         if (data.id === "sync") {
@@ -147,12 +152,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
       }
     });
 
-    const call = peer.call(connectionId, streams[peerId]);
-    call.on("stream", remoteStream => {
-      addStream(remoteStream, connectionId);
-    });
-
-    addConnection(connection, false);
+    call(connectionId);
   }
 
   return { peer, peerId, streams, connections, connectTo };
