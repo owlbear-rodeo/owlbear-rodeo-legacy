@@ -15,23 +15,39 @@ function useSession(onConnectionOpen, onConnectionSync) {
   const streamsRef = useRef(streams);
 
   function addConnection(connection) {
-    setConnections(prevConnnections => ({
-      ...prevConnnections,
-      [connection.peer]: connection
-    }));
+    console.log("Adding connection", connection.peer);
+    setConnections(prevConnnections => {
+      console.log("Connections", {
+        ...prevConnnections,
+        [connection.peer]: connection
+      });
+      return {
+        ...prevConnnections,
+        [connection.peer]: connection
+      };
+    });
   }
 
   function addStream(stream, id) {
-    setStreams(prevStreams => ({
-      ...prevStreams,
-      [id]: stream
-    }));
+    console.log("Adding stream", id);
+    setStreams(prevStreams => {
+      console.log("Streams", {
+        ...prevStreams,
+        [id]: stream
+      });
+      return {
+        ...prevStreams,
+        [id]: stream
+      };
+    });
   }
 
   useEffect(() => {
+    console.log("Creating peer");
     setPeer(new Peer());
 
     return () => {
+      console.log("Cleaning up streams");
       for (let stream of Object.values(streamsRef.current)) {
         for (let track of stream.getTracks()) {
           track.stop();
@@ -42,19 +58,22 @@ function useSession(onConnectionOpen, onConnectionSync) {
 
   // Update stream refs
   useEffect(() => {
+    console.log("Syncing stream ref to stream state");
     streamsRef.current = streams;
   }, [streams, streamsRef]);
 
   useEffect(() => {
     function handleOpen(id) {
+      console.log("Peer open", id);
       setPeerId(id);
 
+      console.log("Getting user data");
       getUserMedia(
         {
           video: {
             frameRate: { ideal: 15, max: 20 }
           },
-          audio: true
+          audio: false
         },
         stream => {
           addStream(stream, id);
@@ -64,6 +83,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
 
     function handleConnection(connection) {
       connection.on("open", () => {
+        console.log("incoming connection added", connection.peer);
         const metadata = connection.metadata;
         if (metadata.sync) {
           connection.send({
@@ -75,7 +95,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
           }
         }
 
-        addConnection(connection, false);
+        addConnection(connection);
 
         if (onConnectionOpen) {
           onConnectionOpen(connection);
@@ -83,6 +103,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
       });
 
       function removeConnection() {
+        console.log("removing connection", connection.peer);
         setConnections(prevConnections => {
           const { [connection.peer]: old, ...rest } = prevConnections;
           return rest;
@@ -93,6 +114,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
     }
 
     function handleCall(call) {
+      console.log("incoming call", call.peer);
       call.answer(streams[peerId]);
       call.on("stream", remoteStream => {
         addStream(remoteStream, call.peer);
@@ -122,44 +144,42 @@ function useSession(onConnectionOpen, onConnectionSync) {
   }, [peer, peerId, connections, onConnectionOpen, onConnectionSync, streams]);
 
   function call(connectionId) {
+    console.log("Calling", connectionId);
     const call = peer.call(connectionId, streams[peerId]);
     call.on("stream", stream => {
       addStream(stream, connectionId);
     });
   }
 
-  function sync(connectionIds) {
-    for (let connectionId of connectionIds) {
-      if (connectionId in connections) {
-        continue;
-      }
-      const connection = peer.connect(connectionId, {
-        metadata: { sync: false }
-      });
-      addConnection(connection, false);
-      call(connectionId);
-    }
-  }
-
   function connectTo(connectionId) {
+    console.log("Connecting to", connectionId);
     if (connectionId in connections) {
       return;
     }
     const connection = peer.connect(connectionId, {
       metadata: { sync: true }
     });
-    addConnection(connection, false);
+    addConnection(connection);
     connection.on("open", () => {
       connection.on("data", data => {
         if (data.id === "sync") {
-          sync(data.data);
+          for (let syncId of data.data) {
+            console.log("Syncing to", syncId);
+            if (connectionId === syncId || syncId in connections) {
+              continue;
+            }
+            const syncConnection = peer.connect(syncId, {
+              metadata: { sync: false }
+            });
+            addConnection(syncConnection);
+            call(syncId);
+          }
         }
       });
       if (onConnectionOpen) {
         onConnectionOpen(connection);
       }
     });
-
     call(connectionId);
   }
 

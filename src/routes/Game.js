@@ -26,10 +26,15 @@ function Game() {
   );
 
   useEffect(() => {
-    if (gameId !== null && peerId !== null && streams[peerId]) {
+    if (
+      gameId !== null &&
+      peerId !== null &&
+      streams[peerId] &&
+      !(gameId in connections)
+    ) {
       connectTo(gameId);
     }
-  }, [gameId, peerId, connectTo, streams]);
+  }, [gameId, peerId, connectTo, streams, connections]);
 
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
