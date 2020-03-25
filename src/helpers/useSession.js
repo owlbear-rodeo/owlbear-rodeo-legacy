@@ -58,7 +58,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
 
   // Update stream refs
   useEffect(() => {
-    console.log("Syncing stream ref to stream state");
+    console.log("Syncing stream ref to stream state", streams);
     streamsRef.current = streams;
   }, [streams, streamsRef]);
 
@@ -110,7 +110,10 @@ function useSession(onConnectionOpen, onConnectionSync) {
         });
       }
       connection.on("close", removeConnection);
-      connection.on("error", removeConnection);
+      connection.on("error", error => {
+        console.error("Data Connection error", error);
+        removeConnection();
+      });
     }
 
     function handleCall(call) {
@@ -126,7 +129,14 @@ function useSession(onConnectionOpen, onConnectionSync) {
         });
       }
       call.on("close", removeStream);
-      call.on("error", removeStream);
+      call.on("error", error => {
+        console.error("Media Connection error", error);
+        removeStream();
+      });
+    }
+
+    function handleError(error) {
+      console.error("Peer error", error);
     }
 
     if (!peer) {
@@ -136,10 +146,12 @@ function useSession(onConnectionOpen, onConnectionSync) {
     peer.on("open", handleOpen);
     peer.on("connection", handleConnection);
     peer.on("call", handleCall);
+    peer.on("error", handleError);
     return () => {
       peer.removeListener("open", handleOpen);
       peer.removeListener("connection", handleConnection);
       peer.removeListener("call", handleCall);
+      peer.removeListener("error", handleError);
     };
   }, [peer, peerId, connections, onConnectionOpen, onConnectionSync, streams]);
 
