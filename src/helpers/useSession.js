@@ -71,7 +71,9 @@ function useSession(onConnectionOpen, onConnectionSync) {
       getUserMedia(
         {
           video: {
-            frameRate: { ideal: 15, max: 20 }
+            frameRate: { ideal: 15, max: 20 },
+            width: { max: 256 },
+            height: { max: 144 }
           },
           audio: false
         },
