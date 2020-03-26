@@ -1,1 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Bree+Serif|Pacifico&display=swap");
+
+#root,
+body,
+html {
+  height: 100%;
+}

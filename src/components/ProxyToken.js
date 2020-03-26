@@ -112,12 +112,12 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
   return ReactDOM.createPortal(
     <Box
       sx={{
-        width: "100vw",
-        height: "100vh",
         position: "absolute",
         overflow: "hidden",
         top: 0,
-        left: 0
+        left: 0,
+        bottom: 0,
+        right: 0
       }}
     >
       <Image

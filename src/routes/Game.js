@@ -136,7 +136,7 @@ function Game() {
   }
 
   return (
-    <Flex sx={{ flexDirection: "column", height: "100vh" }}>
+    <Flex sx={{ flexDirection: "column", height: "100%" }}>
       <Flex
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >

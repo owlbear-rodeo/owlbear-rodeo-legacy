@@ -19,11 +19,11 @@ function Home() {
   }
 
   return (
-    <Container sx={{ maxWidth: "300px" }}>
+    <Container sx={{ maxWidth: "300px", height: "100%" }}>
       <Flex
         sx={{
           flexDirection: "column",
-          height: "100vh",
+          height: "100%",
           justifyContent: "center"
         }}
       >
