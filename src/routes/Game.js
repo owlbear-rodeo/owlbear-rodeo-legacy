@@ -118,6 +118,9 @@ function Game() {
         }));
       }
     });
+    connection.on("error", () => {
+      setNicknames(prevNicknames => omit(prevNicknames, [connection.peer]));
+    });
     connection.send({
       id: "nickname",
       data: { [peerId]: currentNicknameRef.current }
