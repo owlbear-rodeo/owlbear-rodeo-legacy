@@ -5,7 +5,7 @@ import interact from "interactjs";
 
 import usePortal from "../helpers/usePortal";
 
-function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
+function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
@@ -32,6 +32,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
             proxy.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
             proxy.setAttribute("data-x", xOffset);
             proxy.setAttribute("data-y", yOffset);
+
+            // Copy width and height of target
+            proxy.style.width = `${targetRect.width}px`;
+            proxy.style.height = `${targetRect.height}px`;
           }
         },
 
@@ -53,7 +57,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
               const proxyRect = proxy.getBoundingClientRect();
               proxyOnMap.current =
                 proxyContainerRect.right - proxyRect.right > 80 &&
-                proxyRect.left > 192;
+                proxyRect.left > 96;
             }
 
             // update the posiion attributes
@@ -123,8 +127,6 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
       <Image
         src={imageSource}
         sx={{
-          width: `${size}px`,
-          height: `${size}px`,
           touchAction: "none",
           userSelect: "none",
           position: "absolute"
@@ -135,7 +137,5 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, size }) {
     proxyContainer
   );
 }
-
-ProxyToken.defaultProps = { size: 48 };
 
 export default ProxyToken;

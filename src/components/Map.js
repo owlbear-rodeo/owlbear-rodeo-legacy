@@ -7,7 +7,6 @@ import ProxyToken from "../components/ProxyToken";
 import AddMapButton from "../components/AddMapButton";
 
 const mapTokenClassName = "map-token";
-const defaultTokenSize = 48;
 const zoomSpeed = -0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
@@ -181,7 +180,6 @@ function Map({
       <ProxyToken
         tokenClassName={mapTokenClassName}
         onProxyDragEnd={handleProxyDragEnd}
-        size={defaultTokenSize}
       />
     </>
   );
