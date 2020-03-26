@@ -72,6 +72,12 @@ function Map({
     );
   }
 
+  // Reset map transform when map changes
+  useEffect(() => {
+    setMapTranslate({ x: 0, y: 0 });
+    setMapScale(1);
+  }, [mapSource]);
+
   const mapRef = useRef(null);
   const rows = mapData && mapData.rows;
   const tokenSizePercent = (1 / rows) * 100;
