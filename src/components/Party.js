@@ -1,78 +1,45 @@
-import React, { useState } from "react";
-import { Flex, Box, Input, Text } from "theme-ui";
-import { v4 as uuid } from "uuid";
+import React from "react";
+import { Flex, Box, Text } from "theme-ui";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
-import Message from "./Message";
 
-import { getRandomMonster } from "../helpers/monsters";
-
-function Party({ peerId, messages, onMessageSend }) {
-  const [messageText, setMessageText] = useState("");
-  const [nickname, setNickname] = useState(getRandomMonster());
-
-  function handleMessageSubmit(event) {
-    event.preventDefault();
-    if (!messageText || !peerId) {
-      return;
-    }
-    const id = uuid();
-    const time = Date.now();
-    const message = {
-      nickname,
-      id,
-      text: messageText,
-      time
-    };
-    onMessageSend(message);
-    setMessageText("");
-  }
-
+function Party({ nicknames, peerId, onNicknameChange }) {
   return (
     <Flex
       p={3}
       bg="background"
       sx={{
         flexDirection: "column",
-        width: "256px",
-        minWidth: "256px",
+        width: "96px",
+        minWidth: "96px",
         overflowY: "auto",
         alignItems: "center"
       }}
     >
+      <Box
+        sx={{
+          width: "100%"
+        }}
+      >
+        <Text mb={1} variant="heading">
+          Party
+        </Text>
+      </Box>
+      <Box
+        sx={{
+          flexGrow: 1,
+          width: "100%"
+        }}
+      >
+        {Object.entries(nicknames).map(([id, nickname]) => (
+          <Text my={1} variant="caption" sx={{ fontSize: 10 }} key={id}>
+            {nickname} {id === peerId ? "(you)" : ""}
+          </Text>
+        ))}
+      </Box>
       <Box>
         <AddPartyMemberButton peerId={peerId} />
       </Box>
-      <Flex
-        p={2}
-        sx={{ width: "100%" }}
-        bg="muted"
-        sx={{
-          flexGrow: 1,
-          width: "100%",
-          borderRadius: "4px",
-          flexDirection: "column",
-          justifyContent: "flex-end"
-        }}
-        my={2}
-      >
-        {Object.values(messages)
-          .sort((a, b) => a.time - b.time)
-          .map(message => (
-            <Message key={message.id} message={message} />
-          ))}
-        <Box as="form" onSubmit={handleMessageSubmit} sx={{ width: "100%" }}>
-          <Input
-            value={messageText}
-            onChange={event => setMessageText(event.target.value)}
-            p={1}
-            disabled={!peerId}
-          />
-        </Box>
-        <Text my={1} variant="caption">
-          {nickname}
-        </Text>
-      </Flex>
     </Flex>
   );
 }

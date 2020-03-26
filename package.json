@@ -16,8 +16,7 @@
     "react-modal": "^3.11.2",
     "react-scripts": "3.4.0",
     "shortid": "^2.2.15",
-    "theme-ui": "^0.3.1",
-    "uuid": "^7.0.2"
+    "theme-ui": "^0.3.1"
   },
   "scripts": {
     "predeploy": "yarn build",

@@ -11,7 +11,7 @@ export default {
   },
   fonts: {
     body: "'Bree Serif', serif",
-    message:
+    body2:
       "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
     heading: "'Bree Serif', serif",
     monospace: "Menlo, monospace",
@@ -43,13 +43,13 @@ export default {
       mt: 3
     },
     caption: {
-      fontFamily: "message",
+      fontFamily: "body2",
       fontWeight: "caption",
       fontSize: 10,
       color: "gray"
     },
-    message: {
-      fontFamily: "message",
+    body2: {
+      fontFamily: "body2",
       fontSize: 1,
       fontWeight: "body"
     }

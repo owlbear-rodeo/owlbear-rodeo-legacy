@@ -11,6 +11,7 @@ import { omit } from "../helpers/shared";
 
 import GameContext from "../contexts/GameContext";
 import useSession from "../helpers/useSession";
+import { getRandomMonster } from "../helpers/monsters";
 
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
@@ -45,6 +46,9 @@ function Game() {
   const [mapTokens, setMapTokens] = useState({});
 
   function handleEditMapToken(token) {
+    if (!mapSource) {
+      return;
+    }
     setMapTokens(prevMapTokens => ({
       ...prevMapTokens,
       [token.id]: token
@@ -66,17 +70,28 @@ function Game() {
     }
   }
 
-  const [messages, setMessages] = useState({});
-  function handleMessageSend(message) {
-    setMessages(prevMessages => ({
-      ...prevMessages,
-      [message.id]: message
+  const currentNicknameRef = useRef(getRandomMonster());
+  const [nicknames, setNicknames] = useState({});
+  function handleNicknameChange(nickname) {
+    currentNicknameRef.current = nickname;
+    setNicknames(prevNicknames => ({
+      ...prevNicknames,
+      [peerId]: nickname
     }));
     for (let connection of Object.values(connections)) {
-      const data = { [message.id]: message };
-      connection.send({ id: "message", data });
+      const data = { [peerId]: nickname };
+      connection.send({ id: "nickname", data });
     }
   }
+  useEffect(() => {
+    // If we don't have a nickname generate one when we have a peer
+    if (peerId !== null && !(peerId in nicknames)) {
+      setNicknames(prevNicknames => ({
+        ...prevNicknames,
+        [peerId]: currentNicknameRef.current
+      }));
+    }
+  }, [peerId, nicknames, currentNicknameRef]);
 
   function handleConnectionOpen(connection) {
     connection.on("data", data => {
@@ -96,12 +111,16 @@ function Game() {
           omit(prevMapTokens, Object.keys(data.data))
         );
       }
-      if (data.id === "message") {
-        setMessages(prevMessages => ({
-          ...prevMessages,
+      if (data.id === "nickname") {
+        setNicknames(prevNicknames => ({
+          ...prevNicknames,
           ...data.data
         }));
       }
+    });
+    connection.send({
+      id: "nickname",
+      data: { [peerId]: currentNicknameRef.current }
     });
   }
 
@@ -110,7 +129,7 @@ function Game() {
       connection.send({ id: "map", data: mapDataRef.current });
     }
     connection.send({ id: "tokenEdit", data: mapTokens });
-    connection.send({ id: "message", data: messages });
+    connection.send({ id: "nickname", data: nicknames });
   }
 
   return (
@@ -119,9 +138,9 @@ function Game() {
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >
         <Party
+          nicknames={nicknames}
           peerId={peerId}
-          messages={messages}
-          onMessageSend={handleMessageSend}
+          onNicknameChange={handleNicknameChange}
         />
         <Map
           mapSource={mapSource}
