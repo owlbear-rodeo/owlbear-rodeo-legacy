@@ -37,6 +37,9 @@ function Home() {
         <Button m={2} onClick={handleJoinGame}>
           Join Game
         </Button>
+        <Text variant="caption" sx={{ textAlign: "center" }}>
+          Alpha v0.2.0
+        </Text>
       </Flex>
     </Container>
   );
