@@ -17,6 +17,8 @@ import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
 
+const defaultNickname = getRandomMonster();
+
 function Game() {
   const { gameId } = useContext(GameContext);
   const handleConnectionOpenCallback = useCallback(handleConnectionOpen);
@@ -26,11 +28,20 @@ function Game() {
     handleConnectionSyncCallback
   );
 
+  const [nicknames, setNicknames] = useState({});
+
   useEffect(() => {
-    if (gameId !== null && peerId !== null && !(gameId in connections)) {
-      connectTo(gameId);
+    // Initialize nickname state
+    if (peerId !== null && !(peerId in nicknames)) {
+      setNicknames({ [peerId]: defaultNickname });
     }
-  }, [gameId, peerId, connectTo, connections]);
+    if (gameId !== null && peerId !== null && !(gameId in connections)) {
+      connectTo(gameId, {
+        id: "nickname",
+        data: { [peerId]: nicknames[peerId] || defaultNickname }
+      });
+    }
+  }, [gameId, peerId, connectTo, connections, nicknames]);
 
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
@@ -70,10 +81,7 @@ function Game() {
     }
   }
 
-  const currentNicknameRef = useRef(getRandomMonster());
-  const [nicknames, setNicknames] = useState({});
   function handleNicknameChange(nickname) {
-    currentNicknameRef.current = nickname;
     setNicknames(prevNicknames => ({
       ...prevNicknames,
       [peerId]: nickname
@@ -83,15 +91,6 @@ function Game() {
       connection.send({ id: "nickname", data });
     }
   }
-  useEffect(() => {
-    // If we don't have a nickname generate one when we have a peer
-    if (peerId !== null && !(peerId in nicknames)) {
-      setNicknames(prevNicknames => ({
-        ...prevNicknames,
-        [peerId]: currentNicknameRef.current
-      }));
-    }
-  }, [peerId, nicknames, currentNicknameRef]);
 
   function handleConnectionOpen(connection) {
     connection.on("data", data => {
@@ -118,12 +117,9 @@ function Game() {
         }));
       }
     });
-    connection.on("error", () => {
+    connection.on("error", error => {
+      console.error("Data Connection error", error);
       setNicknames(prevNicknames => omit(prevNicknames, [connection.peer]));
-    });
-    connection.send({
-      id: "nickname",
-      data: { [peerId]: currentNicknameRef.current }
     });
   }
 
