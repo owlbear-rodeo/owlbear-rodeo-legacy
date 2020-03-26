@@ -53,7 +53,6 @@ function Map({
   }, []);
 
   function handleZoom(event) {
-    event.preventDefault();
     const deltaY = event.deltaY * zoomSpeed;
     setMapScale(mapScale =>
       Math.max(Math.min(mapScale + deltaY, maxZoom), minZoom)
