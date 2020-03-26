@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { navigate } from "hookrouter";
-import { Container, Flex, Button, Image, Heading } from "theme-ui";
+import { Container, Flex, Button, Image, Text } from "theme-ui";
 
 import GameContext from "../contexts/GameContext";
 
@@ -27,9 +27,9 @@ function Home() {
           justifyContent: "center"
         }}
       >
-        <Heading sx={{ textAlign: "center", fontSize: "48px" }}>
+        <Text variant="display" sx={{ textAlign: "center" }}>
           Owlbear Rodeo
-        </Heading>
+        </Text>
         <Image src={owlington} m={2} />
         <Button m={2} onClick={handleStartGame}>
           Start Game

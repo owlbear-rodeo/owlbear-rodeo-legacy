@@ -7,35 +7,51 @@ export default {
     highlight: "hsl(260, 20%, 40%)",
     purple: "hsl(290, 100%, 80%)",
     muted: "hsla(230, 20%, 0%, 20%)",
-    gray: "hsl(210, 50%, 60%)"
+    gray: "hsl(0, 0%, 70%)"
   },
   fonts: {
     body: "'Bree Serif', serif",
-    heading: "'Pacifico', cursive",
-    monospace: "Menlo, monospace"
+    message:
+      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    heading: "'Bree Serif', serif",
+    monospace: "Menlo, monospace",
+    display: "'Pacifico', cursive"
   },
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 72],
   fontWeights: {
-    body: 400,
+    caption: 200,
+    body: 300,
     heading: 400,
-    display: 900
+    display: 400
   },
   lineHeights: {
-    body: 1.5,
+    body: 1.1,
     heading: 1.25
   },
-  textStyles: {
+  text: {
     heading: {
       fontFamily: "heading",
       fontWeight: "heading",
-      lineHeight: "heading"
+      lineHeight: "heading",
+      fontSize: 1
     },
     display: {
       variant: "textStyles.heading",
+      fontFamily: "display",
       fontSize: [5, 6],
       fontWeight: "display",
-      letterSpacing: "-0.03em",
       mt: 3
+    },
+    caption: {
+      fontFamily: "message",
+      fontWeight: "caption",
+      fontSize: 10,
+      color: "gray"
+    },
+    message: {
+      fontFamily: "message",
+      fontSize: 1,
+      fontWeight: "body"
     }
   },
   styles: {

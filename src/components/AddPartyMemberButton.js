@@ -3,7 +3,7 @@ import { IconButton, Flex, Box, Label, Text } from "theme-ui";
 
 import Modal from "./Modal";
 
-function AddPartyMemberButton({ streamId }) {
+function AddPartyMemberButton({ peerId }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   function openModal() {
     setIsAddModalOpen(true);
@@ -32,7 +32,7 @@ function AddPartyMemberButton({ streamId }) {
         <Box>
           <Label p={2}>Other people can join using your ID › ʕ•ᴥ•ʔ</Label>
           <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-            <Text>{streamId}</Text>
+            <Text>{peerId}</Text>
           </Box>
         </Box>
       </Modal>

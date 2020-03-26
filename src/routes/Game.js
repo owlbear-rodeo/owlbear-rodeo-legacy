@@ -20,21 +20,16 @@ function Game() {
   const { gameId } = useContext(GameContext);
   const handleConnectionOpenCallback = useCallback(handleConnectionOpen);
   const handleConnectionSyncCallback = useCallback(handleConnectionSync);
-  const { peerId, connections, connectTo, streams } = useSession(
+  const { peerId, connections, connectTo } = useSession(
     handleConnectionOpenCallback,
     handleConnectionSyncCallback
   );
 
   useEffect(() => {
-    if (
-      gameId !== null &&
-      peerId !== null &&
-      streams[peerId] &&
-      !(gameId in connections)
-    ) {
+    if (gameId !== null && peerId !== null && !(gameId in connections)) {
       connectTo(gameId);
     }
-  }, [gameId, peerId, connectTo, streams, connections]);
+  }, [gameId, peerId, connectTo, connections]);
 
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
@@ -71,6 +66,18 @@ function Game() {
     }
   }
 
+  const [messages, setMessages] = useState({});
+  function handleMessageSend(message) {
+    setMessages(prevMessages => ({
+      ...prevMessages,
+      [message.id]: message
+    }));
+    for (let connection of Object.values(connections)) {
+      const data = { [message.id]: message };
+      connection.send({ id: "message", data });
+    }
+  }
+
   function handleConnectionOpen(connection) {
     connection.on("data", data => {
       if (data.id === "map") {
@@ -89,6 +96,12 @@ function Game() {
           omit(prevMapTokens, Object.keys(data.data))
         );
       }
+      if (data.id === "message") {
+        setMessages(prevMessages => ({
+          ...prevMessages,
+          ...data.data
+        }));
+      }
     });
   }
 
@@ -97,9 +110,8 @@ function Game() {
       connection.send({ id: "map", data: mapDataRef.current });
     }
     connection.send({ id: "tokenEdit", data: mapTokens });
+    connection.send({ id: "message", data: messages });
   }
-
-  const [gameView, setGameView] = useState("social");
 
   return (
     <Flex sx={{ flexDirection: "column", height: "100vh" }}>
@@ -107,33 +119,20 @@ function Game() {
         sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
       >
         <Party
-          streams={streams}
-          localStreamId={peerId}
-          view={gameView}
-          onViewChange={setGameView}
+          peerId={peerId}
+          messages={messages}
+          onMessageSend={handleMessageSend}
         />
-        {gameView === "encounter" && (
-          <Map
-            mapSource={mapSource}
-            mapData={mapDataRef.current}
-            tokens={mapTokens}
-            onMapTokenMove={handleEditMapToken}
-            onMapTokenRemove={handleRemoveMapToken}
-            onMapChanged={handleMapChanged}
-          />
-        )}
-        {gameView === "encounter" && (
-          <Tokens onCreateMapToken={handleEditMapToken} />
-        )}
+        <Map
+          mapSource={mapSource}
+          mapData={mapDataRef.current}
+          tokens={mapTokens}
+          onMapTokenMove={handleEditMapToken}
+          onMapTokenRemove={handleRemoveMapToken}
+          onMapChanged={handleMapChanged}
+        />
+        <Tokens onCreateMapToken={handleEditMapToken} />
       </Flex>
-      <Flex
-        sx={{
-          position: "absolute",
-          left: "50%",
-          bottom: 0,
-          transform: "translate(-50%, -50%)"
-        }}
-      ></Flex>
     </Flex>
   );
 }

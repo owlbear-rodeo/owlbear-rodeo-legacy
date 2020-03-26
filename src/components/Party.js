@@ -1,78 +1,80 @@
-import React from "react";
+import React, { useState } from "react";
+import { Flex, Box, Input, Text } from "theme-ui";
+import { v4 as uuid } from "uuid";
 
-import { Flex, Box } from "theme-ui";
-
-import PartyVideo from "./PartyVideo";
 import AddPartyMemberButton from "./AddPartyMemberButton";
-import GameViewSwitch from "./GameViewSwitch";
+import Message from "./Message";
 
-function Party({ streams, localStreamId, view, onViewChange }) {
-  if (view === "social") {
-    return (
-      <Flex
-        sx={{
-          flexDirection: "column",
-          width: "100%",
-          alignItems: "center",
-          overflowY: "auto"
-        }}
-      >
-        <Flex
-          p={3}
-          bg="background"
-          sx={{
-            flexDirection: "row",
-            width: "100%",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          {Object.entries(streams).map(([id, stream]) => (
-            <Box key={id} m={2}>
-              <PartyVideo stream={stream} muted={id === localStreamId} />
-            </Box>
-          ))}
-        </Flex>
-        <Box sx={{ flexGrow: 1 }}>
-          <AddPartyMemberButton streamId={localStreamId} />
-        </Box>
-        <Flex my={2}>
-          <GameViewSwitch view={view} onViewChange={onViewChange} />
-        </Flex>
-      </Flex>
-    );
-  } else if (view === "encounter") {
-    return (
-      <Flex
-        p={3}
-        bg="background"
-        sx={{
-          flexDirection: "column",
-          width: "192px",
-          minWidth: "192px",
-          overflowY: "auto",
-          alignItems: "center"
-        }}
-      >
-        {Object.entries(streams).map(([id, stream]) => (
-          <Box key={id} my={1}>
-            <PartyVideo stream={stream} muted={id === localStreamId} />
-          </Box>
-        ))}
-        <Box sx={{ flexGrow: 1 }}>
-          <AddPartyMemberButton streamId={localStreamId} />
-        </Box>
-        <Flex my={1}>
-          <GameViewSwitch view={view} onViewChange={onViewChange} />
-        </Flex>
-      </Flex>
-    );
+import { getRandomMonster } from "../helpers/monsters";
+
+function Party({ peerId, messages, onMessageSend }) {
+  const [messageText, setMessageText] = useState("");
+  const [nickname, setNickname] = useState(getRandomMonster());
+
+  function handleMessageSubmit(event) {
+    event.preventDefault();
+    if (!messageText || !peerId) {
+      return;
+    }
+    const id = uuid();
+    const time = Date.now();
+    const message = {
+      nickname,
+      id,
+      text: messageText,
+      time
+    };
+    onMessageSend(message);
+    setMessageText("");
   }
 
-  return null;
+  return (
+    <Flex
+      p={3}
+      bg="background"
+      sx={{
+        flexDirection: "column",
+        width: "256px",
+        minWidth: "256px",
+        overflowY: "auto",
+        alignItems: "center"
+      }}
+    >
+      <Box>
+        <AddPartyMemberButton peerId={peerId} />
+      </Box>
+      <Flex
+        p={2}
+        sx={{ width: "100%" }}
+        bg="muted"
+        sx={{
+          flexGrow: 1,
+          width: "100%",
+          borderRadius: "4px",
+          flexDirection: "column",
+          justifyContent: "flex-end"
+        }}
+        my={2}
+      >
+        {Object.values(messages)
+          .sort((a, b) => a.time - b.time)
+          .map(message => (
+            <Message key={message.id} message={message} />
+          ))}
+        <Box as="form" onSubmit={handleMessageSubmit} sx={{ width: "100%" }}>
+          <Input
+            value={messageText}
+            onChange={event => setMessageText(event.target.value)}
+            p={1}
+            disabled={!peerId}
+          />
+        </Box>
+        <Text my={1} variant="caption">
+          {nickname}
+        </Text>
+      </Flex>
+    </Flex>
+  );
 }
-
-Party.defaultProps = { view: "social" };
 
 export default Party;

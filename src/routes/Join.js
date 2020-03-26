@@ -28,7 +28,8 @@ function Join() {
         <Box as="form" onSubmit={handleSubmit}>
           <Label htmlFor="id">Let me see your identification</Label>
           <Input
-            my={4}
+            mt={1}
+            mb={3}
             id="id"
             name="id"
             value={gameId || ""}
