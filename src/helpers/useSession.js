@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 
+import { enableDataConnectionForSafari } from "./shared";
+
 function useSession(onConnectionOpen, onConnectionSync) {
   const [peerId, setPeerId] = useState(null);
   const [peer, setPeer] = useState(null);
@@ -29,6 +31,7 @@ function useSession(onConnectionOpen, onConnectionSync) {
     function handleOpen(id) {
       console.log("Peer open", id);
       setPeerId(id);
+      enableDataConnectionForSafari();
     }
 
     function handleConnection(connection) {
@@ -106,6 +109,11 @@ function useSession(onConnectionOpen, onConnectionSync) {
               metadata: { sync: false }
             });
             addConnection(syncConnection);
+            syncConnection.on("open", () => {
+              if (onConnectionOpen) {
+                onConnectionOpen(syncConnection);
+              }
+            });
           }
         }
       });
