@@ -80,7 +80,7 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
     };
   }, [peers, onPeerConnected, onPeerDisconnected, onPeerData]);
 
-  return { peers, id: socket.id };
+  return { peers, socket };
 }
 
 export default useSession;

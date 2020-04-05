@@ -14,7 +14,7 @@ import Map from "../components/Map";
 function Game() {
   const { id: gameId } = useParams();
 
-  const { peers, id } = useSession(
+  const { peers, socket } = useSession(
     gameId,
     handlePeerConnected,
     handlePeerDisconnected,
@@ -65,22 +65,22 @@ function Game() {
   function handleNicknameChange(nickname) {
     setNickname(nickname);
     for (let peer of Object.values(peers)) {
-      const data = { [id]: nickname };
+      const data = { [socket.id]: nickname };
       peer.send({ id: "nickname", data });
     }
   }
 
-  function handlePeerConnected({ id, peer, initiator }) {
+  function handlePeerConnected({ peer, initiator }) {
     if (!initiator) {
       if (mapSource) {
         peer.send({ id: "map", data: mapDataRef.current });
       }
       peer.send({ id: "tokenEdit", data: mapTokens });
     }
-    peer.send({ id: "nickname", data: { [id]: nickname } });
+    peer.send({ id: "nickname", data: { [socket.id]: nickname } });
   }
 
-  function handlePeerData({ id, peer, data }) {
+  function handlePeerData({ data }) {
     if (data.id === "map") {
       const blob = new Blob([data.data.file]);
       mapDataRef.current = { ...data.data, file: blob };
