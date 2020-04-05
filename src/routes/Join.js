@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { navigate } from "hookrouter";
 import { Container, Box, Label, Input, Button, Flex } from "theme-ui";
+import { useHistory } from "react-router-dom";
 
 function Join() {
+  let history = useHistory();
   const [gameId, setGameId] = useState("");
 
   function handleChange(event) {
@@ -11,7 +12,7 @@ function Join() {
 
   function handleSubmit(event) {
     event.preventDefault();
-    navigate(`/game/${gameId}`);
+    history.push(`/game/${gameId}`);
   }
 
   return (

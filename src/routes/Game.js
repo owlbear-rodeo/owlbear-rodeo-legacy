@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Flex } from "theme-ui";
+import { useParams } from "react-router-dom";
 
 import { omit } from "../helpers/shared";
 
@@ -10,7 +11,9 @@ import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
 
-function Game({ gameId }) {
+function Game() {
+  const { id: gameId } = useParams();
+
   const { peers, id } = useSession(
     gameId,
     handlePeerConnected,

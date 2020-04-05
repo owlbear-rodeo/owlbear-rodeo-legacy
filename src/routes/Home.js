@@ -1,17 +1,18 @@
 import React from "react";
-import { navigate } from "hookrouter";
 import { Container, Flex, Button, Image, Text } from "theme-ui";
 import shortid from "shortid";
+import { useHistory } from "react-router-dom";
 
 import owlington from "../images/Owlington.png";
 
 function Home() {
+  let history = useHistory();
   function handleStartGame() {
-    navigate(`/game/${shortid.generate()}`);
+    history.push(`/game/${shortid.generate()}`);
   }
 
   function handleJoinGame() {
-    navigate("/join");
+    history.push("/join");
   }
 
   return (

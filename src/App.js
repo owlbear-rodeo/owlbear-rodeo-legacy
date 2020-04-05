@@ -1,21 +1,30 @@
 import React from "react";
-import { useRoutes } from "hookrouter";
 import { ThemeProvider } from "theme-ui";
+import { HashRouter as Router, Switch, Route } from "react-router-dom";
 
 import theme from "./theme.js";
 import Home from "./routes/Home";
 import Game from "./routes/Game";
 import Join from "./routes/Join";
 
-const routes = {
-  "/": () => <Home />,
-  "/game/:id": ({ id }) => <Game gameId={id} />,
-  "/join": () => <Join />,
-};
-
 function App() {
-  const route = useRoutes(routes);
-  return <ThemeProvider theme={theme}>{route}</ThemeProvider>;
+  return (
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Switch>
+          <Route path="/join">
+            <Join />
+          </Route>
+          <Route path="/game/:id">
+            <Game />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </Router>
+    </ThemeProvider>
+  );
 }
 
 export default App;
