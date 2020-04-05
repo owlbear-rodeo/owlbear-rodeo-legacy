@@ -1,132 +1,86 @@
 import { useEffect, useState } from "react";
-import Peer from "peerjs";
+import io from "socket.io-client";
 
-function useSession(onConnectionOpen, onConnectionSync) {
-  const [peerId, setPeerId] = useState(null);
-  const [peer, setPeer] = useState(null);
-  const [connections, setConnections] = useState({});
+import { omit } from "../helpers/shared";
+import Peer from "../helpers/Peer";
 
-  function addConnection(connection) {
-    console.log("Adding connection", connection.peer);
-    setConnections(prevConnnections => {
-      console.log("Connections", {
-        ...prevConnnections,
-        [connection.peer]: connection
+const socket = io("http://localhost:9000");
+
+function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
+  useEffect(() => {
+    socket.emit("join party", partyId);
+  }, [partyId]);
+
+  const [peers, setPeers] = useState({});
+
+  useEffect(() => {
+    function addPeer(id, initiator) {
+      const peer = new Peer({ initiator, trickle: false });
+
+      peer.on("signal", (signal) => {
+        socket.emit("signal", JSON.stringify({ to: id, signal }));
       });
-      return {
-        ...prevConnnections,
-        [connection.peer]: connection
-      };
-    });
-  }
 
-  useEffect(() => {
-    console.log("Creating peer");
-    setPeer(new Peer());
-  }, []);
+      peer.on("connect", () => {
+        onPeerConnected && onPeerConnected({ id, peer, initiator });
+      });
 
-  useEffect(() => {
-    function handleOpen(id) {
-      console.log("Peer open", id);
-      setPeerId(id);
+      peer.on("dataComplete", (data) => {
+        onPeerData && onPeerData({ id, peer, data });
+      });
+
+      peer.on("close", () => {
+        onPeerDisconnected && onPeerDisconnected(id);
+      });
+
+      peer.on("error", (err) => {
+        onPeerDisconnected && onPeerDisconnected(id);
+        console.error("error", err);
+      });
+
+      setPeers((prevPeers) => ({
+        ...prevPeers,
+        [id]: peer,
+      }));
     }
 
-    function handleConnection(connection) {
-      connection.on("open", () => {
-        console.log("incoming connection added", connection.peer);
-        const metadata = connection.metadata;
-        if (metadata.sync) {
-          connection.send({
-            id: "sync",
-            data: { connections: Object.keys(connections) }
-          });
-          if (onConnectionSync) {
-            onConnectionSync(connection);
-          }
-        }
+    function handlePartyMemberJoined(id) {
+      addPeer(id, false);
+    }
 
-        addConnection(connection);
-
-        if (onConnectionOpen) {
-          onConnectionOpen(connection);
-        }
-      });
-
-      function removeConnection() {
-        console.log("removing connection", connection.peer);
-        setConnections(prevConnections => {
-          const { [connection.peer]: old, ...rest } = prevConnections;
-          return rest;
-        });
+    function handlePartyMemberLeft(id) {
+      if (id in peers) {
+        peers[id].destroy();
       }
-      connection.on("close", removeConnection);
-      connection.on("error", error => {
-        console.error("Data Connection error", error);
-        removeConnection();
-      });
+      setPeers((prevPeers) => omit(prevPeers, [id]));
     }
 
-    function handleError(error) {
-      console.error("Peer error", error);
+    function handleJoinedParty(otherIds) {
+      for (let id of otherIds) {
+        addPeer(id, true);
+      }
     }
 
-    if (!peer) {
-      return;
+    function handleSignal(data) {
+      const { from, signal } = JSON.parse(data);
+      if (from in peers) {
+        peers[from].signal(signal);
+      }
     }
 
-    peer.on("open", handleOpen);
-    peer.on("connection", handleConnection);
-    peer.on("error", handleError);
+    socket.on("party member joined", handlePartyMemberJoined);
+    socket.on("party member left", handlePartyMemberLeft);
+    socket.on("joined party", handleJoinedParty);
+    socket.on("signal", handleSignal);
     return () => {
-      peer.removeListener("open", handleOpen);
-      peer.removeListener("connection", handleConnection);
-      peer.removeListener("error", handleError);
+      socket.removeListener("party member joined", handlePartyMemberJoined);
+      socket.removeListener("party member left", handlePartyMemberLeft);
+      socket.removeListener("joined party", handleJoinedParty);
+      socket.removeListener("signal", handleSignal);
     };
-  }, [peer, peerId, connections, onConnectionOpen, onConnectionSync]);
+  }, [peers, onPeerConnected, onPeerDisconnected, onPeerData]);
 
-  function connectTo(connectionId, payload) {
-    console.log("Connecting to", connectionId);
-    if (connectionId in connections) {
-      return;
-    }
-    const connection = peer.connect(connectionId, {
-      metadata: { sync: true }
-    });
-    addConnection(connection);
-    connection.on("open", () => {
-      connection.on("data", data => {
-        if (data.id === "sync") {
-          const { connections: syncConnections } = data.data;
-          for (let syncId of syncConnections) {
-            console.log("Syncing to", syncId);
-            if (connectionId === syncId || syncId in connections) {
-              continue;
-            }
-            const syncConnection = peer.connect(syncId, {
-              metadata: { sync: false }
-            });
-            addConnection(syncConnection);
-            syncConnection.on("open", () => {
-              if (onConnectionOpen) {
-                onConnectionOpen(syncConnection);
-              }
-              if (payload) {
-                syncConnection.send(payload);
-              }
-            });
-          }
-        }
-      });
-      if (onConnectionOpen) {
-        onConnectionOpen(connection);
-      }
-      if (payload) {
-        connection.send(payload);
-      }
-    });
-  }
-
-  return { peer, peerId, connections, connectTo };
+  return { peers, id: socket.id };
 }
 
 export default useSession;

@@ -3,7 +3,7 @@ import { Flex, Box, Text } from "theme-ui";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 
-function Party({ nicknames, peerId, onNicknameChange }) {
+function Party({ nickname, partyNicknames, gameId, onNicknameChange }) {
   return (
     <Flex
       p={3}
@@ -13,12 +13,12 @@ function Party({ nicknames, peerId, onNicknameChange }) {
         width: "96px",
         minWidth: "96px",
         overflowY: "auto",
-        alignItems: "center"
+        alignItems: "center",
       }}
     >
       <Box
         sx={{
-          width: "100%"
+          width: "100%",
         }}
       >
         <Text mb={1} variant="heading">
@@ -28,17 +28,20 @@ function Party({ nicknames, peerId, onNicknameChange }) {
       <Box
         sx={{
           flexGrow: 1,
-          width: "100%"
+          width: "100%",
         }}
       >
-        {Object.entries(nicknames).map(([id, nickname]) => (
+        <Text my={1} variant="caption" sx={{ fontSize: 10 }}>
+          {nickname || ""} (you)
+        </Text>
+        {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Text my={1} variant="caption" sx={{ fontSize: 10 }} key={id}>
-            {nickname} {id === peerId ? "(you)" : ""}
+            {partyNickname}
           </Text>
         ))}
       </Box>
       <Box>
-        <AddPartyMemberButton peerId={peerId} />
+        <AddPartyMemberButton gameId={gameId} />
       </Box>
     </Flex>
   );

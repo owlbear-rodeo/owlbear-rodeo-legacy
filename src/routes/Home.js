@@ -1,17 +1,13 @@
-import React, { useContext } from "react";
+import React from "react";
 import { navigate } from "hookrouter";
 import { Container, Flex, Button, Image, Text } from "theme-ui";
-
-import GameContext from "../contexts/GameContext";
+import shortid from "shortid";
 
 import owlington from "../images/Owlington.png";
 
 function Home() {
-  const { setGameId } = useContext(GameContext);
-
   function handleStartGame() {
-    setGameId(null);
-    navigate("/game");
+    navigate(`/game/${shortid.generate()}`);
   }
 
   function handleJoinGame() {
@@ -24,7 +20,7 @@ function Home() {
         sx={{
           flexDirection: "column",
           height: "100%",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <Text variant="display" sx={{ textAlign: "center" }}>

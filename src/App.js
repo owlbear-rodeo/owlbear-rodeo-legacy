@@ -1,7 +1,6 @@
 import React from "react";
 import { useRoutes } from "hookrouter";
 import { ThemeProvider } from "theme-ui";
-import { GameProvider } from "./contexts/GameContext";
 
 import theme from "./theme.js";
 import Home from "./routes/Home";
@@ -10,17 +9,13 @@ import Join from "./routes/Join";
 
 const routes = {
   "/": () => <Home />,
-  "/game": () => <Game />,
-  "/join": () => <Join />
+  "/game/:id": ({ id }) => <Game gameId={id} />,
+  "/join": () => <Join />,
 };
 
 function App() {
   const route = useRoutes(routes);
-  return (
-    <ThemeProvider theme={theme}>
-      <GameProvider>{route}</GameProvider>
-    </ThemeProvider>
-  );
+  return <ThemeProvider theme={theme}>{route}</ThemeProvider>;
 }
 
 export default App;
