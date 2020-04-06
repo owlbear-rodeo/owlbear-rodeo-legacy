@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, Box, Input, Button, Label, IconButton } from "theme-ui";
+import { Text, Box, Input, Button, Label, IconButton, Flex } from "theme-ui";
 
 import Modal from "./Modal";
 
@@ -70,15 +70,19 @@ function Nickname({ nickname, allowChanging, onChange }) {
       </Text>
       <Modal isOpen={isChangeModalOpen} onRequestClose={closeModal}>
         <Box as="form" onSubmit={handleChangeSubmit}>
-          <Label htmlFor="nicknameChange">Change your nickname</Label>
+          <Label p={2} htmlFor="nicknameChange">
+            Change your nickname
+          </Label>
           <Input
             id="nicknameChange"
             value={changedNickname}
             onChange={handleChange}
-            mt={1}
-            mb={3}
           />
-          <Button disabled={!changedNickname}>Change</Button>
+          <Flex py={2}>
+            <Button sx={{ flexGrow: 1 }} disabled={!changedNickname}>
+              Change
+            </Button>
+          </Flex>
         </Box>
       </Modal>
     </>

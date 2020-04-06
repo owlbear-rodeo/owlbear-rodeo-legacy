@@ -30,9 +30,13 @@ function AddPartyMemberButton({ gameId }) {
       </Flex>
       <Modal isOpen={isAddModalOpen} onRequestClose={closeModal}>
         <Box>
-          <Label p={2}>Other people can join using your ID › ʕ•ᴥ•ʔ</Label>
+          <Label p={2}>Other people can join using your ID</Label>
           <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
             <Text>{gameId}</Text>
+          </Box>
+          <Label p={2}>Or by using this link</Label>
+          <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
+            <Text>{window.location.href}</Text>
           </Box>
         </Box>
       </Modal>
