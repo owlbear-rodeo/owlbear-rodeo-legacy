@@ -18,13 +18,9 @@ jobs:
     steps:
         - uses: actions/checkout@v2
 
-        - name: Setup Node.js
+        - name: Install App
           uses: actions/setup-node@v1
           with:
             node-version: ${{ matrix.node-version }}
-
-        - name: Install Dependencies
           run: yarn 
-
-        - name: Deploy
           run: yarn deploy
