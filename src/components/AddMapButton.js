@@ -6,7 +6,7 @@ import {
   Image as UIImage,
   Flex,
   Label,
-  Input
+  Input,
 } from "theme-ui";
 
 import Modal from "./Modal";
@@ -38,13 +38,13 @@ function AddMapButton({ onMapChanged }) {
     const file = event.target.files[0];
     const url = URL.createObjectURL(file);
     let image = new Image();
-    image.onload = function() {
+    image.onload = function () {
       mapDataRef.current = {
         file,
         rows,
         columns,
         width: image.width,
-        height: image.height
+        height: image.height,
       };
       setImageLoaded(true);
     };
@@ -85,7 +85,7 @@ function AddMapButton({ onMapChanged }) {
       <Modal isOpen={isAddModalOpen} onRequestClose={closeModal}>
         <Box
           as="form"
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
             handleDone();
           }}
@@ -106,7 +106,7 @@ function AddMapButton({ onMapChanged }) {
                 minHeight: "200px",
                 maxHeight: "500px",
                 objectFit: "contain",
-                borderRadius: "4px"
+                borderRadius: "4px",
               }}
               src={mapSource}
               onClick={openImageDialog}
@@ -119,7 +119,7 @@ function AddMapButton({ onMapChanged }) {
                   type="number"
                   name="rows"
                   value={rows}
-                  onChange={e => setRows(e.target.value)}
+                  onChange={(e) => setRows(e.target.value)}
                 />
               </Box>
               <Box mb={2} ml={1} sx={{ flexGrow: 1 }}>
@@ -128,7 +128,7 @@ function AddMapButton({ onMapChanged }) {
                   type="number"
                   name="columns"
                   value={columns}
-                  onChange={e => setColumns(e.target.value)}
+                  onChange={(e) => setColumns(e.target.value)}
                 />
               </Box>
             </Flex>
@@ -139,7 +139,7 @@ function AddMapButton({ onMapChanged }) {
             ) : (
               <Button
                 varient="primary"
-                onClick={e => {
+                onClick={(e) => {
                   e.preventDefault();
                   openImageDialog();
                 }}

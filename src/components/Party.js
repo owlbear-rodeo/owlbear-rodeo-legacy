@@ -2,6 +2,7 @@ import React from "react";
 import { Flex, Box, Text } from "theme-ui";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
+import Nickname from "./Nickname";
 
 function Party({ nickname, partyNicknames, gameId, onNicknameChange }) {
   return (
@@ -31,13 +32,13 @@ function Party({ nickname, partyNicknames, gameId, onNicknameChange }) {
           width: "100%",
         }}
       >
-        <Text my={1} variant="caption" sx={{ fontSize: 10 }}>
-          {nickname || ""} (you)
-        </Text>
+        <Nickname
+          nickname={nickname || ""}
+          allowChanging
+          onChange={onNicknameChange}
+        />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
-          <Text my={1} variant="caption" sx={{ fontSize: 10 }} key={id}>
-            {partyNickname}
-          </Text>
+          <Nickname nickname={partyNickname} key={id} />
         ))}
       </Box>
       <Box>
