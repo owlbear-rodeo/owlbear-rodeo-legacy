@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import { omit } from "../helpers/shared";
 import Peer from "../helpers/Peer";
 
-const socket = io("http://localhost:9000");
+const socket = io("https://broker.owlbear.rodeo");
 
 function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
   useEffect(() => {
