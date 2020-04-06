@@ -14,7 +14,7 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
   const [peers, setPeers] = useState({});
 
   useEffect(() => {
-    function addPeer(id, initiator) {
+    function addPeer(id, initiator, sync) {
       const peer = new Peer({ initiator, trickle: false });
 
       peer.on("signal", (signal) => {
@@ -23,6 +23,9 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
 
       peer.on("connect", () => {
         onPeerConnected && onPeerConnected({ id, peer, initiator });
+        if (sync) {
+          peer.send({ id: "sync" });
+        }
       });
 
       peer.on("dataComplete", (data) => {
@@ -45,7 +48,7 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
     }
 
     function handlePartyMemberJoined(id) {
-      addPeer(id, false);
+      addPeer(id, false, false);
     }
 
     function handlePartyMemberLeft(id) {
@@ -56,8 +59,10 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
     }
 
     function handleJoinedParty(otherIds) {
-      for (let id of otherIds) {
-        addPeer(id, true);
+      for (let [index, id] of otherIds.entries()) {
+        // Send a sync request to the first member of the party
+        const sync = index === 0;
+        addPeer(id, true, sync);
       }
     }
 

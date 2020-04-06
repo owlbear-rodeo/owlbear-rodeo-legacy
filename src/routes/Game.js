@@ -70,17 +70,19 @@ function Game() {
     }
   }
 
-  function handlePeerConnected({ peer, initiator }) {
-    if (!initiator) {
-      if (mapSource) {
-        peer.send({ id: "map", data: mapDataRef.current });
-      }
-      peer.send({ id: "tokenEdit", data: mapTokens });
-    }
+  function handlePeerConnected({ peer }) {
     peer.send({ id: "nickname", data: { [socket.id]: nickname } });
   }
 
-  function handlePeerData({ data }) {
+  function handlePeerData({ data, peer }) {
+    if (data.id === "sync") {
+      if (mapSource) {
+        peer.send({ id: "map", data: mapDataRef.current });
+      }
+      if (mapTokens) {
+        peer.send({ id: "tokenEdit", data: mapTokens });
+      }
+    }
     if (data.id === "map") {
       const blob = new Blob([data.data.file]);
       mapDataRef.current = { ...data.data, file: blob };
