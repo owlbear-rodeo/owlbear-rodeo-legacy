@@ -9,3 +9,7 @@ html {
 body {
   overscroll-behavior: none;
 }
+
+.simplebar-scrollbar:before {
+  background: #fff;
+}

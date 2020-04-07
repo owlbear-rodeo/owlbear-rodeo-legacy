@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Flex, Box } from "theme-ui";
+import { Box } from "theme-ui";
 import shortid from "shortid";
+import SimpleBar from "simplebar-react";
 
 import * as tokens from "../tokens";
 
@@ -22,32 +23,25 @@ function Tokens({ onCreateMapToken }) {
 
   return (
     <>
-      <Flex sx={{ flexDirection: "column" }}>
-        <Flex
-          bg="background"
-          sx={{
-            width: "80px",
-            minWidth: "80px",
-            flexDirection: "column",
-            overflowY: "auto",
-          }}
-          px={2}
-        >
+      <Box
+        sx={{
+          height: "100%",
+          width: "80px",
+          minWidth: "80px",
+          overflow: "hidden",
+        }}
+      >
+        <SimpleBar style={{ height: "calc(100% - 58px)", overflowX: "hidden" }}>
           {Object.entries(tokens).map(([id, image]) => (
-            <Box key={id} m={2} sx={{ width: "48px", height: "48px" }}>
+            <Box key={id} my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
               <Token image={image} className={listTokenClassName} />
             </Box>
           ))}
-        </Flex>
-        <Box
-          pt={1}
-          sx={{
-            backgroundColor: "muted",
-          }}
-        >
+        </SimpleBar>
+        <Box pt={1} bg="muted" sx={{ height: "58px" }}>
           <SizeInput value={tokenSize} onChange={setTokenSize} />
         </Box>
-      </Flex>
+      </Box>
       <ProxyToken
         tokenClassName={listTokenClassName}
         onProxyDragEnd={handleProxyDragEnd}
