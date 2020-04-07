@@ -17,7 +17,7 @@ function Map({
   tokens,
   onMapTokenMove,
   onMapTokenRemove,
-  onMapChanged
+  onMapChanged,
 }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenMove) {
@@ -36,29 +36,29 @@ function Map({
     interact(".map")
       .gesturable({
         listeners: {
-          move: event => {
-            setMapScale(previousMapScale =>
+          move: (event) => {
+            setMapScale((previousMapScale) =>
               Math.max(Math.min(previousMapScale + event.ds, maxZoom), minZoom)
             );
-            setMapTranslate(previousMapTranslate => ({
+            setMapTranslate((previousMapTranslate) => ({
               x: previousMapTranslate.x + event.dx,
-              y: previousMapTranslate.y + event.dy
+              y: previousMapTranslate.y + event.dy,
             }));
-          }
-        }
+          },
+        },
       })
       .draggable({
         inertia: true,
         listeners: {
-          move: event => {
-            setMapTranslate(previousMapTranslate => ({
+          move: (event) => {
+            setMapTranslate((previousMapTranslate) => ({
               x: previousMapTranslate.x + event.dx,
-              y: previousMapTranslate.y + event.dy
+              y: previousMapTranslate.y + event.dy,
             }));
-          }
-        }
+          },
+        },
       });
-    interact(".map").on("doubletap", event => {
+    interact(".map").on("doubletap", (event) => {
       event.preventDefault();
       setMapTranslate({ x: 0, y: 0 });
       setMapScale(1);
@@ -67,7 +67,7 @@ function Map({
 
   function handleZoom(event) {
     const deltaY = event.deltaY * zoomSpeed;
-    setMapScale(previousMapScale =>
+    setMapScale((previousMapScale) =>
       Math.max(Math.min(previousMapScale + deltaY, maxZoom), minZoom)
     );
   }
@@ -93,7 +93,7 @@ function Map({
           overflow: "hidden",
           backgroundColor: "rgba(0, 0, 0, 0.1)",
           userSelect: "none",
-          touchAction: "none"
+          touchAction: "none",
         }}
         bg="background"
         onWheel={handleZoom}
@@ -103,19 +103,19 @@ function Map({
             position: "relative",
             top: "50%",
             left: "50%",
-            transform: "translate(-50%, -50%)"
+            transform: "translate(-50%, -50%)",
           }}
         >
           <Box
             style={{
-              transform: `translate(${mapTranslate.x}px, ${mapTranslate.y}px) scale(${mapScale})`
+              transform: `translate(${mapTranslate.x}px, ${mapTranslate.y}px) scale(${mapScale})`,
             }}
           >
             <Box
               sx={{
                 width: "100%",
                 height: 0,
-                paddingBottom: `${(1 / aspectRatio) * 100}%`
+                paddingBottom: `${(1 / aspectRatio) * 100}%`,
               }}
             />
             <Box
@@ -124,7 +124,7 @@ function Map({
                 top: 0,
                 right: 0,
                 bottom: 0,
-                left: 0
+                left: 0,
               }}
             >
               <Image
@@ -133,7 +133,7 @@ function Map({
                 sx={{
                   width: "100%",
                   userSelect: "none",
-                  touchAction: "none"
+                  touchAction: "none",
                 }}
                 src={mapSource}
               />
@@ -144,24 +144,27 @@ function Map({
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0
+                bottom: 0,
               }}
             >
-              {Object.values(tokens).map(token => (
+              {Object.values(tokens).map((token) => (
                 <Box
                   key={token.id}
                   style={{
                     left: `${token.x * 100}%`,
                     top: `${token.y * 100}%`,
-                    width: `${tokenSizePercent}%`
+                    width: `${tokenSizePercent * (token.size || 1)}%`,
                   }}
                   sx={{
                     position: "absolute",
-                    display: "flex"
+                    display: "flex",
                   }}
                 >
                   <Token
-                    tokenId={token.id}
+                    data={{
+                      id: token.id,
+                      size: token.size,
+                    }}
                     image={token.image}
                     className={mapTokenClassName}
                     sx={{ position: "absolute" }}
@@ -177,7 +180,7 @@ function Map({
             position: "absolute",
             top: "0",
             left: "50%",
-            transform: "translateX(-50%)"
+            transform: "translateX(-50%)",
           }}
         >
           <AddMapButton onMapChanged={onMapChanged} />

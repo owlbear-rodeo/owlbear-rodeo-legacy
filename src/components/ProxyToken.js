@@ -16,7 +16,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   useEffect(() => {
     interact(`.${tokenClassName}`).draggable({
       listeners: {
-        start: event => {
+        start: (event) => {
           let target = event.target;
           // Hide the token and copy it's image to the proxy
           target.style.opacity = "0.25";
@@ -39,7 +39,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           }
         },
 
-        move: event => {
+        move: (event) => {
           let proxy = imageRef.current;
           // Move the proxy based off of the movment of the token
           if (proxy) {
@@ -66,7 +66,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           }
         },
 
-        end: event => {
+        end: (event) => {
           let target = event.target;
           let proxy = imageRef.current;
           if (proxy) {
@@ -85,12 +85,12 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
               x = x / (mapRect.right - mapRect.left);
               y = y / (mapRect.bottom - mapRect.top);
 
-              const id = target.getAttribute("data-token-id");
               onProxyDragEnd(proxyOnMap.current, {
                 image: imageSource,
                 x,
                 y,
-                id
+                // Pass in props stored as data- in the dom node
+                ...target.dataset,
               });
             }
 
@@ -103,8 +103,8 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           // Show the token
           target.style.opacity = "1";
           setImageSource("");
-        }
-      }
+        },
+      },
     });
   }, [imageSource, onProxyDragEnd, tokenClassName, proxyContainer]);
 
@@ -121,7 +121,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         top: 0,
         left: 0,
         bottom: 0,
-        right: 0
+        right: 0,
       }}
     >
       <Image
@@ -129,7 +129,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         sx={{
           touchAction: "none",
           userSelect: "none",
-          position: "absolute"
+          position: "absolute",
         }}
         ref={imageRef}
       />
