@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Flex, IconButton, Text, Label } from "theme-ui";
+import { Box, Flex, IconButton, Text } from "theme-ui";
 
 function SizeInput({ value, onChange }) {
   return (
