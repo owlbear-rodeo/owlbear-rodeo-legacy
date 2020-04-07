@@ -54,6 +54,7 @@ function Nickname({ nickname, allowChanging, onChange }) {
               position: "absolute",
               bottom: "-2px",
             }}
+            aria-label="Change Nickname"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
