@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IconButton, Flex, Box, Label, Text } from "theme-ui";
+import { IconButton, Box, Label, Text } from "theme-ui";
 
 import Modal from "./Modal";
 
