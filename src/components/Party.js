@@ -3,8 +3,17 @@ import { Flex, Box, Text } from "theme-ui";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
+import Stream from "./Stream";
 
-function Party({ nickname, partyNicknames, gameId, onNicknameChange }) {
+function Party({
+  nickname,
+  partyNicknames,
+  gameId,
+  onNicknameChange,
+  stream,
+  partyStreams,
+  onStreamStart,
+}) {
   return (
     <Flex
       p={3}
@@ -36,10 +45,19 @@ function Party({ nickname, partyNicknames, gameId, onNicknameChange }) {
           nickname={nickname || ""}
           allowChanging
           onChange={onNicknameChange}
+          onStream={onStreamStart}
         />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname nickname={partyNickname} key={id} />
         ))}
+        {(stream || Object.keys(partyStreams).length !== 0) && (
+          <Text>Streams</Text>
+        )}
+        {stream && <Stream stream={stream} muted />}
+        {partyStreams &&
+          Object.entries(partyStreams).map(([id, partyStream]) => (
+            <Stream stream={partyStream} key={id} />
+          ))}
       </Box>
       <Box>
         <AddPartyMemberButton gameId={gameId} />

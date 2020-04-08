@@ -18,7 +18,8 @@ function Game() {
     gameId,
     handlePeerConnected,
     handlePeerDisconnected,
-    handlePeerData
+    handlePeerData,
+    handlePeerStream
   );
 
   const [mapSource, setMapSource] = useState(null);
@@ -70,8 +71,13 @@ function Game() {
     }
   }
 
+  const [stream, setStream] = useState(null);
+  const [partyStreams, setPartyStreams] = useState({});
   function handlePeerConnected({ peer }) {
     peer.send({ id: "nickname", data: { [socket.id]: nickname } });
+    if (stream) {
+      peer.addStream(stream);
+    }
   }
 
   function handlePeerData({ data, peer }) {
@@ -107,8 +113,26 @@ function Game() {
     }
   }
 
+  function handlePeerStream({ id, stream: partyStream }) {
+    setPartyStreams((prevStreams) => ({
+      ...prevStreams,
+      [id]: partyStream,
+    }));
+  }
+
   function handlePeerDisconnected(disconnectedId) {
     setPartyNicknames((prevNicknames) => omit(prevNicknames, [disconnectedId]));
+  }
+
+  function handleStreamStart() {
+    navigator.mediaDevices
+      .getDisplayMedia({ video: true, audio: true })
+      .then((mediaStream) => {
+        setStream(mediaStream);
+        for (let peer of Object.values(peers)) {
+          peer.addStream(mediaStream);
+        }
+      });
   }
 
   return (
@@ -121,6 +145,9 @@ function Game() {
           partyNicknames={partyNicknames}
           gameId={gameId}
           onNicknameChange={handleNicknameChange}
+          stream={stream}
+          partyStreams={partyStreams}
+          onStreamStart={handleStreamStart}
         />
         <Map
           mapSource={mapSource}

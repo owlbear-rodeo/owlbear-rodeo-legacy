@@ -6,7 +6,13 @@ import Peer from "../helpers/Peer";
 
 const socket = io("https://broker.owlbear.rodeo");
 
-function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
+function useSession(
+  partyId,
+  onPeerConnected,
+  onPeerDisconnected,
+  onPeerData,
+  onPeerStream
+) {
   useEffect(() => {
     socket.emit("join party", partyId);
   }, [partyId]);
@@ -30,6 +36,10 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
 
       peer.on("dataComplete", (data) => {
         onPeerData && onPeerData({ id, peer, data });
+      });
+
+      peer.on("stream", (stream) => {
+        onPeerStream && onPeerStream({ id, peer, stream });
       });
 
       peer.on("close", () => {
@@ -83,7 +93,7 @@ function useSession(partyId, onPeerConnected, onPeerDisconnected, onPeerData) {
       socket.removeListener("joined party", handleJoinedParty);
       socket.removeListener("signal", handleSignal);
     };
-  }, [peers, onPeerConnected, onPeerDisconnected, onPeerData]);
+  }, [peers, onPeerConnected, onPeerDisconnected, onPeerData, onPeerStream]);
 
   return { peers, socket };
 }
