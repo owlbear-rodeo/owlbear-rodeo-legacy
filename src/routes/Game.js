@@ -126,7 +126,14 @@ function Game() {
 
   function handleStreamStart() {
     navigator.mediaDevices
-      .getDisplayMedia({ video: true, audio: true })
+      .getDisplayMedia({
+        video: true,
+        audio: {
+          noiseSuppression: false,
+          autoGainControl: false,
+          echoCancellation: false,
+        },
+      })
       .then((mediaStream) => {
         setStream(mediaStream);
         for (let peer of Object.values(peers)) {
