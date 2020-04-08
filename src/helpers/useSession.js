@@ -11,7 +11,8 @@ function useSession(
   onPeerConnected,
   onPeerDisconnected,
   onPeerData,
-  onPeerStream
+  onPeerTrackAdded,
+  onPeerTrackRemoved
 ) {
   useEffect(() => {
     socket.emit("join party", partyId);
@@ -38,8 +39,11 @@ function useSession(
         onPeerData && onPeerData({ id, peer, data });
       });
 
-      peer.on("stream", (stream) => {
-        onPeerStream && onPeerStream({ id, peer, stream });
+      peer.on("track", (track, stream) => {
+        onPeerTrackAdded && onPeerTrackAdded({ id, peer, track, stream });
+        track.addEventListener("mute", () => {
+          onPeerTrackRemoved && onPeerTrackRemoved({ id, peer, track, stream });
+        });
       });
 
       peer.on("close", () => {
@@ -93,7 +97,14 @@ function useSession(
       socket.removeListener("joined party", handleJoinedParty);
       socket.removeListener("signal", handleSignal);
     };
-  }, [peers, onPeerConnected, onPeerDisconnected, onPeerData, onPeerStream]);
+  }, [
+    peers,
+    onPeerConnected,
+    onPeerDisconnected,
+    onPeerData,
+    onPeerTrackAdded,
+    onPeerTrackRemoved,
+  ]);
 
   return { peers, socket };
 }

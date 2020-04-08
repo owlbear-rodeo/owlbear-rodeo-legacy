@@ -18,3 +18,8 @@ export function fromEntries(iterable) {
     return obj;
   }, {});
 }
+
+// Check to see if all tracks are muted
+export function isStreamStopped(stream) {
+  return stream.getTracks().reduce((a, b) => a && b, { mute: true });
+}

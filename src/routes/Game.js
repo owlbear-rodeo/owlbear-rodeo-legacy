@@ -1,8 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Flex } from "theme-ui";
 import { useParams } from "react-router-dom";
 
-import { omit } from "../helpers/shared";
+import { omit, isStreamStopped } from "../helpers/shared";
 
 import useSession from "../helpers/useSession";
 import { getRandomMonster } from "../helpers/monsters";
@@ -19,7 +19,8 @@ function Game() {
     handlePeerConnected,
     handlePeerDisconnected,
     handlePeerData,
-    handlePeerStream
+    handlePeerTrackAdded,
+    handlePeerTrackRemoved
   );
 
   const [mapSource, setMapSource] = useState(null);
@@ -113,16 +114,57 @@ function Game() {
     }
   }
 
-  function handlePeerStream({ id, stream: partyStream }) {
-    setPartyStreams((prevStreams) => ({
-      ...prevStreams,
-      [id]: partyStream,
-    }));
-  }
-
   function handlePeerDisconnected(disconnectedId) {
     setPartyNicknames((prevNicknames) => omit(prevNicknames, [disconnectedId]));
   }
+
+  function handlePeerTrackAdded({ id, stream: remoteStream }) {
+    setPartyStreams((prevStreams) => ({
+      ...prevStreams,
+      [id]: remoteStream,
+    }));
+  }
+
+  function handlePeerTrackRemoved({ id, stream: remoteStream }) {
+    if (isStreamStopped(remoteStream)) {
+      setPartyStreams((prevStreams) => omit(prevStreams, [id]));
+    } else {
+      setPartyStreams((prevStreams) => ({
+        ...prevStreams,
+        [id]: remoteStream,
+      }));
+    }
+  }
+
+  useEffect(() => {
+    if (stream) {
+      const tracks = stream.getTracks();
+
+      function handleStreamEnd() {
+        setStream(null);
+        for (let track of tracks) {
+          // Only sending audio so only remove the audio track
+          if (track.kind === "audio") {
+            for (let peer of Object.values(peers)) {
+              track.stop();
+              peer.removeTrack(track, stream);
+            }
+          }
+        }
+      }
+
+      // Detect when someone has ended the screen sharing
+      // by looking at the streams video track onended
+      // the audio track doesn't seem to trigger this event
+      for (let track of tracks) {
+        if (track.kind === "video") {
+          track.onended = function () {
+            handleStreamEnd(track);
+          };
+        }
+      }
+    }
+  }, [stream, peers]);
 
   function handleStreamStart() {
     navigator.mediaDevices
@@ -134,10 +176,27 @@ function Game() {
           echoCancellation: false,
         },
       })
-      .then((mediaStream) => {
-        setStream(mediaStream);
-        for (let peer of Object.values(peers)) {
-          peer.addStream(mediaStream);
+      .then((localStream) => {
+        setStream(localStream);
+        const tracks = localStream.getTracks();
+
+        let noAudio = true;
+        for (let track of tracks) {
+          // Only add the audio track of the stream to the remote peer
+          if (track.kind === "audio") {
+            noAudio = false;
+            for (let peer of Object.values(peers)) {
+              peer.addTrack(track, localStream);
+            }
+          }
+        }
+
+        if (noAudio) {
+          // TODO: move this to a ui element
+          console.error("No audio tracks found in screen share");
+          for (let track of tracks) {
+            track.stop();
+          }
         }
       });
   }

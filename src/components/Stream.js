@@ -1,22 +1,14 @@
 import React, { useRef, useEffect } from "react";
 
 function Stream({ stream, muted }) {
-  const videoRef = useRef();
+  const audioRef = useRef();
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
+    if (audioRef.current) {
+      audioRef.current.srcObject = stream;
     }
   }, [stream]);
 
-  return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      muted={muted}
-      style={{ width: "100%" }}
-    />
-  );
+  return <audio ref={audioRef} autoPlay playsInline muted={muted} />;
 }
 
 Stream.defaultProps = {
