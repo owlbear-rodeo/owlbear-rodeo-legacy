@@ -4,6 +4,8 @@ import { Flex, Box, Text } from "theme-ui";
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
 import Stream from "./Stream";
+import ChangeNicknameButton from "./ChangeNicknameButton";
+import StartStreamButton from "./StartStreamButton";
 
 function Party({
   nickname,
@@ -41,12 +43,7 @@ function Party({
           width: "100%",
         }}
       >
-        <Nickname
-          nickname={nickname || ""}
-          allowChanging
-          onChange={onNicknameChange}
-          onStream={onStreamStart}
-        />
+        <Nickname nickname={nickname || ""} />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname nickname={partyNickname} key={id} />
         ))}
@@ -59,9 +56,11 @@ function Party({
             <Stream stream={partyStream} key={id} />
           ))}
       </Box>
-      <Box>
+      <Flex sx={{ flexDirection: "column" }}>
+        <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />
+        <StartStreamButton onStream={onStreamStart} />
         <AddPartyMemberButton gameId={gameId} />
-      </Box>
+      </Flex>
     </Flex>
   );
 }
