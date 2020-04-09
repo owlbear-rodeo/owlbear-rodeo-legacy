@@ -24,7 +24,12 @@ function ChangeNicknameButton({ nickname, onChange }) {
   }
   return (
     <>
-      <IconButton m={1} aria-label="Change Nickname" onClick={openModal}>
+      <IconButton
+        m={1}
+        aria-label="Change Nickname"
+        title="Change Nickname"
+        onClick={openModal}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="24"

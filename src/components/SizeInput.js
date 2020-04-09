@@ -9,7 +9,8 @@ function SizeInput({ value, onChange }) {
       </Text>
       <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
         <IconButton
-          aria-label="Lower token size"
+          aria-label="Lower Token Size"
+          title="Lower Token Size"
           onClick={() => value > 1 && onChange(value - 1)}
         >
           <svg
@@ -25,7 +26,8 @@ function SizeInput({ value, onChange }) {
         </IconButton>
         <Text>{value}</Text>
         <IconButton
-          aria-label="Increase token size"
+          aria-label="Increase Token Size"
+          title="Increase Token Size"
           onClick={() => onChange(value + 1)}
         >
           <svg

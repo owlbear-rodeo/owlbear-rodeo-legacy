@@ -73,7 +73,12 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
 
   return (
     <>
-      <IconButton m={1} aria-label="Start Radio Stream" onClick={openModal}>
+      <IconButton
+        m={1}
+        aria-label="Start Radio Stream"
+        title="Start Radio Stream"
+        onClick={openModal}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="24"

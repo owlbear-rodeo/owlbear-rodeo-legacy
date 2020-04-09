@@ -28,7 +28,8 @@ function Nickname({ nickname, stream }) {
             position: "absolute",
             bottom: "-2px",
           }}
-          aria-label="Toggle Player Mute"
+          aria-label={streamMuted ? "Unmute Player" : "Mute Player"}
+          title={streamMuted ? "Unmute Player" : "Mute Player"}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

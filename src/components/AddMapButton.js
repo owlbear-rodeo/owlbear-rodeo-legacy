@@ -70,7 +70,7 @@ function AddMapButton({ onMapChanged }) {
 
   return (
     <>
-      <IconButton aria-label="Add Map" onClick={openModal}>
+      <IconButton aria-label="Add Map" title="Add Map" onClick={openModal}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="24"
