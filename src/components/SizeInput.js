@@ -4,7 +4,7 @@ import { Box, Flex, IconButton, Text } from "theme-ui";
 function SizeInput({ value, onChange }) {
   return (
     <Box>
-      <Text sx={{ textAlign: "center" }} variant="heading">
+      <Text sx={{ textAlign: "center" }} variant="heading" as="h1">
         Size
       </Text>
       <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
@@ -24,7 +24,9 @@ function SizeInput({ value, onChange }) {
             <path d="M18 13H6c-.55 0-1-.45-1-1s.45-1 1-1h12c.55 0 1 .45 1 1s-.45 1-1 1z" />
           </svg>
         </IconButton>
-        <Text>{value}</Text>
+        <Text as="p" aria-label="Current Token Size">
+          {value}
+        </Text>
         <IconButton
           aria-label="Increase Token Size"
           title="Increase Token Size"

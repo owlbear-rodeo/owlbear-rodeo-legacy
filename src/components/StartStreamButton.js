@@ -16,7 +16,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
 
   const unavailableMessage = (
     <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-      <Text>
+      <Text as="p">
         Browser not supported.
         <br />
         <br />
@@ -27,7 +27,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
 
   const noAudioMessage = (
     <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-      <Text>
+      <Text as="p">
         No audio found in screen share.
         <br />
         Ensure "Share audio" is selected when sharing.
@@ -94,7 +94,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
           <Label pt={2} pb={1}>
             Radio (experimental)
           </Label>
-          <Text mb={2} variant="caption">
+          <Text as="p" mb={2} variant="caption">
             Share your computers audio with the party
           </Text>
           {!isSupported && unavailableMessage}

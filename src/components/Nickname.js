@@ -8,12 +8,13 @@ function Nickname({ nickname, stream }) {
 
   return (
     <Text
+      as="p"
       my={1}
-      variant="caption"
+      variant="body2"
       sx={{
-        fontSize: 10,
         position: "relative",
         cursor: stream ? "pointer" : "default",
+        fontSize: "12px",
       }}
       onClick={() => stream && setStreamMuted(!streamMuted)}
     >

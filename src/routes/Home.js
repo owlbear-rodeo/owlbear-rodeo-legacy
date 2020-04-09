@@ -24,7 +24,7 @@ function Home() {
           justifyContent: "center",
         }}
       >
-        <Text variant="display" sx={{ textAlign: "center" }}>
+        <Text variant="display" as="h1" sx={{ textAlign: "center" }}>
           Owlbear Rodeo
         </Text>
         <Image src={owlington} m={2} />
@@ -34,7 +34,7 @@ function Home() {
         <Button m={2} onClick={handleJoinGame}>
           Join Game
         </Button>
-        <Text variant="caption" sx={{ textAlign: "center" }}>
+        <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
           Alpha v0.6.1
         </Text>
       </Flex>

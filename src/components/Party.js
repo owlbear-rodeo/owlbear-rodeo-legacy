@@ -33,7 +33,7 @@ function Party({
           width: "100%",
         }}
       >
-        <Text mb={1} variant="heading">
+        <Text mb={1} variant="heading" as="h1">
           Party
         </Text>
       </Box>
