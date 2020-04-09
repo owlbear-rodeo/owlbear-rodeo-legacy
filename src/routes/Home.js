@@ -46,7 +46,7 @@ function Home() {
           Join Game
         </Button>
         <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
-          Alpha v0.7.0
+          Alpha v0.7.1
         </Text>
       </Flex>
       <Footer />
