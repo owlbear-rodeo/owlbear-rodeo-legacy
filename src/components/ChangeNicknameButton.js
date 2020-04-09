@@ -43,7 +43,7 @@ function ChangeNicknameButton({ nickname, onChange }) {
       </IconButton>
       <Modal isOpen={isChangeModalOpen} onRequestClose={closeModal}>
         <Box as="form" onSubmit={handleChangeSubmit}>
-          <Label p={2} htmlFor="nicknameChange">
+          <Label py={2} htmlFor="nicknameChange">
             Change your nickname
           </Label>
           <Input
