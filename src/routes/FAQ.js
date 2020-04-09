@@ -57,7 +57,7 @@ function FAQ() {
           support this are Google Chrome and Microsoft Edge. To see if your
           browser is supported see the{" "}
           <Link href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia#Browser_compatibility">
-            Browser Compatability chart
+            Browser Compatibility chart
           </Link>{" "}
           on the Mozilla Developer Network.
         </Text>
