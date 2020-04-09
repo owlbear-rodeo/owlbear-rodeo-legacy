@@ -19,6 +19,7 @@ function StyledModal({ isOpen, onRequestClose, children }) {
           bottom: "auto",
           marginRight: "-50%",
           transform: "translate(-50%, -50%)",
+          maxHeight: "100%",
         },
       }}
     >

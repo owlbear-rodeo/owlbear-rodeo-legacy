@@ -90,6 +90,9 @@ function AddMapButton({ onMapChanged }) {
             handleDone();
           }}
         >
+          <Label pt={2} pb={1}>
+            Add map
+          </Label>
           <input
             onChange={handleImageUpload}
             type="file"
@@ -104,7 +107,7 @@ function AddMapButton({ onMapChanged }) {
               sx={{
                 width: "500px",
                 minHeight: "200px",
-                maxHeight: "500px",
+                maxHeight: "300px",
                 objectFit: "contain",
                 borderRadius: "4px",
               }}
