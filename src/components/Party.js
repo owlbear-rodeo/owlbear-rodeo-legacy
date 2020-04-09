@@ -22,8 +22,8 @@ function Party({
       bg="background"
       sx={{
         flexDirection: "column",
-        width: "96px",
-        minWidth: "96px",
+        width: "112px",
+        minWidth: "112px",
         overflowY: "auto",
         alignItems: "center",
       }}

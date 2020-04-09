@@ -55,9 +55,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
             if (proxyContainer) {
               const proxyContainerRect = proxyContainer.getBoundingClientRect();
               const proxyRect = proxy.getBoundingClientRect();
+              // TODO: Look into a better method than hardcoding these values
               proxyOnMap.current =
                 proxyContainerRect.right - proxyRect.right > 80 &&
-                proxyRect.left > 96;
+                proxyRect.left > 112;
             }
 
             // update the posiion attributes

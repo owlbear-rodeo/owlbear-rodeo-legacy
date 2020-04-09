@@ -22,10 +22,10 @@ function Nickname({ nickname, stream }) {
       {stream && (
         <IconButton
           sx={{
-            width: "10px",
-            height: "10px",
+            width: "14px",
+            height: "14px",
             padding: 0,
-            margin: "2px",
+            marginLeft: "2px",
             position: "absolute",
             bottom: "-2px",
           }}
@@ -34,9 +34,9 @@ function Nickname({ nickname, stream }) {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            height="10"
+            height="14"
             viewBox="0 0 24 24"
-            width="10"
+            width="14"
             fill="currentcolor"
           >
             {streamMuted ? (
