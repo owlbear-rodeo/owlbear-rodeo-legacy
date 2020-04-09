@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IconButton, Box, Text, Button, Label, Flex } from "theme-ui";
+import { IconButton, Box, Text, Button, Label, Flex, Link } from "theme-ui";
 import adapter from "webrtc-adapter";
 
 import Modal from "./Modal";
@@ -16,24 +16,24 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
 
   const unavailableMessage = (
     <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-      <Text as="p">
-        Browser not supported.
+      <Text as="p" variant="body2">
+        Browser not supported for audio sharing.
         <br />
         <br />
-        See FAQ for more information.
+        See <Link href="#/faq">FAQ</Link> for more information.
       </Text>
     </Box>
   );
 
   const noAudioMessage = (
     <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-      <Text as="p">
+      <Text as="p" variant="body2">
         No audio found in screen share.
         <br />
         Ensure "Share audio" is selected when sharing.
         <br />
         <br />
-        See FAQ for more information.
+        See <Link href="#/faq">FAQ</Link> for more information.
       </Text>
     </Box>
   );

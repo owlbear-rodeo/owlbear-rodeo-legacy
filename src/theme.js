@@ -51,7 +51,7 @@ export default {
     },
     body2: {
       fontFamily: "body2",
-      fontSize: 1,
+      fontSize: 0,
       fontWeight: "body",
     },
   },
@@ -89,7 +89,8 @@ export default {
       fontSize: 1,
     },
     a: {
-      variant: "textStyles.caption",
+      variant: "text.body2",
+      color: "text",
       "&:hover": {
         color: "primary",
       },

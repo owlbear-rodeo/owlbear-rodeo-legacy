@@ -49,7 +49,6 @@ function Nickname({ nickname, stream }) {
         sx={{
           position: "relative",
           cursor: stream ? "pointer" : "default",
-          fontSize: "12px",
         }}
         onClick={() => {
           if (stream) {
