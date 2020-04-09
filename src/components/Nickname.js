@@ -4,7 +4,7 @@ import { Text, IconButton, Box } from "theme-ui";
 import Banner from "./Banner";
 
 function Nickname({ nickname, stream }) {
-  const [streamMuted, setStreamMuted] = useState(true);
+  const [streamMuted, setStreamMuted] = useState(false);
   const [showStreamInteractBanner, setShowStreamInteractBanner] = useState(
     false
   );
@@ -13,9 +13,32 @@ function Nickname({ nickname, stream }) {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.srcObject = stream;
-      setShowStreamInteractBanner(true);
+      // Try and auto play the audio
+      audioRef.current
+        .play()
+        .then(() => {
+          // Played fine
+        })
+        .catch(() => {
+          // Unable to autoplay
+          setStreamMuted(true);
+          setShowStreamInteractBanner(true);
+        });
     }
   }, [stream]);
+
+  function toggleMute() {
+    if (audioRef.current) {
+      if (streamMuted) {
+        audioRef.current.play().then(() => {
+          setStreamMuted(false);
+          setShowStreamInteractBanner(false);
+        });
+      } else {
+        setStreamMuted(true);
+      }
+    }
+  }
 
   return (
     <>
@@ -30,8 +53,7 @@ function Nickname({ nickname, stream }) {
         }}
         onClick={() => {
           if (stream) {
-            setStreamMuted(!streamMuted);
-            setShowStreamInteractBanner(false);
+            toggleMute();
           }
         }}
       >
@@ -64,9 +86,7 @@ function Nickname({ nickname, stream }) {
             </svg>
           </IconButton>
         )}
-        {stream && (
-          <audio ref={audioRef} autoPlay playsInline muted={streamMuted} />
-        )}
+        {stream && <audio ref={audioRef} playsInline muted={streamMuted} />}
       </Text>
       <Banner
         isOpen={showStreamInteractBanner}
@@ -92,10 +112,7 @@ function Nickname({ nickname, stream }) {
                 }}
                 aria-label={"Unmute Player"}
                 title={"Unmute Player"}
-                onClick={() => {
-                  setStreamMuted(false);
-                  setShowStreamInteractBanner(false);
-                }}
+                onClick={toggleMute}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
