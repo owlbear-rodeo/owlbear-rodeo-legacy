@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Text, IconButton } from "theme-ui";
-
-import Stream from "./Stream";
 
 function Nickname({ nickname, stream }) {
   const [streamMuted, setStreamMuted] = useState(false);
+  const audioRef = useRef();
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.srcObject = stream;
+      setStreamMuted(audioRef.current.defaultMuted);
+    }
+  }, [stream]);
 
   return (
     <Text
@@ -47,7 +53,9 @@ function Nickname({ nickname, stream }) {
           </svg>
         </IconButton>
       )}
-      {stream && <Stream stream={stream} muted={streamMuted} />}
+      {stream && (
+        <audio ref={audioRef} autoPlay playsInline muted={streamMuted} />
+      )}
     </Text>
   );
 }
