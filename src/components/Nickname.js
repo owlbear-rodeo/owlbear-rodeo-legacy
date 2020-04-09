@@ -8,7 +8,9 @@ function Nickname({ nickname, stream }) {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.srcObject = stream;
-      setStreamMuted(audioRef.current.defaultMuted);
+      audioRef.current.onplay = () => {
+        setStreamMuted(audioRef.current.defaultMuted);
+      };
     }
   }, [stream]);
 
