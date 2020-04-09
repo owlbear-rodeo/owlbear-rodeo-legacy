@@ -6,12 +6,20 @@ import theme from "./theme.js";
 import Home from "./routes/Home";
 import Game from "./routes/Game";
 import Join from "./routes/Join";
+import About from "./routes/About";
+import FAQ from "./routes/FAQ";
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <Router>
         <Switch>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route path="/faq">
+            <FAQ />
+          </Route>
           <Route path="/join">
             <Join />
           </Route>

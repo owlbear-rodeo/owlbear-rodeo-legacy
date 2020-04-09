@@ -28,6 +28,7 @@ export default {
     body: 1.1,
     heading: 1.25,
   },
+  breakpoints: ["12em", "24em", "40em", "56em", "64em"],
   text: {
     heading: {
       fontFamily: "heading",
@@ -88,8 +89,11 @@ export default {
       fontSize: 1,
     },
     a: {
-      color: "primary",
+      variant: "textStyles.caption",
       "&:hover": {
+        color: "primary",
+      },
+      "&:active": {
         color: "secondary",
       },
     },
@@ -222,6 +226,19 @@ export default {
       },
       "&:active": {
         color: "secondary",
+      },
+    },
+  },
+  links: {
+    footer: {
+      variant: "text.caption",
+      textDecoration: "underline",
+      "&:hover": {
+        textDecorationColor: "hsl(260, 100%, 80%)",
+        cursor: "pointer",
+      },
+      "&:active": {
+        textDecorationColor: "hsl(290, 100%, 80%)",
       },
     },
   },

@@ -1,7 +1,9 @@
 import React from "react";
-import { Container, Flex, Button, Image, Text } from "theme-ui";
+import { Flex, Button, Image, Text } from "theme-ui";
 import shortid from "shortid";
 import { useHistory } from "react-router-dom";
+
+import Footer from "../components/Footer";
 
 import owlington from "../images/Owlington.png";
 
@@ -16,13 +18,22 @@ function Home() {
   }
 
   return (
-    <Container sx={{ maxWidth: "300px", height: "100%" }}>
+    <Flex
+      sx={{
+        flexDirection: "column",
+        justifyContent: "space-between",
+        minHeight: "100%",
+        alignItems: "center",
+      }}
+    >
       <Flex
         sx={{
           flexDirection: "column",
-          height: "100%",
           justifyContent: "center",
+          maxWidth: "300px",
+          flexGrow: 1,
         }}
+        mb={2}
       >
         <Text variant="display" as="h1" sx={{ textAlign: "center" }}>
           Owlbear Rodeo
@@ -38,7 +49,8 @@ function Home() {
           Alpha v0.6.6
         </Text>
       </Flex>
-    </Container>
+      <Footer />
+    </Flex>
   );
 }
 

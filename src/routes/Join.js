@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Container, Box, Label, Input, Button, Flex } from "theme-ui";
+import { Box, Label, Input, Button, Flex } from "theme-ui";
 import { useHistory } from "react-router-dom";
+
+import Footer from "../components/Footer";
 
 function Join() {
   let history = useHistory();
@@ -16,13 +18,22 @@ function Join() {
   }
 
   return (
-    <Container sx={{ maxWidth: "300px", height: "100%" }}>
+    <Flex
+      sx={{
+        flexDirection: "column",
+        justifyContent: "space-between",
+        minHeight: "100%",
+        alignItems: "center",
+      }}
+    >
       <Flex
         sx={{
           flexDirection: "column",
-          height: "100%",
           justifyContent: "center",
+          maxWidth: "300px",
+          flexGrow: 1,
         }}
+        mb={2}
       >
         <Box as="form" onSubmit={handleSubmit}>
           <Label htmlFor="id">Let me see your identification</Label>
@@ -37,7 +48,8 @@ function Join() {
           <Button disabled={!gameId}>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
         </Box>
       </Flex>
-    </Container>
+      <Footer />
+    </Flex>
   );
 }
 
