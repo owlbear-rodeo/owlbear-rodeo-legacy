@@ -65,20 +65,57 @@ function Map({
     });
   }, []);
 
-  function handleZoom(event) {
-    const deltaY = event.deltaY * zoomSpeed;
-    setMapScale((previousMapScale) =>
-      Math.max(Math.min(previousMapScale + deltaY, maxZoom), minZoom)
-    );
-  }
-
   // Reset map transform when map changes
   useEffect(() => {
     setMapTranslate({ x: 0, y: 0 });
     setMapScale(1);
   }, [mapSource]);
 
+  // Bind the wheel event of the map via a ref
+  // in order to support non-passive event listening
+  // to allow the track pad zoom to be interrupted
+  // see https://github.com/facebook/react/issues/14856
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current;
+
+    function handleZoom(event) {
+      // Stop the trackpad zoom event from zooming the
+      // webpage when in the map
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+
+      const deltaY = event.deltaY * zoomSpeed;
+      setMapScale((previousMapScale) =>
+        Math.max(Math.min(previousMapScale + deltaY, maxZoom), minZoom)
+      );
+    }
+
+    if (mapContainer) {
+      mapContainer.addEventListener("wheel", handleZoom, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (mapContainer) {
+        mapContainer.removeEventListener("wheel", handleZoom);
+      }
+    };
+  }, []);
+
+  // Stop the overscroll when the map is loaded and restore it when
+  // unmounted
+  useEffect(() => {
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overscrollBehavior = "initial";
+    };
+  }, []);
+
   const mapRef = useRef(null);
+  const mapContainerRef = useRef();
   const rows = mapData && mapData.rows;
   const tokenSizePercent = (1 / rows) * 100;
   const aspectRatio = (mapData && mapData.width / mapData.height) || 1;
@@ -96,7 +133,7 @@ function Map({
           touchAction: "none",
         }}
         bg="background"
-        onWheel={handleZoom}
+        ref={mapContainerRef}
       >
         <Box
           sx={{

@@ -6,10 +6,6 @@ html {
   height: 100%;
 }
 
-body {
-  overscroll-behavior: none;
-}
-
 .simplebar-scrollbar:before {
   background: #fff;
 }
