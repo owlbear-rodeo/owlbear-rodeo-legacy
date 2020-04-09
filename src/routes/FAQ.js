@@ -23,7 +23,7 @@ function FAQ() {
         }}
         my={2}
       >
-        <Text my={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
+        <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Frequently Asked Questions
         </Text>
         <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
@@ -51,7 +51,7 @@ function FAQ() {
         <Text my={1} variant="heading" as="h3">
           Browser not supported for audio sharing.
         </Text>
-        <Text variant="body2" as="p">
+        <Text mb={2} variant="body2" as="p">
           Using audio sharing relies on the browser supporting the audio capture
           feature of the Screen Capture API. Currently the two browsers that
           support this are Google Chrome and Microsoft Edge. To see if your

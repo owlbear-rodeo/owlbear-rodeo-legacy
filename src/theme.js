@@ -20,7 +20,7 @@ export default {
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 72],
   fontWeights: {
     caption: 200,
-    body: 300,
+    body: 400,
     heading: 400,
     display: 400,
   },
@@ -46,7 +46,7 @@ export default {
     caption: {
       fontFamily: "body2",
       fontWeight: "caption",
-      fontSize: 10,
+      fontSize: 0,
       color: "gray",
     },
     body2: {
