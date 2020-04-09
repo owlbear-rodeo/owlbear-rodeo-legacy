@@ -5,10 +5,11 @@ function Stream({ stream, muted }) {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.srcObject = stream;
+      audioRef.current.play();
     }
   }, [stream]);
 
-  return <audio ref={audioRef} autoPlay playsInline muted={muted} />;
+  return <audio ref={audioRef} playsInline muted={muted} />;
 }
 
 Stream.defaultProps = {
