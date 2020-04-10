@@ -16,7 +16,8 @@ function Banner({ isOpen, onRequestClose, children }) {
           top: "initial",
           left: "50%",
           right: 0,
-          bottom: 0,
+          // Offset for iOS safe zone
+          bottom: "env(safe-area-inset-bottom)",
           border: "none",
           padding: "8px",
           margin: "8px",
