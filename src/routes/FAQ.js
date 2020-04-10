@@ -67,6 +67,23 @@ function FAQ() {
         <Text my={1} variant="heading" as="h3">
           Ice connection failed / Connection failed.
         </Text>
+        <Text variant="body2" as="p">
+          If you are getting a Connection failed error when trying to connect to
+          a game try these following things.
+        </Text>
+        <Text variant="body2">
+          <ol>
+            <li>Ensure your internet connection is working.</li>
+            <li>
+              If you are using an incognito or private browsing tab try using
+              normal browsing.
+            </li>
+            <li>
+              If both computers are on the same network try connecting them to
+              separate networks. For more info see below.
+            </li>
+          </ol>
+        </Text>
         <Text mb={2} variant="body2" as="p">
           Owlbear Rodeo uses peer to peer connections to send data between the
           players. Specifically the{" "}
@@ -86,17 +103,14 @@ function FAQ() {
           permission even though we wouldn't be using it. To us that is a bad
           user experience so we have decided against it at this time. <br />
           The good news is that Safari will still work if the two devices are
-          connected to a seperate network as we make use of{" "}
+          connected to a separate network as we make use of{" "}
           <Link href="https://en.wikipedia.org/wiki/Traversal_Using_Relays_around_NAT">
             TURN
           </Link>{" "}
           servers which will handle the IP sharing and are not blocked by
-          Safari.{" "}
-          <strong>
-            So if you're seeing errors and are on the same network as the other
-            person if possible switch to seperate networks and try again.
-          </strong>
-          . For more information about Safari's restrictions on WebRTC see this{" "}
+          Safari. So if you're seeing errors and are on the same network as the
+          other person if possible switch to separate networks and try again.
+          For more information about Safari's restrictions on WebRTC see this{" "}
           <Link href="https://bugs.webkit.org/show_bug.cgi?id=173052">
             bug report
           </Link>{" "}
