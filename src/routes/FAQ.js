@@ -61,6 +61,51 @@ function FAQ() {
           </Link>{" "}
           on the Mozilla Developer Network.
         </Text>
+        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
+          Connection Failed
+        </Text>
+        <Text my={1} variant="heading" as="h3">
+          Ice connection failed / Connection failed.
+        </Text>
+        <Text mb={2} variant="body2" as="p">
+          Owlbear Rodeo uses peer to peer connections to send data between the
+          players. Specifically the{" "}
+          <Link href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">
+            WebRTC API
+          </Link>{" "}
+          is used. WebRTC allows the sending of two types of data, the first is
+          media such as a camera or microphone and the second is raw data such
+          as chat messages or in this case the state of the game map. <br /> As
+          at this time we don't support voice or video chat as such we only use
+          the raw data feature of WebRTC. This however can lead to connection
+          issues, specifically with the Safari web browser and connecting
+          between two devices on the same network. This is due a decision made
+          by the Safari team to only allow fully peer to peer connections when
+          the user grants camera permission to the website. Unfortunately that
+          means in order to fully support Safari we would need to ask for camera
+          permission even though we wouldn't be using it. To us that is a bad
+          user experience so we have decided against it at this time. <br />
+          The good news is that Safari will still work if the two devices are
+          connected to a seperate network as we make use of{" "}
+          <Link href="https://en.wikipedia.org/wiki/Traversal_Using_Relays_around_NAT">
+            TURN
+          </Link>{" "}
+          servers which will handle the IP sharing and are not blocked by
+          Safari.{" "}
+          <strong>
+            So if you're seeing errors and are on the same network as the other
+            person if possible switch to seperate networks and try again.
+          </strong>
+          . For more information about Safari's restrictions on WebRTC see this{" "}
+          <Link href="https://bugs.webkit.org/show_bug.cgi?id=173052">
+            bug report
+          </Link>{" "}
+          on the Webkit site or this{" "}
+          <Link href="https://webkit.org/blog/7763/a-closer-look-into-webrtc/">
+            blog post
+          </Link>
+          .
+        </Text>
       </Flex>
       <Footer />
     </Flex>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Flex } from "theme-ui";
+import { Flex, Box, Text, Link } from "theme-ui";
 import { useParams } from "react-router-dom";
 
 import { omit, isStreamStopped } from "../helpers/shared";
@@ -10,6 +10,7 @@ import { getRandomMonster } from "../helpers/monsters";
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
+import Banner from "../components/Banner";
 
 function Game() {
   const { id: gameId } = useParams();
@@ -20,7 +21,8 @@ function Game() {
     handlePeerDisconnected,
     handlePeerData,
     handlePeerTrackAdded,
-    handlePeerTrackRemoved
+    handlePeerTrackRemoved,
+    handlePeerError
   );
 
   const [mapSource, setMapSource] = useState(null);
@@ -118,6 +120,11 @@ function Game() {
     setPartyNicknames((prevNicknames) => omit(prevNicknames, [disconnectedId]));
   }
 
+  const [peerError, setPeerError] = useState(null);
+  function handlePeerError(error) {
+    setPeerError(error.message || "Unknown Error Occurred.");
+  }
+
   function handlePeerTrackAdded({ id, stream: remoteStream }) {
     setPartyStreams((prevStreams) => ({
       ...prevStreams,
@@ -183,31 +190,40 @@ function Game() {
   }, [stream, peers, handleStreamEnd]);
 
   return (
-    <Flex sx={{ flexDirection: "column", height: "100%" }}>
-      <Flex
-        sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
-      >
-        <Party
-          nickname={nickname}
-          partyNicknames={partyNicknames}
-          gameId={gameId}
-          onNicknameChange={handleNicknameChange}
-          stream={stream}
-          partyStreams={partyStreams}
-          onStreamStart={handleStreamStart}
-          onStreamEnd={handleStreamEnd}
-        />
-        <Map
-          mapSource={mapSource}
-          mapData={mapDataRef.current}
-          tokens={mapTokens}
-          onMapTokenMove={handleEditMapToken}
-          onMapTokenRemove={handleRemoveMapToken}
-          onMapChanged={handleMapChanged}
-        />
-        <Tokens onCreateMapToken={handleEditMapToken} />
+    <>
+      <Flex sx={{ flexDirection: "column", height: "100%" }}>
+        <Flex
+          sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
+        >
+          <Party
+            nickname={nickname}
+            partyNicknames={partyNicknames}
+            gameId={gameId}
+            onNicknameChange={handleNicknameChange}
+            stream={stream}
+            partyStreams={partyStreams}
+            onStreamStart={handleStreamStart}
+            onStreamEnd={handleStreamEnd}
+          />
+          <Map
+            mapSource={mapSource}
+            mapData={mapDataRef.current}
+            tokens={mapTokens}
+            onMapTokenMove={handleEditMapToken}
+            onMapTokenRemove={handleRemoveMapToken}
+            onMapChanged={handleMapChanged}
+          />
+          <Tokens onCreateMapToken={handleEditMapToken} />
+        </Flex>
       </Flex>
-    </Flex>
+      <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
+        <Box p={1}>
+          <Text as="p" variant="body2">
+            {peerError} See <Link href="#/faq">FAQ</Link> for more information.
+          </Text>
+        </Box>
+      </Banner>
+    </>
   );
 }
 

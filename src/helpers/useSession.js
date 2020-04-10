@@ -12,7 +12,8 @@ function useSession(
   onPeerDisconnected,
   onPeerData,
   onPeerTrackAdded,
-  onPeerTrackRemoved
+  onPeerTrackRemoved,
+  onPeerError
 ) {
   useEffect(() => {
     socket.emit("join party", partyId);
@@ -50,9 +51,10 @@ function useSession(
         onPeerDisconnected && onPeerDisconnected(id);
       });
 
-      peer.on("error", (err) => {
+      peer.on("error", (error) => {
         onPeerDisconnected && onPeerDisconnected(id);
-        console.error("error", err);
+        onPeerError && onPeerError(error);
+        console.error(error);
       });
 
       setPeers((prevPeers) => ({
@@ -104,6 +106,7 @@ function useSession(
     onPeerData,
     onPeerTrackAdded,
     onPeerTrackRemoved,
+    onPeerError,
   ]);
 
   return { peers, socket };
