@@ -79,13 +79,7 @@ function Stream({ stream, nickname }) {
         onRequestClose={() => setShowStreamInteractBanner(false)}
       >
         <Box p={1}>
-          <Text
-            as="p"
-            variant="body2"
-            sx={{
-              fontSize: "12px",
-            }}
-          >
+          <Text as="p" variant="body2">
             {nickname} has started streaming. Click
             {
               <IconButton

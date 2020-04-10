@@ -25,7 +25,8 @@ export default {
     display: 400,
   },
   lineHeights: {
-    body: 1.1,
+    body: 1.3,
+    display: 1.1,
     heading: 1.25,
   },
   breakpoints: ["12em", "24em", "40em", "56em", "64em"],
@@ -37,7 +38,7 @@ export default {
       fontSize: 1,
     },
     display: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontFamily: "display",
       fontSize: [5, 6],
       fontWeight: "display",
@@ -66,26 +67,26 @@ export default {
       fontWeight: "body",
     },
     h1: {
-      variant: "textStyles.display",
+      variant: "text.display",
     },
     h2: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontSize: 5,
     },
     h3: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontSize: 4,
     },
     h4: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontSize: 3,
     },
     h5: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontSize: 2,
     },
     h6: {
-      variant: "textStyles.heading",
+      variant: "text.heading",
       fontSize: 1,
     },
     a: {

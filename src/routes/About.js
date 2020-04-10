@@ -24,7 +24,7 @@ function About() {
         <Text my={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           About
         </Text>
-        <Text my={1} mt={2} variant="heading" as="h3">
+        <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           The Goal
         </Text>
         <Text variant="body2" as="p">
@@ -32,7 +32,7 @@ function About() {
           encounters without the complicated setup process needed for other
           VTTs.
         </Text>
-        <Text my={1} mt={2} variant="heading" as="h3">
+        <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           The People
         </Text>
         <Text variant="body2" as="p">
@@ -42,7 +42,7 @@ function About() {
           for an easy way to continue their d{"&"}d campaign as in person
           interaction becomes harder.
         </Text>
-        <Text my={1} mt={2} variant="heading" as="h3">
+        <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           Contact
         </Text>
         <Text variant="body2" as="p">
