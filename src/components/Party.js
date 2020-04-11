@@ -43,7 +43,7 @@ function Party({
           width: "100%",
         }}
       >
-        <Nickname nickname={nickname || ""} />
+        <Nickname nickname={`${nickname} (you)` || ""} />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname
             nickname={partyNickname}
