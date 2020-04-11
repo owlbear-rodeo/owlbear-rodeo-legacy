@@ -32,7 +32,7 @@ function Game() {
     mapDataRef.current = mapData;
     setMapSource(mapSource);
     for (let peer of Object.values(peers)) {
-      peer.send({ id: "map", data: mapDataRef.current });
+      peer.connection.send({ id: "map", data: mapDataRef.current });
     }
   }
 
@@ -48,7 +48,7 @@ function Game() {
     }));
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.send({ id: "tokenEdit", data });
+      peer.connection.send({ id: "tokenEdit", data });
     }
   }
 
@@ -59,7 +59,7 @@ function Game() {
     });
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.send({ id: "tokenRemove", data });
+      peer.connection.send({ id: "tokenRemove", data });
     }
   }
 
@@ -70,26 +70,26 @@ function Game() {
     setNickname(nickname);
     for (let peer of Object.values(peers)) {
       const data = { [socket.id]: nickname };
-      peer.send({ id: "nickname", data });
+      peer.connection.send({ id: "nickname", data });
     }
   }
 
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
-  function handlePeerConnected({ peer }) {
-    peer.send({ id: "nickname", data: { [socket.id]: nickname } });
+  function handlePeerConnected(peer) {
+    peer.connection.send({ id: "nickname", data: { [socket.id]: nickname } });
     if (stream) {
-      peer.addStream(stream);
+      peer.connection.addStream(stream);
     }
   }
 
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
       if (mapSource) {
-        peer.send({ id: "map", data: mapDataRef.current });
+        peer.connection.send({ id: "map", data: mapDataRef.current });
       }
       if (mapTokens) {
-        peer.send({ id: "tokenEdit", data: mapTokens });
+        peer.connection.send({ id: "tokenEdit", data: mapTokens });
       }
     }
     if (data.id === "map") {
@@ -116,29 +116,33 @@ function Game() {
     }
   }
 
-  function handlePeerDisconnected(disconnectedId) {
-    setPartyNicknames((prevNicknames) => omit(prevNicknames, [disconnectedId]));
+  function handlePeerDisconnected(peer) {
+    setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
   }
 
   const [peerError, setPeerError] = useState(null);
-  function handlePeerError(error) {
-    setPeerError(error.message || "Unknown Error Occurred.");
+  function handlePeerError({ error, peer }) {
+    setPeerError(
+      `${
+        peer.id === socket.id ? "" : `(${partyNicknames[peer.id] || "Unknown"})`
+      } ${error.message || "Unknown Error Occurred."}`
+    );
   }
 
-  function handlePeerTrackAdded({ id, stream: remoteStream }) {
+  function handlePeerTrackAdded({ peer, stream: remoteStream }) {
     setPartyStreams((prevStreams) => ({
       ...prevStreams,
-      [id]: remoteStream,
+      [peer.id]: remoteStream,
     }));
   }
 
-  function handlePeerTrackRemoved({ id, stream: remoteStream }) {
+  function handlePeerTrackRemoved({ peer, stream: remoteStream }) {
     if (isStreamStopped(remoteStream)) {
-      setPartyStreams((prevStreams) => omit(prevStreams, [id]));
+      setPartyStreams((prevStreams) => omit(prevStreams, [peer.id]));
     } else {
       setPartyStreams((prevStreams) => ({
         ...prevStreams,
-        [id]: remoteStream,
+        [peer.id]: remoteStream,
       }));
     }
   }
@@ -150,7 +154,7 @@ function Game() {
       // Only add the audio track of the stream to the remote peer
       if (track.kind === "audio") {
         for (let peer of Object.values(peers)) {
-          peer.addTrack(track, localStream);
+          peer.connection.addTrack(track, localStream);
         }
       }
     }
@@ -165,7 +169,7 @@ function Game() {
         // Only sending audio so only remove the audio track
         if (track.kind === "audio") {
           for (let peer of Object.values(peers)) {
-            peer.removeTrack(track, localStream);
+            peer.connection.removeTrack(track, localStream);
           }
         }
       }

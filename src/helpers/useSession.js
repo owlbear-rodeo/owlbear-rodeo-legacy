@@ -21,45 +21,96 @@ function useSession(
 
   const [peers, setPeers] = useState({});
 
+  // Setup event listeners for peers
+  useEffect(() => {
+    let peerEvents = [];
+    for (let peer of Object.values(peers)) {
+      function handleSignal(signal) {
+        socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
+      }
+
+      function handleConnect() {
+        onPeerConnected && onPeerConnected(peer);
+        if (peer.sync) {
+          peer.connection.send({ id: "sync" });
+        }
+      }
+
+      function handleDataComplete(data) {
+        onPeerData && onPeerData({ peer, data });
+      }
+
+      function handleTrack(track, stream) {
+        onPeerTrackAdded && onPeerTrackAdded({ peer, track, stream });
+        track.addEventListener("mute", () => {
+          onPeerTrackRemoved && onPeerTrackRemoved({ peer, track, stream });
+        });
+      }
+
+      function handleClose() {
+        onPeerDisconnected && onPeerDisconnected(peer);
+      }
+
+      function handleError(error) {
+        onPeerError && onPeerError({ peer, error });
+        console.error(error);
+      }
+
+      peer.connection.on("signal", handleSignal);
+      peer.connection.on("connect", handleConnect);
+      peer.connection.on("dataComplete", handleDataComplete);
+      peer.connection.on("track", handleTrack);
+      peer.connection.on("close", handleClose);
+      peer.connection.on("error", handleError);
+      // Save events for cleanup
+      peerEvents.push({
+        peer,
+        handleSignal,
+        handleConnect,
+        handleDataComplete,
+        handleTrack,
+        handleClose,
+        handleError,
+      });
+    }
+
+    // Cleanup events
+    return () => {
+      for (let {
+        peer,
+        handleSignal,
+        handleConnect,
+        handleDataComplete,
+        handleTrack,
+        handleClose,
+        handleError,
+      } of peerEvents) {
+        peer.connection.off("signal", handleSignal);
+        peer.connection.off("connect", handleConnect);
+        peer.connection.off("dataComplete", handleDataComplete);
+        peer.connection.off("track", handleTrack);
+        peer.connection.off("close", handleClose);
+        peer.connection.off("error", handleError);
+      }
+    };
+  }, [
+    peers,
+    onPeerConnected,
+    onPeerDisconnected,
+    onPeerData,
+    onPeerTrackAdded,
+    onPeerTrackRemoved,
+    onPeerError,
+  ]);
+
+  // Setup event listeners for the socket
   useEffect(() => {
     function addPeer(id, initiator, sync) {
-      const peer = new Peer({ initiator, trickle: false });
-
-      peer.on("signal", (signal) => {
-        socket.emit("signal", JSON.stringify({ to: id, signal }));
-      });
-
-      peer.on("connect", () => {
-        onPeerConnected && onPeerConnected({ id, peer, initiator });
-        if (sync) {
-          peer.send({ id: "sync" });
-        }
-      });
-
-      peer.on("dataComplete", (data) => {
-        onPeerData && onPeerData({ id, peer, data });
-      });
-
-      peer.on("track", (track, stream) => {
-        onPeerTrackAdded && onPeerTrackAdded({ id, peer, track, stream });
-        track.addEventListener("mute", () => {
-          onPeerTrackRemoved && onPeerTrackRemoved({ id, peer, track, stream });
-        });
-      });
-
-      peer.on("close", () => {
-        onPeerDisconnected && onPeerDisconnected(id);
-      });
-
-      peer.on("error", (error) => {
-        onPeerDisconnected && onPeerDisconnected(id);
-        onPeerError && onPeerError(error);
-        console.error(error);
-      });
+      const connection = new Peer({ initiator, trickle: false });
 
       setPeers((prevPeers) => ({
         ...prevPeers,
-        [id]: peer,
+        [id]: { id, connection, initiator, sync },
       }));
     }
 
@@ -69,7 +120,7 @@ function useSession(
 
     function handlePartyMemberLeft(id) {
       if (id in peers) {
-        peers[id].destroy();
+        peers[id].connection.destroy();
       }
       setPeers((prevPeers) => omit(prevPeers, [id]));
     }
@@ -85,7 +136,7 @@ function useSession(
     function handleSignal(data) {
       const { from, signal } = JSON.parse(data);
       if (from in peers) {
-        peers[from].signal(signal);
+        peers[from].connection.signal(signal);
       }
     }
 
@@ -99,15 +150,7 @@ function useSession(
       socket.removeListener("joined party", handleJoinedParty);
       socket.removeListener("signal", handleSignal);
     };
-  }, [
-    peers,
-    onPeerConnected,
-    onPeerDisconnected,
-    onPeerData,
-    onPeerTrackAdded,
-    onPeerTrackRemoved,
-    onPeerError,
-  ]);
+  }, [peers]);
 
   return { peers, socket };
 }
