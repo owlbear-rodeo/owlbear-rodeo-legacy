@@ -5,9 +5,9 @@ import SimpleBar from "simplebar-react";
 
 import * as tokens from "../tokens";
 
-import Token from "./Token";
+import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
-import SizeInput from "./SizeInput";
+import NumberInput from "./NumberInput";
 
 const listTokenClassName = "list-token";
 
@@ -17,7 +17,12 @@ function Tokens({ onCreateMapToken }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onCreateMapToken) {
       // Give the token an id
-      onCreateMapToken({ ...token, id: shortid.generate(), size: tokenSize });
+      onCreateMapToken({
+        ...token,
+        id: shortid.generate(),
+        size: tokenSize,
+        label: "",
+      });
     }
   }
 
@@ -34,12 +39,18 @@ function Tokens({ onCreateMapToken }) {
         <SimpleBar style={{ height: "calc(100% - 58px)", overflowX: "hidden" }}>
           {Object.entries(tokens).map(([id, image]) => (
             <Box key={id} my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
-              <Token image={image} className={listTokenClassName} />
+              <ListToken image={image} className={listTokenClassName} />
             </Box>
           ))}
         </SimpleBar>
         <Box pt={1} bg="muted" sx={{ height: "58px" }}>
-          <SizeInput value={tokenSize} onChange={setTokenSize} />
+          <NumberInput
+            value={tokenSize}
+            onChange={setTokenSize}
+            title="Size"
+            min={1}
+            max={9}
+          />
         </Box>
       </Box>
       <ProxyToken

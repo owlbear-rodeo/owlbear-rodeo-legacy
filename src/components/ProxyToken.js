@@ -86,10 +86,11 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
               x = x / (mapRect.right - mapRect.left);
               y = y / (mapRect.bottom - mapRect.top);
 
+              target.setAttribute("data-x", x);
+              target.setAttribute("data-y", y);
+
               onProxyDragEnd(proxyOnMap.current, {
                 image: imageSource,
-                x,
-                y,
                 // Pass in props stored as data- in the dom node
                 ...target.dataset,
               });

@@ -1,17 +1,17 @@
 import React from "react";
 import { Box, Flex, IconButton, Text } from "theme-ui";
 
-function SizeInput({ value, onChange }) {
+function NumberInput({ value, onChange, title, min, max }) {
   return (
     <Box>
       <Text sx={{ textAlign: "center" }} variant="heading" as="h1">
-        Size
+        {title}
       </Text>
       <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
         <IconButton
-          aria-label="Lower Token Size"
-          title="Lower Token Size"
-          onClick={() => value > 1 && onChange(value - 1)}
+          aria-label={`Decrease ${title}`}
+          title={`Decrease ${title}`}
+          onClick={() => value > min && onChange(value - 1)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -24,13 +24,13 @@ function SizeInput({ value, onChange }) {
             <path d="M18 13H6c-.55 0-1-.45-1-1s.45-1 1-1h12c.55 0 1 .45 1 1s-.45 1-1 1z" />
           </svg>
         </IconButton>
-        <Text as="p" aria-label="Current Token Size">
+        <Text as="p" aria-label={`Current ${title}`}>
           {value}
         </Text>
         <IconButton
-          aria-label="Increase Token Size"
-          title="Increase Token Size"
-          onClick={() => onChange(value + 1)}
+          aria-label={`Increase ${title}`}
+          title={`Increase ${title}`}
+          onClick={() => value < max && onChange(value + 1)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,9 +48,12 @@ function SizeInput({ value, onChange }) {
   );
 }
 
-SizeInput.defaultProps = {
+NumberInput.defaultProps = {
   value: 1,
   onChange: () => {},
+  title: "Number",
+  min: 0,
+  max: 10,
 };
 
-export default SizeInput;
+export default NumberInput;

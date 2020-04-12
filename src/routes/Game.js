@@ -28,7 +28,7 @@ function Game() {
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
 
-  function handleMapChanged(mapData, mapSource) {
+  function handleMapChange(mapData, mapSource) {
     mapDataRef.current = mapData;
     setMapSource(mapSource);
     for (let peer of Object.values(peers)) {
@@ -38,7 +38,7 @@ function Game() {
 
   const [mapTokens, setMapTokens] = useState({});
 
-  function handleEditMapToken(token) {
+  function handleMapTokenChange(token) {
     if (!mapSource) {
       return;
     }
@@ -52,7 +52,7 @@ function Game() {
     }
   }
 
-  function handleRemoveMapToken(token) {
+  function handleMapTokenRemove(token) {
     setMapTokens((prevMapTokens) => {
       const { [token.id]: old, ...rest } = prevMapTokens;
       return rest;
@@ -213,11 +213,11 @@ function Game() {
             mapSource={mapSource}
             mapData={mapDataRef.current}
             tokens={mapTokens}
-            onMapTokenMove={handleEditMapToken}
-            onMapTokenRemove={handleRemoveMapToken}
-            onMapChanged={handleMapChanged}
+            onMapTokenChange={handleMapTokenChange}
+            onMapTokenRemove={handleMapTokenRemove}
+            onMapChange={handleMapChange}
           />
-          <Tokens onCreateMapToken={handleEditMapToken} />
+          <Tokens onCreateMapToken={handleMapTokenChange} />
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

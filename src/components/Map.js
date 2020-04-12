@@ -2,9 +2,10 @@ import React, { useRef, useEffect, useState } from "react";
 import { Box, Image } from "theme-ui";
 import interact from "interactjs";
 
-import Token from "../components/Token";
 import ProxyToken from "../components/ProxyToken";
 import AddMapButton from "../components/AddMapButton";
+import TokenMenu from "../components/TokenMenu";
+import MapToken from "../components/MapToken";
 
 const mapTokenClassName = "map-token";
 const zoomSpeed = -0.005;
@@ -15,13 +16,13 @@ function Map({
   mapSource,
   mapData,
   tokens,
-  onMapTokenMove,
+  onMapTokenChange,
   onMapTokenRemove,
-  onMapChanged,
+  onMapChange,
 }) {
   function handleProxyDragEnd(isOnMap, token) {
-    if (isOnMap && onMapTokenMove) {
-      onMapTokenMove(token);
+    if (isOnMap && onMapTokenChange) {
+      onMapTokenChange(token);
     }
 
     if (!isOnMap && onMapTokenRemove) {
@@ -120,6 +121,64 @@ function Map({
   const tokenSizePercent = (1 / rows) * 100;
   const aspectRatio = (mapData && mapData.width / mapData.height) || 1;
 
+  const mapImage = (
+    <Box
+      sx={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      }}
+    >
+      <Image
+        ref={mapRef}
+        id="map"
+        sx={{
+          width: "100%",
+          userSelect: "none",
+          touchAction: "none",
+        }}
+        src={mapSource}
+      />
+    </Box>
+  );
+
+  const mapTokens = (
+    <Box
+      sx={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    >
+      {Object.values(tokens).map((token) => (
+        <MapToken
+          key={token.id}
+          token={token}
+          tokenSizePercent={tokenSizePercent}
+          className={mapTokenClassName}
+        />
+      ))}
+    </Box>
+  );
+
+  const mapActions = (
+    <Box
+      p={2}
+      sx={{
+        position: "absolute",
+        top: "0",
+        left: "50%",
+        transform: "translateX(-50%)",
+      }}
+    >
+      <AddMapButton onMapChanged={onMapChange} />
+    </Box>
+  );
+
   return (
     <>
       <Box
@@ -155,77 +214,19 @@ function Map({
                 paddingBottom: `${(1 / aspectRatio) * 100}%`,
               }}
             />
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-              }}
-            >
-              <Image
-                ref={mapRef}
-                id="map"
-                sx={{
-                  width: "100%",
-                  userSelect: "none",
-                  touchAction: "none",
-                }}
-                src={mapSource}
-              />
-            </Box>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-              }}
-            >
-              {Object.values(tokens).map((token) => (
-                <Box
-                  key={token.id}
-                  style={{
-                    left: `${token.x * 100}%`,
-                    top: `${token.y * 100}%`,
-                    width: `${tokenSizePercent * (token.size || 1)}%`,
-                  }}
-                  sx={{
-                    position: "absolute",
-                    display: "flex",
-                  }}
-                >
-                  <Token
-                    data={{
-                      id: token.id,
-                      size: token.size,
-                    }}
-                    image={token.image}
-                    className={mapTokenClassName}
-                    sx={{ position: "absolute" }}
-                  />
-                </Box>
-              ))}
-            </Box>
+            {mapImage}
+            {mapTokens}
           </Box>
         </Box>
-        <Box
-          p={2}
-          sx={{
-            position: "absolute",
-            top: "0",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-        >
-          <AddMapButton onMapChanged={onMapChanged} />
-        </Box>
+        {mapActions}
       </Box>
       <ProxyToken
         tokenClassName={mapTokenClassName}
         onProxyDragEnd={handleProxyDragEnd}
+      />
+      <TokenMenu
+        tokenClassName={mapTokenClassName}
+        onTokenChange={onMapTokenChange}
       />
     </>
   );
