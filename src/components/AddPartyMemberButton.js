@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { IconButton, Box, Label, Text } from "theme-ui";
+import { IconButton } from "theme-ui";
 
-import Modal from "./Modal";
+import AddPartyMemberModal from "../modals/AddPartyMemberModal";
 
 function AddPartyMemberButton({ gameId }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -31,25 +31,11 @@ function AddPartyMemberButton({ gameId }) {
           <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8c0-.55-.45-1-1-1s-1 .45-1 1v2H2c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1H6zm9 4c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4z" />
         </svg>
       </IconButton>
-      <Modal isOpen={isAddModalOpen} onRequestClose={closeModal}>
-        <Box>
-          <Label pt={2} pb={1}>
-            Invite players
-          </Label>
-          <Text as="p" mb={2} variant="caption">
-            Other people can join using the game ID
-          </Text>
-          <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-            <Text>{gameId}</Text>
-          </Box>
-          <Text as="p" my={2} variant="caption">
-            Or by using this link
-          </Text>
-          <Box p={2} bg="hsla(230, 20%, 0%, 20%)">
-            <Text>{window.location.href}</Text>
-          </Box>
-        </Box>
-      </Modal>
+      <AddPartyMemberModal
+        isOpen={isAddModalOpen}
+        onRequestClose={closeModal}
+        gameId={gameId}
+      />
     </>
   );
 }
