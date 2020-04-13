@@ -11,9 +11,10 @@ function TokenLabel({ label }) {
         transform: "scale(0.3) translate(0, 20%)",
         transformOrigin: "bottom center",
         pointerEvents: "none",
+        width: "100%",
       }}
     >
-      <Image src={tokenLabel} />
+      <Image sx={{ width: "100%" }} src={tokenLabel} />
       <svg
         style={{
           position: "absolute",
