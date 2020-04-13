@@ -5,12 +5,14 @@ import interact from "interactjs";
 
 import usePortal from "../helpers/usePortal";
 import TokenLabel from "./TokenLabel";
+import TokenStatus from "./TokenStatus";
 
 function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
   const [label, setLabel] = useState("");
+  const [status, setStatus] = useState("");
   const proxyRef = useRef();
 
   const proxyOnMap = useRef(false);
@@ -24,6 +26,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           target.parentElement.style.opacity = "0.25";
           setImageSource(target.src);
           setLabel(target.dataset.label || "");
+          setStatus(target.dataset.status || "");
 
           let proxy = proxyRef.current;
           if (proxy) {
@@ -141,6 +144,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
             width: "100%",
           }}
         />
+        {status && <TokenStatus statuses={status.split(" ")} />}
         {label && <TokenLabel label={label} />}
       </Box>
     </Box>,

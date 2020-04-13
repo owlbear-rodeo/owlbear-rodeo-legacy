@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import interact from "interactjs";
-import { useThemeUI, Box, Input } from "theme-ui";
+import { Box, Input } from "theme-ui";
+
+import { statusOptions, statusToColor } from "../helpers/status";
 
 function TokenMenu({ tokenClassName, onTokenChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +12,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
     setIsOpen(false);
   }
 
-  const [currentToken, setCurrentToken] = useState(0);
+  const [currentToken, setCurrentToken] = useState({});
   const [menuLeft, setMenuLeft] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
 
@@ -25,6 +27,23 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
 
       onTokenChange({ ...currentToken, label: label });
     }
+  }
+
+  function handleStatusChange(status) {
+    const statuses =
+      currentToken.status.split(" ").filter((s) => s !== "") || [];
+    let newStatuses = [];
+    if (statuses.includes(status)) {
+      newStatuses = statuses.filter((s) => s !== status);
+    } else {
+      newStatuses = [...statuses, status];
+    }
+    const newStatus = newStatuses.join(" ");
+    setCurrentToken((prevToken) => ({
+      ...prevToken,
+      status: newStatus,
+    }));
+    onTokenChange({ ...currentToken, status: newStatus });
   }
 
   useEffect(() => {
@@ -64,17 +83,22 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
     };
   }, [tokenClassName]);
 
-  const { theme } = useThemeUI();
-
   function handleModalContent(node) {
     if (node) {
       const tokenLabelInput = node.querySelector("#changeTokenLabel");
       tokenLabelInput.focus();
-      // Highlight label section of input
       tokenLabelInput.setSelectionRange(7, 8);
-      tokenLabelInput.onblur = () => {
-        setIsOpen(false);
-      };
+
+      // Close modal if interacting with any other element
+      function handlePointerDown(event) {
+        const path = event.composedPath();
+        if (!path.includes(node)) {
+          setIsOpen(false);
+          document.body.removeEventListener("pointerdown", handlePointerDown);
+        }
+      }
+      document.body.addEventListener("pointerdown", handlePointerDown);
+
       // Check for wheel event to close modal as well
       document.body.addEventListener(
         "wheel",
@@ -93,7 +117,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
       style={{
         overlay: { top: "0", bottom: "initial" },
         content: {
-          backgroundColor: theme.colors.highlight,
+          backgroundColor: "hsla(230, 25%, 18%, 0.8)",
           top: `${menuTop}px`,
           left: `${menuLeft}px`,
           right: "initial",
@@ -105,21 +129,63 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
       }}
       contentRef={handleModalContent}
     >
-      <Box
-        as="form"
-        bg="background"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleRequestClose();
-        }}
-        sx={{ width: "72px" }}
-      >
-        <Input
-          id="changeTokenLabel"
-          onChange={handleLabelChange}
-          value={`Label: ${currentToken.label}`}
-          sx={{ padding: "4px" }}
-        />
+      <Box sx={{ width: "80px" }} p={1}>
+        <Box
+          as="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRequestClose();
+          }}
+        >
+          <Input
+            id="changeTokenLabel"
+            onChange={handleLabelChange}
+            value={`Label: ${currentToken.label}`}
+            sx={{
+              padding: "4px",
+              border: "none",
+              ":focus": {
+                outline: "none",
+              },
+            }}
+            autoComplete="off"
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {statusOptions.map((status) => (
+            <Box
+              key={status}
+              sx={{
+                width: "33%",
+                paddingTop: "33%",
+                borderRadius: "50%",
+                transform: "scale(0.75)",
+                backgroundColor: statusToColor(status),
+                cursor: "pointer",
+              }}
+              onClick={() => handleStatusChange(status)}
+            >
+              {currentToken.status && currentToken.status.includes(status) && (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    border: "2px solid white",
+                    position: "absolute",
+                    top: 0,
+                    borderRadius: "50%",
+                  }}
+                />
+              )}
+            </Box>
+          ))}
+        </Box>
       </Box>
     </Modal>
   );

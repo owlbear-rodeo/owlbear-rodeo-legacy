@@ -22,6 +22,7 @@ function Tokens({ onCreateMapToken }) {
         id: shortid.generate(),
         size: tokenSize,
         label: "",
+        status: "",
       });
     }
   }

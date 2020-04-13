@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { Box, Image } from "theme-ui";
 
 import TokenLabel from "./TokenLabel";
+import TokenStatus from "./TokenStatus";
 
 import usePreventTouch from "../helpers/usePreventTouch";
 
@@ -51,8 +52,10 @@ function MapToken({ token, tokenSizePercent, className }) {
             data-id={token.id}
             data-size={token.size}
             data-label={token.label}
+            data-status={token.status}
             ref={imageRef}
           />
+          {token.status && <TokenStatus statuses={token.status.split(" ")} />}
           {token.label && <TokenLabel label={token.label} />}
         </Box>
       </Box>
