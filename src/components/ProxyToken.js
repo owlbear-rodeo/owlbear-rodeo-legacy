@@ -4,12 +4,14 @@ import { Image, Box } from "theme-ui";
 import interact from "interactjs";
 
 import usePortal from "../helpers/usePortal";
+import TokenLabel from "./TokenLabel";
 
 function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
-  const imageRef = useRef();
+  const [label, setLabel] = useState("");
+  const proxyRef = useRef();
 
   const proxyOnMap = useRef(false);
 
@@ -19,10 +21,11 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         start: (event) => {
           let target = event.target;
           // Hide the token and copy it's image to the proxy
-          target.style.opacity = "0.25";
+          target.parentElement.style.opacity = "0.25";
           setImageSource(target.src);
+          setLabel(target.dataset.label || "");
 
-          let proxy = imageRef.current;
+          let proxy = proxyRef.current;
           if (proxy) {
             // Find and set the initial offset of the token to the proxy
             const proxyRect = proxy.getBoundingClientRect();
@@ -40,7 +43,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         },
 
         move: (event) => {
-          let proxy = imageRef.current;
+          let proxy = proxyRef.current;
           // Move the proxy based off of the movment of the token
           if (proxy) {
             // keep the dragged position in the data-x/data-y attributes
@@ -69,7 +72,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
 
         end: (event) => {
           let target = event.target;
-          let proxy = imageRef.current;
+          let proxy = proxyRef.current;
           if (proxy) {
             if (onProxyDragEnd) {
               // TODO: look at cleaning this up with a props instead of
@@ -103,7 +106,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           }
 
           // Show the token
-          target.style.opacity = "1";
+          target.parentElement.style.opacity = "1";
           setImageSource("");
         },
       },
@@ -126,15 +129,20 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         right: 0,
       }}
     >
-      <Image
-        src={imageSource}
-        sx={{
-          touchAction: "none",
-          userSelect: "none",
-          position: "absolute",
-        }}
-        ref={imageRef}
-      />
+      <Box
+        sx={{ position: "absolute", display: "flex", flexDirection: "column" }}
+        ref={proxyRef}
+      >
+        <Image
+          src={imageSource}
+          sx={{
+            touchAction: "none",
+            userSelect: "none",
+            width: "100%",
+          }}
+        />
+        {label && <TokenLabel label={label} />}
+      </Box>
     </Box>,
     proxyContainer
   );
