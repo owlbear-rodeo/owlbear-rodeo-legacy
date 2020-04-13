@@ -68,7 +68,6 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
 
   function handleModalContent(node) {
     if (node) {
-      console.log(node);
       const tokenLabelInput = node.querySelector("#changeTokenLabel");
       tokenLabelInput.focus();
       // Highlight label section of input
