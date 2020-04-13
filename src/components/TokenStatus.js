@@ -21,7 +21,7 @@ function TokenStatus({ statuses }) {
             height: "100%",
             position: "absolute",
             opacity: 0.8,
-            transform: `scale(1.${index + 1})`,
+            transform: `scale(${1 - index / 10})`,
           }}
         >
           <svg

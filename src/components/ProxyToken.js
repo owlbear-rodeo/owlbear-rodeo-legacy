@@ -4,6 +4,7 @@ import { Image, Box } from "theme-ui";
 import interact from "interactjs";
 
 import usePortal from "../helpers/usePortal";
+
 import TokenLabel from "./TokenLabel";
 import TokenStatus from "./TokenStatus";
 
@@ -58,14 +59,11 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
 
             // Check whether the proxy is on the right or left hand side of the screen
             // if not set proxyOnMap to true
-            if (proxyContainer) {
-              const proxyContainerRect = proxyContainer.getBoundingClientRect();
-              const proxyRect = proxy.getBoundingClientRect();
-              // TODO: Look into a better method than hardcoding these values
-              proxyOnMap.current =
-                proxyContainerRect.right - proxyRect.right > 80 &&
-                proxyRect.left > 112;
-            }
+            const proxyRect = proxy.getBoundingClientRect();
+            const map = document.querySelector(".map");
+            const mapRect = map.getBoundingClientRect();
+            proxyOnMap.current =
+              proxyRect.left > mapRect.left && proxyRect.right < mapRect.right;
 
             // update the posiion attributes
             proxy.setAttribute("data-x", x);
@@ -78,19 +76,17 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           let proxy = proxyRef.current;
           if (proxy) {
             if (onProxyDragEnd) {
-              // TODO: look at cleaning this up with a props instead of
-              // hard coding an id
-              const map = document.getElementById("map");
-              const mapRect = map.getBoundingClientRect();
+              const mapImage = document.querySelector(".mapImage");
+              const mapImageRect = mapImage.getBoundingClientRect();
 
               let x = parseFloat(proxy.getAttribute("data-x")) || 0;
               let y = parseFloat(proxy.getAttribute("data-y")) || 0;
               // Convert coordiantes to be relative to the map
-              x = x - mapRect.left;
-              y = y - mapRect.top;
+              x = x - mapImageRect.left;
+              y = y - mapImageRect.top;
               // Normalize to map width
-              x = x / (mapRect.right - mapRect.left);
-              y = y / (mapRect.bottom - mapRect.top);
+              x = x / (mapImageRect.right - mapImageRect.left);
+              y = y / (mapImageRect.bottom - mapImageRect.top);
 
               target.setAttribute("data-x", x);
               target.setAttribute("data-y", y);

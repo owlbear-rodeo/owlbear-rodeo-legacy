@@ -121,7 +121,7 @@ function Map({
     >
       <Image
         ref={mapRef}
-        id="map"
+        className="mapImage"
         sx={{
           width: "100%",
           userSelect: "none",

@@ -107,6 +107,20 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
         },
         { once: true }
       );
+
+      // Ensure menu is in bounds
+      const nodeRect = node.getBoundingClientRect();
+      const map = document.querySelector(".map");
+      const mapRect = map.getBoundingClientRect();
+      setMenuLeft((prevLeft) =>
+        Math.min(
+          mapRect.right - nodeRect.width,
+          Math.max(mapRect.left, prevLeft)
+        )
+      );
+      setMenuTop((prevTop) =>
+        Math.min(mapRect.bottom - nodeRect.height, prevTop)
+      );
     }
   }
 
