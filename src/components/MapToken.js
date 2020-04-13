@@ -31,14 +31,20 @@ function MapToken({ token, tokenSizePercent, className }) {
           pointerEvents: "all",
         }}
       >
-        <Box sx={{ position: "absolute", display: "flex", width: "100%" }}>
+        <Box
+          sx={{
+            position: "absolute",
+            display: "flex", // Set display to flex to fix height being calculated wrong
+            width: "100%",
+            flexDirection: "column",
+          }}
+        >
           <Image
             className={className}
             sx={{
               userSelect: "none",
               touchAction: "none",
               width: "100%",
-              position: "absolute", // Fix image stretch in safari
             }}
             src={token.image}
             // pass data into the dom element used to pass state to the ProxyToken

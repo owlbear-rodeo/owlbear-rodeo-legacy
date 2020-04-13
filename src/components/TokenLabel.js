@@ -12,6 +12,8 @@ function TokenLabel({ label }) {
         transformOrigin: "bottom center",
         pointerEvents: "none",
         width: "100%",
+        display: "flex", // Set display to flex to fix height being calculated wrong
+        flexDirection: "column",
       }}
     >
       <Image sx={{ width: "100%" }} src={tokenLabel} />
