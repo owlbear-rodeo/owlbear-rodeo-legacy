@@ -16,7 +16,7 @@ function usePreventTouch(elementRef) {
         element.removeEventListener("touchstart", prevent3DTouch);
       }
     };
-  }, [elementRef.current]);
+  }, [elementRef]);
 }
 
 export default usePreventTouch;
