@@ -80,11 +80,9 @@ function Map({
     const mapContainer = mapContainerRef.current;
 
     function handleZoom(event) {
-      // Stop the trackpad zoom event from zooming the
-      // webpage when in the map
-      if (event.ctrlKey) {
-        event.preventDefault();
-      }
+      // Stop overscroll on chrome and safari
+      // also stop pinch to zoom on chrome
+      event.preventDefault();
 
       const deltaY = event.deltaY * zoomSpeed;
       setMapScale((previousMapScale) =>
@@ -102,16 +100,6 @@ function Map({
       if (mapContainer) {
         mapContainer.removeEventListener("wheel", handleZoom);
       }
-    };
-  }, []);
-
-  // Stop the overscroll when the map is loaded and restore it when
-  // unmounted
-  useEffect(() => {
-    document.body.style.overscrollBehavior = "none";
-
-    return () => {
-      document.body.style.overscrollBehavior = "initial";
     };
   }, []);
 
