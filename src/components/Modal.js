@@ -2,7 +2,7 @@ import React from "react";
 import Modal from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 
-function StyledModal({ isOpen, onRequestClose, children }) {
+function StyledModal({ isOpen, onRequestClose, children, ...props }) {
   const { theme } = useThemeUI();
 
   return (
@@ -22,6 +22,7 @@ function StyledModal({ isOpen, onRequestClose, children }) {
           maxHeight: "100%",
         },
       }}
+      {...props}
     >
       {children}
       <Close

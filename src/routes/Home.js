@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Flex, Button, Image, Text } from "theme-ui";
 import shortid from "shortid";
 import { useHistory } from "react-router-dom";
 
 import Footer from "../components/Footer";
+
+import JoinModal from "../modals/JoinModal";
 
 import owlington from "../images/Owlington.png";
 
@@ -13,9 +15,7 @@ function Home() {
     history.push(`/game/${shortid.generate()}`);
   }
 
-  function handleJoinGame() {
-    history.push("/join");
-  }
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   return (
     <Flex
@@ -42,12 +42,16 @@ function Home() {
         <Button m={2} onClick={handleStartGame}>
           Start Game
         </Button>
-        <Button m={2} onClick={handleJoinGame}>
+        <Button m={2} onClick={() => setIsJoinModalOpen(true)}>
           Join Game
         </Button>
         <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
           Alpha v0.8.0
         </Text>
+        <JoinModal
+          isOpen={isJoinModalOpen}
+          onRequestClose={() => setIsJoinModalOpen(false)}
+        />
       </Flex>
       <Footer />
     </Flex>

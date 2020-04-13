@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Label, Input, Button, Flex } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
-import Footer from "../components/Footer";
+import Modal from "../components/Modal";
 
-function Join() {
+function JoinModal({ isOpen, onRequestClose }) {
   let history = useHistory();
   const [gameId, setGameId] = useState("");
 
@@ -17,14 +17,16 @@ function Join() {
     history.push(`/game/${gameId}`);
   }
 
+  const inputRef = useRef();
+  function focusInput() {
+    inputRef.current && inputRef.current.focus();
+  }
+
   return (
-    <Flex
-      sx={{
-        flexDirection: "column",
-        justifyContent: "space-between",
-        minHeight: "100%",
-        alignItems: "center",
-      }}
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      onAfterOpen={focusInput}
     >
       <Flex
         sx={{
@@ -33,7 +35,7 @@ function Join() {
           maxWidth: "300px",
           flexGrow: 1,
         }}
-        mb={2}
+        m={2}
       >
         <Box as="form" onSubmit={handleSubmit}>
           <Label htmlFor="id">Let me see your identification</Label>
@@ -44,13 +46,13 @@ function Join() {
             name="id"
             value={gameId || ""}
             onChange={handleChange}
+            ref={inputRef}
           />
           <Button disabled={!gameId}>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
         </Box>
       </Flex>
-      <Footer />
-    </Flex>
+    </Modal>
   );
 }
 
-export default Join;
+export default JoinModal;
