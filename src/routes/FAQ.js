@@ -21,7 +21,7 @@ function FAQ() {
           maxWidth: "500px",
           flexGrow: 1,
         }}
-        my={2}
+        m={4}
       >
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Frequently Asked Questions

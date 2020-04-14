@@ -16,10 +16,10 @@ function About() {
       <Flex
         sx={{
           flexDirection: "column",
-          maxWidth: "300px",
+          maxWidth: "350px",
           flexGrow: 1,
         }}
-        mb={2}
+        m={4}
       >
         <Text my={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           About ʕ•ᴥ•ʔ
