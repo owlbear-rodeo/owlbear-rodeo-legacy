@@ -50,7 +50,7 @@ function JoinModal({ isOpen, onRequestClose }) {
           />
           <Flex>
             <Button sx={{ flexGrow: 1 }} disabled={!gameId}>
-              Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
+              Join
             </Button>
           </Flex>
         </Box>
