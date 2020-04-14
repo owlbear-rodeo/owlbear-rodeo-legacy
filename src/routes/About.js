@@ -39,8 +39,8 @@ function About() {
           Made by two people in Melbourne, Australia.{" "}
           <Link href="https://mitchmccaffrey.com/">Mitch</Link> and{" "}
           <Link href="https://twitter.com/nthouliss">Nicola</Link> were looking
-          for an easy way to continue their d{"&"}d campaign as in person
-          interaction becomes harder.
+          for an easy way to continue their d{"&"}d campaign as in-person
+          interaction becomes harder during the COVID-19 crisis.
         </Text>
         <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           Contact
