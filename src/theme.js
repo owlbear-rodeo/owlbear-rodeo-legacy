@@ -177,6 +177,9 @@ export default {
       "&:focus": {
         outlineColor: "primary",
       },
+      "&:disabled": {
+        backgroundColor: "muted",
+      },
     },
   },
   buttons: {
@@ -196,6 +199,10 @@ export default {
       },
       "&:active": {
         borderColor: "primary",
+      },
+      "&:disabled": {
+        borderColor: "text",
+        opacity: 0.5,
       },
     },
     secondary: {
