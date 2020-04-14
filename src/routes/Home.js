@@ -49,7 +49,7 @@ function Home() {
           Join Game
         </Button>
         <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
-          Alpha v0.10.0
+          Alpha v0.10.1
         </Text>
         <JoinModal
           isOpen={isJoinModalOpen}
