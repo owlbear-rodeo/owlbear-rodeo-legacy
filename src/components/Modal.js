@@ -2,7 +2,13 @@ import React from "react";
 import Modal from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 
-function StyledModal({ isOpen, onRequestClose, children, ...props }) {
+function StyledModal({
+  isOpen,
+  onRequestClose,
+  children,
+  allowClose,
+  ...props
+}) {
   const { theme } = useThemeUI();
 
   return (
@@ -25,13 +31,19 @@ function StyledModal({ isOpen, onRequestClose, children, ...props }) {
       {...props}
     >
       {children}
-      <Close
-        m={0}
-        sx={{ position: "absolute", top: 0, right: 0 }}
-        onClick={onRequestClose}
-      />
+      {allowClose && (
+        <Close
+          m={0}
+          sx={{ position: "absolute", top: 0, right: 0 }}
+          onClick={onRequestClose}
+        />
+      )}
     </Modal>
   );
 }
+
+StyledModal.defaultProps = {
+  allowClose: true,
+};
 
 export default StyledModal;

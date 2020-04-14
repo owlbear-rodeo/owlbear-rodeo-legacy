@@ -1,21 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Flex, Button, Image, Text } from "theme-ui";
-import shortid from "shortid";
-import { useHistory } from "react-router-dom";
 
 import Footer from "../components/Footer";
 
+import StartModal from "../modals/StartModal";
 import JoinModal from "../modals/JoinModal";
+
+import AuthContext from "../contexts/AuthContext";
 
 import owlington from "../images/Owlington.png";
 
 function Home() {
-  let history = useHistory();
-  function handleStartGame() {
-    history.push(`/game/${shortid.generate()}`);
-  }
-
+  const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+
+  // Reset password on visiting home
+  const { setPassword } = useContext(AuthContext);
+  useEffect(() => {
+    setPassword("");
+  }, [setPassword]);
 
   return (
     <Flex
@@ -39,7 +42,7 @@ function Home() {
           Owlbear Rodeo
         </Text>
         <Image src={owlington} m={2} />
-        <Button m={2} onClick={handleStartGame}>
+        <Button m={2} onClick={() => setIsStartModalOpen(true)}>
           Start Game
         </Button>
         <Button m={2} onClick={() => setIsJoinModalOpen(true)}>
@@ -51,6 +54,10 @@ function Home() {
         <JoinModal
           isOpen={isJoinModalOpen}
           onRequestClose={() => setIsJoinModalOpen(false)}
+        />
+        <StartModal
+          isOpen={isStartModalOpen}
+          onRequestClose={() => setIsStartModalOpen(false)}
         />
       </Flex>
       <Footer />

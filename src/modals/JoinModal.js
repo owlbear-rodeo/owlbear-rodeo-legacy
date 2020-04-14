@@ -48,7 +48,11 @@ function JoinModal({ isOpen, onRequestClose }) {
             onChange={handleChange}
             ref={inputRef}
           />
-          <Button disabled={!gameId}>Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</Button>
+          <Flex>
+            <Button sx={{ flexGrow: 1 }} disabled={!gameId}>
+              Join › (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
+            </Button>
+          </Flex>
         </Box>
       </Flex>
     </Modal>

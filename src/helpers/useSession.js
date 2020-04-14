@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import io from "socket.io-client";
 
 import { omit } from "../helpers/shared";
 import Peer from "../helpers/Peer";
+
+import AuthContext from "../contexts/AuthContext";
 
 const socket = io("https://broker.owlbear.rodeo");
 
@@ -15,9 +17,11 @@ function useSession(
   onPeerTrackRemoved,
   onPeerError
 ) {
+  const { password, setAuthenticationStatus } = useContext(AuthContext);
+
   useEffect(() => {
-    socket.emit("join party", partyId);
-  }, [partyId]);
+    socket.emit("join party", partyId, password);
+  }, [partyId, password]);
 
   const [peers, setPeers] = useState({});
 
@@ -148,6 +152,7 @@ function useSession(
         const sync = index === 0;
         addPeer(id, true, sync);
       }
+      setAuthenticationStatus("authenticated");
     }
 
     function handleSignal(data) {
@@ -157,17 +162,23 @@ function useSession(
       }
     }
 
+    function handleAuthError() {
+      setAuthenticationStatus("unauthenticated");
+    }
+
     socket.on("party member joined", handlePartyMemberJoined);
     socket.on("party member left", handlePartyMemberLeft);
     socket.on("joined party", handleJoinedParty);
     socket.on("signal", handleSignal);
+    socket.on("auth error", handleAuthError);
     return () => {
       socket.removeListener("party member joined", handlePartyMemberJoined);
       socket.removeListener("party member left", handlePartyMemberLeft);
       socket.removeListener("joined party", handleJoinedParty);
       socket.removeListener("signal", handleSignal);
+      socket.removeListener("auth error", handleAuthError);
     };
-  }, [peers]);
+  }, [peers, setAuthenticationStatus]);
 
   return { peers, socket };
 }

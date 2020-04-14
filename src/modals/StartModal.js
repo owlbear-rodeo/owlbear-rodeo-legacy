@@ -1,0 +1,73 @@
+import React, { useState, useContext } from "react";
+import { Box, Label, Input, Button, Flex, Checkbox } from "theme-ui";
+import { useHistory } from "react-router-dom";
+import shortid from "shortid";
+
+import AuthContext from "../contexts/AuthContext";
+
+import Modal from "../components/Modal";
+
+function StartModal({ isOpen, onRequestClose }) {
+  let history = useHistory();
+  const { password, setPassword } = useContext(AuthContext);
+
+  function handlePasswordChange(event) {
+    setPassword(event.target.value);
+  }
+
+  const [usePassword, setUsePassword] = useState(true);
+  function handleUsePasswordChange(event) {
+    setUsePassword(event.target.checked);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!usePassword) {
+      setPassword("");
+    }
+    history.push(`/game/${shortid.generate()}`);
+  }
+
+  return (
+    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+      <Flex
+        sx={{
+          flexDirection: "column",
+          justifyContent: "center",
+          maxWidth: "300px",
+          flexGrow: 1,
+        }}
+        m={2}
+      >
+        <Box as="form" onSubmit={handleSubmit}>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            my={1}
+            id="password"
+            name="password"
+            value={usePassword ? password : ""}
+            onChange={handlePasswordChange}
+            disabled={!usePassword}
+            autoComplete="off"
+          />
+          <Box>
+            <Label mb={3}>
+              <Checkbox
+                checked={usePassword}
+                onChange={handleUsePasswordChange}
+              />
+              Use password
+            </Label>
+          </Box>
+          <Flex>
+            <Button sx={{ flexGrow: 1 }} disabled={!password && usePassword}>
+              Start
+            </Button>
+          </Flex>
+        </Box>
+      </Flex>
+    </Modal>
+  );
+}
+
+export default StartModal;

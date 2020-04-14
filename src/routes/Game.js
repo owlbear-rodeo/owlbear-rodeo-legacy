@@ -1,9 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
 import { Flex, Box, Text, Link } from "theme-ui";
 import { useParams } from "react-router-dom";
 
 import { omit, isStreamStopped } from "../helpers/shared";
-
 import useSession from "../helpers/useSession";
 import { getRandomMonster } from "../helpers/monsters";
 
@@ -12,8 +17,13 @@ import Tokens from "../components/Tokens";
 import Map from "../components/Map";
 import Banner from "../components/Banner";
 
+import AuthModal from "../modals/AuthModal";
+
+import AuthContext from "../contexts/AuthContext";
+
 function Game() {
   const { id: gameId } = useParams();
+  const { authenticationStatus } = useContext(AuthContext);
 
   const { peers, socket } = useSession(
     gameId,
@@ -238,6 +248,7 @@ function Game() {
           </Text>
         </Box>
       </Banner>
+      <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
     </>
   );
 }
