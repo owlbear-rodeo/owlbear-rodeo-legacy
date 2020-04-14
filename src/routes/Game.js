@@ -16,6 +16,7 @@ import Party from "../components/Party";
 import Tokens from "../components/Tokens";
 import Map from "../components/Map";
 import Banner from "../components/Banner";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 
@@ -249,6 +250,7 @@ function Game() {
         </Box>
       </Banner>
       <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
+      {authenticationStatus === "unknown" && <LoadingOverlay />}
     </>
   );
 }
