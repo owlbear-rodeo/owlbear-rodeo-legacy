@@ -122,11 +122,22 @@ function Game() {
 
   const [peerError, setPeerError] = useState(null);
   function handlePeerError({ error, peer }) {
-    setPeerError(
-      `${
-        peer.id === socket.id ? "" : `(${partyNicknames[peer.id] || "Unknown"})`
-      } ${error.message || "Unknown Error Occurred."}`
-    );
+    console.error(error.code);
+    if (
+      error.code === "ERR_ICE_CONNECTION_FAILURE" ||
+      error.code === "ERR_CONNECTION_FAILURE"
+    ) {
+      setPeerError(
+        `${
+          peer.id === socket.id
+            ? ""
+            : `(${partyNicknames[peer.id] || "Unknown"})`
+        } Connection failure`
+      );
+    }
+    if (error.code === "ERR_WEBRTC_SUPPORT") {
+      setPeerError("WebRTC not supported");
+    }
   }
 
   function handlePeerTrackAdded({ peer, stream: remoteStream }) {

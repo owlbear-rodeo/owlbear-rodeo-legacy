@@ -62,10 +62,10 @@ function FAQ() {
           on the Mozilla Developer Network.
         </Text>
         <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
-          Connection Failed
+          Connection
         </Text>
         <Text my={1} variant="heading" as="h3">
-          Ice connection failed / Connection failed.
+          Connection failure.
         </Text>
         <Text variant="body2" as="p">
           If you are getting a Connection failed error when trying to connect to
@@ -119,6 +119,14 @@ function FAQ() {
             blog post
           </Link>
           .
+        </Text>
+        <Text my={1} variant="heading" as="h3">
+          WebRTC not supported.
+        </Text>
+        <Text variant="body2" as="p">
+          Owlbear Rodeo uses WebRTC to communicate between players. Ensure your
+          browser supports WebRTC. A list of supported browsers can be found{" "}
+          <Link href="https://caniuse.com/#feat=rtcpeerconnection">here</Link>.
         </Text>
       </Flex>
       <Footer />

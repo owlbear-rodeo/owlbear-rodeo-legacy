@@ -21,6 +21,20 @@ function useSession(
 
   const [peers, setPeers] = useState({});
 
+  // Signal connected peers of a closure on refresh
+  useEffect(() => {
+    function handleUnload() {
+      for (let peer of Object.values(peers)) {
+        peer.connection.send({ id: "close" });
+      }
+    }
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
+  }, [peers]);
+
   // Setup event listeners for peers
   useEffect(() => {
     let peerEvents = [];
@@ -37,6 +51,10 @@ function useSession(
       }
 
       function handleDataComplete(data) {
+        if (data.id === "close") {
+          // Close connection when signaled to close
+          peer.connection.destroy();
+        }
         onPeerData && onPeerData({ peer, data });
       }
 
@@ -53,7 +71,6 @@ function useSession(
 
       function handleError(error) {
         onPeerError && onPeerError({ peer, error });
-        console.error(error);
       }
 
       peer.connection.on("signal", handleSignal);
