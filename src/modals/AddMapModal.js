@@ -48,7 +48,7 @@ function AddMapModal({
     event.preventDefault();
     event.stopPropagation();
     const file = event.dataTransfer.files[0];
-    if (file.type.startsWith("image")) {
+    if (file && file.type.startsWith("image")) {
       onImageUpload(file);
     }
     setDragging(false);
