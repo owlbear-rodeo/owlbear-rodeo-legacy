@@ -206,12 +206,23 @@ export default {
       },
     },
     secondary: {
-      color: "secondary",
+      color: "text",
       bg: "transparent",
-      borderStyle: "solid",
-      borderWidth: "1px",
-      borderColor: "text",
+      border: "none",
       fontFamily: "body",
+      "&:focus": {
+        outline: "none",
+      },
+      "&:disabled": {
+        opacity: 0.5,
+      },
+      "&:hover": {
+        color: "primary",
+        cursor: "pointer",
+      },
+      "&:active": {
+        color: "secondary",
+      },
     },
     icon: {
       "&:hover": {
