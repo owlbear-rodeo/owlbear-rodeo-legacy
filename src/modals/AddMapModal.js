@@ -1,5 +1,13 @@
-import React, { useRef } from "react";
-import { Box, Button, Image as UIImage, Flex, Label, Input } from "theme-ui";
+import React, { useRef, useState } from "react";
+import {
+  Box,
+  Button,
+  Image as UIImage,
+  Flex,
+  Label,
+  Input,
+  Text,
+} from "theme-ui";
 
 import Modal from "../components/Modal";
 
@@ -22,6 +30,30 @@ function AddMapModal({
       fileInputRef.current.click();
     }
   }
+
+  const [dragging, setDragging] = useState(false);
+  function handleImageDragEnter(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragging(true);
+  }
+
+  function handleImageDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragging(false);
+  }
+
+  function handleImageDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const file = event.dataTransfer.files[0];
+    if (file.type.startsWith("image")) {
+      onImageUpload(file);
+    }
+    setDragging(false);
+  }
+
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
       <Box
@@ -30,19 +62,24 @@ function AddMapModal({
           e.preventDefault();
           onDone();
         }}
+        onDragEnter={handleImageDragEnter}
       >
-        <Label pt={2} pb={1}>
-          Add map
-        </Label>
         <input
-          onChange={onImageUpload}
+          onChange={(event) => onImageUpload(event.target.files[0])}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
           ref={fileInputRef}
         />
 
-        <Flex sx={{ flexDirection: "column" }}>
+        <Flex
+          sx={{
+            flexDirection: "column",
+          }}
+        >
+          <Label pt={2} pb={1}>
+            Add map
+          </Label>
           <UIImage
             my={2}
             sx={{
@@ -90,6 +127,30 @@ function AddMapModal({
             >
               Select Image
             </Button>
+          )}
+          {dragging && (
+            <Flex
+              bg="muted"
+              sx={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                left: 0,
+                bottom: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "copy",
+              }}
+              onDragLeave={handleImageDragLeave}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = "copy";
+              }}
+              onDrop={handleImageDrop}
+            >
+              <Text sx={{ pointerEvents: "none" }}>Drop map to upload</Text>
+            </Flex>
           )}
         </Flex>
       </Box>

@@ -18,8 +18,7 @@ function AddMapButton({ onMapChanged }) {
 
   const mapDataRef = useRef(null);
   const [mapSource, setMapSource] = useState(null);
-  function handleImageUpload(event) {
-    const file = event.target.files[0];
+  function handleImageUpload(file) {
     const url = URL.createObjectURL(file);
     let image = new Image();
     image.onload = function () {
