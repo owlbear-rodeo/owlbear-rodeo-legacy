@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Flex, Button, Image, Text, Box } from "theme-ui";
+import { Flex, Button, Image, Text } from "theme-ui";
 
 import Footer from "../components/Footer";
 
