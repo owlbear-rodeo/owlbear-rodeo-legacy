@@ -21,6 +21,7 @@ function Banner({ isOpen, onRequestClose, children }) {
           border: "none",
           padding: "8px",
           margin: "8px",
+          paddingRight: "24px",
           maxWidth: "500px",
           transform: "translateX(-50%)",
         },
