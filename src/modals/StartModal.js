@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import { Box, Label, Input, Button, Flex, Checkbox } from "theme-ui";
 import { useHistory } from "react-router-dom";
 import shortid from "shortid";
@@ -28,8 +28,17 @@ function StartModal({ isOpen, onRequestClose }) {
     history.push(`/game/${shortid.generate()}`);
   }
 
+  const inputRef = useRef();
+  function focusInput() {
+    inputRef.current && inputRef.current.focus();
+  }
+
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      onAfterOpen={focusInput}
+    >
       <Flex
         sx={{
           flexDirection: "column",
@@ -49,6 +58,7 @@ function StartModal({ isOpen, onRequestClose }) {
             onChange={handlePasswordChange}
             disabled={!usePassword}
             autoComplete="off"
+            ref={inputRef}
           />
           <Box>
             <Label mb={3}>
