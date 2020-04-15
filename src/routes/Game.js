@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
-import { getRandomMonster } from "../helpers/monsters";
+import useNickname from "../helpers/useNickname";
 
 import Party from "../components/Party";
 import Tokens from "../components/Tokens";
@@ -74,7 +74,7 @@ function Game() {
     }
   }
 
-  const [nickname, setNickname] = useState(getRandomMonster());
+  const { nickname, setNickname } = useNickname();
   const [partyNicknames, setPartyNicknames] = useState({});
 
   function handleNicknameChange(nickname) {
