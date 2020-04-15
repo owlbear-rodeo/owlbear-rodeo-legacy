@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Flex, Button, Image, Text } from "theme-ui";
+import { Flex, Button, Image, Text, Box } from "theme-ui";
 
 import Footer from "../components/Footer";
 
 import StartModal from "../modals/StartModal";
 import JoinModal from "../modals/JoinModal";
+import DonateModal from "../modals/DonationModal";
 
 import AuthContext from "../contexts/AuthContext";
 
@@ -13,6 +14,7 @@ import owlington from "../images/Owlington.png";
 function Home() {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
 
   // Reset password on visiting home
   const { setPassword } = useContext(AuthContext);
@@ -51,6 +53,14 @@ function Home() {
         <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
           Alpha v0.10.2
         </Text>
+        <Button
+          m={2}
+          onClick={() => setIsDonateModalOpen(true)}
+          variant="secondary"
+        >
+          Support Us
+        </Button>
+
         <JoinModal
           isOpen={isJoinModalOpen}
           onRequestClose={() => setIsJoinModalOpen(false)}
@@ -58,6 +68,10 @@ function Home() {
         <StartModal
           isOpen={isStartModalOpen}
           onRequestClose={() => setIsStartModalOpen(false)}
+        />
+        <DonateModal
+          isOpen={isDonateModalOpen}
+          onRequestClose={() => setIsDonateModalOpen(false)}
         />
       </Flex>
       <Footer />
