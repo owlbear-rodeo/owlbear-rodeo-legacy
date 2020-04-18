@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import simplify from "simplify-js";
 
 function MapDrawing({ width, height }) {
   const canvasRef = useRef();
@@ -12,7 +13,7 @@ function MapDrawing({ width, height }) {
       const containerRect = container.getBoundingClientRect();
       const x = (event.clientX - containerRect.x) / containerRect.width;
       const y = (event.clientY - containerRect.y) / containerRect.height;
-      return { x: x * width, y: y * height };
+      return { x, y };
     }
   }
 
@@ -36,6 +37,12 @@ function MapDrawing({ width, height }) {
 
   function handleMouseUp(event) {
     setIsMouseDown(false);
+    setShapes((prevShapes) => {
+      const currentShape = prevShapes.slice(-1)[0];
+      const otherShapes = prevShapes.slice(0, -1);
+      const simplified = simplify(currentShape.points, 0.001);
+      return [...otherShapes, { points: simplified }];
+    });
   }
 
   useEffect(() => {
@@ -46,9 +53,9 @@ function MapDrawing({ width, height }) {
       context.clearRect(0, 0, width, height);
       for (let shape of shapes) {
         context.beginPath();
-        context.moveTo(shape.points[0].x, shape.points[0].y);
+        context.moveTo(shape.points[0].x * width, shape.points[0].y * height);
         for (let point of shape.points.slice(1)) {
-          context.lineTo(point.x, point.y);
+          context.lineTo(point.x * width, point.y * height);
         }
         context.closePath();
         context.stroke();
