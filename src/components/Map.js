@@ -3,10 +3,10 @@ import { Box, Image } from "theme-ui";
 import interact from "interactjs";
 
 import ProxyToken from "./ProxyToken";
-import AddMapButton from "./AddMapButton";
 import TokenMenu from "./TokenMenu";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
+import MapControls from "./MapControls";
 
 const mapTokenClassName = "map-token";
 const zoomSpeed = -0.005;
@@ -154,20 +154,6 @@ function Map({
     </Box>
   );
 
-  const mapActions = (
-    <Box
-      p={2}
-      sx={{
-        position: "absolute",
-        top: "0",
-        left: "50%",
-        transform: "translateX(-50%)",
-      }}
-    >
-      <AddMapButton onMapChanged={onMapChange} />
-    </Box>
-  );
-
   return (
     <>
       <Box
@@ -211,7 +197,7 @@ function Map({
             />
           </Box>
         </Box>
-        {mapActions}
+        <MapControls onMapChange={onMapChange} />
       </Box>
       <ProxyToken
         tokenClassName={mapTokenClassName}
