@@ -9,7 +9,13 @@ import EraseToolIcon from "../icons/EraseToolIcon";
 import UndoIcon from "../icons/UndoIcon";
 import RedoIcon from "../icons/RedoIcon";
 
-function MapControls({ onMapChange }) {
+function MapControls({
+  onMapChange,
+  onToolChange,
+  selectedTool,
+  onUndo,
+  onRedo,
+}) {
   const divider = (
     <Box
       my={2}
@@ -33,13 +39,28 @@ function MapControls({ onMapChange }) {
       </IconButton>
       <AddMapButton onMapChange={onMapChange} />
       {divider}
-      <IconButton aria-label="Pan Tool" title="Pan Tool">
+      <IconButton
+        aria-label="Pan Tool"
+        title="Pan Tool"
+        onClick={() => onToolChange("pan")}
+        sx={{ color: selectedTool === "pan" ? "primary" : "text" }}
+      >
         <PanToolIcon />
       </IconButton>
-      <IconButton aria-label="Brush Tool" title="Brush Tool">
+      <IconButton
+        aria-label="Brush Tool"
+        title="Brush Tool"
+        onClick={() => onToolChange("brush")}
+        sx={{ color: selectedTool === "brush" ? "primary" : "text" }}
+      >
         <BrushToolIcon />
       </IconButton>
-      <IconButton aria-label="Erase Tool" title="Erase Tool">
+      <IconButton
+        aria-label="Erase Tool"
+        title="Erase Tool"
+        onClick={() => onToolChange("erase")}
+        sx={{ color: selectedTool === "erase" ? "primary" : "text" }}
+      >
         <EraseToolIcon />
       </IconButton>
       {divider}

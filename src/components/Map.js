@@ -34,6 +34,8 @@ function Map({
   const [mapTranslate, setMapTranslate] = useState({ x: 0, y: 0 });
   const [mapScale, setMapScale] = useState(1);
 
+  const [selectedTool, setSelectedTool] = useState("pan");
+
   useEffect(() => {
     interact(".map")
       .gesturable({
@@ -42,10 +44,12 @@ function Map({
             setMapScale((previousMapScale) =>
               Math.max(Math.min(previousMapScale + event.ds, maxZoom), minZoom)
             );
-            setMapTranslate((previousMapTranslate) => ({
-              x: previousMapTranslate.x + event.dx,
-              y: previousMapTranslate.y + event.dy,
-            }));
+            if (selectedTool === "pan") {
+              setMapTranslate((previousMapTranslate) => ({
+                x: previousMapTranslate.x + event.dx,
+                y: previousMapTranslate.y + event.dy,
+              }));
+            }
           },
         },
       })
@@ -53,10 +57,12 @@ function Map({
         inertia: true,
         listeners: {
           move: (event) => {
-            // setMapTranslate((previousMapTranslate) => ({
-            //   x: previousMapTranslate.x + event.dx,
-            //   y: previousMapTranslate.y + event.dy,
-            // }));
+            if (selectedTool === "pan") {
+              setMapTranslate((previousMapTranslate) => ({
+                x: previousMapTranslate.x + event.dx,
+                y: previousMapTranslate.y + event.dy,
+              }));
+            }
           },
         },
       });
@@ -65,7 +71,7 @@ function Map({
       setMapTranslate({ x: 0, y: 0 });
       setMapScale(1);
     });
-  }, []);
+  }, [selectedTool]);
 
   // Reset map transform when map changes
   useEffect(() => {
@@ -194,10 +200,15 @@ function Map({
             <MapDrawing
               width={mapData ? mapData.width : 0}
               height={mapData ? mapData.height : 0}
+              selectedTool={selectedTool}
             />
           </Box>
         </Box>
-        <MapControls onMapChange={onMapChange} />
+        <MapControls
+          onMapChange={onMapChange}
+          onToolChange={setSelectedTool}
+          selectedTool={selectedTool}
+        />
       </Box>
       <ProxyToken
         tokenClassName={mapTokenClassName}

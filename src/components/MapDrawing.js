@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import simplify from "simplify-js";
 
-function MapDrawing({ width, height }) {
+function MapDrawing({ width, height, selectedTool }) {
   const canvasRef = useRef();
   const containerRef = useRef();
 
@@ -20,13 +20,20 @@ function MapDrawing({ width, height }) {
   const [isMouseDown, setIsMouseDown] = useState(false);
   function handleMouseDown(event) {
     setIsMouseDown(true);
-    const position = getMousePosition(event);
-    setShapes((prevShapes) => [...prevShapes, { points: [position] }]);
+    if (selectedTool === "brush") {
+      const position = getMousePosition(event);
+      setShapes((prevShapes) => [...prevShapes, { points: [position] }]);
+    }
   }
 
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   function handleMouseMove(event) {
-    if (isMouseDown) {
-      const position = getMousePosition(event);
+    const position = getMousePosition(event);
+    if (selectedTool === "erase") {
+      setMousePosition(position);
+    }
+    if (isMouseDown && selectedTool === "brush") {
+      setMousePosition(position);
       setShapes((prevShapes) => {
         const currentShape = prevShapes.slice(-1)[0];
         const otherShapes = prevShapes.slice(0, -1);
@@ -37,12 +44,14 @@ function MapDrawing({ width, height }) {
 
   function handleMouseUp(event) {
     setIsMouseDown(false);
-    setShapes((prevShapes) => {
-      const currentShape = prevShapes.slice(-1)[0];
-      const otherShapes = prevShapes.slice(0, -1);
-      const simplified = simplify(currentShape.points, 0.001);
-      return [...otherShapes, { points: simplified }];
-    });
+    if (selectedTool === "brush") {
+      setShapes((prevShapes) => {
+        const currentShape = prevShapes.slice(-1)[0];
+        const otherShapes = prevShapes.slice(0, -1);
+        const simplified = simplify(currentShape.points, 0.001);
+        return [...otherShapes, { points: simplified }];
+      });
+    }
   }
 
   useEffect(() => {
@@ -51,18 +60,43 @@ function MapDrawing({ width, height }) {
       const context = canvas.getContext("2d");
 
       context.clearRect(0, 0, width, height);
-      for (let shape of shapes) {
-        context.beginPath();
-        context.moveTo(shape.points[0].x * width, shape.points[0].y * height);
+      let erasedShapes = [];
+      for (let [index, shape] of shapes.entries()) {
+        const path = new Path2D();
+        path.moveTo(shape.points[0].x * width, shape.points[0].y * height);
         for (let point of shape.points.slice(1)) {
-          context.lineTo(point.x * width, point.y * height);
+          path.lineTo(point.x * width, point.y * height);
         }
-        context.closePath();
-        context.stroke();
-        context.fill();
+        path.closePath();
+        let color = "#000000";
+        if (selectedTool === "erase") {
+          if (
+            context.isPointInPath(
+              path,
+              mousePosition.x * width,
+              mousePosition.y * height
+            )
+          ) {
+            color = "#BB99FF";
+            if (isMouseDown) {
+              erasedShapes.push(index);
+              continue;
+            }
+          }
+        }
+        context.fillStyle = color;
+        context.strokeStyle = color;
+        context.stroke(path);
+        context.fill(path);
+      }
+
+      if (erasedShapes.length > 0) {
+        setShapes((prevShapes) =>
+          prevShapes.filter((_, i) => !erasedShapes.includes(i))
+        );
       }
     }
-  }, [shapes, width, height]);
+  }, [shapes, width, height, mousePosition, isMouseDown, selectedTool]);
 
   return (
     <div
