@@ -1,30 +1,10 @@
-import React, { useRef, useEffect } from "react";
-import Two from "two.js";
+import React, { useRef, useEffect, useState } from "react";
 
 function MapDrawing({ width, height }) {
-  const twoRef = useRef(new Two({ type: Two.Types.canvas }));
+  const canvasRef = useRef();
   const containerRef = useRef();
 
-  useEffect(() => {
-    const two = twoRef.current;
-    const container = containerRef.current;
-    if (two && container) {
-      two.width = width;
-      two.height = height;
-      two.update();
-      // Force the canvas to be 100% after update
-      const canvas = container.firstChild;
-      if (canvas) {
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-      }
-    }
-  }, [width, height]);
-
-  useEffect(() => {
-    const two = twoRef.current;
-    two.appendTo(containerRef.current);
-  }, []);
+  const [shapes, setShapes] = useState([]);
 
   function getMousePosition(event) {
     const container = containerRef.current;
@@ -32,41 +12,50 @@ function MapDrawing({ width, height }) {
       const containerRect = container.getBoundingClientRect();
       const x = (event.clientX - containerRect.x) / containerRect.width;
       const y = (event.clientY - containerRect.y) / containerRect.height;
-      let v = new Two.Vector(x * width, y * height);
-      v.position = new Two.Vector().copy(v);
-      return v;
+      return { x: x * width, y: y * height };
     }
   }
 
-  const mouseDownRef = useRef(false);
-  const shapeRef = useRef();
+  const [isMouseDown, setIsMouseDown] = useState(false);
   function handleMouseDown(event) {
-    const two = twoRef.current;
-    if (two) {
-      mouseDownRef.current = true;
-      let position = getMousePosition(event);
-      let shape = two.makePath([position], false);
-      shape.fill = "#333";
-      shape.stroke = "#333";
-      shape.linewidth = 5;
-      shape.vertices[0].addSelf(shape.translation);
-      shape.translation.clear();
-      shapeRef.current = shape;
-    }
+    setIsMouseDown(true);
+    const position = getMousePosition(event);
+    setShapes((prevShapes) => [...prevShapes, { points: [position] }]);
   }
 
   function handleMouseMove(event) {
-    const shape = shapeRef.current;
-    const two = twoRef.current;
-    if (mouseDownRef.current && shape && two) {
-      shape.vertices.push(getMousePosition(event));
-      two.render();
+    if (isMouseDown) {
+      const position = getMousePosition(event);
+      setShapes((prevShapes) => {
+        const currentShape = prevShapes.slice(-1)[0];
+        const otherShapes = prevShapes.slice(0, -1);
+        return [...otherShapes, { points: [...currentShape.points, position] }];
+      });
     }
   }
 
   function handleMouseUp(event) {
-    mouseDownRef.current = false;
+    setIsMouseDown(false);
   }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const context = canvas.getContext("2d");
+
+      context.clearRect(0, 0, width, height);
+      for (let shape of shapes) {
+        context.beginPath();
+        context.moveTo(shape.points[0].x, shape.points[0].y);
+        for (let point of shape.points.slice(1)) {
+          context.lineTo(point.x, point.y);
+        }
+        context.closePath();
+        context.stroke();
+        context.fill();
+      }
+    }
+  }, [shapes, width, height]);
 
   return (
     <div
@@ -75,7 +64,14 @@ function MapDrawing({ width, height }) {
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{ width: "100%", height: "100%" }}
+      />
+    </div>
   );
 }
 
