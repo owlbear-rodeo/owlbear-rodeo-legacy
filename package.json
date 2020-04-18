@@ -22,6 +22,7 @@
     "simplebar-react": "^2.1.0",
     "socket.io-client": "^2.3.0",
     "theme-ui": "^0.3.1",
+    "two.js": "^0.7.0-stable.1",
     "webrtc-adapter": "^7.5.1"
   },
   "scripts": {

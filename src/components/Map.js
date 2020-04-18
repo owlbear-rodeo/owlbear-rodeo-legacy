@@ -2,10 +2,11 @@ import React, { useRef, useEffect, useState } from "react";
 import { Box, Image } from "theme-ui";
 import interact from "interactjs";
 
-import ProxyToken from "../components/ProxyToken";
-import AddMapButton from "../components/AddMapButton";
-import TokenMenu from "../components/TokenMenu";
-import MapToken from "../components/MapToken";
+import ProxyToken from "./ProxyToken";
+import AddMapButton from "./AddMapButton";
+import TokenMenu from "./TokenMenu";
+import MapToken from "./MapToken";
+import MapDrawing from "./MapDrawing";
 
 const mapTokenClassName = "map-token";
 const zoomSpeed = -0.005;
@@ -52,10 +53,10 @@ function Map({
         inertia: true,
         listeners: {
           move: (event) => {
-            setMapTranslate((previousMapTranslate) => ({
-              x: previousMapTranslate.x + event.dx,
-              y: previousMapTranslate.y + event.dy,
-            }));
+            // setMapTranslate((previousMapTranslate) => ({
+            //   x: previousMapTranslate.x + event.dx,
+            //   y: previousMapTranslate.y + event.dy,
+            // }));
           },
         },
       });
@@ -204,6 +205,10 @@ function Map({
             />
             {mapImage}
             {mapTokens}
+            <MapDrawing
+              width={mapData ? mapData.width : 0}
+              height={mapData ? mapData.height : 0}
+            />
           </Box>
         </Box>
         {mapActions}
