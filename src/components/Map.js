@@ -8,6 +8,8 @@ import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapControls from "./MapControls";
 
+import { omit } from "../helpers/shared";
+
 const mapTokenClassName = "map-token";
 const zoomSpeed = -0.005;
 const minZoom = 0.1;
@@ -31,10 +33,76 @@ function Map({
     }
   }
 
-  const [mapTranslate, setMapTranslate] = useState({ x: 0, y: 0 });
-  const [mapScale, setMapScale] = useState(1);
+  /**
+   * Map drawing
+   */
 
   const [selectedTool, setSelectedTool] = useState("pan");
+
+  const [drawnShapes, setDrawnShapes] = useState([]);
+  const [drawActions, setDrawActions] = useState([]);
+  const [drawActionIndex, setDrawActionIndex] = useState(-1);
+  function handleShapeAdd(shape) {
+    setDrawActions((prevActions) => {
+      const newActions = [
+        ...prevActions.slice(0, drawActionIndex + 1),
+        { type: "add", shape },
+      ];
+      setDrawActionIndex(newActions.length - 1);
+      return newActions;
+    });
+  }
+
+  function handleShapeRemove(shapeId) {
+    setDrawActions((prevActions) => {
+      const newActions = [
+        ...prevActions.slice(0, drawActionIndex + 1),
+        { type: "remove", shapeId },
+      ];
+      setDrawActionIndex(newActions.length - 1);
+      return newActions;
+    });
+  }
+
+  useEffect(() => {
+    let shapesById = {};
+    for (let i = 0; i <= drawActionIndex; i++) {
+      const action = drawActions[i];
+      if (action.type === "add") {
+        shapesById[action.shape.id] = action.shape;
+      }
+      if (action.type === "remove") {
+        shapesById = omit(shapesById, [action.shapeId]);
+      }
+    }
+    setDrawnShapes(Object.values(shapesById));
+  }, [drawActions, drawActionIndex]);
+
+  function handleDrawActionUndo() {
+    setDrawActionIndex((prevIndex) => Math.max(prevIndex - 1, -1));
+  }
+
+  function handleDrawActionRedo() {
+    setDrawActionIndex((prevIndex) =>
+      Math.min(prevIndex + 1, drawActions.length - 1)
+    );
+  }
+
+  const disabledTools = [];
+  if (!mapData) {
+    disabledTools.push("pan");
+    disabledTools.push("brush");
+  }
+  if (drawnShapes.length === 0) {
+    disabledTools.push("erase");
+  }
+
+  /**
+   * Map movement
+   */
+
+  const [mapTranslate, setMapTranslate] = useState({ x: 0, y: 0 });
+  const [mapScale, setMapScale] = useState(1);
 
   useEffect(() => {
     interact(".map")
@@ -109,6 +177,10 @@ function Map({
       }
     };
   }, []);
+
+  /**
+   * Member setup
+   */
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef();
@@ -201,6 +273,9 @@ function Map({
               width={mapData ? mapData.width : 0}
               height={mapData ? mapData.height : 0}
               selectedTool={selectedTool}
+              shapes={drawnShapes}
+              onShapeAdd={handleShapeAdd}
+              onShapeRemove={handleShapeRemove}
             />
           </Box>
         </Box>
@@ -208,6 +283,11 @@ function Map({
           onMapChange={onMapChange}
           onToolChange={setSelectedTool}
           selectedTool={selectedTool}
+          disabledTools={disabledTools}
+          onUndo={handleDrawActionUndo}
+          onRedo={handleDrawActionRedo}
+          undoDisabled={drawActionIndex < 0}
+          redoDisabled={drawActionIndex === drawActions.length - 1}
         />
       </Box>
       <ProxyToken

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Flex, Box, IconButton } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
@@ -13,9 +13,14 @@ function MapControls({
   onMapChange,
   onToolChange,
   selectedTool,
+  disabledTools,
   onUndo,
   onRedo,
+  undoDisabled,
+  redoDisabled,
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const divider = (
     <Box
       my={2}
@@ -34,42 +39,71 @@ function MapControls({
         alignItems: "center",
       }}
     >
-      <IconButton aria-label="Expand More" title="Expand More">
+      <IconButton
+        aria-label={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
+        title={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
+        onClick={() => setIsExpanded(!isExpanded)}
+        sx={{
+          transform: `rotate(${isExpanded ? "0" : "180deg"})`,
+          display: "block",
+        }}
+      >
         <ExpandMoreIcon />
       </IconButton>
-      <AddMapButton onMapChange={onMapChange} />
-      {divider}
-      <IconButton
-        aria-label="Pan Tool"
-        title="Pan Tool"
-        onClick={() => onToolChange("pan")}
-        sx={{ color: selectedTool === "pan" ? "primary" : "text" }}
+      <Box
+        sx={{
+          flexDirection: "column",
+          alignItems: "center",
+          display: isExpanded ? "flex" : "none",
+        }}
       >
-        <PanToolIcon />
-      </IconButton>
-      <IconButton
-        aria-label="Brush Tool"
-        title="Brush Tool"
-        onClick={() => onToolChange("brush")}
-        sx={{ color: selectedTool === "brush" ? "primary" : "text" }}
-      >
-        <BrushToolIcon />
-      </IconButton>
-      <IconButton
-        aria-label="Erase Tool"
-        title="Erase Tool"
-        onClick={() => onToolChange("erase")}
-        sx={{ color: selectedTool === "erase" ? "primary" : "text" }}
-      >
-        <EraseToolIcon />
-      </IconButton>
-      {divider}
-      <IconButton aria-label="Undo" title="Undo">
-        <UndoIcon />
-      </IconButton>
-      <IconButton aria-label="Redo" title="Redo">
-        <RedoIcon />
-      </IconButton>
+        <AddMapButton onMapChange={onMapChange} />
+        {divider}
+        <IconButton
+          aria-label="Pan Tool"
+          title="Pan Tool"
+          onClick={() => onToolChange("pan")}
+          sx={{ color: selectedTool === "pan" ? "primary" : "text" }}
+          disabled={disabledTools.includes("pan")}
+        >
+          <PanToolIcon />
+        </IconButton>
+        <IconButton
+          aria-label="Brush Tool"
+          title="Brush Tool"
+          onClick={() => onToolChange("brush")}
+          sx={{ color: selectedTool === "brush" ? "primary" : "text" }}
+          disabled={disabledTools.includes("brush")}
+        >
+          <BrushToolIcon />
+        </IconButton>
+        <IconButton
+          aria-label="Erase Tool"
+          title="Erase Tool"
+          onClick={() => onToolChange("erase")}
+          sx={{ color: selectedTool === "erase" ? "primary" : "text" }}
+          disabled={disabledTools.includes("erase")}
+        >
+          <EraseToolIcon />
+        </IconButton>
+        {divider}
+        <IconButton
+          aria-label="Undo"
+          title="Undo"
+          onClick={() => onUndo()}
+          disabled={undoDisabled}
+        >
+          <UndoIcon />
+        </IconButton>
+        <IconButton
+          aria-label="Redo"
+          title="Redo"
+          onClick={() => onRedo()}
+          disabled={redoDisabled}
+        >
+          <RedoIcon />
+        </IconButton>
+      </Box>
     </Flex>
   );
 }

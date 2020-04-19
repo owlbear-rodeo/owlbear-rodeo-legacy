@@ -235,6 +235,10 @@ export default {
       "&:active": {
         color: "secondary",
       },
+      "&:disabled": {
+        opacity: 0.5,
+        color: "text",
+      },
     },
     close: {
       "&:hover": {
