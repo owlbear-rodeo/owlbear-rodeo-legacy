@@ -159,7 +159,7 @@ function Game() {
       if (mapDrawActions) {
         peer.connection.send({ id: "mapDraw", data: mapDrawActions });
       }
-      if (mapDrawActionIndex != mapDrawActions.length - 1) {
+      if (mapDrawActionIndex !== mapDrawActions.length - 1) {
         peer.connection.send({ id: "mapDrawIndex", data: mapDrawActionIndex });
       }
     }
