@@ -63,7 +63,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
     }
 
     // Add listener for hold gesture
-    interact(`.${tokenClassName}`).on("hold", handleTokenMenuOpen);
+    interact(`.${tokenClassName}`).on("tap", handleTokenMenuOpen);
 
     function handleMapContextMenu(event) {
       event.preventDefault();
