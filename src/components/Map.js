@@ -101,50 +101,57 @@ function Map({
    * Map movement
    */
 
-  const [mapTranslate, setMapTranslate] = useState({ x: 0, y: 0 });
-  const [mapScale, setMapScale] = useState(1);
+  const mapTranslateRef = useRef({ x: 0, y: 0 });
+  const mapScaleRef = useRef(1);
+  const mapMoveContainerRef = useRef();
+  function setTranslateAndScale(newTranslate, newScale) {
+    const moveContainer = mapMoveContainerRef.current;
+    moveContainer.style.transform = `translate(${newTranslate.x}px, ${newTranslate.y}px) scale(${newScale})`;
+    mapScaleRef.current = newScale;
+    mapTranslateRef.current = newTranslate;
+  }
 
   useEffect(() => {
+    function handleMove(event) {
+      const scale = mapScaleRef.current;
+      const translate = mapTranslateRef.current;
+
+      let newScale = scale;
+      let newTranslate = translate;
+
+      if (event.ds) {
+        newScale = Math.max(Math.min(scale + event.ds, maxZoom), minZoom);
+      }
+
+      if (selectedTool === "pan") {
+        newTranslate = {
+          x: translate.x + event.dx,
+          y: translate.y + event.dy,
+        };
+      }
+      setTranslateAndScale(newTranslate, newScale);
+    }
     interact(".map")
       .gesturable({
         listeners: {
-          move: (event) => {
-            setMapScale((previousMapScale) =>
-              Math.max(Math.min(previousMapScale + event.ds, maxZoom), minZoom)
-            );
-            if (selectedTool === "pan") {
-              setMapTranslate((previousMapTranslate) => ({
-                x: previousMapTranslate.x + event.dx,
-                y: previousMapTranslate.y + event.dy,
-              }));
-            }
-          },
+          move: handleMove,
         },
       })
       .draggable({
         inertia: true,
         listeners: {
-          move: (event) => {
-            if (selectedTool === "pan") {
-              setMapTranslate((previousMapTranslate) => ({
-                x: previousMapTranslate.x + event.dx,
-                y: previousMapTranslate.y + event.dy,
-              }));
-            }
-          },
+          move: handleMove,
         },
       });
     interact(".map").on("doubletap", (event) => {
       event.preventDefault();
-      setMapTranslate({ x: 0, y: 0 });
-      setMapScale(1);
+      setTranslateAndScale({ x: 0, y: 0 }, 1);
     });
   }, [selectedTool]);
 
   // Reset map transform when map changes
   useEffect(() => {
-    setMapTranslate({ x: 0, y: 0 });
-    setMapScale(1);
+    setTranslateAndScale({ x: 0, y: 0 }, 1);
   }, [mapSource]);
 
   // Bind the wheel event of the map via a ref
@@ -159,10 +166,13 @@ function Map({
       // also stop pinch to zoom on chrome
       event.preventDefault();
 
+      const scale = mapScaleRef.current;
+      const translate = mapTranslateRef.current;
+
       const deltaY = event.deltaY * zoomSpeed;
-      setMapScale((previousMapScale) =>
-        Math.max(Math.min(previousMapScale + deltaY, maxZoom), minZoom)
-      );
+      const newScale = Math.max(Math.min(scale + deltaY, maxZoom), minZoom);
+
+      setTranslateAndScale(translate, newScale);
     }
 
     if (mapContainer) {
@@ -255,11 +265,7 @@ function Map({
             transform: "translate(-50%, -50%)",
           }}
         >
-          <Box
-            style={{
-              transform: `translate(${mapTranslate.x}px, ${mapTranslate.y}px) scale(${mapScale})`,
-            }}
-          >
+          <Box ref={mapMoveContainerRef}>
             <Box
               sx={{
                 width: "100%",
