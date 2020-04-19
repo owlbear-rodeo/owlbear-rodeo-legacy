@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import { Box, Label, Button, Flex, Radio, Text } from "theme-ui";
 import { useLocation, useHistory } from "react-router-dom";
 
@@ -27,15 +26,17 @@ function DonationModal({ isOpen, onRequestClose }) {
   const [stripe, setStripe] = useState();
   useEffect(() => {
     if (showDonationForm) {
-      loadStripe("pk_live_MJjzi5djj524Y7h3fL5PNh4e00a852XD51")
-        .then((stripe) => {
-          setStripe(stripe);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
+      import("@stripe/stripe-js").then(({ loadStripe }) => {
+        loadStripe("pk_live_MJjzi5djj524Y7h3fL5PNh4e00a852XD51")
+          .then((stripe) => {
+            setStripe(stripe);
+            setLoading(false);
+          })
+          .catch((err) => {
+            setError(err.message);
+            setLoading(false);
+          });
+      });
     }
   }, [showDonationForm]);
 
