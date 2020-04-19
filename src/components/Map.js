@@ -92,18 +92,18 @@ function Map({
   }
 
   useEffect(() => {
-    function handleMove(event) {
+    function handleMove(event, isGesture) {
       const scale = mapScaleRef.current;
       const translate = mapTranslateRef.current;
 
       let newScale = scale;
       let newTranslate = translate;
 
-      if (event.ds) {
+      if (isGesture) {
         newScale = Math.max(Math.min(scale + event.ds, maxZoom), minZoom);
       }
 
-      if (selectedTool === "pan") {
+      if (selectedTool === "pan" || isGesture) {
         newTranslate = {
           x: translate.x + event.dx,
           y: translate.y + event.dy,
@@ -114,20 +114,25 @@ function Map({
     interact(".map")
       .gesturable({
         listeners: {
-          move: handleMove,
+          move: (e) => handleMove(e, true),
         },
       })
       .draggable({
         inertia: true,
         listeners: {
-          move: handleMove,
+          move: (e) => handleMove(e, false),
+        },
+        cursorChecker: () => {
+          return selectedTool === "pan" && mapData ? "move" : "default";
         },
       });
     interact(".map").on("doubletap", (event) => {
       event.preventDefault();
-      setTranslateAndScale({ x: 0, y: 0 }, 1);
+      if (selectedTool === "pan") {
+        setTranslateAndScale({ x: 0, y: 0 }, 1);
+      }
     });
-  }, [selectedTool]);
+  }, [selectedTool, mapData]);
 
   // Reset map transform when map changes
   useEffect(() => {
