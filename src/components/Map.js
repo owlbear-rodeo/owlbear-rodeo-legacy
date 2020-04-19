@@ -22,6 +22,11 @@ function Map({
   onMapTokenChange,
   onMapTokenRemove,
   onMapChange,
+  onMapDraw,
+  onMapDrawUndo,
+  onMapDrawRedo,
+  drawActions,
+  drawActionIndex,
 }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenChange) {
@@ -40,30 +45,15 @@ function Map({
   const [selectedTool, setSelectedTool] = useState("pan");
 
   const [drawnShapes, setDrawnShapes] = useState([]);
-  const [drawActions, setDrawActions] = useState([]);
-  const [drawActionIndex, setDrawActionIndex] = useState(-1);
   function handleShapeAdd(shape) {
-    setDrawActions((prevActions) => {
-      const newActions = [
-        ...prevActions.slice(0, drawActionIndex + 1),
-        { type: "add", shape },
-      ];
-      setDrawActionIndex(newActions.length - 1);
-      return newActions;
-    });
+    onMapDraw({ type: "add", shape });
   }
 
   function handleShapeRemove(shapeId) {
-    setDrawActions((prevActions) => {
-      const newActions = [
-        ...prevActions.slice(0, drawActionIndex + 1),
-        { type: "remove", shapeId },
-      ];
-      setDrawActionIndex(newActions.length - 1);
-      return newActions;
-    });
+    onMapDraw({ type: "remove", shapeId });
   }
 
+  // Replay the draw actions and convert them to shapes for the map drawing
   useEffect(() => {
     let shapesById = {};
     for (let i = 0; i <= drawActionIndex; i++) {
@@ -77,16 +67,6 @@ function Map({
     }
     setDrawnShapes(Object.values(shapesById));
   }, [drawActions, drawActionIndex]);
-
-  function handleDrawActionUndo() {
-    setDrawActionIndex((prevIndex) => Math.max(prevIndex - 1, -1));
-  }
-
-  function handleDrawActionRedo() {
-    setDrawActionIndex((prevIndex) =>
-      Math.min(prevIndex + 1, drawActions.length - 1)
-    );
-  }
 
   const disabledTools = [];
   if (!mapData) {
@@ -290,8 +270,8 @@ function Map({
           onToolChange={setSelectedTool}
           selectedTool={selectedTool}
           disabledTools={disabledTools}
-          onUndo={handleDrawActionUndo}
-          onRedo={handleDrawActionRedo}
+          onUndo={onMapDrawUndo}
+          onRedo={onMapDrawRedo}
           undoDisabled={drawActionIndex < 0}
           redoDisabled={drawActionIndex === drawActions.length - 1}
         />

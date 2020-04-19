@@ -36,6 +36,10 @@ function Game() {
     handlePeerError
   );
 
+  /**
+   * Map state
+   */
+
   const [mapSource, setMapSource] = useState(null);
   const mapDataRef = useRef(null);
 
@@ -74,6 +78,52 @@ function Game() {
     }
   }
 
+  const [mapDrawActions, setMapDrawActions] = useState([]);
+  // An index into the draw actions array to which only actions before the
+  // index will be performed (used in undo and redo)
+  const [mapDrawActionIndex, setMapDrawActionIndex] = useState(-1);
+  function addNewMapDrawActions(actions) {
+    setMapDrawActions((prevActions) => {
+      const newActions = [
+        ...prevActions.slice(0, mapDrawActionIndex + 1),
+        ...actions,
+      ];
+      const newIndex = newActions.length - 1;
+      setMapDrawActionIndex(newIndex);
+      return newActions;
+    });
+  }
+
+  function handleMapDraw(action) {
+    addNewMapDrawActions([action]);
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapDraw", data: [action] });
+    }
+  }
+
+  function handleMapDrawUndo() {
+    const newIndex = Math.max(mapDrawActionIndex - 1, -1);
+    setMapDrawActionIndex(newIndex);
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
+    }
+  }
+
+  function handleMapDrawRedo() {
+    const newIndex = Math.min(
+      mapDrawActionIndex + 1,
+      mapDrawActions.length - 1
+    );
+    setMapDrawActionIndex(newIndex);
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
+    }
+  }
+
+  /**
+   * Party state
+   */
+
   const { nickname, setNickname } = useNickname();
   const [partyNicknames, setPartyNicknames] = useState({});
 
@@ -94,6 +144,10 @@ function Game() {
     }
   }
 
+  /**
+   * Peer handlers
+   */
+
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
       if (mapSource) {
@@ -101,6 +155,12 @@ function Game() {
       }
       if (mapTokens) {
         peer.connection.send({ id: "tokenEdit", data: mapTokens });
+      }
+      if (mapDrawActions) {
+        peer.connection.send({ id: "mapDraw", data: mapDrawActions });
+      }
+      if (mapDrawActionIndex != mapDrawActions.length - 1) {
+        peer.connection.send({ id: "mapDrawIndex", data: mapDrawActionIndex });
       }
     }
     if (data.id === "map") {
@@ -124,6 +184,12 @@ function Game() {
         ...prevNicknames,
         ...data.data,
       }));
+    }
+    if (data.id === "mapDraw") {
+      addNewMapDrawActions(data.data);
+    }
+    if (data.id === "mapDrawIndex") {
+      setMapDrawActionIndex(data.data);
     }
   }
 
@@ -168,6 +234,10 @@ function Game() {
       }));
     }
   }
+
+  /**
+   * Stream handler
+   */
 
   function handleStreamStart(localStream) {
     setStream(localStream);
@@ -238,6 +308,11 @@ function Game() {
             onMapTokenChange={handleMapTokenChange}
             onMapTokenRemove={handleMapTokenRemove}
             onMapChange={handleMapChange}
+            onMapDraw={handleMapDraw}
+            onMapDrawUndo={handleMapDrawUndo}
+            onMapDrawRedo={handleMapDrawRedo}
+            drawActions={mapDrawActions}
+            drawActionIndex={mapDrawActionIndex}
           />
           <Tokens onCreateMapToken={handleMapTokenChange} />
         </Flex>
