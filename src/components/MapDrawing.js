@@ -13,7 +13,16 @@ function MapDrawing({
   const canvasRef = useRef();
   const containerRef = useRef();
 
-  function getMousePosition(event) {
+  const [brushPoints, setBrushPoints] = useState([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [pointerPosition, setPointerPosition] = useState({ x: -1, y: -1 });
+
+  // Reset pointer position when tool changes
+  useEffect(() => {
+    setPointerPosition({ x: -1, y: -1 });
+  }, [selectedTool]);
+
+  function getRelativePointerPosition(event) {
     const container = containerRef.current;
     if (container) {
       const containerRect = container.getBoundingClientRect();
@@ -23,34 +32,47 @@ function MapDrawing({
     }
   }
 
-  const [brushPoints, setBrushPoints] = useState([]);
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  function handleMouseDown(event) {
-    setIsMouseDown(true);
+  function handleStart(event) {
+    if (event.touches && event.touches.length !== 1) {
+      setIsDrawing(false);
+      setBrushPoints([]);
+      return;
+    }
+    const pointer = event.touches ? event.touches[0] : event;
+    const position = getRelativePointerPosition(pointer);
+    setPointerPosition(position);
+    setIsDrawing(true);
     if (selectedTool === "brush") {
-      const position = getMousePosition(event);
       setBrushPoints([position]);
     }
   }
 
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  function handleMouseMove(event) {
-    const position = getMousePosition(event);
-    if (selectedTool === "erase") {
-      setMousePosition(position);
+  function handleMove(event) {
+    if (event.touches && event.touches.length !== 1) {
+      return;
     }
-    if (isMouseDown && selectedTool === "brush") {
-      setMousePosition(position);
+    const pointer = event.touches ? event.touches[0] : event;
+    const position = getRelativePointerPosition(pointer);
+    if (selectedTool === "erase") {
+      setPointerPosition(position);
+    }
+    if (isDrawing && selectedTool === "brush") {
+      setPointerPosition(position);
       setBrushPoints((prevPoints) => [...prevPoints, position]);
     }
   }
 
-  function handleMouseUp(event) {
-    setIsMouseDown(false);
+  function handleStop(event) {
+    if (event.touches && event.touches.length !== 0) {
+      return;
+    }
+    setIsDrawing(false);
     if (selectedTool === "brush") {
-      const simplifiedPoints = simplify(brushPoints, 0.001);
-      onShapeAdd({ id: shortid.generate(), points: simplifiedPoints });
-      setBrushPoints([]);
+      if (brushPoints.length > 0) {
+        const simplifiedPoints = simplify(brushPoints, 0.001);
+        onShapeAdd({ id: shortid.generate(), points: simplifiedPoints });
+        setBrushPoints([]);
+      }
     }
     if (selectedTool === "erase" && hoveredShapeRef.current) {
       onShapeRemove(hoveredShapeRef.current.id);
@@ -89,8 +111,8 @@ function MapDrawing({
           if (
             context.isPointInPath(
               path,
-              mousePosition.x * width,
-              mousePosition.y * height
+              pointerPosition.x * width,
+              pointerPosition.y * height
             )
           ) {
             hoveredShape = shape;
@@ -112,8 +134,8 @@ function MapDrawing({
     shapes,
     width,
     height,
-    mousePosition,
-    isMouseDown,
+    pointerPosition,
+    isDrawing,
     selectedTool,
     brushPoints,
   ]);
@@ -122,9 +144,12 @@ function MapDrawing({
     <div
       style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
       ref={containerRef}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onMouseDown={handleStart}
+      onMouseMove={handleMove}
+      onMouseUp={handleStop}
+      onTouchStart={handleStart}
+      onTouchMove={handleMove}
+      onTouchEnd={handleStop}
     >
       <canvas
         ref={canvasRef}
