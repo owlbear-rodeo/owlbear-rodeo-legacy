@@ -214,6 +214,7 @@ function Map({
         left: 0,
         right: 0,
         bottom: 0,
+        pointerEvents: "none",
       }}
     >
       {Object.values(tokens).map((token) => (
@@ -259,7 +260,6 @@ function Map({
               }}
             />
             {mapImage}
-            {mapTokens}
             <MapDrawing
               width={mapData ? mapData.width : 0}
               height={mapData ? mapData.height : 0}
@@ -268,6 +268,7 @@ function Map({
               onShapeAdd={handleShapeAdd}
               onShapeRemove={handleShapeRemove}
             />
+            {mapTokens}
           </Box>
         </Box>
         <MapControls
