@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 
 import { useThemeUI } from "theme-ui";
@@ -13,19 +13,29 @@ function MapMenu({
   right,
   children,
   style,
+  // A node to exclude from the pointer event for closing
+  excludeNode,
 }) {
-  function handleModalContent(node) {
-    if (node) {
-      // Close modal if interacting with any other element
-      function handlePointerDown(event) {
-        const path = event.composedPath();
-        if (!path.includes(node)) {
-          onRequestClose();
-          document.body.removeEventListener("pointerdown", handlePointerDown);
-        }
-      }
-      document.body.addEventListener("pointerdown", handlePointerDown);
+  // Save modal node in state to ensure that the pointer listeners
+  // are removed if the open state changed not from the onRequestClose
+  // callback
+  const [modalContentNode, setModalContentNode] = useState(null);
 
+  useEffect(() => {
+    // Close modal if interacting with any other element
+    function handlePointerDown(event) {
+      const path = event.composedPath();
+      if (
+        !path.includes(modalContentNode) &&
+        !(excludeNode && path.includes(excludeNode))
+      ) {
+        onRequestClose();
+        document.body.removeEventListener("pointerdown", handlePointerDown);
+      }
+    }
+
+    if (modalContentNode) {
+      document.body.addEventListener("pointerdown", handlePointerDown);
       // Check for wheel event to close modal as well
       document.body.addEventListener(
         "wheel",
@@ -35,6 +45,15 @@ function MapMenu({
         { once: true }
       );
     }
+    return () => {
+      if (modalContentNode) {
+        document.body.removeEventListener("pointerdown", handlePointerDown);
+      }
+    };
+  }, [modalContentNode, excludeNode, onRequestClose]);
+
+  function handleModalContent(node) {
+    setModalContentNode(node);
     onModalContent(node);
   }
 
@@ -72,6 +91,7 @@ MapMenu.defaultProps = {
   right: "initial",
   bottom: "initial",
   style: {},
+  excludeNode: null,
 };
 
 export default MapMenu;

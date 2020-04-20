@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, IconButton, Label } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
@@ -135,6 +135,9 @@ function MapControls({
   function handleToolClick(event, tool) {
     if (tool !== selectedTool) {
       onToolChange(tool);
+    } else if (currentSubmenu) {
+      setCurrentSubmenu(null);
+      setCurrentSubmenuOptions({});
     } else if (subMenus[tool]) {
       const toolRect = event.target.getBoundingClientRect();
       setCurrentSubmenu(tool);
@@ -143,6 +146,8 @@ function MapControls({
         left: `${toolRect.left - 16}px`,
         top: `${toolRect.bottom - toolRect.height / 2}px`,
         style: { transform: "translate(-100%, -50%)" },
+        // Exclude this node from the sub menus auto close
+        excludeNode: event.target,
       });
     }
   }
@@ -161,6 +166,9 @@ function MapControls({
       sx={{ height: "2px", width: "24px", borderRadius: "2px", opacity: 0.5 }}
     ></Box>
   );
+
+  const expanedMenuRef = useRef();
+
   return (
     <>
       <Flex
@@ -195,6 +203,7 @@ function MapControls({
             borderRadius: "4px",
           }}
           p={2}
+          ref={expanedMenuRef}
         >
           <AddMapButton onMapChange={onMapChange} />
           {divider}
