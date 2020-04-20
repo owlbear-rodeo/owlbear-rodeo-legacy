@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Flex, Box, IconButton, Button, Label } from "theme-ui";
+import { Flex, Box, IconButton, Label } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
 import ExpandMoreIcon from "../icons/ExpandMoreIcon";
@@ -14,6 +14,7 @@ import GridOffIcon from "../icons/GridOffIcon";
 import colors, { colorOptions } from "../helpers/colors";
 
 import MapMenu from "./MapMenu";
+import EraseAllIcon from "../icons/EraseAllIcon";
 
 function MapControls({
   onMapChange,
@@ -100,16 +101,28 @@ function MapControls({
       </Box>
     ),
     erase: (
-      <Box p={1}>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            onEraseAll();
-            setCurrentSubmenu({});
+      <Box p={1} pr={3}>
+        <Label
+          sx={{
+            fontSize: 1,
+            alignItems: "center",
+            ":hover": { color: "primary", cursor: "pointer" },
+            ":active": { color: "secondary" },
           }}
         >
+          <IconButton
+            aria-label="Erase All"
+            title="Erase All"
+            onClick={() => {
+              onEraseAll();
+              setCurrentSubmenu(null);
+              setCurrentSubmenuOptions({});
+            }}
+          >
+            <EraseAllIcon />
+          </IconButton>
           Erase All
-        </Button>
+        </Label>
       </Box>
     ),
   };
