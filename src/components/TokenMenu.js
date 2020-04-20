@@ -143,7 +143,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
       }}
       contentRef={handleModalContent}
     >
-      <Box sx={{ width: "80px" }} p={1}>
+      <Box sx={{ width: "104px" }} p={1}>
         <Box
           as="form"
           onSubmit={(e) => {
@@ -176,8 +176,8 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
             <Box
               key={color}
               sx={{
-                width: "33%",
-                paddingTop: "33%",
+                width: "25%",
+                paddingTop: "25%",
                 borderRadius: "50%",
                 transform: "scale(0.75)",
                 backgroundColor: colors[color],
