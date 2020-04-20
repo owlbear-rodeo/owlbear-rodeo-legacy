@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Modal from "react-modal";
 import interact from "interactjs";
 import { Box, Input } from "theme-ui";
+
+import MapMenu from "./MapMenu";
 
 import colors, { colorOptions } from "../helpers/colors";
 
@@ -85,28 +86,10 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
 
   function handleModalContent(node) {
     if (node) {
+      // Focus input
       const tokenLabelInput = node.querySelector("#changeTokenLabel");
       tokenLabelInput.focus();
       tokenLabelInput.setSelectionRange(7, 8);
-
-      // Close modal if interacting with any other element
-      function handlePointerDown(event) {
-        const path = event.composedPath();
-        if (!path.includes(node)) {
-          setIsOpen(false);
-          document.body.removeEventListener("pointerdown", handlePointerDown);
-        }
-      }
-      document.body.addEventListener("pointerdown", handlePointerDown);
-
-      // Check for wheel event to close modal as well
-      document.body.addEventListener(
-        "wheel",
-        () => {
-          setIsOpen(false);
-        },
-        { once: true }
-      );
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
@@ -125,23 +108,12 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
   }
 
   return (
-    <Modal
+    <MapMenu
       isOpen={isOpen}
       onRequestClose={handleRequestClose}
-      style={{
-        overlay: { top: "0", bottom: "initial" },
-        content: {
-          backgroundColor: "hsla(230, 25%, 18%, 0.8)",
-          top: `${menuTop}px`,
-          left: `${menuLeft}px`,
-          right: "initial",
-          bottom: "initial",
-          padding: 0,
-          borderRadius: "4px",
-          border: "none",
-        },
-      }}
-      contentRef={handleModalContent}
+      top={`${menuTop}px`}
+      left={`${menuLeft}px`}
+      onModalContent={handleModalContent}
     >
       <Box sx={{ width: "104px" }} p={1}>
         <Box
@@ -201,7 +173,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
           ))}
         </Box>
       </Box>
-    </Modal>
+    </MapMenu>
   );
 }
 
