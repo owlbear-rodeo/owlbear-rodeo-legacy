@@ -175,7 +175,7 @@ function MapControls({
         sx={{
           position: "absolute",
           top: 0,
-          right: 0,
+          right: "4px",
           flexDirection: "column",
           alignItems: "center",
         }}
