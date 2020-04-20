@@ -25,8 +25,8 @@ function AddMapButton({ onMapChange }) {
     image.onload = function () {
       mapDataRef.current = {
         file,
-        rows,
-        columns,
+        gridX: gridX,
+        gridY: gridY,
         width: image.width,
         height: image.height,
       };
@@ -43,14 +43,14 @@ function AddMapButton({ onMapChange }) {
     closeModal();
   }
 
-  const [rows, setRows] = useState(defaultMapSize);
-  const [columns, setColumns] = useState(defaultMapSize);
+  const [gridX, setGridX] = useState(defaultMapSize);
+  const [gridY, setGridY] = useState(defaultMapSize);
   useEffect(() => {
     if (mapDataRef.current) {
-      mapDataRef.current.rows = rows;
-      mapDataRef.current.columns = columns;
+      mapDataRef.current.gridX = gridX;
+      mapDataRef.current.gridY = gridY;
     }
-  }, [rows, columns]);
+  }, [gridX, gridY]);
 
   return (
     <>
@@ -62,10 +62,10 @@ function AddMapButton({ onMapChange }) {
         onRequestClose={closeModal}
         onDone={handleDone}
         onImageUpload={handleImageUpload}
-        rows={rows}
-        onRowsChange={setRows}
-        columns={columns}
-        onColumnsChange={setColumns}
+        gridX={gridX}
+        onGridXChange={setGridX}
+        gridY={gridY}
+        onGridYChange={setGridY}
         imageLoaded={imageLoaded}
         mapSource={mapSource}
       />

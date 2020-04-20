@@ -16,10 +16,10 @@ function AddMapModal({
   onRequestClose,
   onDone,
   onImageUpload,
-  rows,
-  onRowsChange,
-  columns,
-  onColumnsChange,
+  gridX,
+  onGridXChange,
+  gridY,
+  onGridYChange,
   imageLoaded,
   mapSource,
 }) {
@@ -95,21 +95,21 @@ function AddMapModal({
           />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
-              <Label htmlFor="rows">Rows</Label>
+              <Label htmlFor="gridX">Columns</Label>
               <Input
                 type="number"
-                name="rows"
-                value={rows}
-                onChange={(e) => onRowsChange(e.target.value)}
+                name="gridX"
+                value={gridX}
+                onChange={(e) => onGridXChange(e.target.value)}
               />
             </Box>
             <Box mb={2} ml={1} sx={{ flexGrow: 1 }}>
-              <Label htmlFor="columns">Columns</Label>
+              <Label htmlFor="gridY">Rows</Label>
               <Input
                 type="number"
-                name="columns"
-                value={columns}
-                onChange={(e) => onColumnsChange(e.target.value)}
+                name="gridY"
+                value={gridY}
+                onChange={(e) => onGridYChange(e.target.value)}
               />
             </Box>
           </Flex>

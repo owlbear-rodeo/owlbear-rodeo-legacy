@@ -191,8 +191,8 @@ function Map({
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef();
-  const rows = mapData && mapData.rows;
-  const tokenSizePercent = (1 / rows) * 100;
+  const gridX = mapData && mapData.gridX;
+  const tokenSizePercent = (1 / gridX) * 100;
   const aspectRatio = (mapData && mapData.width / mapData.height) || 1;
 
   const mapImage = (
