@@ -8,6 +8,7 @@ export default {
     purple: "hsl(290, 100%, 80%)",
     muted: "hsla(230, 20%, 0%, 20%)",
     gray: "hsl(0, 0%, 70%)",
+    overlay: "hsla(230, 25%, 18%, 0.8)",
   },
   fonts: {
     body: "'Bree Serif', serif",

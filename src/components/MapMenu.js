@@ -1,6 +1,8 @@
 import React from "react";
 import Modal from "react-modal";
 
+import { useThemeUI } from "theme-ui";
+
 function MapMenu({
   isOpen,
   onRequestClose,
@@ -35,6 +37,9 @@ function MapMenu({
     }
     onModalContent(node);
   }
+
+  const { theme } = useThemeUI();
+
   return (
     <Modal
       isOpen={isOpen}
@@ -42,7 +47,7 @@ function MapMenu({
       style={{
         overlay: { top: "0", bottom: "initial" },
         content: {
-          backgroundColor: "hsla(230, 25%, 18%, 0.8)",
+          backgroundColor: theme.colors.overlay,
           top,
           left,
           right,

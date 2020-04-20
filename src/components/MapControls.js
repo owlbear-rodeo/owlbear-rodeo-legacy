@@ -138,7 +138,7 @@ function MapControls({
       setCurrentSubmenu(tool);
       setCurrentSubmenuOptions({
         // Align the right of the submenu to the left of the tool and center vertically
-        left: `${toolRect.left - 4}px`,
+        left: `${toolRect.left - 16}px`,
         top: `${toolRect.bottom - toolRect.height / 2}px`,
         style: { transform: "translate(-100%, -50%)" },
       });
@@ -162,7 +162,6 @@ function MapControls({
   return (
     <>
       <Flex
-        p={2}
         sx={{
           position: "absolute",
           top: 0,
@@ -178,7 +177,10 @@ function MapControls({
           sx={{
             transform: `rotate(${isExpanded ? "0" : "180deg"})`,
             display: "block",
+            backgroundColor: "overlay",
+            borderRadius: "50%",
           }}
+          m={2}
         >
           <ExpandMoreIcon />
         </IconButton>
@@ -187,7 +189,10 @@ function MapControls({
             flexDirection: "column",
             alignItems: "center",
             display: isExpanded ? "flex" : "none",
+            backgroundColor: "overlay",
+            borderRadius: "4px",
           }}
+          p={2}
         >
           <AddMapButton onMapChange={onMapChange} />
           {divider}
