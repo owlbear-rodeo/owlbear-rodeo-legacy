@@ -10,6 +10,10 @@ import UndoIcon from "../icons/UndoIcon";
 import RedoIcon from "../icons/RedoIcon";
 import GridOnIcon from "../icons/GridOnIcon";
 import GridOffIcon from "../icons/GridOffIcon";
+import BlendOnIcon from "../icons/BlendOnIcon";
+import BlendOffIcon from "../icons/BlendOffIcon";
+import GestureOnIcon from "../icons/GestureOnIcon";
+import GestureOffIcon from "../icons/GestureOffIcon";
 
 import colors, { colorOptions } from "../helpers/colors";
 
@@ -30,6 +34,10 @@ function MapControls({
   onEraseAll,
   useBrushGridSnapping,
   onBrushGridSnappingChange,
+  useBrushBlending,
+  onBrushBlendingChange,
+  useBrushGesture,
+  onBrushGestureChange,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -71,35 +79,53 @@ function MapControls({
             </Box>
           ))}
         </Box>
-        <Box>
-          <Label
-            sx={{
-              fontSize: 1,
-              alignItems: "center",
-              ":hover": { color: "primary", cursor: "pointer" },
-              ":active": { color: "secondary" },
-            }}
+        <Flex sx={{ justifyContent: "space-between" }}>
+          <IconButton
+            aria-label={
+              useBrushGridSnapping
+                ? "Disable Brush Grid Snapping"
+                : "Enable Brush Grid Snapping"
+            }
+            title={
+              useBrushGridSnapping
+                ? "Disable Brush Grid Snapping"
+                : "Enable Brush Grid Snapping"
+            }
+            onClick={() => onBrushGridSnappingChange(!useBrushGridSnapping)}
           >
-            {useBrushGridSnapping ? (
-              <IconButton
-                aria-label="Disable Brush Grid Snapping"
-                title="Disable Brush Grid Snapping"
-                onClick={() => onBrushGridSnappingChange(false)}
-              >
-                <GridOnIcon />
-              </IconButton>
-            ) : (
-              <IconButton
-                aria-label="Enable Brush Grid Snapping"
-                title="Enable Brush Grid Snapping"
-                onClick={() => onBrushGridSnappingChange(true)}
-              >
-                <GridOffIcon />
-              </IconButton>
-            )}
-            Grid Lock
-          </Label>
-        </Box>
+            {useBrushGridSnapping ? <GridOnIcon /> : <GridOffIcon />}
+          </IconButton>
+          <IconButton
+            aria-label={
+              useBrushBlending
+                ? "Disable Brush Blending"
+                : "Enable Brush Blending"
+            }
+            title={
+              useBrushBlending
+                ? "Disable Brush Blending"
+                : "Enable Brush Blending"
+            }
+            onClick={() => onBrushBlendingChange(!useBrushBlending)}
+          >
+            {useBrushBlending ? <BlendOnIcon /> : <BlendOffIcon />}
+          </IconButton>
+          <IconButton
+            aria-label={
+              useBrushGesture
+                ? "Disable Gesture Detection"
+                : "Enable Gesture Detection"
+            }
+            title={
+              useBrushGesture
+                ? "Disable Gesture Detection"
+                : "Enable Gesture Detection"
+            }
+            onClick={() => onBrushGestureChange(!useBrushGesture)}
+          >
+            {useBrushGesture ? <GestureOnIcon /> : <GestureOffIcon />}
+          </IconButton>
+        </Flex>
       </Box>
     ),
     erase: (

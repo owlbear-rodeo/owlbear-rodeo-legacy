@@ -9879,6 +9879,11 @@ shallow-clone@^3.0.0:
   dependencies:
     kind-of "^6.0.2"
 
+shape-detector@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/shape-detector/-/shape-detector-0.2.1.tgz#d69acf8a5f595100fee08b2d69d6b5c74d887e1e"
+  integrity sha1-1prPil9ZUQD+4Istada1x02Ifh4=
+
 shebang-command@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/shebang-command/-/shebang-command-1.2.0.tgz#44aac65b695b03398968c39f363fee5deafdf1ea"

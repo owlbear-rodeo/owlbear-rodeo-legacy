@@ -5,6 +5,11 @@ import shortid from "shortid";
 import colors from "../helpers/colors";
 import { snapPositionToGrid } from "../helpers/shared";
 
+import {
+  pointsToGesture,
+  convertPointsToGesturePath,
+} from "../helpers/gestures";
+
 function MapDrawing({
   width,
   height,
@@ -15,6 +20,8 @@ function MapDrawing({
   brushColor,
   useGridSnapping,
   gridSize,
+  useBrushBlending,
+  useBrushGesture,
 }) {
   const canvasRef = useRef();
   const containerRef = useRef();
@@ -87,11 +94,17 @@ function MapDrawing({
     if (selectedTool === "brush") {
       if (brushPoints.length > 1) {
         const simplifiedPoints = simplify(brushPoints, 0.001);
+        const gesture = useBrushGesture
+          ? pointsToGesture(simplifiedPoints)
+          : "none";
         onShapeAdd({
           id: shortid.generate(),
           points: simplifiedPoints,
           color: brushColor,
+          gesture,
+          blend: useBrushBlending,
         });
+
         setBrushPoints([]);
       }
     }
@@ -112,7 +125,20 @@ function MapDrawing({
       return path;
     }
 
-    function drawPath(path, color, context) {
+    function shapeToPath(shape) {
+      return shape.gesture !== "none"
+        ? convertPointsToGesturePath(
+            shape.points.map((p) => ({
+              x: p.x * width,
+              y: p.y * height,
+            })),
+            shape.gesture
+          )
+        : pointsToPath(shape.points);
+    }
+
+    function drawPath(path, color, blend, context) {
+      context.globalAlpha = blend ? 0.5 : 1.0;
       context.fillStyle = color;
       context.strokeStyle = color;
       context.stroke(path);
@@ -126,7 +152,7 @@ function MapDrawing({
       context.clearRect(0, 0, width, height);
       let hoveredShape = null;
       for (let shape of shapes) {
-        const path = pointsToPath(shape.points);
+        const path = shapeToPath(shape);
         // Detect hover
         if (selectedTool === "erase") {
           if (
@@ -139,15 +165,15 @@ function MapDrawing({
             hoveredShape = shape;
           }
         }
-        drawPath(path, colors[shape.color], context);
+        drawPath(path, colors[shape.color], shape.blend, context);
       }
       if (selectedTool === "brush" && brushPoints.length > 0) {
         const path = pointsToPath(brushPoints);
-        drawPath(path, colors[brushColor], context);
+        drawPath(path, colors[brushColor], useBrushBlending, context);
       }
       if (hoveredShape) {
-        const path = pointsToPath(hoveredShape.points);
-        drawPath(path, "#BB99FF", context);
+        const path = shapeToPath(hoveredShape);
+        drawPath(path, "#BB99FF", true, context);
       }
       hoveredShapeRef.current = hoveredShape;
     }
@@ -160,6 +186,8 @@ function MapDrawing({
     selectedTool,
     brushPoints,
     brushColor,
+    useBrushGesture,
+    useBrushBlending,
   ]);
 
   return (

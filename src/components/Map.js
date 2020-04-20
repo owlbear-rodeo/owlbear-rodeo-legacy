@@ -46,6 +46,8 @@ function Map({
   const [selectedTool, setSelectedTool] = useState("pan");
   const [brushColor, setBrushColor] = useState("black");
   const [useBrushGridSnapping, setUseBrushGridSnapping] = useState(false);
+  const [useBrushBlending, setUseBrushBlending] = useState(false);
+  const [useBrushGesture, setUseBrushGesture] = useState(false);
 
   const [drawnShapes, setDrawnShapes] = useState([]);
   function handleShapeAdd(shape) {
@@ -285,6 +287,8 @@ function Map({
               brushColor={brushColor}
               useGridSnapping={useBrushGridSnapping}
               gridSize={gridSizeNormalized}
+              useBrushBlending={useBrushBlending}
+              useBrushGesture={useBrushGesture}
             />
             {mapTokens}
           </Box>
@@ -303,6 +307,10 @@ function Map({
           onEraseAll={handleShapeRemoveAll}
           useBrushGridSnapping={useBrushGridSnapping}
           onBrushGridSnappingChange={setUseBrushGridSnapping}
+          useBrushBlending={useBrushBlending}
+          onBrushBlendingChange={setUseBrushBlending}
+          useBrushGesture={useBrushGesture}
+          onBrushGestureChange={setUseBrushGesture}
         />
       </Box>
       <ProxyToken
