@@ -80,21 +80,23 @@ function MapControls({
               ":active": { color: "secondary" },
             }}
           >
-            <IconButton
-              aria-label={
-                useBrushGridSnapping
-                  ? "Disable Brush Grid Snapping"
-                  : "Enable Brush Grid Snapping"
-              }
-              title={
-                useBrushGridSnapping
-                  ? "Disable Brush Grid Snapping"
-                  : "Enable Brush Grid Snapping"
-              }
-              onClick={() => onBrushGridSnappingChange(!useBrushGridSnapping)}
-            >
-              {useBrushGridSnapping ? <GridOffIcon /> : <GridOnIcon />}
-            </IconButton>
+            {useBrushGridSnapping ? (
+              <IconButton
+                aria-label="Disable Brush Grid Snapping"
+                title="Disable Brush Grid Snapping"
+                onClick={() => onBrushGridSnappingChange(false)}
+              >
+                <GridOnIcon />
+              </IconButton>
+            ) : (
+              <IconButton
+                aria-label="Enable Brush Grid Snapping"
+                title="Enable Brush Grid Snapping"
+                onClick={() => onBrushGridSnappingChange(true)}
+              >
+                <GridOffIcon />
+              </IconButton>
+            )}
             Grid Lock
           </Label>
         </Box>
