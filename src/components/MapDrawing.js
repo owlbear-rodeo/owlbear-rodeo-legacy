@@ -71,7 +71,7 @@ function MapDrawing({
     }
     setIsDrawing(false);
     if (selectedTool === "brush") {
-      if (brushPoints.length > 0) {
+      if (brushPoints.length > 1) {
         const simplifiedPoints = simplify(brushPoints, 0.001);
         onShapeAdd({
           id: shortid.generate(),
