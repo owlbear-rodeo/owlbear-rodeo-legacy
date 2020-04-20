@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "theme-ui";
 
-import { statusToColor } from "../helpers/status";
+import colors from "../helpers/colors";
 
 function TokenStatus({ statuses }) {
   return (
@@ -34,7 +34,7 @@ function TokenStatus({ statuses }) {
               cx={50}
               cy={50}
               fill="none"
-              stroke={statusToColor(status)}
+              stroke={colors[status]}
               strokeWidth={4}
             />
           </svg>

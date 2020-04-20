@@ -3,7 +3,7 @@ import Modal from "react-modal";
 import interact from "interactjs";
 import { Box, Input } from "theme-ui";
 
-import { statusOptions, statusToColor } from "../helpers/status";
+import colors, { colorOptions } from "../helpers/colors";
 
 function TokenMenu({ tokenClassName, onTokenChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -172,20 +172,20 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
             justifyContent: "space-between",
           }}
         >
-          {statusOptions.map((status) => (
+          {colorOptions.map((color) => (
             <Box
-              key={status}
+              key={color}
               sx={{
                 width: "33%",
                 paddingTop: "33%",
                 borderRadius: "50%",
                 transform: "scale(0.75)",
-                backgroundColor: statusToColor(status),
+                backgroundColor: colors[color],
                 cursor: "pointer",
               }}
-              onClick={() => handleStatusChange(status)}
+              onClick={() => handleStatusChange(color)}
             >
-              {currentToken.status && currentToken.status.includes(status) && (
+              {currentToken.status && currentToken.status.includes(color) && (
                 <Box
                   sx={{
                     width: "100%",
