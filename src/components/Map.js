@@ -45,6 +45,7 @@ function Map({
 
   const [selectedTool, setSelectedTool] = useState("pan");
   const [brushColor, setBrushColor] = useState("black");
+  const [useBrushGridSnapping, setUseBrushGridSnapping] = useState(false);
 
   const [drawnShapes, setDrawnShapes] = useState([]);
   function handleShapeAdd(shape) {
@@ -192,7 +193,9 @@ function Map({
   const mapRef = useRef(null);
   const mapContainerRef = useRef();
   const gridX = mapData && mapData.gridX;
-  const tokenSizePercent = (1 / gridX) * 100;
+  const gridY = mapData && mapData.gridY;
+  const gridSizeNormalized = { x: 1 / gridX || 0, y: 1 / gridY || 0 };
+  const tokenSizePercent = gridSizeNormalized.x * 100;
   const aspectRatio = (mapData && mapData.width / mapData.height) || 1;
 
   const mapImage = (
@@ -280,6 +283,8 @@ function Map({
               onShapeAdd={handleShapeAdd}
               onShapeRemove={handleShapeRemove}
               brushColor={brushColor}
+              useGridSnapping={useBrushGridSnapping}
+              gridSize={gridSizeNormalized}
             />
             {mapTokens}
           </Box>
@@ -296,6 +301,8 @@ function Map({
           brushColor={brushColor}
           onBrushColorChange={setBrushColor}
           onEraseAll={handleShapeRemoveAll}
+          useBrushGridSnapping={useBrushGridSnapping}
+          onBrushGridSnappingChange={setUseBrushGridSnapping}
         />
       </Box>
       <ProxyToken

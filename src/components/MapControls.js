@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Flex, Box, IconButton, Button } from "theme-ui";
+import { Flex, Box, IconButton, Button, Label } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
 import ExpandMoreIcon from "../icons/ExpandMoreIcon";
@@ -8,6 +8,8 @@ import BrushToolIcon from "../icons/BrushToolIcon";
 import EraseToolIcon from "../icons/EraseToolIcon";
 import UndoIcon from "../icons/UndoIcon";
 import RedoIcon from "../icons/RedoIcon";
+import GridOnIcon from "../icons/GridOnIcon";
+import GridOffIcon from "../icons/GridOffIcon";
 
 import colors, { colorOptions } from "../helpers/colors";
 
@@ -25,6 +27,8 @@ function MapControls({
   brushColor,
   onBrushColorChange,
   onEraseAll,
+  useBrushGridSnapping,
+  onBrushGridSnappingChange,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -65,6 +69,33 @@ function MapControls({
               )}
             </Box>
           ))}
+        </Box>
+        <Box>
+          <Label
+            sx={{
+              fontSize: 1,
+              alignItems: "center",
+              ":hover": { color: "primary", cursor: "pointer" },
+              ":active": { color: "secondary" },
+            }}
+          >
+            <IconButton
+              aria-label={
+                useBrushGridSnapping
+                  ? "Disable Brush Grid Snapping"
+                  : "Enable Brush Grid Snapping"
+              }
+              title={
+                useBrushGridSnapping
+                  ? "Disable Brush Grid Snapping"
+                  : "Enable Brush Grid Snapping"
+              }
+              onClick={() => onBrushGridSnappingChange(!useBrushGridSnapping)}
+            >
+              {useBrushGridSnapping ? <GridOffIcon /> : <GridOnIcon />}
+            </IconButton>
+            Grid Lock
+          </Label>
         </Box>
       </Box>
     ),

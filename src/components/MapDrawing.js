@@ -3,6 +3,7 @@ import simplify from "simplify-js";
 import shortid from "shortid";
 
 import colors from "../helpers/colors";
+import { snapPositionToGrid } from "../helpers/shared";
 
 function MapDrawing({
   width,
@@ -12,6 +13,8 @@ function MapDrawing({
   onShapeAdd,
   onShapeRemove,
   brushColor,
+  useGridSnapping,
+  gridSize,
 }) {
   const canvasRef = useRef();
   const containerRef = useRef();
@@ -46,7 +49,10 @@ function MapDrawing({
     setPointerPosition(position);
     setIsDrawing(true);
     if (selectedTool === "brush") {
-      setBrushPoints([position]);
+      const brushPosition = useGridSnapping
+        ? snapPositionToGrid(position, gridSize)
+        : position;
+      setBrushPoints([brushPosition]);
     }
   }
 
@@ -61,7 +67,15 @@ function MapDrawing({
     }
     if (isDrawing && selectedTool === "brush") {
       setPointerPosition(position);
-      setBrushPoints((prevPoints) => [...prevPoints, position]);
+      const brushPosition = useGridSnapping
+        ? snapPositionToGrid(position, gridSize)
+        : position;
+      setBrushPoints((prevPoints) => {
+        if (prevPoints[prevPoints.length - 1] === brushPosition) {
+          return prevPoints;
+        }
+        return [...prevPoints, brushPosition];
+      });
     }
   }
 
