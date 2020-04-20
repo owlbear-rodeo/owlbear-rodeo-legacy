@@ -1,6 +1,6 @@
 import React from "react";
 
-function GridOnIcon() {
+function GridOffIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function GridOnIcon() {
   );
 }
 
-export default GridOnIcon;
+export default GridOffIcon;
