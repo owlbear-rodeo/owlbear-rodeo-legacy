@@ -43,14 +43,19 @@ function Map({
    */
 
   const [selectedTool, setSelectedTool] = useState("pan");
+  const [brushColor, setBrushColor] = useState("black");
 
   const [drawnShapes, setDrawnShapes] = useState([]);
   function handleShapeAdd(shape) {
-    onMapDraw({ type: "add", shape });
+    onMapDraw({ type: "add", shapes: [shape] });
   }
 
   function handleShapeRemove(shapeId) {
-    onMapDraw({ type: "remove", shapeId });
+    onMapDraw({ type: "remove", shapeIds: [shapeId] });
+  }
+
+  function handleShapeRemoveAll() {
+    onMapDraw({ type: "remove", shapeIds: drawnShapes.map((s) => s.id) });
   }
 
   // Replay the draw actions and convert them to shapes for the map drawing
@@ -59,10 +64,12 @@ function Map({
     for (let i = 0; i <= drawActionIndex; i++) {
       const action = drawActions[i];
       if (action.type === "add") {
-        shapesById[action.shape.id] = action.shape;
+        for (let shape of action.shapes) {
+          shapesById[shape.id] = shape;
+        }
       }
       if (action.type === "remove") {
-        shapesById = omit(shapesById, [action.shapeId]);
+        shapesById = omit(shapesById, action.shapeIds);
       }
     }
     setDrawnShapes(Object.values(shapesById));
@@ -267,6 +274,7 @@ function Map({
               shapes={drawnShapes}
               onShapeAdd={handleShapeAdd}
               onShapeRemove={handleShapeRemove}
+              brushColor={brushColor}
             />
             {mapTokens}
           </Box>
@@ -280,6 +288,9 @@ function Map({
           onRedo={onMapDrawRedo}
           undoDisabled={drawActionIndex < 0}
           redoDisabled={drawActionIndex === drawActions.length - 1}
+          brushColor={brushColor}
+          onBrushColorChange={setBrushColor}
+          onEraseAll={handleShapeRemoveAll}
         />
       </Box>
       <ProxyToken

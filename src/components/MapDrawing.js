@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import simplify from "simplify-js";
 import shortid from "shortid";
 
+import colors from "../helpers/colors";
+
 function MapDrawing({
   width,
   height,
@@ -9,6 +11,7 @@ function MapDrawing({
   shapes,
   onShapeAdd,
   onShapeRemove,
+  brushColor,
 }) {
   const canvasRef = useRef();
   const containerRef = useRef();
@@ -70,7 +73,11 @@ function MapDrawing({
     if (selectedTool === "brush") {
       if (brushPoints.length > 0) {
         const simplifiedPoints = simplify(brushPoints, 0.001);
-        onShapeAdd({ id: shortid.generate(), points: simplifiedPoints });
+        onShapeAdd({
+          id: shortid.generate(),
+          points: simplifiedPoints,
+          color: brushColor,
+        });
         setBrushPoints([]);
       }
     }
@@ -118,11 +125,11 @@ function MapDrawing({
             hoveredShape = shape;
           }
         }
-        drawPath(path, "#000000", context);
+        drawPath(path, colors[shape.color], context);
       }
       if (selectedTool === "brush" && brushPoints.length > 0) {
         const path = pointsToPath(brushPoints);
-        drawPath(path, "#000000", context);
+        drawPath(path, colors[brushColor], context);
       }
       if (hoveredShape) {
         const path = pointsToPath(hoveredShape.points);
@@ -138,6 +145,7 @@ function MapDrawing({
     isDrawing,
     selectedTool,
     brushPoints,
+    brushColor,
   ]);
 
   return (

@@ -10,6 +10,7 @@ function MapMenu({
   bottom,
   right,
   children,
+  style,
 }) {
   function handleModalContent(node) {
     if (node) {
@@ -49,6 +50,7 @@ function MapMenu({
           padding: 0,
           borderRadius: "4px",
           border: "none",
+          ...style,
         },
       }}
       contentRef={handleModalContent}
@@ -64,6 +66,7 @@ MapMenu.defaultProps = {
   left: "initial",
   right: "initial",
   bottom: "initial",
+  style: {},
 };
 
 export default MapMenu;
