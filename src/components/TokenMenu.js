@@ -160,6 +160,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
                 cursor: "pointer",
               }}
               onClick={() => handleStatusChange(color)}
+              aria-label={`Token label Color ${color}`}
             >
               {currentToken.status && currentToken.status.includes(color) && (
                 <Box

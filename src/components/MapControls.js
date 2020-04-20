@@ -63,6 +63,7 @@ function MapControls({
                 cursor: "pointer",
               }}
               onClick={() => onBrushColorChange(color)}
+              aria-label={`Brush Color ${color}`}
             >
               {brushColor === color && (
                 <Box
