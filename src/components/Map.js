@@ -10,7 +10,8 @@ import MapControls from "./MapControls";
 
 import { omit } from "../helpers/shared";
 
-const mapTokenClassName = "map-token";
+const mapTokenProxyClassName = "map-token__proxy";
+const mapTokenMenuClassName = "map-token__menu";
 const zoomSpeed = -0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
@@ -118,7 +119,7 @@ function Map({
       }
       setTranslateAndScale(newTranslate, newScale);
     }
-    interact(".map")
+    const mapInteract = interact(".map")
       .gesturable({
         listeners: {
           move: (e) => handleMove(e, true),
@@ -132,13 +133,17 @@ function Map({
         cursorChecker: () => {
           return selectedTool === "pan" && mapData ? "move" : "default";
         },
+      })
+      .on("doubletap", (event) => {
+        event.preventDefault();
+        if (selectedTool === "pan") {
+          setTranslateAndScale({ x: 0, y: 0 }, 1);
+        }
       });
-    interact(".map").on("doubletap", (event) => {
-      event.preventDefault();
-      if (selectedTool === "pan") {
-        setTranslateAndScale({ x: 0, y: 0 }, 1);
-      }
-    });
+
+    return () => {
+      mapInteract.unset();
+    };
   }, [selectedTool, mapData]);
 
   // Reset map transform when map changes
@@ -229,7 +234,7 @@ function Map({
           key={token.id}
           token={token}
           tokenSizePercent={tokenSizePercent}
-          className={mapTokenClassName}
+          className={`${mapTokenProxyClassName} ${mapTokenMenuClassName}`}
         />
       ))}
     </Box>
@@ -294,11 +299,11 @@ function Map({
         />
       </Box>
       <ProxyToken
-        tokenClassName={mapTokenClassName}
+        tokenClassName={mapTokenProxyClassName}
         onProxyDragEnd={handleProxyDragEnd}
       />
       <TokenMenu
-        tokenClassName={mapTokenClassName}
+        tokenClassName={mapTokenMenuClassName}
         onTokenChange={onMapTokenChange}
       />
     </>

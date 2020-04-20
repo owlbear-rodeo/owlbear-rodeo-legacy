@@ -63,8 +63,11 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
       setIsOpen(true);
     }
 
-    // Add listener for hold gesture
-    interact(`.${tokenClassName}`).on("tap", handleTokenMenuOpen);
+    // Add listener for tap gesture
+    const tokenInteract = interact(`.${tokenClassName}`).on(
+      "tap",
+      handleTokenMenuOpen
+    );
 
     function handleMapContextMenu(event) {
       event.preventDefault();
@@ -81,6 +84,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
 
     return () => {
       map.removeEventListener("contextmenu", handleMapContextMenu);
+      tokenInteract.unset();
     };
   }, [tokenClassName]);
 

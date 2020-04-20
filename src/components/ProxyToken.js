@@ -19,7 +19,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   const proxyOnMap = useRef(false);
 
   useEffect(() => {
-    interact(`.${tokenClassName}`).draggable({
+    const tokenInteract = interact(`.${tokenClassName}`).draggable({
       listeners: {
         start: (event) => {
           let target = event.target;
@@ -92,7 +92,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
               target.setAttribute("data-y", y);
 
               onProxyDragEnd(proxyOnMap.current, {
-                image: imageSource,
+                image: target.src,
                 // Pass in props stored as data- in the dom node
                 ...target.dataset,
               });
@@ -110,7 +110,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         },
       },
     });
-  }, [imageSource, onProxyDragEnd, tokenClassName, proxyContainer]);
+    return () => {
+      tokenInteract.unset();
+    };
+  }, [onProxyDragEnd, tokenClassName, proxyContainer]);
 
   if (!imageSource) {
     return null;
