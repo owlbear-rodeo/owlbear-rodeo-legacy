@@ -25,6 +25,24 @@ function AddMapModal({
 }) {
   const fileInputRef = useRef();
 
+  function handleImageUpload(file) {
+    if (file.name) {
+      // Match against a regex to find the grid size in the file name
+      // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
+      const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+      if (gridMatches.length > 0) {
+        const lastMatch = gridMatches[gridMatches.length - 1];
+        const matchX = parseInt(lastMatch[1]);
+        const matchY = parseInt(lastMatch[3]);
+        if (!isNaN(matchX) && !isNaN(matchY)) {
+          onImageUpload(file, matchX, matchY);
+          return;
+        }
+      }
+    }
+    onImageUpload(file);
+  }
+
   function openImageDialog() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -49,7 +67,7 @@ function AddMapModal({
     event.stopPropagation();
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith("image")) {
-      onImageUpload(file);
+      handleImageUpload(file);
     }
     setDragging(false);
   }
@@ -65,7 +83,7 @@ function AddMapModal({
         onDragEnter={handleImageDragEnter}
       >
         <input
-          onChange={(event) => onImageUpload(event.target.files[0])}
+          onChange={(event) => handleImageUpload(event.target.files[0])}
           type="file"
           accept="image/*"
           style={{ display: "none" }}

@@ -19,14 +19,14 @@ function AddMapButton({ onMapChange }) {
 
   const mapDataRef = useRef(null);
   const [mapSource, setMapSource] = useState(null);
-  function handleImageUpload(file) {
+  function handleImageUpload(file, fileGridX, fileGridY) {
     const url = URL.createObjectURL(file);
     let image = new Image();
     image.onload = function () {
       mapDataRef.current = {
         file,
-        gridX: gridX,
-        gridY: gridY,
+        gridX: fileGridX || gridX,
+        gridY: fileGridY || gridY,
         width: image.width,
         height: image.height,
       };
@@ -34,6 +34,12 @@ function AddMapButton({ onMapChange }) {
     };
     image.src = url;
     setMapSource(url);
+    if (fileGridX) {
+      setGridX(fileGridX);
+    }
+    if (fileGridY) {
+      setGridY(fileGridY);
+    }
   }
 
   function handleDone() {
