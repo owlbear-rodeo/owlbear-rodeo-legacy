@@ -175,10 +175,11 @@ function MapControls({
         sx={{
           position: "absolute",
           top: 0,
-          right: "4px",
+          right: 0,
           flexDirection: "column",
           alignItems: "center",
         }}
+        mx={1}
       >
         <IconButton
           aria-label={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
