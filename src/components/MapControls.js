@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Flex, Box, IconButton, Label } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
@@ -144,6 +144,13 @@ function MapControls({
       });
     }
   }
+
+  // Detect when a tool becomes disabled and switch to to the pan tool
+  useEffect(() => {
+    if (disabledTools.includes(selectedTool)) {
+      onToolChange("pan");
+    }
+  }, [selectedTool, disabledTools, onToolChange]);
 
   const divider = (
     <Box
