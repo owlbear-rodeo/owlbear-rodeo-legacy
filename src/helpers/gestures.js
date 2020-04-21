@@ -10,7 +10,7 @@ const gestures = [
       { x: 0.5644955300127714, y: 0.3256549420728525 },
       { x: 0.5632183908045977, y: 0.2762237762237762 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -31,7 +31,7 @@ const gestures = [
       { x: 0.5223499361430396, y: 0.39913370211877675 },
       { x: 0.5197956577266922, y: 0.3884458824757332 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -48,7 +48,7 @@ const gestures = [
       { x: 0.4648786717752235, y: 0.40848554430643985 },
       { x: 0.44572158365261816, y: 0.40848554430643985 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -60,7 +60,7 @@ const gestures = [
       { x: 0.36270753512132825, y: 0.5901784782381797 },
       { x: 0.34738186462324394, y: 0.5901784782381797 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -77,7 +77,7 @@ const gestures = [
       { x: 0.26436781609195403, y: 0.4993320112723098 },
       { x: 0.26436781609195403, y: 0.5006679887276902 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -106,7 +106,7 @@ const gestures = [
       { x: 0.3448275862068966, y: 0.23347249765160213 },
       { x: 0.34355044699872284, y: 0.2321365201962217 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -133,7 +133,7 @@ const gestures = [
       { x: 0.45721583652618136, y: 0.1332741884980691 },
       { x: 0.45721583652618136, y: 0.13461016595344955 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -151,7 +151,7 @@ const gestures = [
       { x: 0.6130268199233716, y: 0.1733535121594823 },
       { x: 0.6104725415070242, y: 0.1733535121594823 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -163,7 +163,7 @@ const gestures = [
       { x: 0.6934865900383141, y: 0.26954388894687403 },
       { x: 0.6590038314176245, y: 0.26954388894687403 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -193,7 +193,7 @@ const gestures = [
       { x: 0.7445721583652618, y: 0.3804300177434506 },
       { x: 0.7445721583652618, y: 0.3924538148418745 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -214,7 +214,7 @@ const gestures = [
       { x: 0.7484035759897829, y: 0.4579167101555161 },
       { x: 0.7484035759897829, y: 0.45658073270013566 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -229,7 +229,7 @@ const gestures = [
       { x: 0.5491698595146871, y: 0.582162613505897 },
       { x: 0.5108556832694764, y: 0.582162613505897 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -251,7 +251,7 @@ const gestures = [
       { x: 0.6577266922094508, y: 0.5300594927460599 },
       { x: 0.6590038314176245, y: 0.5300594927460599 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -266,7 +266,7 @@ const gestures = [
       { x: 0.7777777777777778, y: 0.5995303204258429 },
       { x: 0.7803320561941252, y: 0.6022022753366036 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -281,7 +281,7 @@ const gestures = [
       { x: 0.7905491698595147, y: 0.6796889677486693 },
       { x: 0.789272030651341, y: 0.6796889677486693 },
     ],
-    name: "square",
+    name: "rectangle",
   },
   {
     points: [
@@ -1148,34 +1148,29 @@ export function getBounds(points) {
   return { minX, maxX, minY, maxY };
 }
 
-export function convertPointsToGesturePath(points, pathType) {
-  let path = new Path2D();
+export function gestureToData(points, gesture) {
   const bounds = getBounds(points);
   const width = bounds.maxX - bounds.minX;
   const height = bounds.maxY - bounds.minY;
   const minSide = width < height ? width : height;
-  switch (pathType) {
-    case "square":
-      path.rect(bounds.minX, bounds.minY, width, height);
-      break;
+  switch (gesture) {
+    case "rectangle":
+      return { x: bounds.minX, y: bounds.minY, width, height };
     case "triangle":
-      path.moveTo(bounds.minX, bounds.maxY);
-      path.lineTo(bounds.maxX, bounds.maxY);
-      path.lineTo(bounds.minX + width / 2, bounds.minY);
-      path.lineTo(bounds.minX, bounds.maxY);
-      break;
+      return {
+        points: [
+          { x: bounds.minX, y: bounds.maxY },
+          { x: bounds.maxX, y: bounds.maxY },
+          { x: bounds.minX + width / 2, y: bounds.minY },
+        ],
+      };
     case "circle":
-      path.arc(
-        bounds.minX + width / 2,
-        bounds.minY + height / 2,
-        minSide / 2,
-        0,
-        Math.PI * 2,
-        true
-      );
-      break;
+      return {
+        x: bounds.minX + width / 2,
+        y: bounds.minY + height / 2,
+        radius: minSide / 2,
+      };
     default:
       throw Error("Gesture not implemented");
   }
-  return path;
 }

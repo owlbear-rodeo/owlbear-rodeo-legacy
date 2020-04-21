@@ -5,10 +5,7 @@ import shortid from "shortid";
 import colors from "../helpers/colors";
 import { snapPositionToGrid } from "../helpers/shared";
 
-import {
-  pointsToGesture,
-  convertPointsToGesturePath,
-} from "../helpers/gestures";
+import { pointsToGesture, gestureToData } from "../helpers/gestures";
 
 function MapDrawing({
   width,
@@ -94,14 +91,20 @@ function MapDrawing({
     if (selectedTool === "brush") {
       if (brushPoints.length > 1) {
         const simplifiedPoints = simplify(brushPoints, 0.001);
-        const gesture = useBrushGesture
+        const type = useBrushGesture
           ? pointsToGesture(simplifiedPoints)
-          : "none";
+          : "path";
+
+        const data =
+          type === "path"
+            ? { points: simplifiedPoints }
+            : gestureToData(simplifiedPoints, type);
+
         onShapeAdd({
+          type,
+          data,
           id: shortid.generate(),
-          points: simplifiedPoints,
           color: brushColor,
-          gesture,
           blend: useBrushBlending,
         });
 
@@ -125,16 +128,30 @@ function MapDrawing({
       return path;
     }
 
+    function circleToPath(x, y, radius) {
+      const path = new Path2D();
+      const minSide = width < height ? width : height;
+      path.arc(x * width, y * height, radius * minSide, 0, 2 * Math.PI, true);
+      return path;
+    }
+
+    function rectangleToPath(x, y, w, h) {
+      const path = new Path2D();
+      path.rect(x * width, y * height, w * width, h * height);
+      return path;
+    }
+
     function shapeToPath(shape) {
-      return shape.gesture !== "none"
-        ? convertPointsToGesturePath(
-            shape.points.map((p) => ({
-              x: p.x * width,
-              y: p.y * height,
-            })),
-            shape.gesture
-          )
-        : pointsToPath(shape.points);
+      const data = shape.data;
+      if (shape.type === "path") {
+        return pointsToPath(data.points);
+      } else if (shape.type === "circle") {
+        return circleToPath(data.x, data.y, data.radius);
+      } else if (shape.type === "rectangle") {
+        return rectangleToPath(data.x, data.y, data.width, data.height);
+      } else if (shape.type === "triangle") {
+        return pointsToPath(data.points);
+      }
     }
 
     function drawPath(path, color, blend, context) {
