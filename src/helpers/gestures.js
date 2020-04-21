@@ -78,7 +78,7 @@ export function gestureToData(points, gesture) {
   const bounds = getBounds(points);
   const width = bounds.maxX - bounds.minX;
   const height = bounds.maxY - bounds.minY;
-  const minSide = width < height ? width : height;
+  const maxSide = width > height ? width : height;
   switch (gesture) {
     case "rectangle":
       return { x: bounds.minX, y: bounds.minY, width, height };
@@ -90,7 +90,7 @@ export function gestureToData(points, gesture) {
       return {
         x: bounds.minX + width / 2,
         y: bounds.minY + height / 2,
-        radius: minSide / 2,
+        radius: maxSide / 2,
       };
     default:
       throw Error("Gesture not implemented");
