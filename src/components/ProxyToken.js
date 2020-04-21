@@ -19,7 +19,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
   const proxyOnMap = useRef(false);
 
   useEffect(() => {
-    const tokenInteract = interact(`.${tokenClassName}`).draggable({
+    interact(`.${tokenClassName}`).draggable({
       listeners: {
         start: (event) => {
           let target = event.target;
@@ -110,9 +110,6 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
         },
       },
     });
-    return () => {
-      tokenInteract.unset();
-    };
   }, [onProxyDragEnd, tokenClassName, proxyContainer]);
 
   if (!imageSource) {
