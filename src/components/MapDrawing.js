@@ -95,18 +95,20 @@ function MapDrawing({
           ? pointsToGesture(simplifiedPoints)
           : "path";
 
-        const data =
-          type === "path"
-            ? { points: simplifiedPoints }
-            : gestureToData(simplifiedPoints, type);
+        if (type !== null) {
+          const data =
+            type === "path"
+              ? { points: simplifiedPoints }
+              : gestureToData(simplifiedPoints, type);
 
-        onShapeAdd({
-          type,
-          data,
-          id: shortid.generate(),
-          color: brushColor,
-          blend: useBrushBlending,
-        });
+          onShapeAdd({
+            type,
+            data,
+            id: shortid.generate(),
+            color: brushColor,
+            blend: useBrushBlending,
+          });
+        }
 
         setBrushPoints([]);
       }
