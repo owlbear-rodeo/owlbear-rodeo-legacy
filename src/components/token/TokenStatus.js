@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "theme-ui";
 
-import colors from "../helpers/colors";
+import colors from "../../helpers/colors";
 
 function TokenStatus({ statuses }) {
   return (

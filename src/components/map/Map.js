@@ -2,13 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import { Box, Image } from "theme-ui";
 import interact from "interactjs";
 
-import ProxyToken from "./ProxyToken";
-import TokenMenu from "./TokenMenu";
+import ProxyToken from "../token/ProxyToken";
+import TokenMenu from "../token/TokenMenu";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapControls from "./MapControls";
 
-import { omit } from "../helpers/shared";
+import { omit } from "../../helpers/shared";
 
 const mapTokenProxyClassName = "map-token__proxy";
 const mapTokenMenuClassName = "map-token__menu";

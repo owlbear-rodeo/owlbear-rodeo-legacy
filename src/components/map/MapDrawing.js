@@ -2,10 +2,10 @@ import React, { useRef, useEffect, useState } from "react";
 import simplify from "simplify-js";
 import shortid from "shortid";
 
-import colors from "../helpers/colors";
-import { snapPositionToGrid } from "../helpers/shared";
+import colors from "../../helpers/colors";
+import { snapPositionToGrid } from "../../helpers/shared";
 
-import { pointsToGesture, gestureToData } from "../helpers/gestures";
+import { pointsToGesture, gestureToData } from "../../helpers/gestures";
 
 function MapDrawing({
   width,

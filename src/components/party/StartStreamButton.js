@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { IconButton, Box, Text, Link } from "theme-ui";
 import adapter from "webrtc-adapter";
 
-import StartStreamModal from "../modals/StartStreamModal";
+import StartStreamModal from "../../modals/StartStreamModal";
 
 function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
   const [isStreamModalOpoen, setIsStreamModalOpen] = useState(false);

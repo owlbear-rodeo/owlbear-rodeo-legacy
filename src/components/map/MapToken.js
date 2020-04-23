@@ -1,10 +1,10 @@
 import React, { useRef } from "react";
 import { Box, Image } from "theme-ui";
 
-import TokenLabel from "./TokenLabel";
-import TokenStatus from "./TokenStatus";
+import TokenLabel from "../token/TokenLabel";
+import TokenStatus from "../token/TokenStatus";
 
-import usePreventTouch from "../helpers/usePreventTouch";
+import usePreventTouch from "../../helpers/usePreventTouch";
 
 function MapToken({ token, tokenSizePercent, className }) {
   const imageRef = useRef();

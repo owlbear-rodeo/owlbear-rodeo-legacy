@@ -12,9 +12,9 @@ import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
 import useNickname from "../helpers/useNickname";
 
-import Party from "../components/Party";
-import Tokens from "../components/Tokens";
-import Map from "../components/Map";
+import Party from "../components/party/Party";
+import Tokens from "../components/token/Tokens";
+import Map from "../components/map/Map";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
-import ChangeNicknameModal from "../modals/ChangeNicknameModal";
-import ChangeNicknameIcon from "../icons/ChangeNicknameIcon";
+import ChangeNicknameModal from "../../modals/ChangeNicknameModal";
+import ChangeNicknameIcon from "../../icons/ChangeNicknameIcon";
 
 function ChangeNicknameButton({ nickname, onChange }) {
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);

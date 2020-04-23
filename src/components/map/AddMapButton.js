@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { IconButton } from "theme-ui";
 
-import AddMapModal from "../modals/AddMapModal";
-import AddMapIcon from "../icons/AddMapIcon";
+import AddMapModal from "../../modals/AddMapModal";
+import AddMapIcon from "../../icons/AddMapIcon";
 
 const defaultMapSize = 22;
 

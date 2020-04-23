@@ -3,11 +3,11 @@ import { Box } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
 
-import * as tokens from "../tokens";
+import * as tokens from "../../tokens";
 
 import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
-import NumberInput from "./NumberInput";
+import NumberInput from "../NumberInput";
 
 const listTokenClassName = "list-token";
 

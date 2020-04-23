@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
-import AddPartyMemberModal from "../modals/AddPartyMemberModal";
-import AddPartyMemberIcon from "../icons/AddPartyMemberIcon";
+import AddPartyMemberModal from "../../modals/AddPartyMemberModal";
+import AddPartyMemberIcon from "../../icons/AddPartyMemberIcon";
 
 function AddPartyMemberButton({ gameId }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

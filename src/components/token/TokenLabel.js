@@ -1,7 +1,7 @@
 import React from "react";
 import { Image, Box, Text } from "theme-ui";
 
-import tokenLabel from "../images/TokenLabel.png";
+import tokenLabel from "../../images/TokenLabel.png";
 
 function TokenLabel({ label }) {
   return (

@@ -2,23 +2,23 @@ import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, IconButton, Label } from "theme-ui";
 
 import AddMapButton from "./AddMapButton";
-import ExpandMoreIcon from "../icons/ExpandMoreIcon";
-import PanToolIcon from "../icons/PanToolIcon";
-import BrushToolIcon from "../icons/BrushToolIcon";
-import EraseToolIcon from "../icons/EraseToolIcon";
-import UndoIcon from "../icons/UndoIcon";
-import RedoIcon from "../icons/RedoIcon";
-import GridOnIcon from "../icons/GridOnIcon";
-import GridOffIcon from "../icons/GridOffIcon";
-import BlendOnIcon from "../icons/BlendOnIcon";
-import BlendOffIcon from "../icons/BlendOffIcon";
-import GestureOnIcon from "../icons/GestureOnIcon";
-import GestureOffIcon from "../icons/GestureOffIcon";
+import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
+import PanToolIcon from "../../icons/PanToolIcon";
+import BrushToolIcon from "../../icons/BrushToolIcon";
+import EraseToolIcon from "../../icons/EraseToolIcon";
+import UndoIcon from "../../icons/UndoIcon";
+import RedoIcon from "../../icons/RedoIcon";
+import GridOnIcon from "../../icons/GridOnIcon";
+import GridOffIcon from "../../icons/GridOffIcon";
+import BlendOnIcon from "../../icons/BlendOnIcon";
+import BlendOffIcon from "../../icons/BlendOffIcon";
+import GestureOnIcon from "../../icons/GestureOnIcon";
+import GestureOffIcon from "../../icons/GestureOffIcon";
 
-import colors, { colorOptions } from "../helpers/colors";
+import colors, { colorOptions } from "../../helpers/colors";
 
 import MapMenu from "./MapMenu";
-import EraseAllIcon from "../icons/EraseAllIcon";
+import EraseAllIcon from "../../icons/EraseAllIcon";
 
 function MapControls({
   onMapChange,

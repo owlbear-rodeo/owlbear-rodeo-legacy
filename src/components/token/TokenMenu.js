@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import interact from "interactjs";
 import { Box, Input } from "theme-ui";
 
-import MapMenu from "./MapMenu";
+import MapMenu from "../map/MapMenu";
 
-import colors, { colorOptions } from "../helpers/colors";
+import colors, { colorOptions } from "../../helpers/colors";
 
 function TokenMenu({ tokenClassName, onTokenChange }) {
   const [isOpen, setIsOpen] = useState(false);

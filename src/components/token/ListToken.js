@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Image } from "theme-ui";
 
-import usePreventTouch from "../helpers/usePreventTouch";
+import usePreventTouch from "../../helpers/usePreventTouch";
 
 function ListToken({ image, className }) {
   const imageRef = useRef();

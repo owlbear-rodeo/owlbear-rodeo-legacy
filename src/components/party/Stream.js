@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Text, IconButton, Box } from "theme-ui";
 
-import Banner from "./Banner";
+import Banner from "../Banner";
 
 function Stream({ stream, nickname }) {
   const [streamMuted, setStreamMuted] = useState(false);
