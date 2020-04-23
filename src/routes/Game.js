@@ -159,11 +159,11 @@ function Game() {
 
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
-      if (map) {
-        peer.connection.send({ id: "map", data: map });
-      }
       if (mapState) {
         peer.connection.send({ id: "mapState", data: mapState });
+      }
+      if (map) {
+        peer.connection.send({ id: "map", data: map });
       }
     }
     if (data.id === "map") {
