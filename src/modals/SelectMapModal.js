@@ -22,33 +22,50 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
   const [imageLoading, setImageLoading] = useState(false);
 
   const [currentMap, setCurrentMap] = useState(null);
-  const [maps, setMaps] = useState(Object.values(defaultMaps));
+  const [maps, setMaps] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    async function loadMaps() {
-      let storedMaps = await db.table("maps").toArray();
-      // reverse so maps are show in the order they were added
-      storedMaps.reverse();
-      for (let map of storedMaps) {
-        // Recreate image urls for each map
-        map.source = URL.createObjectURL(map.file);
+    async function loadDefaultMaps() {
+      const defaultMapsWithIds = [];
+      const defaultMapStates = [];
+      // Store the default maps into the db in reverse so the whie map is first
+      // in the UI
+      const defaultMapArray = Object.values(defaultMaps).reverse();
+      for (let i = 0; i < defaultMapArray.length; i++) {
+        const defaultMap = defaultMapArray[i];
+        const id = `${defaultMap.id}--${shortid.generate()}`;
+        defaultMapsWithIds.push({
+          ...defaultMap,
+          id,
+          timestamp: Date.now() + i,
+        });
+        defaultMapStates.push({ ...defaultMapState, mapId: id });
       }
-      setMaps((prevMaps) => [...storedMaps, ...prevMaps]);
+      await db.table("maps").bulkAdd(defaultMapsWithIds);
+      await db.table("states").bulkAdd(defaultMapStates);
+      setMaps(defaultMapsWithIds.sort((a, b) => b.timestamp - a.timestamp));
     }
 
-    async function setupDefaultMapStatesIfNeeded() {
-      for (let defaultMap of Object.values(defaultMaps)) {
-        let state = await db.table("states").get(defaultMap.id);
-        if (!state) {
-          await db
-            .table("states")
-            .add({ ...defaultMapState, mapId: defaultMap.id });
+    async function loadMaps() {
+      let storedMaps = await db.table("maps").toArray();
+
+      // If we have no stored maps load the default maps
+      if (storedMaps.length === 0) {
+        loadDefaultMaps();
+      } else {
+        // Sort maps by the time they were added
+        storedMaps.sort((a, b) => b.timestamp - a.timestamp);
+        for (let map of storedMaps) {
+          // Recreate image urls for file based maps
+          if (map.file) {
+            map.source = URL.createObjectURL(map.file);
+          }
         }
+        setMaps(storedMaps);
       }
     }
 
     loadMaps();
-    setupDefaultMapStatesIfNeeded();
   }, []);
 
   const [gridX, setGridX] = useState(defaultMapSize);
@@ -87,6 +104,7 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
         height: image.height,
         source: url,
         id: shortid.generate(),
+        timestamp: Date.now(),
       });
       setImageLoading(false);
     };
