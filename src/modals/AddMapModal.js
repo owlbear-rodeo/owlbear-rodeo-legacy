@@ -82,6 +82,15 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     }
   }
 
+  function handleMapSelect(mapId) {
+    setCurrentMap(mapId);
+    setGridX(maps[mapId].gridX);
+    setGridY(maps[mapId].gridY);
+  }
+
+  /**
+   * Drag and Drop
+   */
   const [dragging, setDragging] = useState(false);
   function handleImageDragEnter(event) {
     event.preventDefault();
@@ -130,7 +139,12 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
           <Label pt={2} pb={1}>
             Add map
           </Label>
-          <MapSelect maps={maps} onMapAdd={openImageDialog} />
+          <MapSelect
+            maps={maps}
+            onMapAdd={openImageDialog}
+            selectedMap={currentMap}
+            onMapSelected={handleMapSelect}
+          />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
               <Label htmlFor="gridX">Columns</Label>

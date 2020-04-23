@@ -3,24 +3,34 @@ import { Flex, Image as UIImage } from "theme-ui";
 
 import AddIcon from "../../icons/AddIcon";
 
-function MapSelect({ maps, onMapAdd }) {
+function MapSelect({ maps, selectedMap, onMapSelected, onMapAdd }) {
   const tileProps = {
     m: 2,
-    sx: {
-      width: "150px",
-      height: "150px",
-      borderRadius: "4px",
-      justifyContent: "center",
-      alignItems: "center",
-    },
     bg: "muted",
   };
 
-  function tile(map) {
+  const tileStyle = {
+    width: "150px",
+    height: "150px",
+    borderRadius: "4px",
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+  };
+
+  // TODO move from passing index in to using DB ID
+  function tile(map, index) {
     return (
       <Flex // TODO: use DB key
         key={map.source}
+        sx={{
+          borderColor: "primary",
+          borderStyle: index === selectedMap ? "solid" : "none",
+          borderWidth: "4px",
+          ...tileStyle,
+        }}
         {...tileProps}
+        onClick={() => onMapSelected(index)}
       >
         <UIImage
           sx={{ width: "100%", objectFit: "contain" }}
@@ -44,8 +54,23 @@ function MapSelect({ maps, onMapAdd }) {
         flexGrow: 1,
       }}
     >
-      {maps.map(tile)}
-      <Flex onClick={onMapAdd} {...tileProps}>
+      {maps.map((map, index) => tile(map, index))}
+      <Flex
+        onClick={onMapAdd}
+        sx={{
+          ":hover": {
+            color: "primary",
+          },
+          ":focus": {
+            outline: "none",
+          },
+          ":active": {
+            color: "secondary",
+          },
+          ...tileStyle,
+        }}
+        {...tileProps}
+      >
         <AddIcon />
       </Flex>
     </Flex>

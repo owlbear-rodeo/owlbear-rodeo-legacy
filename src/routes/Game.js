@@ -39,7 +39,7 @@ function Game() {
   function handleMapChange(newMap) {
     setMap(newMap);
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "map", data: map });
+      peer.connection.send({ id: "map", data: newMap });
     }
   }
 
@@ -156,9 +156,15 @@ function Game() {
       }
     }
     if (data.id === "map") {
-      const file = new Blob([data.data.file]);
-      const source = URL.createObjectURL(file);
-      setMap({ ...data.data, file, source });
+      // If we have a file convert it to a url
+      // TODO clear the file url of the previous map if it's a blob
+      if (data.data.file) {
+        const file = new Blob([data.data.file]);
+        const source = URL.createObjectURL(file);
+        setMap({ ...data.data, file, source });
+      } else {
+        setMap(data.data);
+      }
     }
     if (data.id === "tokenEdit") {
       setMapTokens((prevMapTokens) => ({
