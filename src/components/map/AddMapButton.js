@@ -13,10 +13,8 @@ function AddMapButton({ onMapChange }) {
     setIsAddModalOpen(false);
   }
 
-  function handleDone(map) {
-    if (map) {
-      onMapChange(map);
-    }
+  function handleDone(map, mapState) {
+    onMapChange(map, mapState);
     closeModal();
   }
 

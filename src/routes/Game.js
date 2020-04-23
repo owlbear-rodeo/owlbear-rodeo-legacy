@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Flex, Box, Text, Link } from "theme-ui";
 import { useParams } from "react-router-dom";
 
+import db from "../database";
+
 import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
 import useNickname from "../helpers/useNickname";
+import useDebounce from "../helpers/useDebounce";
 
 import Party from "../components/party/Party";
 import Tokens from "../components/token/Tokens";
@@ -35,23 +38,32 @@ function Game() {
    */
 
   const [map, setMap] = useState(null);
+  const [mapState, setMapState] = useState(null);
 
-  function handleMapChange(newMap) {
+  // Sync the map state to the database after 500ms of inactivity
+  const debouncedMapState = useDebounce(mapState, 500);
+  useEffect(() => {
+    if (debouncedMapState && debouncedMapState.mapId) {
+      db.table("states").update(debouncedMapState.mapId, debouncedMapState);
+    }
+  }, [debouncedMapState]);
+
+  function handleMapChange(newMap, newMapState) {
     setMap(newMap);
+    setMapState(newMapState);
     for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapState", data: newMapState });
       peer.connection.send({ id: "map", data: newMap });
     }
   }
 
-  const [mapTokens, setMapTokens] = useState({});
-
-  function handleMapTokenChange(token) {
-    if (!map.source) {
-      return;
-    }
-    setMapTokens((prevMapTokens) => ({
-      ...prevMapTokens,
-      [token.id]: token,
+  async function handleMapTokenChange(token) {
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      tokens: {
+        ...prevMapState.tokens,
+        [token.id]: token,
+      },
     }));
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
@@ -60,9 +72,9 @@ function Game() {
   }
 
   function handleMapTokenRemove(token) {
-    setMapTokens((prevMapTokens) => {
-      const { [token.id]: old, ...rest } = prevMapTokens;
-      return rest;
+    setMapState((prevMapState) => {
+      const { [token.id]: old, ...rest } = prevMapState.tokens;
+      return { ...prevMapState, tokens: rest };
     });
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
@@ -70,19 +82,18 @@ function Game() {
     }
   }
 
-  const [mapDrawActions, setMapDrawActions] = useState([]);
-  // An index into the draw actions array to which only actions before the
-  // index will be performed (used in undo and redo)
-  const [mapDrawActionIndex, setMapDrawActionIndex] = useState(-1);
   function addNewMapDrawActions(actions) {
-    setMapDrawActions((prevActions) => {
+    setMapState((prevMapState) => {
       const newActions = [
-        ...prevActions.slice(0, mapDrawActionIndex + 1),
+        ...prevMapState.drawActions.slice(0, prevMapState.drawActionIndex + 1),
         ...actions,
       ];
       const newIndex = newActions.length - 1;
-      setMapDrawActionIndex(newIndex);
-      return newActions;
+      return {
+        ...prevMapState,
+        drawActions: newActions,
+        drawActionIndex: newIndex,
+      };
     });
   }
 
@@ -94,8 +105,11 @@ function Game() {
   }
 
   function handleMapDrawUndo() {
-    const newIndex = Math.max(mapDrawActionIndex - 1, -1);
-    setMapDrawActionIndex(newIndex);
+    const newIndex = Math.max(mapState.drawActionIndex - 1, -1);
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      drawActionIndex: newIndex,
+    }));
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapDrawIndex", data: newIndex });
     }
@@ -103,10 +117,13 @@ function Game() {
 
   function handleMapDrawRedo() {
     const newIndex = Math.min(
-      mapDrawActionIndex + 1,
-      mapDrawActions.length - 1
+      mapState.drawActionIndex + 1,
+      mapState.drawActions.length - 1
     );
-    setMapDrawActionIndex(newIndex);
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      drawActionIndex: newIndex,
+    }));
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapDrawIndex", data: newIndex });
     }
@@ -145,14 +162,8 @@ function Game() {
       if (map) {
         peer.connection.send({ id: "map", data: map });
       }
-      if (mapTokens) {
-        peer.connection.send({ id: "tokenEdit", data: mapTokens });
-      }
-      if (mapDrawActions) {
-        peer.connection.send({ id: "mapDraw", data: mapDrawActions });
-      }
-      if (mapDrawActionIndex !== mapDrawActions.length - 1) {
-        peer.connection.send({ id: "mapDrawIndex", data: mapDrawActionIndex });
+      if (mapState) {
+        peer.connection.send({ id: "mapState", data: mapState });
       }
     }
     if (data.id === "map") {
@@ -166,16 +177,20 @@ function Game() {
         setMap(data.data);
       }
     }
+    if (data.id === "mapState") {
+      setMapState(data.data);
+    }
     if (data.id === "tokenEdit") {
-      setMapTokens((prevMapTokens) => ({
-        ...prevMapTokens,
-        ...data.data,
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        tokens: { ...prevMapState.tokens, ...data.data },
       }));
     }
     if (data.id === "tokenRemove") {
-      setMapTokens((prevMapTokens) =>
-        omit(prevMapTokens, Object.keys(data.data))
-      );
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        tokens: omit(prevMapState.tokens, Object.keys(data.data)),
+      }));
     }
     if (data.id === "nickname") {
       setPartyNicknames((prevNicknames) => ({
@@ -187,7 +202,10 @@ function Game() {
       addNewMapDrawActions(data.data);
     }
     if (data.id === "mapDrawIndex") {
-      setMapDrawActionIndex(data.data);
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        drawActionIndex: data.data,
+      }));
     }
   }
 
@@ -301,15 +319,13 @@ function Game() {
           />
           <Map
             map={map}
-            tokens={mapTokens}
+            mapState={mapState}
             onMapTokenChange={handleMapTokenChange}
             onMapTokenRemove={handleMapTokenRemove}
             onMapChange={handleMapChange}
             onMapDraw={handleMapDraw}
             onMapDrawUndo={handleMapDrawUndo}
             onMapDrawRedo={handleMapDrawRedo}
-            drawActions={mapDrawActions}
-            drawActionIndex={mapDrawActionIndex}
           />
           <Tokens onCreateMapToken={handleMapTokenChange} />
         </Flex>

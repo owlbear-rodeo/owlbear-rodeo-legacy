@@ -18,15 +18,13 @@ const maxZoom = 5;
 
 function Map({
   map,
-  tokens,
+  mapState,
   onMapTokenChange,
   onMapTokenRemove,
   onMapChange,
   onMapDraw,
   onMapDrawUndo,
   onMapDrawRedo,
-  drawActions,
-  drawActionIndex,
 }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenChange) {
@@ -63,9 +61,12 @@ function Map({
 
   // Replay the draw actions and convert them to shapes for the map drawing
   useEffect(() => {
+    if (!mapState) {
+      return;
+    }
     let shapesById = {};
-    for (let i = 0; i <= drawActionIndex; i++) {
-      const action = drawActions[i];
+    for (let i = 0; i <= mapState.drawActionIndex; i++) {
+      const action = mapState.drawActions[i];
       if (action.type === "add") {
         for (let shape of action.shapes) {
           shapesById[shape.id] = shape;
@@ -76,7 +77,7 @@ function Map({
       }
     }
     setDrawnShapes(Object.values(shapesById));
-  }, [drawActions, drawActionIndex]);
+  }, [mapState]);
 
   const disabledTools = [];
   if (!map) {
@@ -233,14 +234,15 @@ function Map({
         pointerEvents: "none",
       }}
     >
-      {Object.values(tokens).map((token) => (
-        <MapToken
-          key={token.id}
-          token={token}
-          tokenSizePercent={tokenSizePercent}
-          className={`${mapTokenProxyClassName} ${mapTokenMenuClassName}`}
-        />
-      ))}
+      {mapState &&
+        Object.values(mapState.tokens).map((token) => (
+          <MapToken
+            key={token.id}
+            token={token}
+            tokenSizePercent={tokenSizePercent}
+            className={`${mapTokenProxyClassName} ${mapTokenMenuClassName}`}
+          />
+        ))}
     </Box>
   );
 
@@ -299,8 +301,11 @@ function Map({
           disabledTools={disabledTools}
           onUndo={onMapDrawUndo}
           onRedo={onMapDrawRedo}
-          undoDisabled={drawActionIndex < 0}
-          redoDisabled={drawActionIndex === drawActions.length - 1}
+          undoDisabled={!mapState || mapState.drawActionIndex < 0}
+          redoDisabled={
+            !mapState ||
+            mapState.drawActionIndex === mapState.drawActions.length - 1
+          }
           brushColor={brushColor}
           onBrushColorChange={setBrushColor}
           onEraseAll={handleShapeRemoveAll}

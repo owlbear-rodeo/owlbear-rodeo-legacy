@@ -10,6 +10,13 @@ import MapSelect from "../components/map/MapSelect";
 import * as defaultMaps from "../maps";
 
 const defaultMapSize = 22;
+const defaultMapState = {
+  tokens: {},
+  // An index into the draw actions array to which only actions before the
+  // index will be performed (used in undo and redo)
+  drawActionIndex: -1,
+  drawActions: [],
+};
 
 function AddMapModal({ isOpen, onRequestClose, onDone }) {
   const [imageLoading, setImageLoading] = useState(false);
@@ -81,6 +88,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
 
   async function handleMapAdd(map) {
     await db.table("maps").add(map);
+    await db.table("states").add({ ...defaultMapState, mapId: map.id });
     setMaps((prevMaps) => [map, ...prevMaps]);
     setCurrentMapId(map.id);
     setGridX(map.gridX);
@@ -89,6 +97,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
 
   async function handleMapRemove(id) {
     await db.table("maps").delete(id);
+    await db.table("states").delete(id);
     setMaps((prevMaps) => {
       const filtered = prevMaps.filter((map) => map.id !== id);
       setCurrentMapId(filtered[0].id);
@@ -102,9 +111,14 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     setGridY(map.gridY);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    onDone(maps.find((map) => map.id === currentMapId));
+    const currentMap = maps.find((map) => map.id === currentMapId);
+    if (currentMap) {
+      let currentMapState =
+        (await db.table("states").get(currentMap.id)) || defaultMapState;
+      onDone(currentMap, currentMapState);
+    }
   }
 
   async function handleGridXChange(e) {
