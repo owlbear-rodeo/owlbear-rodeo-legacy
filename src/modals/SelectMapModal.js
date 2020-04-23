@@ -23,7 +23,7 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
 
   const [currentMap, setCurrentMap] = useState(null);
   const [maps, setMaps] = useState(Object.values(defaultMaps));
-  // Load maps from the database
+  // Load maps from the database and ensure state is properly setup
   useEffect(() => {
     async function loadMaps() {
       let storedMaps = await db.table("maps").toArray();
@@ -35,7 +35,20 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
       }
       setMaps((prevMaps) => [...storedMaps, ...prevMaps]);
     }
+
+    async function setupDefaultMapStatesIfNeeded() {
+      for (let defaultMap of Object.values(defaultMaps)) {
+        let state = await db.table("states").get(defaultMap.id);
+        if (!state) {
+          await db
+            .table("states")
+            .add({ ...defaultMapState, mapId: defaultMap.id });
+        }
+      }
+    }
+
     loadMaps();
+    setupDefaultMapStatesIfNeeded();
   }, []);
 
   const [gridX, setGridX] = useState(defaultMapSize);
@@ -109,6 +122,10 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
     setCurrentMap(map);
     setGridX(map.gridX);
     setGridY(map.gridY);
+  }
+
+  async function handleMapReset(id) {
+    await db.table("states").put({ ...defaultMapState, mapId: id });
   }
 
   async function handleSubmit(e) {
@@ -199,6 +216,7 @@ function SelectMapModal({ isOpen, onRequestClose, onDone }) {
             onMapRemove={handleMapRemove}
             selectedMap={currentMap && currentMap.id}
             onMapSelect={handleMapSelect}
+            onMapReset={handleMapReset}
           />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>

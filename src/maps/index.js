@@ -16,35 +16,35 @@ const defaultProps = {
 export const blank = {
   ...defaultProps,
   source: blankImage,
-  id: "Blank Grid 22x22",
+  id: "__default_blank",
 };
 
 export const grass = {
   ...defaultProps,
   source: grassImage,
-  id: "Grass Grid 22x22",
+  id: "__default_grass",
 };
 
 export const sand = {
   ...defaultProps,
   source: sandImage,
-  id: "Sand Grid 22x22",
+  id: "__default_sand",
 };
 
 export const stone = {
   ...defaultProps,
   source: stoneImage,
-  id: "Stone Grid 22x22",
+  id: "__default_stone",
 };
 
 export const water = {
   ...defaultProps,
   source: waterImage,
-  id: "Water Grid 22x22",
+  id: "__default_water",
 };
 
 export const wood = {
   ...defaultProps,
   source: woodImage,
-  id: "Wood Grid 22x22",
+  id: "__default_wood",
 };

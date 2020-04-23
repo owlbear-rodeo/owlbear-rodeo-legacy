@@ -1,60 +1,18 @@
 import React from "react";
-import { Flex, Image as UIImage, IconButton } from "theme-ui";
+import { Flex } from "theme-ui";
 
 import AddIcon from "../../icons/AddIcon";
-import RemoveIcon from "../../icons/RemoveIcon";
 
-function MapTiles({ maps, selectedMap, onMapSelect, onMapAdd, onMapRemove }) {
-  const tileProps = {
-    m: 2,
-    bg: "muted",
-  };
+import MapTile from "./MapTile";
 
-  const tileStyle = {
-    width: "150px",
-    height: "150px",
-    borderRadius: "4px",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-  };
-
-  function tile(map) {
-    return (
-      <Flex
-        key={map.id}
-        sx={{
-          borderColor: "primary",
-          borderStyle: map.id === selectedMap ? "solid" : "none",
-          borderWidth: "4px",
-          position: "relative",
-          ...tileStyle,
-        }}
-        {...tileProps}
-        onClick={() => onMapSelect(map)}
-      >
-        <UIImage
-          sx={{ width: "100%", height: "100%", objectFit: "contain" }}
-          src={map.source}
-        />
-        {!map.default && map.id === selectedMap && (
-          <IconButton
-            aria-label="Remove Map"
-            title="Remove map"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onMapRemove(map.id);
-            }}
-            sx={{ position: "absolute", top: 0, right: 0 }}
-          >
-            <RemoveIcon />
-          </IconButton>
-        )}
-      </Flex>
-    );
-  }
-
+function MapTiles({
+  maps,
+  selectedMap,
+  onMapSelect,
+  onMapAdd,
+  onMapRemove,
+  onMapReset,
+}) {
   return (
     <Flex
       my={2}
@@ -81,15 +39,30 @@ function MapTiles({ maps, selectedMap, onMapSelect, onMapAdd, onMapRemove }) {
           ":active": {
             color: "secondary",
           },
-          ...tileStyle,
+          width: "150px",
+          height: "150px",
+          borderRadius: "4px",
+          justifyContent: "center",
+          alignItems: "center",
+          cursor: "pointer",
         }}
-        {...tileProps}
+        m={2}
+        bg="muted"
         aria-label="Add Map"
         title="Add Map"
       >
         <AddIcon large />
       </Flex>
-      {maps.map(tile)}
+      {maps.map((map) => (
+        <MapTile
+          key={map.id}
+          map={map}
+          isSelected={map.id === selectedMap}
+          onMapSelect={onMapSelect}
+          onMapRemove={onMapRemove}
+          onMapReset={onMapReset}
+        />
+      ))}
     </Flex>
   );
 }
