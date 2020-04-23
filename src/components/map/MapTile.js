@@ -7,7 +7,14 @@ import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import ExpandMoreDotIcon from "../../icons/ExpandMoreDotIcon";
 
-function MapTile({ map, isSelected, onMapSelect, onMapRemove, onMapReset }) {
+function MapTile({
+  map,
+  isSelected,
+  onMapSelect,
+  onMapRemove,
+  onMapReset,
+  onSubmit,
+}) {
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const [hasMapState, setHasMapState] = useState(false);
 
@@ -103,6 +110,12 @@ function MapTile({ map, isSelected, onMapSelect, onMapRemove, onMapReset }) {
       onClick={() => {
         setIsTileMenuOpen(false);
         onMapSelect(map);
+      }}
+      onDoubleClick={(e) => {
+        if (!isMapTileMenuOpen) {
+          onMapSelect(map);
+          onSubmit(e);
+        }
       }}
     >
       <UIImage

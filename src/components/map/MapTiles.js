@@ -12,6 +12,7 @@ function MapTiles({
   onMapAdd,
   onMapRemove,
   onMapReset,
+  onSubmit,
 }) {
   return (
     <Flex
@@ -61,6 +62,7 @@ function MapTiles({
           onMapSelect={onMapSelect}
           onMapRemove={onMapRemove}
           onMapReset={onMapReset}
+          onSubmit={onSubmit}
         />
       ))}
     </Flex>

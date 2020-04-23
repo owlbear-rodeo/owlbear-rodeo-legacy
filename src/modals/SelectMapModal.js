@@ -256,6 +256,7 @@ function SelectMapModal({
             selectedMap={selectedMap && selectedMap.id}
             onMapSelect={handleMapSelect}
             onMapReset={handleMapReset}
+            onSubmit={handleSubmit}
           />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
