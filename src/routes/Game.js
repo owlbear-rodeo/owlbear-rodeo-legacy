@@ -48,12 +48,17 @@ function Game() {
     }
   }, [debouncedMapState]);
 
-  function handleMapChange(newMap, newMapState) {
+  function handleMapChange(newMap) {
     setMap(newMap);
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "map", data: newMap });
+    }
+  }
+
+  function handleMapStateChange(newMapState) {
     setMapState(newMapState);
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapState", data: newMapState });
-      peer.connection.send({ id: "map", data: newMap });
     }
   }
 
@@ -169,7 +174,7 @@ function Game() {
     if (data.id === "map") {
       // If we have a file convert it to a url
       // TODO clear the file url of the previous map if it's a blob
-      if (data.data.file) {
+      if (data.data && data.data.file) {
         const file = new Blob([data.data.file]);
         const source = URL.createObjectURL(file);
         setMap({ ...data.data, file, source });
@@ -323,6 +328,7 @@ function Game() {
             onMapTokenChange={handleMapTokenChange}
             onMapTokenRemove={handleMapTokenRemove}
             onMapChange={handleMapChange}
+            onMapStateChange={handleMapStateChange}
             onMapDraw={handleMapDraw}
             onMapDrawUndo={handleMapDrawUndo}
             onMapDrawRedo={handleMapDrawRedo}

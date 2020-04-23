@@ -22,6 +22,7 @@ function Map({
   onMapTokenChange,
   onMapTokenRemove,
   onMapChange,
+  onMapStateChange,
   onMapDraw,
   onMapDrawUndo,
   onMapDrawRedo,
@@ -296,6 +297,8 @@ function Map({
         </Box>
         <MapControls
           onMapChange={onMapChange}
+          onMapStateChange={onMapStateChange}
+          currentMap={map}
           onToolChange={setSelectedTool}
           selectedTool={selectedTool}
           disabledTools={disabledTools}

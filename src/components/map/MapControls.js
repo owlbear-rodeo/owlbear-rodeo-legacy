@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, IconButton, Label } from "theme-ui";
 
-import SelectMapButton from "./SelectMapIcon";
+import SelectMapButton from "./SelectMapButton";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import PanToolIcon from "../../icons/PanToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
@@ -22,6 +22,8 @@ import EraseAllIcon from "../../icons/EraseAllIcon";
 
 function MapControls({
   onMapChange,
+  onMapStateChange,
+  currentMap,
   onToolChange,
   selectedTool,
   disabledTools,
@@ -233,7 +235,11 @@ function MapControls({
           p={2}
           ref={expanedMenuRef}
         >
-          <SelectMapButton onMapChange={onMapChange} />
+          <SelectMapButton
+            onMapChange={onMapChange}
+            onMapStateChange={onMapStateChange}
+            currentMap={currentMap}
+          />
           {divider}
           <IconButton
             aria-label="Pan Tool"

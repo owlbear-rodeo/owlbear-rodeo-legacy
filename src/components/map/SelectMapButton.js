@@ -4,7 +4,7 @@ import { IconButton } from "theme-ui";
 import SelectMapModal from "../../modals/SelectMapModal";
 import SelectMapIcon from "../../icons/SelectMapIcon";
 
-function SelectMapButton({ onMapChange }) {
+function SelectMapButton({ onMapChange, onMapStateChange, currentMap }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   function openModal() {
     setIsAddModalOpen(true);
@@ -13,10 +13,7 @@ function SelectMapButton({ onMapChange }) {
     setIsAddModalOpen(false);
   }
 
-  function handleDone(map, mapState) {
-    if (map) {
-      onMapChange(map, mapState);
-    }
+  function handleDone() {
     closeModal();
   }
 
@@ -33,6 +30,9 @@ function SelectMapButton({ onMapChange }) {
         isOpen={isAddModalOpen}
         onRequestClose={closeModal}
         onDone={handleDone}
+        onMapChange={onMapChange}
+        onMapStateChange={onMapStateChange}
+        currentMap={currentMap}
       />
     </>
   );
