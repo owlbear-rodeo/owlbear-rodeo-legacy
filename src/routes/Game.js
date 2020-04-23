@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Flex, Box, Text, Link } from "theme-ui";
 import { useParams } from "react-router-dom";
 
@@ -40,21 +34,19 @@ function Game() {
    * Map state
    */
 
-  const [mapSource, setMapSource] = useState(null);
-  const mapDataRef = useRef(null);
+  const [map, setMap] = useState(null);
 
-  function handleMapChange(mapData, mapSource) {
-    mapDataRef.current = mapData;
-    setMapSource(mapSource);
+  function handleMapChange(newMap) {
+    setMap(newMap);
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "map", data: mapDataRef.current });
+      peer.connection.send({ id: "map", data: map });
     }
   }
 
   const [mapTokens, setMapTokens] = useState({});
 
   function handleMapTokenChange(token) {
-    if (!mapSource) {
+    if (!map.source) {
       return;
     }
     setMapTokens((prevMapTokens) => ({
@@ -150,8 +142,8 @@ function Game() {
 
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
-      if (mapSource) {
-        peer.connection.send({ id: "map", data: mapDataRef.current });
+      if (map) {
+        peer.connection.send({ id: "map", data: map });
       }
       if (mapTokens) {
         peer.connection.send({ id: "tokenEdit", data: mapTokens });
@@ -164,9 +156,9 @@ function Game() {
       }
     }
     if (data.id === "map") {
-      const blob = new Blob([data.data.file]);
-      mapDataRef.current = { ...data.data, file: blob };
-      setMapSource(URL.createObjectURL(mapDataRef.current.file));
+      const file = new Blob([data.data.file]);
+      const source = URL.createObjectURL(file);
+      setMap({ ...data.data, file, source });
     }
     if (data.id === "tokenEdit") {
       setMapTokens((prevMapTokens) => ({
@@ -302,8 +294,7 @@ function Game() {
             onStreamEnd={handleStreamEnd}
           />
           <Map
-            mapSource={mapSource}
-            mapData={mapDataRef.current}
+            map={map}
             tokens={mapTokens}
             onMapTokenChange={handleMapTokenChange}
             onMapTokenRemove={handleMapTokenRemove}

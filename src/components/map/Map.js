@@ -17,8 +17,7 @@ const minZoom = 0.1;
 const maxZoom = 5;
 
 function Map({
-  mapSource,
-  mapData,
+  map,
   tokens,
   onMapTokenChange,
   onMapTokenRemove,
@@ -80,7 +79,7 @@ function Map({
   }, [drawActions, drawActionIndex]);
 
   const disabledTools = [];
-  if (!mapData) {
+  if (!map) {
     disabledTools.push("pan");
     disabledTools.push("brush");
   }
@@ -134,7 +133,7 @@ function Map({
           move: (e) => handleMove(e, false),
         },
         cursorChecker: () => {
-          return selectedTool === "pan" && mapData ? "move" : "default";
+          return selectedTool === "pan" && map ? "move" : "default";
         },
       })
       .on("doubletap", (event) => {
@@ -147,12 +146,12 @@ function Map({
     return () => {
       mapInteract.unset();
     };
-  }, [selectedTool, mapData]);
+  }, [selectedTool, map]);
 
   // Reset map transform when map changes
   useEffect(() => {
     setTranslateAndScale({ x: 0, y: 0 }, 1);
-  }, [mapSource]);
+  }, [map]);
 
   // Bind the wheel event of the map via a ref
   // in order to support non-passive event listening
@@ -194,11 +193,11 @@ function Map({
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef();
-  const gridX = mapData && mapData.gridX;
-  const gridY = mapData && mapData.gridY;
+  const gridX = map && map.gridX;
+  const gridY = map && map.gridY;
   const gridSizeNormalized = { x: 1 / gridX || 0, y: 1 / gridY || 0 };
   const tokenSizePercent = gridSizeNormalized.x * 100;
-  const aspectRatio = (mapData && mapData.width / mapData.height) || 1;
+  const aspectRatio = (map && map.width / map.height) || 1;
 
   const mapImage = (
     <Box
@@ -218,7 +217,7 @@ function Map({
           userSelect: "none",
           touchAction: "none",
         }}
-        src={mapSource}
+        src={map && map.source}
       />
     </Box>
   );
@@ -278,8 +277,8 @@ function Map({
             />
             {mapImage}
             <MapDrawing
-              width={mapData ? mapData.width : 0}
-              height={mapData ? mapData.height : 0}
+              width={map ? map.width : 0}
+              height={map ? map.height : 0}
               selectedTool={selectedTool}
               shapes={drawnShapes}
               onShapeAdd={handleShapeAdd}

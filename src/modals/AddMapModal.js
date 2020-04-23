@@ -1,31 +1,41 @@
-import React, { useRef, useState } from "react";
-import {
-  Box,
-  Button,
-  Image as UIImage,
-  Flex,
-  Label,
-  Input,
-  Text,
-} from "theme-ui";
+import React, { useRef, useState, useEffect } from "react";
+import { Box, Button, Flex, Label, Input, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
+import MapSelect from "../components/map/MapSelect";
 
-function AddMapModal({
-  isOpen,
-  onRequestClose,
-  onDone,
-  onImageUpload,
-  gridX,
-  onGridXChange,
-  gridY,
-  onGridYChange,
-  imageLoaded,
-  mapSource,
-}) {
+import * as defaultMaps from "../maps";
+
+const defaultMapSize = 22;
+
+function AddMapModal({ isOpen, onRequestClose, onDone }) {
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const [currentMap, setCurrentMap] = useState(-1);
+  const [maps, setMaps] = useState(Object.values(defaultMaps));
+
+  const [gridX, setGridX] = useState(defaultMapSize);
+  const [gridY, setGridY] = useState(defaultMapSize);
+  useEffect(() => {
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      const changedMap = newMaps[currentMap];
+      if (changedMap) {
+        changedMap.gridX = gridX;
+        changedMap.gridY = gridY;
+      }
+      return newMaps;
+    });
+  }, [gridX, gridY, currentMap]);
+
   const fileInputRef = useRef();
 
   function handleImageUpload(file) {
+    if (!file) {
+      return;
+    }
+    let fileGridX = defaultMapSize;
+    let fileGridY = defaultMapSize;
     if (file.name) {
       // Match against a regex to find the grid size in the file name
       // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
@@ -35,12 +45,35 @@ function AddMapModal({
         const matchX = parseInt(lastMatch[1]);
         const matchY = parseInt(lastMatch[3]);
         if (!isNaN(matchX) && !isNaN(matchY)) {
-          onImageUpload(file, matchX, matchY);
-          return;
+          fileGridX = matchX;
+          fileGridY = matchY;
         }
       }
     }
-    onImageUpload(file);
+    const url = URL.createObjectURL(file);
+    let image = new Image();
+    setImageLoading(true);
+    image.onload = function () {
+      setMaps((prevMaps) => {
+        const newMaps = [
+          ...prevMaps,
+          {
+            file,
+            gridX: fileGridX,
+            gridY: fileGridY,
+            width: image.width,
+            height: image.height,
+            source: url,
+          },
+        ];
+        setCurrentMap(newMaps.length - 1);
+        return newMaps;
+      });
+      setGridX(fileGridX);
+      setGridY(fileGridY);
+      setImageLoading(false);
+    };
+    image.src = url;
   }
 
   function openImageDialog() {
@@ -78,7 +111,7 @@ function AddMapModal({
         as="form"
         onSubmit={(e) => {
           e.preventDefault();
-          onDone();
+          onDone(maps[currentMap]);
         }}
         onDragEnter={handleImageDragEnter}
       >
@@ -89,7 +122,6 @@ function AddMapModal({
           style={{ display: "none" }}
           ref={fileInputRef}
         />
-
         <Flex
           sx={{
             flexDirection: "column",
@@ -98,19 +130,7 @@ function AddMapModal({
           <Label pt={2} pb={1}>
             Add map
           </Label>
-          <UIImage
-            my={2}
-            sx={{
-              width: "500px",
-              minHeight: "200px",
-              maxHeight: "300px",
-              objectFit: "contain",
-              borderRadius: "4px",
-            }}
-            src={mapSource}
-            onClick={openImageDialog}
-            bg="muted"
-          />
+          <MapSelect maps={maps} onMapAdd={openImageDialog} />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
               <Label htmlFor="gridX">Columns</Label>
@@ -118,7 +138,7 @@ function AddMapModal({
                 type="number"
                 name="gridX"
                 value={gridX}
-                onChange={(e) => onGridXChange(e.target.value)}
+                onChange={(e) => setGridX(e.target.value)}
               />
             </Box>
             <Box mb={2} ml={1} sx={{ flexGrow: 1 }}>
@@ -127,25 +147,13 @@ function AddMapModal({
                 type="number"
                 name="gridY"
                 value={gridY}
-                onChange={(e) => onGridYChange(e.target.value)}
+                onChange={(e) => setGridY(e.target.value)}
               />
             </Box>
           </Flex>
-          {mapSource ? (
-            <Button variant="primary" disabled={!imageLoaded}>
-              Done
-            </Button>
-          ) : (
-            <Button
-              varient="primary"
-              onClick={(e) => {
-                e.preventDefault();
-                openImageDialog();
-              }}
-            >
-              Select Image
-            </Button>
-          )}
+          <Button variant="primary" disabled={imageLoading}>
+            Done
+          </Button>
           {dragging && (
             <Flex
               bg="muted"
