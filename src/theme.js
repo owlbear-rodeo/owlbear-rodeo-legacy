@@ -180,6 +180,8 @@ export default {
       },
       "&:disabled": {
         backgroundColor: "muted",
+        color: "gray",
+        borderColor: "text",
       },
     },
   },

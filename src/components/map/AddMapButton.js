@@ -14,7 +14,9 @@ function AddMapButton({ onMapChange }) {
   }
 
   function handleDone(map) {
-    onMapChange(map);
+    if (map) {
+      onMapChange(map);
+    }
     closeModal();
   }
 

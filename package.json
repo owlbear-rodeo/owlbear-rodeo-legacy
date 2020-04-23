@@ -9,6 +9,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "blob-to-buffer": "^1.2.8",
+    "dexie": "^2.0.4",
     "gh-pages": "^2.2.0",
     "interactjs": "^1.9.7",
     "js-binarypack": "^0.0.9",

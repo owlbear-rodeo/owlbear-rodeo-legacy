@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Box, Button, Flex, Label, Input, Text } from "theme-ui";
+import shortid from "shortid";
+
+import db from "../database";
 
 import Modal from "../components/Modal";
 import MapSelect from "../components/map/MapSelect";
@@ -11,23 +14,25 @@ const defaultMapSize = 22;
 function AddMapModal({ isOpen, onRequestClose, onDone }) {
   const [imageLoading, setImageLoading] = useState(false);
 
-  const [currentMap, setCurrentMap] = useState(-1);
+  const [currentMapId, setCurrentMapId] = useState(null);
   const [maps, setMaps] = useState(Object.values(defaultMaps));
+  // Load maps from the database
+  useEffect(() => {
+    async function loadMaps() {
+      let storedMaps = await db.table("maps").toArray();
+      // reverse so maps are show in the order they were added
+      storedMaps.reverse();
+      for (let map of storedMaps) {
+        // Recreate image urls for each map
+        map.source = URL.createObjectURL(map.file);
+      }
+      setMaps((prevMaps) => [...storedMaps, ...prevMaps]);
+    }
+    loadMaps();
+  }, []);
 
   const [gridX, setGridX] = useState(defaultMapSize);
   const [gridY, setGridY] = useState(defaultMapSize);
-  useEffect(() => {
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      const changedMap = newMaps[currentMap];
-      if (changedMap) {
-        changedMap.gridX = gridX;
-        changedMap.gridY = gridY;
-      }
-      return newMaps;
-    });
-  }, [gridX, gridY, currentMap]);
-
   const fileInputRef = useRef();
 
   function handleImageUpload(file) {
@@ -54,23 +59,15 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     let image = new Image();
     setImageLoading(true);
     image.onload = function () {
-      setMaps((prevMaps) => {
-        const newMaps = [
-          ...prevMaps,
-          {
-            file,
-            gridX: fileGridX,
-            gridY: fileGridY,
-            width: image.width,
-            height: image.height,
-            source: url,
-          },
-        ];
-        setCurrentMap(newMaps.length - 1);
-        return newMaps;
+      handleMapAdd({
+        file,
+        gridX: fileGridX,
+        gridY: fileGridY,
+        width: image.width,
+        height: image.height,
+        source: url,
+        id: shortid.generate(),
       });
-      setGridX(fileGridX);
-      setGridY(fileGridY);
       setImageLoading(false);
     };
     image.src = url;
@@ -82,10 +79,60 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     }
   }
 
-  function handleMapSelect(mapId) {
-    setCurrentMap(mapId);
-    setGridX(maps[mapId].gridX);
-    setGridY(maps[mapId].gridY);
+  async function handleMapAdd(map) {
+    await db.table("maps").add(map);
+    setMaps((prevMaps) => [map, ...prevMaps]);
+    setCurrentMapId(map.id);
+    setGridX(map.gridX);
+    setGridY(map.gridY);
+  }
+
+  async function handleMapRemove(id) {
+    await db.table("maps").delete(id);
+    setMaps((prevMaps) => {
+      const filtered = prevMaps.filter((map) => map.id !== id);
+      setCurrentMapId(filtered[0].id);
+      return filtered;
+    });
+  }
+
+  function handleMapSelect(map) {
+    setCurrentMapId(map.id);
+    setGridX(map.gridX);
+    setGridY(map.gridY);
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onDone(maps.find((map) => map.id === currentMapId));
+  }
+
+  async function handleGridXChange(e) {
+    const newX = e.target.value;
+    await db.table("maps").update(currentMapId, { gridX: newX });
+    setGridX(newX);
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      const i = newMaps.findIndex((map) => map.id === currentMapId);
+      if (i > -1) {
+        newMaps[i].gridX = newX;
+      }
+      return newMaps;
+    });
+  }
+
+  async function handleGridYChange(e) {
+    const newY = e.target.value;
+    await db.table("maps").update(currentMapId, { gridY: newY });
+    setGridY(newY);
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      const i = newMaps.findIndex((map) => map.id === currentMapId);
+      if (i > -1) {
+        newMaps[i].gridY = newY;
+      }
+      return newMaps;
+    });
   }
 
   /**
@@ -116,14 +163,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
 
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
-      <Box
-        as="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          onDone(maps[currentMap]);
-        }}
-        onDragEnter={handleImageDragEnter}
-      >
+      <Box as="form" onSubmit={handleSubmit} onDragEnter={handleImageDragEnter}>
         <input
           onChange={(event) => handleImageUpload(event.target.files[0])}
           type="file"
@@ -142,8 +182,9 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
           <MapSelect
             maps={maps}
             onMapAdd={openImageDialog}
-            selectedMap={currentMap}
-            onMapSelected={handleMapSelect}
+            onMapRemove={handleMapRemove}
+            selectedMap={currentMapId}
+            onMapSelect={handleMapSelect}
           />
           <Flex>
             <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
@@ -152,7 +193,9 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
                 type="number"
                 name="gridX"
                 value={gridX}
-                onChange={(e) => setGridX(e.target.value)}
+                onChange={handleGridXChange}
+                disabled={currentMapId === null}
+                min={1}
               />
             </Box>
             <Box mb={2} ml={1} sx={{ flexGrow: 1 }}>
@@ -161,7 +204,9 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
                 type="number"
                 name="gridY"
                 value={gridY}
-                onChange={(e) => setGridY(e.target.value)}
+                onChange={handleGridYChange}
+                disabled={currentMapId === null}
+                min={1}
               />
             </Box>
           </Flex>
