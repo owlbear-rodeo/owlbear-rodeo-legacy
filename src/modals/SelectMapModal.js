@@ -5,7 +5,7 @@ import shortid from "shortid";
 import db from "../database";
 
 import Modal from "../components/Modal";
-import MapSelect from "../components/map/MapSelect";
+import MapTiles from "../components/map/MapTiles";
 
 import * as defaultMaps from "../maps";
 
@@ -18,10 +18,10 @@ const defaultMapState = {
   drawActions: [],
 };
 
-function AddMapModal({ isOpen, onRequestClose, onDone }) {
+function SelectMapModal({ isOpen, onRequestClose, onDone }) {
   const [imageLoading, setImageLoading] = useState(false);
 
-  const [currentMapId, setCurrentMapId] = useState(null);
+  const [currentMap, setCurrentMap] = useState(null);
   const [maps, setMaps] = useState(Object.values(defaultMaps));
   // Load maps from the database
   useEffect(() => {
@@ -90,7 +90,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     await db.table("maps").add(map);
     await db.table("states").add({ ...defaultMapState, mapId: map.id });
     setMaps((prevMaps) => [map, ...prevMaps]);
-    setCurrentMapId(map.id);
+    setCurrentMap(map);
     setGridX(map.gridX);
     setGridY(map.gridY);
   }
@@ -100,34 +100,34 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
     await db.table("states").delete(id);
     setMaps((prevMaps) => {
       const filtered = prevMaps.filter((map) => map.id !== id);
-      setCurrentMapId(filtered[0].id);
+      setCurrentMap(filtered[0]);
       return filtered;
     });
   }
 
   function handleMapSelect(map) {
-    setCurrentMapId(map.id);
+    setCurrentMap(map);
     setGridX(map.gridX);
     setGridY(map.gridY);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const currentMap = maps.find((map) => map.id === currentMapId);
     if (currentMap) {
       let currentMapState =
         (await db.table("states").get(currentMap.id)) || defaultMapState;
       onDone(currentMap, currentMapState);
     }
+    onDone(null, null);
   }
 
   async function handleGridXChange(e) {
     const newX = e.target.value;
-    await db.table("maps").update(currentMapId, { gridX: newX });
+    await db.table("maps").update(currentMap.id, { gridX: newX });
     setGridX(newX);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((map) => map.id === currentMapId);
+      const i = newMaps.findIndex((map) => map.id === currentMap.id);
       if (i > -1) {
         newMaps[i].gridX = newX;
       }
@@ -137,11 +137,11 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
 
   async function handleGridYChange(e) {
     const newY = e.target.value;
-    await db.table("maps").update(currentMapId, { gridY: newY });
+    await db.table("maps").update(currentMap.id, { gridY: newY });
     setGridY(newY);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((map) => map.id === currentMapId);
+      const i = newMaps.findIndex((map) => map.id === currentMap.id);
       if (i > -1) {
         newMaps[i].gridY = newY;
       }
@@ -191,13 +191,13 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
           }}
         >
           <Label pt={2} pb={1}>
-            Add map
+            Select or import a map
           </Label>
-          <MapSelect
+          <MapTiles
             maps={maps}
             onMapAdd={openImageDialog}
             onMapRemove={handleMapRemove}
-            selectedMap={currentMapId}
+            selectedMap={currentMap && currentMap.id}
             onMapSelect={handleMapSelect}
           />
           <Flex>
@@ -208,7 +208,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
                 name="gridX"
                 value={gridX}
                 onChange={handleGridXChange}
-                disabled={currentMapId === null}
+                disabled={currentMap === null || currentMap.default}
                 min={1}
               />
             </Box>
@@ -219,7 +219,7 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
                 name="gridY"
                 value={gridY}
                 onChange={handleGridYChange}
-                disabled={currentMapId === null}
+                disabled={currentMap === null || currentMap.default}
                 min={1}
               />
             </Box>
@@ -257,4 +257,4 @@ function AddMapModal({ isOpen, onRequestClose, onDone }) {
   );
 }
 
-export default AddMapModal;
+export default SelectMapModal;

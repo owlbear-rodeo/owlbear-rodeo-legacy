@@ -4,7 +4,7 @@ import { Flex, Image as UIImage, IconButton } from "theme-ui";
 import AddIcon from "../../icons/AddIcon";
 import RemoveIcon from "../../icons/RemoveIcon";
 
-function MapSelect({ maps, selectedMap, onMapSelect, onMapAdd, onMapRemove }) {
+function MapTiles({ maps, selectedMap, onMapSelect, onMapAdd, onMapRemove }) {
   const tileProps = {
     m: 2,
     bg: "muted",
@@ -87,11 +87,11 @@ function MapSelect({ maps, selectedMap, onMapSelect, onMapAdd, onMapRemove }) {
         aria-label="Add Map"
         title="Add Map"
       >
-        <AddIcon />
+        <AddIcon large />
       </Flex>
       {maps.map(tile)}
     </Flex>
   );
 }
 
-export default MapSelect;
+export default MapTiles;

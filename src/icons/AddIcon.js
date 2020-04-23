@@ -1,12 +1,12 @@
 import React from "react";
 
-function AddIcon() {
+function AddIcon({ large }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      height="24"
+      height={large ? "32" : "24"}
       viewBox="0 0 24 24"
-      width="24"
+      width={large ? "32" : "24"}
       fill="currentcolor"
     >
       <path d="M0 0h24v24H0V0z" fill="none" />
@@ -14,5 +14,7 @@ function AddIcon() {
     </svg>
   );
 }
+
+AddIcon.defaultProps = { large: false };
 
 export default AddIcon;
