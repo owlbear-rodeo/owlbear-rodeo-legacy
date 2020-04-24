@@ -251,6 +251,22 @@ function Map({
     </Box>
   );
 
+  const mapDrawing = (
+    <MapDrawing
+      width={map ? map.width : 0}
+      height={map ? map.height : 0}
+      selectedTool={selectedTool}
+      shapes={drawnShapes}
+      onShapeAdd={handleShapeAdd}
+      onShapeRemove={handleShapeRemove}
+      brushColor={brushColor}
+      useGridSnapping={useBrushGridSnapping}
+      gridSize={gridSizeNormalized}
+      useBrushBlending={useBrushBlending}
+      useBrushGesture={useBrushGesture}
+    />
+  );
+
   return (
     <>
       <Box
@@ -282,21 +298,9 @@ function Map({
                 paddingBottom: `${(1 / aspectRatio) * 100}%`,
               }}
             />
-            {mapImage}
-            <MapDrawing
-              width={map ? map.width : 0}
-              height={map ? map.height : 0}
-              selectedTool={selectedTool}
-              shapes={drawnShapes}
-              onShapeAdd={handleShapeAdd}
-              onShapeRemove={handleShapeRemove}
-              brushColor={brushColor}
-              useGridSnapping={useBrushGridSnapping}
-              gridSize={gridSizeNormalized}
-              useBrushBlending={useBrushBlending}
-              useBrushGesture={useBrushGesture}
-            />
-            {mapTokens}
+            {map && mapImage}
+            {map && mapDrawing}
+            {map && mapTokens}
           </Box>
         </Box>
         <MapControls

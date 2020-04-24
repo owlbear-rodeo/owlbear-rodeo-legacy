@@ -141,7 +141,7 @@ function SelectMapModal({
     });
     // Removed the map from the map screen if needed
     if (currentMap && currentMap.id === selectedMap.id) {
-      onMapChange(null);
+      onMapChange(null, null);
     }
   }
 
@@ -165,8 +165,7 @@ function SelectMapModal({
     if (selectedMap) {
       let currentMapState =
         (await db.table("states").get(selectedMap.id)) || defaultMapState;
-      onMapStateChange(currentMapState);
-      onMapChange(selectedMap);
+      onMapChange(selectedMap, currentMapState);
       onDone();
     }
     onDone();

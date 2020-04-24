@@ -48,9 +48,13 @@ function Game() {
     }
   }, [debouncedMapState]);
 
-  function handleMapChange(newMap) {
+  function handleMapChange(newMap, newMapState) {
+    setMapState(newMapState);
     setMap(newMap);
     for (let peer of Object.values(peers)) {
+      // Clear the map so the new map state isn't shown on an old map
+      peer.connection.send({ id: "map", data: null });
+      peer.connection.send({ id: "mapState", data: newMapState });
       peer.connection.send({ id: "map", data: newMap });
     }
   }
