@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, Text, Link } from "theme-ui";
+import { Flex, Text, Link as ExternalLink } from "theme-ui";
 
 import Footer from "../components/Footer";
 
@@ -37,17 +37,22 @@ function About() {
         </Text>
         <Text variant="body2" as="p">
           Made by two people in Melbourne, Australia.{" "}
-          <Link href="https://mitchmccaffrey.com/">Mitch</Link> and{" "}
-          <Link href="https://twitter.com/nthouliss">Nicola</Link> were looking
-          for an easy way to continue their d{"&"}d campaign as in-person
-          interaction becomes harder during the COVID-19 crisis.
+          <ExternalLink href="https://mitchmccaffrey.com/">Mitch</ExternalLink>{" "}
+          and{" "}
+          <ExternalLink href="https://twitter.com/nthouliss">
+            Nicola
+          </ExternalLink>{" "}
+          were looking for an easy way to continue their d{"&"}d campaign as
+          in-person interaction becomes harder during the COVID-19 crisis.
         </Text>
         <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           Contact
         </Text>
         <Text variant="body2" as="p">
           For questions or feedback email{" "}
-          <Link href="mailto:contact@owlbear.rodeo">contact@owlbear.rodeo</Link>
+          <ExternalLink href="mailto:contact@owlbear.rodeo">
+            contact@owlbear.rodeo
+          </ExternalLink>
         </Text>
       </Flex>
       <Footer />

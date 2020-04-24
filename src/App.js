@@ -1,6 +1,6 @@
 import React from "react";
 import { ThemeProvider } from "theme-ui";
-import { HashRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import theme from "./theme.js";
 import Home from "./routes/Home";
