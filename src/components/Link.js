@@ -5,7 +5,7 @@ import { Link as RouterLink } from "react-router-dom";
 function Link({ to, ...rest }) {
   return (
     <RouterLink to={to}>
-      <ThemeLink {...rest} />
+      <ThemeLink as="span" {...rest} />
     </RouterLink>
   );
 }
