@@ -1,5 +1,7 @@
 import React from "react";
-import { Flex, Link } from "theme-ui";
+import { Flex } from "theme-ui";
+
+import Link from "./Link";
 
 function Footer() {
   return (
@@ -12,13 +14,13 @@ function Footer() {
         justifyContent: "center",
       }}
     >
-      <Link m={2} href="#/about" variant="footer">
+      <Link m={2} to="/about" variant="footer">
         About
       </Link>
-      <Link m={2} href="#/" variant="footer">
+      <Link m={2} to="/" variant="footer">
         Home
       </Link>
-      <Link m={2} href="#/faq" variant="footer">
+      <Link m={2} to="/faq" variant="footer">
         FAQ
       </Link>
     </Flex>

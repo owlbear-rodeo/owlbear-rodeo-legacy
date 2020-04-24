@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useContext,
 } from "react";
-import { Flex, Box, Text, Link } from "theme-ui";
+import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
 import { omit, isStreamStopped } from "../helpers/shared";
@@ -17,6 +17,7 @@ import Tokens from "../components/Tokens";
 import Map from "../components/Map";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
+import Link from "../components/Link";
 
 import AuthModal from "../modals/AuthModal";
 
@@ -320,7 +321,7 @@ function Game() {
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
         <Box p={1}>
           <Text as="p" variant="body2">
-            {peerError} See <Link href="#/faq">FAQ</Link> for more information.
+            {peerError} See <Link to="/faq">FAQ</Link> for more information.
           </Text>
         </Box>
       </Banner>
