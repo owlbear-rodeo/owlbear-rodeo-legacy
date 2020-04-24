@@ -186,12 +186,10 @@ function Game() {
       }
     }
     if (data.id === "map") {
-      // If we have a file convert it to a url
-      // TODO clear the file url of the previous map if it's a blob
-      if (data.data && data.data.file) {
+      if (data.data && data.data.type === "file") {
+        // Convert file back to blob after peer transfer
         const file = new Blob([data.data.file]);
-        const source = URL.createObjectURL(file);
-        setMap({ ...data.data, file, source });
+        setMap({ ...data.data, file });
       } else {
         setMap(data.data);
       }
