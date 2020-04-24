@@ -6,6 +6,7 @@ function useDataSource(data, defaultSources) {
   const [dataSource, setDataSource] = useState(null);
   useEffect(() => {
     if (!data) {
+      setDataSource(null);
       return;
     }
     let url = null;
