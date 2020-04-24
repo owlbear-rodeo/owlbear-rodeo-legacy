@@ -63,6 +63,9 @@ function Game() {
   }
 
   async function handleMapTokenChange(token) {
+    if (mapState === null) {
+      return;
+    }
     setMapState((prevMapState) => ({
       ...prevMapState,
       tokens: {

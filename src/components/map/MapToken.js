@@ -5,8 +5,13 @@ import TokenLabel from "../token/TokenLabel";
 import TokenStatus from "../token/TokenStatus";
 
 import usePreventTouch from "../../helpers/usePreventTouch";
+import useDataSource from "../../helpers/useDataSource";
+
+import { tokenSources } from "../../tokens";
 
 function MapToken({ token, tokenSizePercent, className }) {
+  const imageSource = useDataSource(token, tokenSources);
+
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS
   usePreventTouch(imageRef);
@@ -47,15 +52,12 @@ function MapToken({ token, tokenSizePercent, className }) {
               touchAction: "none",
               width: "100%",
             }}
-            src={token.image}
-            // pass data into the dom element used to pass state to the ProxyToken
+            src={imageSource}
+            // pass id into the dom element which is then used by the ProxyToken
             data-id={token.id}
-            data-size={token.size}
-            data-label={token.label}
-            data-status={token.status}
             ref={imageRef}
           />
-          {token.status && <TokenStatus statuses={token.status.split(" ")} />}
+          {token.statuses && <TokenStatus statuses={token.statuses} />}
           {token.label && <TokenLabel label={token.label} />}
         </Box>
       </Box>

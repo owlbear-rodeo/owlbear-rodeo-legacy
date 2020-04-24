@@ -9,6 +9,8 @@ import MapDrawing from "./MapDrawing";
 import MapControls from "./MapControls";
 
 import { omit } from "../../helpers/shared";
+import useDataSource from "../../helpers/useDataSource";
+import { mapSources as defaultMapSources } from "../../maps";
 
 const mapTokenProxyClassName = "map-token__proxy";
 const mapTokenMenuClassName = "map-token__menu";
@@ -27,6 +29,8 @@ function Map({
   onMapDrawUndo,
   onMapDrawRedo,
 }) {
+  const mapSource = useDataSource(map, defaultMapSources);
+
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenChange) {
       onMapTokenChange(token);
@@ -219,7 +223,7 @@ function Map({
           userSelect: "none",
           touchAction: "none",
         }}
-        src={map && map.source}
+        src={mapSource}
       />
     </Box>
   );
@@ -323,10 +327,12 @@ function Map({
       <ProxyToken
         tokenClassName={mapTokenProxyClassName}
         onProxyDragEnd={handleProxyDragEnd}
+        tokens={mapState && mapState.tokens}
       />
       <TokenMenu
         tokenClassName={mapTokenMenuClassName}
         onTokenChange={onMapTokenChange}
+        tokens={mapState && mapState.tokens}
       />
     </>
   );

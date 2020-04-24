@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import interact from "interactjs";
 import { Box, Input } from "theme-ui";
 
@@ -6,12 +6,30 @@ import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
-function TokenMenu({ tokenClassName, onTokenChange }) {
+/**
+ * @callback onTokenChange
+ * @param {Object} token the token that was changed
+ */
+
+/**
+ *
+ * @param {string} tokenClassName The class name to attach the interactjs handler to
+ * @param {onProxyDragEnd} onTokenChange Called when the the token data is changed
+ * @param {Object} tokens An mapping of tokens to use as a base when calling onTokenChange
+ */
+function TokenMenu({ tokenClassName, onTokenChange, tokens }) {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleRequestClose() {
     setIsOpen(false);
   }
+
+  // Store the tokens in a ref and access in the interactjs loop
+  // This is needed to stop interactjs from creating multiple listeners
+  const tokensRef = useRef(tokens);
+  useEffect(() => {
+    tokensRef.current = tokens;
+  }, [tokens]);
 
   const [currentToken, setCurrentToken] = useState({});
   const [menuLeft, setMenuLeft] = useState(0);
@@ -31,30 +49,26 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
   }
 
   function handleStatusChange(status) {
-    const statuses =
-      currentToken.status.split(" ").filter((s) => s !== "") || [];
+    const statuses = currentToken.statuses;
     let newStatuses = [];
     if (statuses.includes(status)) {
       newStatuses = statuses.filter((s) => s !== status);
     } else {
       newStatuses = [...statuses, status];
     }
-    const newStatus = newStatuses.join(" ");
     setCurrentToken((prevToken) => ({
       ...prevToken,
-      status: newStatus,
+      statuses: newStatuses,
     }));
-    onTokenChange({ ...currentToken, status: newStatus });
+    onTokenChange({ ...currentToken, statuses: newStatuses });
   }
 
   useEffect(() => {
     function handleTokenMenuOpen(event) {
       const target = event.target;
-      const dataset = (target && target.dataset) || {};
-      setCurrentToken({
-        image: target.src,
-        ...dataset,
-      });
+      const id = target.getAttribute("data-id");
+      const token = tokensRef.current[id] || {};
+      setCurrentToken(token);
 
       const targetRect = target.getBoundingClientRect();
       setMenuLeft(targetRect.left);
@@ -162,7 +176,7 @@ function TokenMenu({ tokenClassName, onTokenChange }) {
               onClick={() => handleStatusChange(color)}
               aria-label={`Token label Color ${color}`}
             >
-              {currentToken.status && currentToken.status.includes(color) && (
+              {currentToken.statuses && currentToken.statuses.includes(color) && (
                 <Box
                   sx={{
                     width: "100%",

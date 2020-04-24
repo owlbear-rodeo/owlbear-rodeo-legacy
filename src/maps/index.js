@@ -5,46 +5,20 @@ import stoneImage from "./Stone Grid 22x22.jpg";
 import waterImage from "./Water Grid 22x22.jpg";
 import woodImage from "./Wood Grid 22x22.jpg";
 
-const defaultProps = {
+export const mapSources = {
+  blank: blankImage,
+  grass: grassImage,
+  sand: sandImage,
+  stone: stoneImage,
+  water: waterImage,
+  wood: woodImage,
+};
+
+export const maps = Object.keys(mapSources).map((name) => ({
+  name,
   gridX: 22,
   gridY: 22,
   width: 1024,
   height: 1024,
-  default: true,
-};
-
-export const blank = {
-  ...defaultProps,
-  source: blankImage,
-  id: "__default_blank",
-};
-
-export const grass = {
-  ...defaultProps,
-  source: grassImage,
-  id: "__default_grass",
-};
-
-export const sand = {
-  ...defaultProps,
-  source: sandImage,
-  id: "__default_sand",
-};
-
-export const stone = {
-  ...defaultProps,
-  source: stoneImage,
-  id: "__default_stone",
-};
-
-export const water = {
-  ...defaultProps,
-  source: waterImage,
-  id: "__default_water",
-};
-
-export const wood = {
-  ...defaultProps,
-  source: woodImage,
-  id: "__default_wood",
-};
+  type: "default",
+}));

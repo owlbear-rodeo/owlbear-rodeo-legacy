@@ -7,7 +7,7 @@ import db from "../database";
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
 
-import * as defaultMaps from "../maps";
+import { maps as defaultMaps } from "../maps";
 
 const defaultMapSize = 22;
 const defaultMapState = {
@@ -37,15 +37,15 @@ function SelectMapModal({
     async function loadDefaultMaps() {
       const defaultMapsWithIds = [];
       const defaultMapStates = [];
-      // Store the default maps into the db in reverse so the whie map is first
-      // in the UI
-      const defaultMapArray = Object.values(defaultMaps).reverse();
-      for (let i = 0; i < defaultMapArray.length; i++) {
-        const defaultMap = defaultMapArray[i];
-        const id = `${defaultMap.id}--${shortid.generate()}`;
+      // Reverse maps to ensure the blank map is first in the list
+      const sortedMaps = [...defaultMaps].reverse();
+      for (let i = 0; i < sortedMaps.length; i++) {
+        const defaultMap = sortedMaps[i];
+        const id = `__default_${defaultMap.name}--${shortid.generate()}`;
         defaultMapsWithIds.push({
           ...defaultMap,
           id,
+          // Emulate the time increasing to avoid sort errors
           timestamp: Date.now() + i,
         });
         defaultMapStates.push({ ...defaultMapState, mapId: id });
@@ -64,12 +64,6 @@ function SelectMapModal({
       } else {
         // Sort maps by the time they were added
         storedMaps.sort((a, b) => b.timestamp - a.timestamp);
-        for (let map of storedMaps) {
-          // Recreate image urls for file based maps
-          if (map.file) {
-            map.source = URL.createObjectURL(map.file);
-          }
-        }
         setMaps(storedMaps);
       }
     }
@@ -101,21 +95,23 @@ function SelectMapModal({
         }
       }
     }
-    const url = URL.createObjectURL(file);
     let image = new Image();
     setImageLoading(true);
+    // Create and load the image temporarily to get its dimensions
+    const url = URL.createObjectURL(file);
     image.onload = function () {
       handleMapAdd({
         file,
+        type: "file",
         gridX: fileGridX,
         gridY: fileGridY,
         width: image.width,
         height: image.height,
-        source: url,
         id: shortid.generate(),
         timestamp: Date.now(),
       });
       setImageLoading(false);
+      URL.revokeObjectURL(url);
     };
     image.src = url;
   }
@@ -135,7 +131,6 @@ function SelectMapModal({
     setGridY(map.gridY);
   }
 
-  // Keep track of removed maps
   async function handleMapRemove(id) {
     await db.table("maps").delete(id);
     await db.table("states").delete(id);
@@ -145,7 +140,7 @@ function SelectMapModal({
       return filtered;
     });
     // Removed the map from the map screen if needed
-    if (currentMap.id === selectedMap.id) {
+    if (currentMap && currentMap.id === selectedMap.id) {
       onMapChange(null);
     }
   }
@@ -160,7 +155,7 @@ function SelectMapModal({
     const state = { ...defaultMapState, mapId: id };
     await db.table("states").put(state);
     // Reset the state of the current map if needed
-    if (currentMap.id === selectedMap.id) {
+    if (currentMap && currentMap.id === selectedMap.id) {
       onMapStateChange(state);
     }
   }

@@ -8,13 +8,31 @@ import usePortal from "../../helpers/usePortal";
 import TokenLabel from "./TokenLabel";
 import TokenStatus from "./TokenStatus";
 
-function ProxyToken({ tokenClassName, onProxyDragEnd }) {
+/**
+ * @callback onProxyDragEnd
+ * @param {boolean} isOnMap whether the token was dropped on the map
+ * @param {Object} token the token that was dropped
+ */
+
+/**
+ *
+ * @param {string} tokenClassName The class name to attach the interactjs handler to
+ * @param {onProxyDragEnd} onProxyDragEnd Called when the proxy token is dropped
+ * @param {Object} tokens An optional mapping of tokens to use as a base when calling OnProxyDragEnd
+ */
+function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
-  const [label, setLabel] = useState("");
-  const [status, setStatus] = useState("");
+  const [tokenId, setTokenId] = useState(null);
   const proxyRef = useRef();
+
+  // Store the tokens in a ref and access in the interactjs loop
+  // This is needed to stop interactjs from creating multiple listeners
+  const tokensRef = useRef(tokens);
+  useEffect(() => {
+    tokensRef.current = tokens;
+  }, [tokens]);
 
   const proxyOnMap = useRef(false);
 
@@ -26,8 +44,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
           // Hide the token and copy it's image to the proxy
           target.parentElement.style.opacity = "0.25";
           setImageSource(target.src);
-          setLabel(target.dataset.label || "");
-          setStatus(target.dataset.status || "");
+          setTokenId(target.dataset.id);
 
           let proxy = proxyRef.current;
           if (proxy) {
@@ -88,13 +105,14 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
               x = x / (mapImageRect.right - mapImageRect.left);
               y = y / (mapImageRect.bottom - mapImageRect.top);
 
-              target.setAttribute("data-x", x);
-              target.setAttribute("data-y", y);
+              // Get the token from the supplied tokens if it exists
+              const id = target.getAttribute("data-id");
+              const token = tokensRef.current[id] || {};
 
               onProxyDragEnd(proxyOnMap.current, {
-                image: target.src,
-                // Pass in props stored as data- in the dom node
-                ...target.dataset,
+                ...token,
+                x,
+                y,
               });
             }
 
@@ -140,12 +158,20 @@ function ProxyToken({ tokenClassName, onProxyDragEnd }) {
             width: "100%",
           }}
         />
-        {status && <TokenStatus statuses={status.split(" ")} />}
-        {label && <TokenLabel label={label} />}
+        {tokens[tokenId] && tokens[tokenId].statuses && (
+          <TokenStatus statuses={tokens[tokenId].statuses} />
+        )}
+        {tokens[tokenId] && tokens[tokenId].label && (
+          <TokenLabel label={tokens[tokenId].label} />
+        )}
       </Box>
     </Box>,
     proxyContainer
   );
 }
+
+ProxyToken.defaultProps = {
+  tokens: {},
+};
 
 export default ProxyToken;

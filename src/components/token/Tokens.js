@@ -1,17 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
 
-import * as tokens from "../../tokens";
+import { tokens as defaultTokens } from "../../tokens";
 
 import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
 import NumberInput from "../NumberInput";
 
+import { fromEntries } from "../../helpers/shared";
+
 const listTokenClassName = "list-token";
 
 function Tokens({ onCreateMapToken }) {
+  const [tokens, setTokens] = useState([]);
+  useEffect(() => {
+    const defaultTokensWithIds = [];
+    for (let defaultToken of defaultTokens) {
+      defaultTokensWithIds.push({ ...defaultToken, id: defaultToken.name });
+    }
+    setTokens(defaultTokensWithIds);
+  }, []);
+
   const [tokenSize, setTokenSize] = useState(1);
 
   function handleProxyDragEnd(isOnMap, token) {
@@ -22,7 +33,7 @@ function Tokens({ onCreateMapToken }) {
         id: shortid.generate(),
         size: tokenSize,
         label: "",
-        status: "",
+        statuses: [],
       });
     }
   }
@@ -38,10 +49,12 @@ function Tokens({ onCreateMapToken }) {
         }}
       >
         <SimpleBar style={{ height: "calc(100% - 58px)", overflowX: "hidden" }}>
-          {Object.entries(tokens).map(([id, image]) => (
-            <Box key={id} my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
-              <ListToken image={image} className={listTokenClassName} />
-            </Box>
+          {tokens.map((token) => (
+            <ListToken
+              key={token.id}
+              token={token}
+              className={listTokenClassName}
+            />
           ))}
         </SimpleBar>
         <Box pt={1} bg="muted" sx={{ height: "58px" }}>
@@ -57,6 +70,7 @@ function Tokens({ onCreateMapToken }) {
       <ProxyToken
         tokenClassName={listTokenClassName}
         onProxyDragEnd={handleProxyDragEnd}
+        tokens={fromEntries(tokens.map((token) => [token.id, token]))}
       />
     </>
   );

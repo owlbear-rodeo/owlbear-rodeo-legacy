@@ -7,6 +7,9 @@ import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import ExpandMoreDotIcon from "../../icons/ExpandMoreDotIcon";
 
+import useDataSource from "../../helpers/useDataSource";
+import { mapSources as defaultMapSources } from "../../maps";
+
 function MapTile({
   map,
   isSelected,
@@ -15,8 +18,10 @@ function MapTile({
   onMapReset,
   onSubmit,
 }) {
+  const mapSource = useDataSource(map, defaultMapSources);
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const [hasMapState, setHasMapState] = useState(false);
+  const isDefault = map.type === "default";
 
   useEffect(() => {
     async function checkForMapState() {
@@ -28,7 +33,6 @@ function MapTile({
         setHasMapState(true);
       }
     }
-
     checkForMapState();
   }, [map]);
 
@@ -120,18 +124,18 @@ function MapTile({
     >
       <UIImage
         sx={{ width: "100%", height: "100%", objectFit: "contain" }}
-        src={map.source}
+        src={mapSource}
       />
       {/* Show expand button only if both reset and remove is available */}
       {isSelected && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
-          {map.default && hasMapState && resetButton(map)}
-          {!map.default && hasMapState && !isMapTileMenuOpen && expandButton}
-          {!map.default && !hasMapState && removeButton(map)}
+          {isDefault && hasMapState && resetButton(map)}
+          {!isDefault && hasMapState && !isMapTileMenuOpen && expandButton}
+          {!isDefault && !hasMapState && removeButton(map)}
         </Box>
       )}
       {/* Tile menu for two actions */}
-      {!map.default && isMapTileMenuOpen && isSelected && (
+      {!isDefault && isMapTileMenuOpen && isSelected && (
         <Flex
           sx={{
             position: "absolute",
@@ -145,7 +149,7 @@ function MapTile({
           bg="muted"
           onClick={() => setIsTileMenuOpen(false)}
         >
-          {!map.default && removeButton(map)}
+          {!isDefault && removeButton(map)}
           {hasMapState && resetButton(map)}
         </Flex>
       )}
