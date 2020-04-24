@@ -1,5 +1,6 @@
 import React from "react";
 import { Flex } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import AddIcon from "../../icons/AddIcon";
 
@@ -15,57 +16,55 @@ function MapTiles({
   onSubmit,
 }) {
   return (
-    <Flex
-      my={2}
-      bg="muted"
-      sx={{
-        flexWrap: "wrap",
-        width: "500px",
-        maxHeight: "300px",
-        borderRadius: "4px",
-        // TODO: move to simple scroll
-        overflowY: "scroll",
-        flexGrow: 1,
-      }}
-    >
+    <SimpleBar style={{ maxHeight: "300px", width: "500px" }}>
       <Flex
-        onClick={onMapAdd}
-        sx={{
-          ":hover": {
-            color: "primary",
-          },
-          ":focus": {
-            outline: "none",
-          },
-          ":active": {
-            color: "secondary",
-          },
-          width: "150px",
-          height: "150px",
-          borderRadius: "4px",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
-        }}
-        m={2}
+        py={2}
         bg="muted"
-        aria-label="Add Map"
-        title="Add Map"
+        sx={{
+          flexWrap: "wrap",
+          width: "500px",
+          borderRadius: "4px",
+        }}
       >
-        <AddIcon large />
+        <Flex
+          onClick={onMapAdd}
+          sx={{
+            ":hover": {
+              color: "primary",
+            },
+            ":focus": {
+              outline: "none",
+            },
+            ":active": {
+              color: "secondary",
+            },
+            width: "150px",
+            height: "150px",
+            borderRadius: "4px",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          m={2}
+          bg="muted"
+          aria-label="Add Map"
+          title="Add Map"
+        >
+          <AddIcon large />
+        </Flex>
+        {maps.map((map) => (
+          <MapTile
+            key={map.id}
+            map={map}
+            isSelected={map.id === selectedMap}
+            onMapSelect={onMapSelect}
+            onMapRemove={onMapRemove}
+            onMapReset={onMapReset}
+            onSubmit={onSubmit}
+          />
+        ))}
       </Flex>
-      {maps.map((map) => (
-        <MapTile
-          key={map.id}
-          map={map}
-          isSelected={map.id === selectedMap}
-          onMapSelect={onMapSelect}
-          onMapRemove={onMapRemove}
-          onMapReset={onMapReset}
-          onSubmit={onSubmit}
-        />
-      ))}
-    </Flex>
+    </SimpleBar>
   );
 }
 
