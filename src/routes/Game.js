@@ -19,6 +19,8 @@ import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 
+import { tokens as defaultTokens } from "../tokens";
+
 function Game() {
   const { id: gameId } = useParams();
   const { authenticationStatus, userId } = useContext(AuthContext);
@@ -70,7 +72,7 @@ function Game() {
     }
   }
 
-  async function handleMapTokenChange(token) {
+  async function handleMapTokenStateChange(token) {
     if (mapState === null) {
       return;
     }
@@ -83,18 +85,18 @@ function Game() {
     }));
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.connection.send({ id: "tokenEdit", data });
+      peer.connection.send({ id: "tokenStateEdit", data });
     }
   }
 
-  function handleMapTokenRemove(token) {
+  function handleMapTokenStateRemove(token) {
     setMapState((prevMapState) => {
       const { [token.id]: old, ...rest } = prevMapState.tokens;
       return { ...prevMapState, tokens: rest };
     });
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.connection.send({ id: "tokenRemove", data });
+      peer.connection.send({ id: "tokenStateRemove", data });
     }
   }
 
@@ -196,13 +198,13 @@ function Game() {
     if (data.id === "mapState") {
       setMapState(data.data);
     }
-    if (data.id === "tokenEdit") {
+    if (data.id === "tokenStateEdit") {
       setMapState((prevMapState) => ({
         ...prevMapState,
         tokens: { ...prevMapState.tokens, ...data.data },
       }));
     }
-    if (data.id === "tokenRemove") {
+    if (data.id === "tokenStateRemove") {
       setMapState((prevMapState) => ({
         ...prevMapState,
         tokens: omit(prevMapState.tokens, Object.keys(data.data)),
@@ -317,6 +319,21 @@ function Game() {
     }
   }, [stream, peers, handleStreamEnd]);
 
+  /**
+   * Token data
+   */
+  const [tokens, setTokens] = useState([]);
+  useEffect(() => {
+    const defaultTokensWithIds = [];
+    for (let defaultToken of defaultTokens) {
+      defaultTokensWithIds.push({
+        ...defaultToken,
+        id: `__default-${defaultToken.name}`,
+      });
+    }
+    setTokens(defaultTokensWithIds);
+  }, []);
+
   return (
     <>
       <Flex sx={{ flexDirection: "column", height: "100%" }}>
@@ -336,15 +353,19 @@ function Game() {
           <Map
             map={map}
             mapState={mapState}
-            onMapTokenChange={handleMapTokenChange}
-            onMapTokenRemove={handleMapTokenRemove}
+            tokens={tokens}
+            onMapTokenStateChange={handleMapTokenStateChange}
+            onMapTokenStateRemove={handleMapTokenStateRemove}
             onMapChange={handleMapChange}
             onMapStateChange={handleMapStateChange}
             onMapDraw={handleMapDraw}
             onMapDrawUndo={handleMapDrawUndo}
             onMapDrawRedo={handleMapDrawRedo}
           />
-          <Tokens onCreateMapToken={handleMapTokenChange} />
+          <Tokens
+            tokens={tokens}
+            onCreateMapTokenState={handleMapTokenStateChange}
+          />
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

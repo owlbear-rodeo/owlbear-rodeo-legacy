@@ -9,7 +9,7 @@ import useDataSource from "../../helpers/useDataSource";
 
 import { tokenSources } from "../../tokens";
 
-function MapToken({ token, tokenSizePercent, className }) {
+function MapToken({ token, tokenState, tokenSizePercent, className }) {
   const imageSource = useDataSource(token, tokenSources);
 
   const imageRef = useRef();
@@ -19,7 +19,7 @@ function MapToken({ token, tokenSizePercent, className }) {
   return (
     <Box
       style={{
-        transform: `translate(${token.x * 100}%, ${token.y * 100}%)`,
+        transform: `translate(${tokenState.x * 100}%, ${tokenState.y * 100}%)`,
         width: "100%",
         height: "100%",
       }}
@@ -30,7 +30,7 @@ function MapToken({ token, tokenSizePercent, className }) {
     >
       <Box
         style={{
-          width: `${tokenSizePercent * (token.size || 1)}%`,
+          width: `${tokenSizePercent * (tokenState.size || 1)}%`,
         }}
         sx={{
           position: "absolute",
@@ -54,11 +54,13 @@ function MapToken({ token, tokenSizePercent, className }) {
             }}
             src={imageSource}
             // pass id into the dom element which is then used by the ProxyToken
-            data-id={token.id}
+            data-id={tokenState.id}
             ref={imageRef}
           />
-          {token.statuses && <TokenStatus statuses={token.statuses} />}
-          {token.label && <TokenLabel label={token.label} />}
+          {tokenState.statuses && (
+            <TokenStatus statuses={tokenState.statuses} />
+          )}
+          {tokenState.label && <TokenLabel label={tokenState.label} />}
         </Box>
       </Box>
     </Box>

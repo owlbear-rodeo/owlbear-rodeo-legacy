@@ -21,8 +21,9 @@ const maxZoom = 5;
 function Map({
   map,
   mapState,
-  onMapTokenChange,
-  onMapTokenRemove,
+  tokens,
+  onMapTokenStateChange,
+  onMapTokenStateRemove,
   onMapChange,
   onMapStateChange,
   onMapDraw,
@@ -31,13 +32,13 @@ function Map({
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
 
-  function handleProxyDragEnd(isOnMap, token) {
-    if (isOnMap && onMapTokenChange) {
-      onMapTokenChange(token);
+  function handleProxyDragEnd(isOnMap, tokenState) {
+    if (isOnMap && onMapTokenStateChange) {
+      onMapTokenStateChange(tokenState);
     }
 
-    if (!isOnMap && onMapTokenRemove) {
-      onMapTokenRemove(token);
+    if (!isOnMap && onMapTokenStateRemove) {
+      onMapTokenStateRemove(tokenState);
     }
   }
 
@@ -240,10 +241,11 @@ function Map({
       }}
     >
       {mapState &&
-        Object.values(mapState.tokens).map((token) => (
+        Object.values(mapState.tokens).map((tokenState) => (
           <MapToken
-            key={token.id}
-            token={token}
+            key={tokenState.id}
+            token={tokens.find((token) => token.id === tokenState.tokenId)}
+            tokenState={tokenState}
             tokenSizePercent={tokenSizePercent}
             className={`${mapTokenProxyClassName} ${mapTokenMenuClassName}`}
           />
@@ -335,7 +337,7 @@ function Map({
       />
       <TokenMenu
         tokenClassName={mapTokenMenuClassName}
-        onTokenChange={onMapTokenChange}
+        onTokenChange={onMapTokenStateChange}
         tokens={mapState && mapState.tokens}
       />
     </>

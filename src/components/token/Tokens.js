@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Box } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
-
-import { tokens as defaultTokens } from "../../tokens";
 
 import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
@@ -13,27 +11,20 @@ import { fromEntries } from "../../helpers/shared";
 
 const listTokenClassName = "list-token";
 
-function Tokens({ onCreateMapToken }) {
-  const [tokens, setTokens] = useState([]);
-  useEffect(() => {
-    const defaultTokensWithIds = [];
-    for (let defaultToken of defaultTokens) {
-      defaultTokensWithIds.push({ ...defaultToken, id: defaultToken.name });
-    }
-    setTokens(defaultTokensWithIds);
-  }, []);
-
+function Tokens({ onCreateMapTokenState, tokens }) {
   const [tokenSize, setTokenSize] = useState(1);
 
   function handleProxyDragEnd(isOnMap, token) {
-    if (isOnMap && onCreateMapToken) {
-      // Give the token an id
-      onCreateMapToken({
-        ...token,
+    if (isOnMap && onCreateMapTokenState) {
+      // Create a token state from the dragged token
+      onCreateMapTokenState({
         id: shortid.generate(),
+        tokenId: token.id,
         size: tokenSize,
         label: "",
         statuses: [],
+        x: token.x,
+        y: token.y,
       });
     }
   }
