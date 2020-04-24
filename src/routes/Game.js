@@ -21,7 +21,7 @@ import AuthContext from "../contexts/AuthContext";
 
 function Game() {
   const { id: gameId } = useParams();
-  const { authenticationStatus } = useContext(AuthContext);
+  const { authenticationStatus, userId } = useContext(AuthContext);
 
   const { peers, socket } = useSession(
     gameId,
@@ -43,10 +43,14 @@ function Game() {
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(mapState, 500);
   useEffect(() => {
-    if (debouncedMapState && debouncedMapState.mapId) {
+    if (
+      debouncedMapState &&
+      debouncedMapState.mapId &&
+      debouncedMapState.owner === userId
+    ) {
       db.table("states").update(debouncedMapState.mapId, debouncedMapState);
     }
-  }, [debouncedMapState]);
+  }, [debouncedMapState, userId]);
 
   function handleMapChange(newMap, newMapState) {
     setMapState(newMapState);

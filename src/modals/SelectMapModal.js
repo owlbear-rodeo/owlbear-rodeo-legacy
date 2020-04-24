@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import { Box, Button, Flex, Label, Input, Text } from "theme-ui";
 import shortid from "shortid";
 
@@ -6,6 +6,8 @@ import db from "../database";
 
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
+
+import AuthContext from "../contexts/AuthContext";
 
 import { maps as defaultMaps } from "../maps";
 
@@ -27,6 +29,8 @@ function SelectMapModal({
   // The map currently being view in the map screen
   currentMap,
 }) {
+  const { userId } = useContext(AuthContext);
+
   const [imageLoading, setImageLoading] = useState(false);
 
   // The map selected in the modal
@@ -34,42 +38,45 @@ function SelectMapModal({
   const [maps, setMaps] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    async function loadDefaultMaps() {
+    if (!userId) {
+      return;
+    }
+    async function getDefaultMaps() {
       const defaultMapsWithIds = [];
-      const defaultMapStates = [];
       // Reverse maps to ensure the blank map is first in the list
       const sortedMaps = [...defaultMaps].reverse();
       for (let i = 0; i < sortedMaps.length; i++) {
         const defaultMap = sortedMaps[i];
-        const id = `__default_${defaultMap.name}--${shortid.generate()}`;
+        const id = `__default-${defaultMap.name}`;
         defaultMapsWithIds.push({
           ...defaultMap,
           id,
+          owner: userId,
           // Emulate the time increasing to avoid sort errors
           timestamp: Date.now() + i,
         });
-        defaultMapStates.push({ ...defaultMapState, mapId: id });
+        // Add a state for the map if there isn't one already
+        const state = await db.table("states").get(id);
+        if (!state) {
+          await db
+            .table("states")
+            .add({ ...defaultMapState, mapId: id, owner: userId });
+        }
       }
-      await db.table("maps").bulkAdd(defaultMapsWithIds);
-      await db.table("states").bulkAdd(defaultMapStates);
-      setMaps(defaultMapsWithIds.sort((a, b) => b.timestamp - a.timestamp));
+      return defaultMapsWithIds;
     }
 
     async function loadMaps() {
       let storedMaps = await db.table("maps").toArray();
-
-      // If we have no stored maps load the default maps
-      if (storedMaps.length === 0) {
-        loadDefaultMaps();
-      } else {
-        // Sort maps by the time they were added
-        storedMaps.sort((a, b) => b.timestamp - a.timestamp);
-        setMaps(storedMaps);
-      }
+      const defaultMapsWithIds = await getDefaultMaps();
+      const sortedMaps = [...defaultMapsWithIds, ...storedMaps].sort(
+        (a, b) => b.timestamp - a.timestamp
+      );
+      setMaps(sortedMaps);
     }
 
     loadMaps();
-  }, []);
+  }, [userId]);
 
   const [gridX, setGridX] = useState(defaultMapSize);
   const [gridY, setGridY] = useState(defaultMapSize);
@@ -109,6 +116,7 @@ function SelectMapModal({
         height: image.height,
         id: shortid.generate(),
         timestamp: Date.now(),
+        owner: userId,
       });
       setImageLoading(false);
       URL.revokeObjectURL(url);
@@ -124,7 +132,9 @@ function SelectMapModal({
 
   async function handleMapAdd(map) {
     await db.table("maps").add(map);
-    await db.table("states").add({ ...defaultMapState, mapId: map.id });
+    await db
+      .table("states")
+      .add({ ...defaultMapState, mapId: map.id, owner: userId });
     setMaps((prevMaps) => [map, ...prevMaps]);
     setSelectedMap(map);
     setGridX(map.gridX);
@@ -152,7 +162,7 @@ function SelectMapModal({
   }
 
   async function handleMapReset(id) {
-    const state = { ...defaultMapState, mapId: id };
+    const state = { ...defaultMapState, mapId: id, owner: userId };
     await db.table("states").put(state);
     // Reset the state of the current map if needed
     if (currentMap && currentMap.id === selectedMap.id) {
@@ -163,8 +173,7 @@ function SelectMapModal({
   async function handleSubmit(e) {
     e.preventDefault();
     if (selectedMap) {
-      let currentMapState =
-        (await db.table("states").get(selectedMap.id)) || defaultMapState;
+      let currentMapState = await db.table("states").get(selectedMap.id);
       onMapChange(selectedMap, currentMapState);
       onDone();
     }
