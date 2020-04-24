@@ -43,10 +43,8 @@ function SelectMapModal({
     }
     async function getDefaultMaps() {
       const defaultMapsWithIds = [];
-      // Reverse maps to ensure the blank map is first in the list
-      const sortedMaps = [...defaultMaps].reverse();
-      for (let i = 0; i < sortedMaps.length; i++) {
-        const defaultMap = sortedMaps[i];
+      for (let i = 0; i < defaultMaps.length; i++) {
+        const defaultMap = defaultMaps[i];
         const id = `__default-${defaultMap.name}`;
         defaultMapsWithIds.push({
           ...defaultMap,
@@ -70,7 +68,7 @@ function SelectMapModal({
       let storedMaps = await db.table("maps").toArray();
       const defaultMapsWithIds = await getDefaultMaps();
       const sortedMaps = [...defaultMapsWithIds, ...storedMaps].sort(
-        (a, b) => b.timestamp - a.timestamp
+        (a, b) => a.timestamp - b.timestamp
       );
       setMaps(sortedMaps);
     }
