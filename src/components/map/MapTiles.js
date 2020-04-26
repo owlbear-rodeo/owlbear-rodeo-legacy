@@ -9,6 +9,7 @@ import MapTile from "./MapTile";
 function MapTiles({
   maps,
   selectedMap,
+  selectedMapState,
   onMapSelect,
   onMapAdd,
   onMapRemove,
@@ -56,7 +57,10 @@ function MapTiles({
           <MapTile
             key={map.id}
             map={map}
-            isSelected={map.id === selectedMap}
+            mapState={
+              selectedMap && map.id === selectedMap.id && selectedMapState
+            }
+            isSelected={selectedMap && map.id === selectedMap.id}
             onMapSelect={onMapSelect}
             onMapRemove={onMapRemove}
             onMapReset={onMapReset}

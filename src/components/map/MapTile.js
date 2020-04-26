@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Flex, Image as UIImage, IconButton, Box, Text } from "theme-ui";
-
-import db from "../../database";
 
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
@@ -12,6 +10,7 @@ import { mapSources as defaultMapSources } from "../../maps";
 
 function MapTile({
   map,
+  mapState,
   isSelected,
   onMapSelect,
   onMapRemove,
@@ -20,21 +19,11 @@ function MapTile({
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
-  const [hasMapState, setHasMapState] = useState(false);
   const isDefault = map.type === "default";
-
-  useEffect(() => {
-    async function checkForMapState() {
-      const state = await db.table("states").get(map.id);
-      if (
-        state &&
-        (Object.values(state.tokens).length > 0 || state.drawActions.length > 0)
-      ) {
-        setHasMapState(true);
-      }
-    }
-    checkForMapState();
-  }, [map]);
+  const hasMapState =
+    mapState &&
+    (Object.values(mapState.tokens).length > 0 ||
+      mapState.drawActions.length > 0);
 
   const expandButton = (
     <IconButton
@@ -81,7 +70,6 @@ function MapTile({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setHasMapState(false);
           setIsTileMenuOpen(false);
           onMapReset(map.id);
         }}

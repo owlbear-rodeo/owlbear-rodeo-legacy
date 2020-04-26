@@ -10,6 +10,8 @@ import MapSettings from "../components/map/MapSettings";
 
 import AuthContext from "../contexts/AuthContext";
 
+import usePrevious from "../helpers/usePrevious";
+
 import { maps as defaultMaps } from "../maps";
 
 const defaultMapSize = 22;
@@ -39,6 +41,8 @@ function SelectMapModal({
   currentMap,
 }) {
   const { userId } = useContext(AuthContext);
+
+  const wasOpen = usePrevious(isOpen);
 
   const [imageLoading, setImageLoading] = useState(false);
 
@@ -80,10 +84,18 @@ function SelectMapModal({
         (a, b) => a.timestamp - b.timestamp
       );
       setMaps(sortedMaps);
+      if (selectedMap) {
+        const map = await db.table("maps").get(selectedMap.id);
+        const state = await db.table("states").get(selectedMap.id);
+        setSelectedMap(map);
+        setSelectedMapState(state);
+      }
     }
 
-    loadMaps();
-  }, [userId]);
+    if (!wasOpen && isOpen) {
+      loadMaps();
+    }
+  }, [userId, isOpen, wasOpen, selectedMap]);
 
   const fileInputRef = useRef();
 
@@ -169,9 +181,9 @@ function SelectMapModal({
     }
   }
 
-  function handleMapSelect(map) {
+  async function handleMapSelect(map) {
+    setSelectedMapState(await db.table("states").get(map.id));
     setSelectedMap(map);
-    db.table("states").get(map.id).then(setSelectedMapState);
   }
 
   async function handleMapReset(id) {
@@ -260,7 +272,8 @@ function SelectMapModal({
             maps={maps}
             onMapAdd={openImageDialog}
             onMapRemove={handleMapRemove}
-            selectedMap={selectedMap && selectedMap.id}
+            selectedMap={selectedMap}
+            selectedMapState={selectedMapState}
             onMapSelect={handleMapSelect}
             onMapReset={handleMapReset}
             onSubmit={handleSubmit}
