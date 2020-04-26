@@ -204,26 +204,6 @@ function SelectMapModal({
     onDone();
   }
 
-  async function handleMapSettingsChange(key, value) {
-    await db.table("maps").update(selectedMap.id, { [key]: value });
-    const newMap = { ...selectedMap, [key]: value };
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((map) => map.id === selectedMap.id);
-      if (i > -1) {
-        newMaps[i] = newMap;
-      }
-      return newMaps;
-    });
-    setSelectedMap(newMap);
-  }
-
-  async function handleMapStateSettingsChange(key, value) {
-    console.log(value);
-    await db.table("states").update(selectedMap.id, { [key]: value });
-    setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
-  }
-
   /**
    * Drag and Drop
    */
@@ -248,6 +228,31 @@ function SelectMapModal({
       handleImageUpload(file);
     }
     setDragging(false);
+  }
+
+  /**
+   * Map settings
+   */
+  const [showMoreSettings, setShowMoreSettings] = useState(false);
+
+  async function handleMapSettingsChange(key, value) {
+    await db.table("maps").update(selectedMap.id, { [key]: value });
+    const newMap = { ...selectedMap, [key]: value };
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      const i = newMaps.findIndex((map) => map.id === selectedMap.id);
+      if (i > -1) {
+        newMaps[i] = newMap;
+      }
+      return newMaps;
+    });
+    setSelectedMap(newMap);
+  }
+
+  async function handleMapStateSettingsChange(key, value) {
+    console.log(value);
+    await db.table("states").update(selectedMap.id, { [key]: value });
+    setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
   }
 
   return (
@@ -283,6 +288,8 @@ function SelectMapModal({
             mapState={selectedMapState}
             onSettingsChange={handleMapSettingsChange}
             onStateSettingsChange={handleMapStateSettingsChange}
+            showMore={showMoreSettings}
+            onShowMoreChange={setShowMoreSettings}
           />
           <Button variant="primary" disabled={imageLoading}>
             Done
