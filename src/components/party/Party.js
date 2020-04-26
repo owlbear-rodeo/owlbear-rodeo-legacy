@@ -5,6 +5,7 @@ import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
 import ChangeNicknameButton from "./ChangeNicknameButton";
 import StartStreamButton from "./StartStreamButton";
+import SettingsButton from "../SettingsButton";
 
 function Party({
   nickname,
@@ -60,6 +61,7 @@ function Party({
           stream={stream}
         />
         <AddPartyMemberButton gameId={gameId} />
+        <SettingsButton />
       </Flex>
     </Flex>
   );
