@@ -35,6 +35,7 @@ function MapSettings({
             }
             disabled={map === null || map.type === "default"}
             min={1}
+            my={1}
           />
         </Box>
         <Box mt={2} ml={1} sx={{ flexGrow: 1 }}>
@@ -48,23 +49,15 @@ function MapSettings({
             }
             disabled={map === null || map.type === "default"}
             min={1}
+            my={1}
           />
         </Box>
       </Flex>
       {showMore && (
         <>
           <Box mt={2} sx={{ flexGrow: 1 }}>
-            <Label htmlFor="name">Name</Label>
-            <Input
-              name="name"
-              value={(map && map.name) || ""}
-              onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={map === null || map.type === "default"}
-            />
-          </Box>
-          <Box my={2} sx={{ flexGrow: 1 }}>
             <Label>Allow others to edit</Label>
-            <Flex>
+            <Flex my={1}>
               <Label>
                 <Checkbox
                   checked={
@@ -96,6 +89,16 @@ function MapSettings({
                 Map
               </Label>
             </Flex>
+          </Box>
+          <Box my={2} sx={{ flexGrow: 1 }}>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              name="name"
+              value={(map && map.name) || ""}
+              onChange={(e) => onSettingsChange("name", e.target.value)}
+              disabled={map === null || map.type === "default"}
+              my={1}
+            />
           </Box>
         </>
       )}
