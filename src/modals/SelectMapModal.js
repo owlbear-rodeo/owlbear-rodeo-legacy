@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
-import { Box, Button, Flex, Label, Input, Text } from "theme-ui";
+import { Box, Button, Flex, Label, Text } from "theme-ui";
 import shortid from "shortid";
 
 import db from "../database";
@@ -19,11 +19,11 @@ const defaultMapState = {
   // index will be performed (used in undo and redo)
   drawActionIndex: -1,
   drawActions: [],
+  // Flags to determine what other people can edit
+  editFlags: ["drawings", "tokens"],
 };
 
 const defaultMapProps = {
-  // Flags to determine what other people can edit
-  editFlags: [],
   // Grid type
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
@@ -44,6 +44,7 @@ function SelectMapModal({
 
   // The map selected in the modal
   const [selectedMap, setSelectedMap] = useState(null);
+  const [selectedMapState, setSelectedMapState] = useState(null);
   const [maps, setMaps] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
@@ -146,9 +147,11 @@ function SelectMapModal({
 
   async function handleMapAdd(map) {
     await db.table("maps").add(map);
-    await db.table("states").add({ ...defaultMapState, mapId: map.id });
+    const state = { ...defaultMapState, mapId: map.id };
+    await db.table("states").add(state);
     setMaps((prevMaps) => [map, ...prevMaps]);
     setSelectedMap(map);
+    setSelectedMapState(state);
   }
 
   async function handleMapRemove(id) {
@@ -157,6 +160,7 @@ function SelectMapModal({
     setMaps((prevMaps) => {
       const filtered = prevMaps.filter((map) => map.id !== id);
       setSelectedMap(filtered[0]);
+      db.table("states").get(filtered[0].id).then(setSelectedMapState);
       return filtered;
     });
     // Removed the map from the map screen if needed
@@ -167,6 +171,7 @@ function SelectMapModal({
 
   function handleMapSelect(map) {
     setSelectedMap(map);
+    db.table("states").get(map.id).then(setSelectedMapState);
   }
 
   async function handleMapReset(id) {
@@ -181,8 +186,7 @@ function SelectMapModal({
   async function handleSubmit(e) {
     e.preventDefault();
     if (selectedMap) {
-      let currentMapState = await db.table("states").get(selectedMap.id);
-      onMapChange(selectedMap, currentMapState);
+      onMapChange(selectedMap, selectedMapState);
       onDone();
     }
     onDone();
@@ -190,15 +194,22 @@ function SelectMapModal({
 
   async function handleMapSettingsChange(key, value) {
     await db.table("maps").update(selectedMap.id, { [key]: value });
+    const newMap = { ...selectedMap, [key]: value };
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === selectedMap.id);
       if (i > -1) {
-        newMaps[i][key] = value;
+        newMaps[i] = newMap;
       }
       return newMaps;
     });
-    setSelectedMap((prevMap) => ({ ...prevMap, [key]: value }));
+    setSelectedMap(newMap);
+  }
+
+  async function handleMapStateSettingsChange(key, value) {
+    console.log(value);
+    await db.table("states").update(selectedMap.id, { [key]: value });
+    setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
   }
 
   /**
@@ -256,7 +267,9 @@ function SelectMapModal({
           />
           <MapSettings
             map={selectedMap}
+            mapState={selectedMapState}
             onSettingsChange={handleMapSettingsChange}
+            onStateSettingsChange={handleMapStateSettingsChange}
           />
           <Button variant="primary" disabled={imageLoading}>
             Done
