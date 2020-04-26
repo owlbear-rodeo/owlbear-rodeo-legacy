@@ -122,13 +122,13 @@ function MapTile({
           right: 0,
           bottom: 0,
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0) 70%,rgba(0,0,0,0.65) 100%);",
+            "linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.65) 100%);",
           alignItems: "flex-end",
           justifyContent: "center",
         }}
         p={2}
       >
-        <Text as="p" variant="heading">
+        <Text as="p" variant="heading" color="hsl(210, 50%, 96%)">
           {map.name}
         </Text>
       </Flex>

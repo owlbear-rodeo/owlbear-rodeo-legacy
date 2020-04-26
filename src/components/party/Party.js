@@ -55,12 +55,12 @@ function Party({
       </Box>
       <Flex sx={{ flexDirection: "column" }}>
         <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />
+        <AddPartyMemberButton gameId={gameId} />
         <StartStreamButton
           onStreamStart={onStreamStart}
           onStreamEnd={onStreamEnd}
           stream={stream}
         />
-        <AddPartyMemberButton gameId={gameId} />
         <SettingsButton />
       </Flex>
     </Flex>

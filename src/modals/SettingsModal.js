@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Label, Flex, Button } from "theme-ui";
+import { Box, Label, Flex, Button, useColorMode, Checkbox } from "theme-ui";
 
 import Modal from "../components/Modal";
 
@@ -13,40 +13,54 @@ function SettingsModal({ isOpen, onRequestClose }) {
     window.location.reload();
   }
 
+  const [colorMode, setColorMode] = useColorMode();
+
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
-      <Box>
-        <Label py={2}>Settings</Label>
-        <Flex py={2}>
-          <Button
-            sx={{ flexGrow: 1 }}
-            onClick={() => setIsDeleteModalOpen(true)}
-          >
-            Erase all content and reset
-          </Button>
+    <>
+      <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+        <Flex sx={{ flexDirection: "column" }}>
+          <Label py={2}>Settings</Label>
+          <Label py={2}>
+            Light theme
+            <Checkbox
+              checked={colorMode === "light"}
+              onChange={(e) =>
+                setColorMode(e.target.checked ? "light" : "default")
+              }
+              pl={1}
+            />
+          </Label>
+          <Flex py={2}>
+            <Button
+              sx={{ flexGrow: 1 }}
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              Erase all content and reset
+            </Button>
+          </Flex>
         </Flex>
-        <Modal
-          isOpen={isDeleteModalOpen}
-          onRequestClose={() => setIsDeleteModalOpen(false)}
-        >
-          <Box>
-            <Label py={2}>Are you sure?</Label>
-            <Flex py={2}>
-              <Button
-                sx={{ flexGrow: 1 }}
-                m={1}
-                onClick={() => setIsDeleteModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button m={1} sx={{ flexGrow: 1 }} onClick={handleEraseAllData}>
-                Erase
-              </Button>
-            </Flex>
-          </Box>
-        </Modal>
-      </Box>
-    </Modal>
+      </Modal>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={() => setIsDeleteModalOpen(false)}
+      >
+        <Box>
+          <Label py={2}>Are you sure?</Label>
+          <Flex py={2}>
+            <Button
+              sx={{ flexGrow: 1 }}
+              m={1}
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button m={1} sx={{ flexGrow: 1 }} onClick={handleEraseAllData}>
+              Erase
+            </Button>
+          </Flex>
+        </Box>
+      </Modal>
+    </>
   );
 }
 

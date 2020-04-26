@@ -39,6 +39,7 @@ function TokenLabel({ label }) {
               verticalAlign: "middle",
               lineHeight: 1.4,
             }}
+            color="hsl(210, 50%, 96%)"
           >
             {label}
           </Text>
