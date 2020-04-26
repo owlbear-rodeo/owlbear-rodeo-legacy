@@ -49,11 +49,12 @@ function Game() {
     if (
       debouncedMapState &&
       debouncedMapState.mapId &&
-      debouncedMapState.owner === userId
+      map &&
+      map.owner === userId
     ) {
       db.table("states").update(debouncedMapState.mapId, debouncedMapState);
     }
-  }, [debouncedMapState, userId]);
+  }, [map, debouncedMapState, userId]);
 
   function handleMapChange(newMap, newMapState) {
     setMapState(newMapState);
