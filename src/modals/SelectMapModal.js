@@ -56,9 +56,7 @@ function SelectMapModal({
         // Add a state for the map if there isn't one already
         const state = await db.table("states").get(id);
         if (!state) {
-          await db
-            .table("states")
-            .add({ ...defaultMapState, mapId: id, owner: userId });
+          await db.table("states").add({ ...defaultMapState, mapId: id });
         }
       }
       return defaultMapsWithIds;
@@ -130,9 +128,7 @@ function SelectMapModal({
 
   async function handleMapAdd(map) {
     await db.table("maps").add(map);
-    await db
-      .table("states")
-      .add({ ...defaultMapState, mapId: map.id, owner: userId });
+    await db.table("states").add({ ...defaultMapState, mapId: map.id });
     setMaps((prevMaps) => [map, ...prevMaps]);
     setSelectedMap(map);
     setGridX(map.gridX);
@@ -160,7 +156,7 @@ function SelectMapModal({
   }
 
   async function handleMapReset(id) {
-    const state = { ...defaultMapState, mapId: id, owner: userId };
+    const state = { ...defaultMapState, mapId: id };
     await db.table("states").put(state);
     // Reset the state of the current map if needed
     if (currentMap && currentMap.id === selectedMap.id) {
