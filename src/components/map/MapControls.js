@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { Flex, Box, IconButton, Label, Divider } from "theme-ui";
 
 import SelectMapButton from "./SelectMapButton";
@@ -311,10 +311,10 @@ function MapControls({
           ref={expanedMenuRef}
         >
           {sections.map((section, index) => (
-            <>
+            <Fragment key={section.id}>
               {section.component}
               {index !== sections.length - 1 && <Divider />}
-            </>
+            </Fragment>
           ))}
         </Box>
       </>
