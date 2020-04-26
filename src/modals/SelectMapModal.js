@@ -250,7 +250,6 @@ function SelectMapModal({
   }
 
   async function handleMapStateSettingsChange(key, value) {
-    console.log(value);
     await db.table("states").update(selectedMap.id, { [key]: value });
     setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
   }
