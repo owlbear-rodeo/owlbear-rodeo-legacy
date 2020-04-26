@@ -6,6 +6,7 @@ import db from "../database";
 
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
+import MapSettings from "../components/map/MapSettings";
 
 import AuthContext from "../contexts/AuthContext";
 
@@ -83,8 +84,6 @@ function SelectMapModal({
     loadMaps();
   }, [userId]);
 
-  const [gridX, setGridX] = useState(defaultMapSize);
-  const [gridY, setGridY] = useState(defaultMapSize);
   const fileInputRef = useRef();
 
   function handleImageUpload(file) {
@@ -150,8 +149,6 @@ function SelectMapModal({
     await db.table("states").add({ ...defaultMapState, mapId: map.id });
     setMaps((prevMaps) => [map, ...prevMaps]);
     setSelectedMap(map);
-    setGridX(map.gridX);
-    setGridY(map.gridY);
   }
 
   async function handleMapRemove(id) {
@@ -170,8 +167,6 @@ function SelectMapModal({
 
   function handleMapSelect(map) {
     setSelectedMap(map);
-    setGridX(map.gridX);
-    setGridY(map.gridY);
   }
 
   async function handleMapReset(id) {
@@ -193,32 +188,17 @@ function SelectMapModal({
     onDone();
   }
 
-  async function handleGridXChange(e) {
-    const newX = e.target.value;
-    await db.table("maps").update(selectedMap.id, { gridX: newX });
-    setGridX(newX);
+  async function handleMapSettingsChange(key, value) {
+    await db.table("maps").update(selectedMap.id, { [key]: value });
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === selectedMap.id);
       if (i > -1) {
-        newMaps[i].gridX = newX;
+        newMaps[i][key] = value;
       }
       return newMaps;
     });
-  }
-
-  async function handleGridYChange(e) {
-    const newY = e.target.value;
-    await db.table("maps").update(selectedMap.id, { gridY: newY });
-    setGridY(newY);
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((map) => map.id === selectedMap.id);
-      if (i > -1) {
-        newMaps[i].gridY = newY;
-      }
-      return newMaps;
-    });
+    setSelectedMap((prevMap) => ({ ...prevMap, [key]: value }));
   }
 
   /**
@@ -274,30 +254,10 @@ function SelectMapModal({
             onMapReset={handleMapReset}
             onSubmit={handleSubmit}
           />
-          <Flex>
-            <Box mb={2} mr={1} sx={{ flexGrow: 1 }}>
-              <Label htmlFor="gridX">Columns</Label>
-              <Input
-                type="number"
-                name="gridX"
-                value={gridX}
-                onChange={handleGridXChange}
-                disabled={selectedMap === null || selectedMap.default}
-                min={1}
-              />
-            </Box>
-            <Box mb={2} ml={1} sx={{ flexGrow: 1 }}>
-              <Label htmlFor="gridY">Rows</Label>
-              <Input
-                type="number"
-                name="gridY"
-                value={gridY}
-                onChange={handleGridYChange}
-                disabled={selectedMap === null || selectedMap.default}
-                min={1}
-              />
-            </Box>
-          </Flex>
+          <MapSettings
+            map={selectedMap}
+            onSettingsChange={handleMapSettingsChange}
+          />
           <Button variant="primary" disabled={imageLoading}>
             Done
           </Button>
