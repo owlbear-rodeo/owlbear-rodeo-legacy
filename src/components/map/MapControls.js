@@ -313,7 +313,7 @@ function MapControls({
           {sections.map((section, index) => (
             <Fragment key={section.id}>
               {section.component}
-              {index !== sections.length - 1 && <Divider />}
+              {index !== sections.length - 1 && divider}
             </Fragment>
           ))}
         </Box>
