@@ -87,8 +87,12 @@ function SelectMapModal({
       if (selectedMap) {
         const map = await db.table("maps").get(selectedMap.id);
         const state = await db.table("states").get(selectedMap.id);
-        setSelectedMap(map);
-        setSelectedMapState(state);
+        if (map) {
+          setSelectedMap(map);
+        }
+        if (state) {
+          setSelectedMapState(state);
+        }
       }
     }
 
@@ -184,13 +188,15 @@ function SelectMapModal({
   }
 
   async function handleMapSelect(map) {
-    setSelectedMapState(await db.table("states").get(map.id));
+    const state = await db.table("states").get(map.id);
+    setSelectedMapState(state);
     setSelectedMap(map);
   }
 
   async function handleMapReset(id) {
     const state = { ...defaultMapState, mapId: id };
     await db.table("states").put(state);
+    setSelectedMapState(state);
     // Reset the state of the current map if needed
     if (currentMap && currentMap.id === selectedMap.id) {
       onMapStateChange(state);

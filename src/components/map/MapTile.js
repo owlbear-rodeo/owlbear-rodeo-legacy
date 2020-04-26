@@ -101,11 +101,12 @@ function MapTile({
       bg="muted"
       onClick={() => {
         setIsTileMenuOpen(false);
-        onMapSelect(map);
+        if (!isSelected) {
+          onMapSelect(map);
+        }
       }}
       onDoubleClick={(e) => {
         if (!isMapTileMenuOpen) {
-          onMapSelect(map);
           onSubmit(e);
         }
       }}
