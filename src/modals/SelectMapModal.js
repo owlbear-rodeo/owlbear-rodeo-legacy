@@ -149,6 +149,8 @@ function SelectMapModal({
       URL.revokeObjectURL(url);
     };
     image.src = url;
+    // Set file input to null to allow adding the same image 2 times in a row
+    fileInputRef.current.value = null;
   }
 
   function openImageDialog() {
