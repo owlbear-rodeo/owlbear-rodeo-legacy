@@ -20,6 +20,14 @@ const defaultMapState = {
   drawActions: [],
 };
 
+const defaultMapProps = {
+  // Flags to determine what other people can edit
+  editFlags: [],
+  // Grid type
+  // TODO: add support for hex horizontal and hex vertical
+  gridType: "grid",
+};
+
 function SelectMapModal({
   isOpen,
   onRequestClose,
@@ -52,6 +60,7 @@ function SelectMapModal({
           owner: userId,
           // Emulate the time increasing to avoid sort errors
           timestamp: Date.now() + i,
+          ...defaultMapProps,
         });
         // Add a state for the map if there isn't one already
         const state = await db.table("states").get(id);
@@ -84,6 +93,7 @@ function SelectMapModal({
     }
     let fileGridX = defaultMapSize;
     let fileGridY = defaultMapSize;
+    let name = "Unknown Map";
     if (file.name) {
       // Match against a regex to find the grid size in the file name
       // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
@@ -97,6 +107,13 @@ function SelectMapModal({
           fileGridY = matchY;
         }
       }
+      // Remove file extension
+      name = file.name.replace(/\.[^/.]+$/, "");
+      // Removed grid size expression
+      name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
+      // Clean string
+      name = name.replace(/ +/g, " ");
+      name = name.trim();
     }
     let image = new Image();
     setImageLoading(true);
@@ -105,6 +122,7 @@ function SelectMapModal({
     image.onload = function () {
       handleMapAdd({
         file,
+        name,
         type: "file",
         gridX: fileGridX,
         gridY: fileGridY,
@@ -113,6 +131,7 @@ function SelectMapModal({
         id: shortid.generate(),
         timestamp: Date.now(),
         owner: userId,
+        ...defaultMapProps,
       });
       setImageLoading(false);
       URL.revokeObjectURL(url);

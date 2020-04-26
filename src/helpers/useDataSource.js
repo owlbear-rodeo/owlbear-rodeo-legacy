@@ -13,7 +13,7 @@ function useDataSource(data, defaultSources) {
     if (data.type === "file") {
       url = URL.createObjectURL(data.file);
     } else if (data.type === "default") {
-      url = defaultSources[data.name];
+      url = defaultSources[data.key];
     }
     setDataSource(url);
 

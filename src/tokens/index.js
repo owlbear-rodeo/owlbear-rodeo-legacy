@@ -42,7 +42,8 @@ export const tokenSources = {
   triangle,
 };
 
-export const tokens = Object.keys(tokenSources).map((name) => ({
-  name,
+export const tokens = Object.keys(tokenSources).map((key) => ({
+  key,
+  name: key.charAt(0).toUpperCase() + key.slice(1),
   type: "default",
 }));

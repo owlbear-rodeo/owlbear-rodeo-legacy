@@ -14,8 +14,9 @@ export const mapSources = {
   wood: woodImage,
 };
 
-export const maps = Object.keys(mapSources).map((name) => ({
-  name,
+export const maps = Object.keys(mapSources).map((key) => ({
+  key,
+  name: key.charAt(0).toUpperCase() + key.slice(1),
   gridX: 22,
   gridY: 22,
   width: 1024,
