@@ -244,7 +244,7 @@ function SelectMapModal({
   const [showMoreSettings, setShowMoreSettings] = useState(false);
 
   async function handleMapSettingsChange(key, value) {
-    await db.table("maps").update(selectedMap.id, { [key]: value });
+    db.table("maps").update(selectedMap.id, { [key]: value });
     const newMap = { ...selectedMap, [key]: value };
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -258,7 +258,7 @@ function SelectMapModal({
   }
 
   async function handleMapStateSettingsChange(key, value) {
-    await db.table("states").update(selectedMap.id, { [key]: value });
+    db.table("states").update(selectedMap.id, { [key]: value });
     setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
   }
 

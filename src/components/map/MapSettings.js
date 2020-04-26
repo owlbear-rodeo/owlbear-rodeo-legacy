@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
-
-import useDebounce from "../../helpers/useDebounce";
-import usePrevious from "../../helpers/usePrevious";
 
 function MapSettings({
   map,
@@ -24,23 +21,6 @@ function MapSettings({
       );
     }
   }
-
-  // Create a local state for the map name to debounce calls to settings change
-  // and avoid performance issues with db access
-  const [localMapName, setLocalMapName] = useState("");
-  const prevMap = usePrevious(map);
-  useEffect(() => {
-    // Check map changed
-    if (map && (!prevMap || map.id !== prevMap.id)) {
-      setLocalMapName(map.name);
-    }
-  }, [map]);
-  const debouncedLocalMapName = useDebounce(localMapName, 100);
-  useEffect(() => {
-    if (map) {
-      onSettingsChange("name", debouncedLocalMapName);
-    }
-  }, [debouncedLocalMapName]);
 
   return (
     <Flex sx={{ flexDirection: "column" }}>
@@ -115,8 +95,8 @@ function MapSettings({
             <Label htmlFor="name">Name</Label>
             <Input
               name="name"
-              value={localMapName}
-              onChange={(e) => setLocalMapName(e.target.value)}
+              value={(map && map.name) || ""}
+              onChange={(e) => onSettingsChange("name", e.target.value)}
               disabled={map === null || map.type === "default"}
               my={1}
             />
