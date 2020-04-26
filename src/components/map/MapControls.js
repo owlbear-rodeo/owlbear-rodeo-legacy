@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Fragment } from "react";
-import { Flex, Box, IconButton, Label, Divider } from "theme-ui";
+import { Flex, Box, IconButton, Label } from "theme-ui";
 
 import SelectMapButton from "./SelectMapButton";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
