@@ -43,6 +43,22 @@ function Game() {
   const [map, setMap] = useState(null);
   const [mapState, setMapState] = useState(null);
 
+  const canChangeMap =
+    map === null ||
+    (map !== null &&
+      mapState !== null &&
+      (mapState.editFlags.includes("map") || map.owner === userId));
+
+  const canEditMapDrawings =
+    map !== null &&
+    mapState !== null &&
+    (mapState.editFlags.includes("drawings") || map.owner === userId);
+
+  const canEditTokens =
+    map !== null &&
+    mapState !== null &&
+    (mapState.editFlags.includes("tokens") || map.owner === userId);
+
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(mapState, 500);
   useEffect(() => {
@@ -361,11 +377,16 @@ function Game() {
             onMapDraw={handleMapDraw}
             onMapDrawUndo={handleMapDrawUndo}
             onMapDrawRedo={handleMapDrawRedo}
+            allowDrawing={canEditMapDrawings}
+            allowTokenChange={canEditTokens}
+            allowMapChange={canChangeMap}
           />
-          <Tokens
-            tokens={tokens}
-            onCreateMapTokenState={handleMapTokenStateChange}
-          />
+          {canEditTokens && (
+            <Tokens
+              tokens={tokens}
+              onCreateMapTokenState={handleMapTokenStateChange}
+            />
+          )}
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

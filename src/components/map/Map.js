@@ -29,6 +29,9 @@ function Map({
   onMapDraw,
   onMapDrawUndo,
   onMapDrawRedo,
+  allowDrawing,
+  allowTokenChange,
+  allowMapChange,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
 
@@ -305,41 +308,49 @@ function Map({
             {map && mapTokens}
           </Box>
         </Box>
-        <MapControls
-          onMapChange={onMapChange}
-          onMapStateChange={onMapStateChange}
-          currentMap={map}
-          onToolChange={setSelectedTool}
-          selectedTool={selectedTool}
-          disabledTools={disabledTools}
-          onUndo={onMapDrawUndo}
-          onRedo={onMapDrawRedo}
-          undoDisabled={!mapState || mapState.drawActionIndex < 0}
-          redoDisabled={
-            !mapState ||
-            mapState.drawActionIndex === mapState.drawActions.length - 1
-          }
-          brushColor={brushColor}
-          onBrushColorChange={setBrushColor}
-          onEraseAll={handleShapeRemoveAll}
-          useBrushGridSnapping={useBrushGridSnapping}
-          onBrushGridSnappingChange={setUseBrushGridSnapping}
-          useBrushBlending={useBrushBlending}
-          onBrushBlendingChange={setUseBrushBlending}
-          useBrushGesture={useBrushGesture}
-          onBrushGestureChange={setUseBrushGesture}
-        />
+        {(allowMapChange || allowDrawing) && (
+          <MapControls
+            onMapChange={onMapChange}
+            onMapStateChange={onMapStateChange}
+            currentMap={map}
+            onToolChange={setSelectedTool}
+            selectedTool={selectedTool}
+            disabledTools={disabledTools}
+            onUndo={onMapDrawUndo}
+            onRedo={onMapDrawRedo}
+            undoDisabled={!mapState || mapState.drawActionIndex < 0}
+            redoDisabled={
+              !mapState ||
+              mapState.drawActionIndex === mapState.drawActions.length - 1
+            }
+            brushColor={brushColor}
+            onBrushColorChange={setBrushColor}
+            onEraseAll={handleShapeRemoveAll}
+            useBrushGridSnapping={useBrushGridSnapping}
+            onBrushGridSnappingChange={setUseBrushGridSnapping}
+            useBrushBlending={useBrushBlending}
+            onBrushBlendingChange={setUseBrushBlending}
+            useBrushGesture={useBrushGesture}
+            onBrushGestureChange={setUseBrushGesture}
+            allowDrawing={allowDrawing}
+            allowMapChange={allowMapChange}
+          />
+        )}
       </Box>
-      <ProxyToken
-        tokenClassName={mapTokenProxyClassName}
-        onProxyDragEnd={handleProxyDragEnd}
-        tokens={mapState && mapState.tokens}
-      />
-      <TokenMenu
-        tokenClassName={mapTokenMenuClassName}
-        onTokenChange={onMapTokenStateChange}
-        tokens={mapState && mapState.tokens}
-      />
+      {allowTokenChange && (
+        <>
+          <ProxyToken
+            tokenClassName={mapTokenProxyClassName}
+            onProxyDragEnd={handleProxyDragEnd}
+            tokens={mapState && mapState.tokens}
+          />
+          <TokenMenu
+            tokenClassName={mapTokenMenuClassName}
+            onTokenChange={onMapTokenStateChange}
+            tokens={mapState && mapState.tokens}
+          />
+        </>
+      )}
     </>
   );
 }

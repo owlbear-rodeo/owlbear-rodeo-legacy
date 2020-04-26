@@ -20,7 +20,7 @@ const defaultMapState = {
   drawActionIndex: -1,
   drawActions: [],
   // Flags to determine what other people can edit
-  editFlags: ["drawings", "tokens"],
+  editFlags: ["map", "drawings", "tokens"],
 };
 
 const defaultMapProps = {

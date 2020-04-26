@@ -79,6 +79,14 @@ function MapSettings({
             />
             Tokens
           </Label>
+          <Label>
+            <Checkbox
+              checked={mapState !== null && mapState.editFlags.includes("map")}
+              disabled={mapState === null}
+              onChange={(e) => handleFlagChange(e, "map")}
+            />
+            Map
+          </Label>
         </Flex>
       </Box>
     </Flex>

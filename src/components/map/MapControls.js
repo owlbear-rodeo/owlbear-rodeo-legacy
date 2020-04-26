@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Flex, Box, IconButton, Label } from "theme-ui";
+import { Flex, Box, IconButton, Label, Divider } from "theme-ui";
 
 import SelectMapButton from "./SelectMapButton";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
@@ -40,6 +40,8 @@ function MapControls({
   onBrushBlendingChange,
   useBrushGesture,
   onBrushGestureChange,
+  allowDrawing,
+  allowMapChange,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -198,49 +200,24 @@ function MapControls({
 
   const expanedMenuRef = useRef();
 
-  return (
-    <>
-      <Flex
-        sx={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-        mx={1}
-      >
-        <IconButton
-          aria-label={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
-          title={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
-          onClick={() => setIsExpanded(!isExpanded)}
-          sx={{
-            transform: `rotate(${isExpanded ? "0" : "180deg"})`,
-            display: "block",
-            backgroundColor: "overlay",
-            borderRadius: "50%",
-          }}
-          m={2}
-        >
-          <ExpandMoreIcon />
-        </IconButton>
-        <Box
-          sx={{
-            flexDirection: "column",
-            alignItems: "center",
-            display: isExpanded ? "flex" : "none",
-            backgroundColor: "overlay",
-            borderRadius: "4px",
-          }}
-          p={2}
-          ref={expanedMenuRef}
-        >
-          <SelectMapButton
-            onMapChange={onMapChange}
-            onMapStateChange={onMapStateChange}
-            currentMap={currentMap}
-          />
-          {divider}
+  const sections = [];
+  if (allowMapChange) {
+    sections.push({
+      id: "map",
+      component: (
+        <SelectMapButton
+          onMapChange={onMapChange}
+          onMapStateChange={onMapStateChange}
+          currentMap={currentMap}
+        />
+      ),
+    });
+  }
+  if (allowDrawing) {
+    sections.push({
+      id: "drawing",
+      component: (
+        <>
           <IconButton
             aria-label="Pan Tool"
             title="Pan Tool"
@@ -285,7 +262,78 @@ function MapControls({
           >
             <RedoIcon />
           </IconButton>
+        </>
+      ),
+    });
+  }
+
+  let controls = null;
+  if (sections.length === 1 && sections[0].id === "map") {
+    controls = (
+      <Box
+        sx={{
+          display: "block",
+          backgroundColor: "overlay",
+          borderRadius: "4px",
+        }}
+        m={2}
+      >
+        {sections[0].component}
+      </Box>
+    );
+  } else if (sections.length > 0) {
+    controls = (
+      <>
+        <IconButton
+          aria-label={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
+          title={isExpanded ? "Hide Map Controls" : "Show Map Controls"}
+          onClick={() => setIsExpanded(!isExpanded)}
+          sx={{
+            transform: `rotate(${isExpanded ? "0" : "180deg"})`,
+            display: "block",
+            backgroundColor: "overlay",
+            borderRadius: "50%",
+          }}
+          m={2}
+        >
+          <ExpandMoreIcon />
+        </IconButton>
+
+        <Box
+          sx={{
+            flexDirection: "column",
+            alignItems: "center",
+            display: isExpanded ? "flex" : "none",
+            backgroundColor: "overlay",
+            borderRadius: "4px",
+          }}
+          p={2}
+          ref={expanedMenuRef}
+        >
+          {sections.map((section, index) => (
+            <>
+              {section.component}
+              {index !== sections.length - 1 && <Divider />}
+            </>
+          ))}
         </Box>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Flex
+        sx={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        mx={1}
+      >
+        {controls}
       </Flex>
       <MapMenu
         isOpen={!!currentSubmenu}
