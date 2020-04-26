@@ -6,7 +6,6 @@ import db from "../database";
 
 import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
-import useNickname from "../helpers/useNickname";
 import useDebounce from "../helpers/useDebounce";
 
 import Party from "../components/party/Party";
@@ -24,7 +23,9 @@ import { tokens as defaultTokens } from "../tokens";
 
 function Game() {
   const { id: gameId } = useParams();
-  const { authenticationStatus, userId } = useContext(AuthContext);
+  const { authenticationStatus, userId, nickname, setNickname } = useContext(
+    AuthContext
+  );
 
   const { peers, socket } = useSession(
     gameId,
@@ -169,7 +170,6 @@ function Game() {
    * Party state
    */
 
-  const { nickname, setNickname } = useNickname();
   const [partyNicknames, setPartyNicknames] = useState({});
 
   function handleNicknameChange(nickname) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IconButton } from "theme-ui";
 
 import ChangeNicknameModal from "../../modals/ChangeNicknameModal";
@@ -13,7 +13,12 @@ function ChangeNicknameButton({ nickname, onChange }) {
     setIsChangeModalOpen(false);
   }
 
-  const [changedNickname, setChangedNickname] = useState(nickname);
+  const [changedNickname, setChangedNickname] = useState("");
+
+  useEffect(() => {
+    setChangedNickname(nickname);
+  }, [nickname]);
+
   function handleChangeSubmit(event) {
     event.preventDefault();
     onChange(changedNickname);
