@@ -1,207 +1,74 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
-import { Flex, Box, IconButton, Label } from "theme-ui";
+import React, { useState, Fragment } from "react";
+import { IconButton, Flex, Box } from "theme-ui";
+
+import RadioIconButton from "./controls/RadioIconButton";
+import Divider from "./controls/Divider";
 
 import SelectMapButton from "./SelectMapButton";
-import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
+
+import FogToolSettings from "./controls/FogToolSettings";
+import BrushToolSettings from "./controls/BrushToolSettings";
+import ShapeToolSettings from "./controls/ShapeToolSettings";
+import EraseToolSettings from "./controls/EraseToolSettings";
+
 import PanToolIcon from "../../icons/PanToolIcon";
+import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
+import ShapeToolIcon from "../../icons/ShapeToolIcon";
 import EraseToolIcon from "../../icons/EraseToolIcon";
 import UndoIcon from "../../icons/UndoIcon";
 import RedoIcon from "../../icons/RedoIcon";
-import GridOnIcon from "../../icons/GridOnIcon";
-import GridOffIcon from "../../icons/GridOffIcon";
-import BlendOnIcon from "../../icons/BlendOnIcon";
-import BlendOffIcon from "../../icons/BlendOffIcon";
-import GestureOnIcon from "../../icons/GestureOnIcon";
-import GestureOffIcon from "../../icons/GestureOffIcon";
+import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
-import colors, { colorOptions } from "../../helpers/colors";
-
-import MapMenu from "./MapMenu";
-import EraseAllIcon from "../../icons/EraseAllIcon";
-
-function MapControls({
+function MapContols({
   onMapChange,
   onMapStateChange,
   currentMap,
-  onToolChange,
-  selectedTool,
-  disabledTools,
+  selectedToolId,
+  onSelectedToolChange,
+  toolSettings,
+  onToolSettingChange,
+  disabledControls,
   onUndo,
   onRedo,
-  undoDisabled,
-  redoDisabled,
-  brushColor,
-  onBrushColorChange,
-  onEraseAll,
-  useBrushGridSnapping,
-  onBrushGridSnappingChange,
-  useBrushBlending,
-  onBrushBlendingChange,
-  useBrushGesture,
-  onBrushGestureChange,
-  allowDrawing,
-  allowMapChange,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const subMenus = {
-    brush: (
-      <Box sx={{ width: "104px" }} p={1}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          {colorOptions.map((color) => (
-            <Box
-              key={color}
-              sx={{
-                width: "25%",
-                paddingTop: "25%",
-                borderRadius: "50%",
-                transform: "scale(0.75)",
-                backgroundColor: colors[color],
-                cursor: "pointer",
-              }}
-              onClick={() => onBrushColorChange(color)}
-              aria-label={`Brush Color ${color}`}
-            >
-              {brushColor === color && (
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    border: "2px solid white",
-                    position: "absolute",
-                    top: 0,
-                    borderRadius: "50%",
-                  }}
-                />
-              )}
-            </Box>
-          ))}
-        </Box>
-        <Flex sx={{ justifyContent: "space-between" }}>
-          <IconButton
-            aria-label={
-              useBrushGridSnapping
-                ? "Disable Brush Grid Snapping"
-                : "Enable Brush Grid Snapping"
-            }
-            title={
-              useBrushGridSnapping
-                ? "Disable Brush Grid Snapping"
-                : "Enable Brush Grid Snapping"
-            }
-            onClick={() => onBrushGridSnappingChange(!useBrushGridSnapping)}
-          >
-            {useBrushGridSnapping ? <GridOnIcon /> : <GridOffIcon />}
-          </IconButton>
-          <IconButton
-            aria-label={
-              useBrushBlending
-                ? "Disable Brush Blending"
-                : "Enable Brush Blending"
-            }
-            title={
-              useBrushBlending
-                ? "Disable Brush Blending"
-                : "Enable Brush Blending"
-            }
-            onClick={() => onBrushBlendingChange(!useBrushBlending)}
-          >
-            {useBrushBlending ? <BlendOnIcon /> : <BlendOffIcon />}
-          </IconButton>
-          <IconButton
-            aria-label={
-              useBrushGesture
-                ? "Disable Gesture Detection"
-                : "Enable Gesture Detection"
-            }
-            title={
-              useBrushGesture
-                ? "Disable Gesture Detection"
-                : "Enable Gesture Detection"
-            }
-            onClick={() => onBrushGestureChange(!useBrushGesture)}
-          >
-            {useBrushGesture ? <GestureOnIcon /> : <GestureOffIcon />}
-          </IconButton>
-        </Flex>
-      </Box>
-    ),
-    erase: (
-      <Box p={1} pr={3}>
-        <Label
-          sx={{
-            fontSize: 1,
-            alignItems: "center",
-            ":hover": { color: "primary", cursor: "pointer" },
-            ":active": { color: "secondary" },
-          }}
-        >
-          <IconButton
-            aria-label="Erase All"
-            title="Erase All"
-            onClick={() => {
-              onEraseAll();
-              setCurrentSubmenu(null);
-              setCurrentSubmenuOptions({});
-            }}
-          >
-            <EraseAllIcon />
-          </IconButton>
-          Erase All
-        </Label>
-      </Box>
-    ),
+  const toolsById = {
+    pan: {
+      id: "pan",
+      icon: <PanToolIcon />,
+      title: "Pan Tool",
+    },
+    fog: {
+      id: "fog",
+      icon: <FogToolIcon />,
+      title: "Fog Tool",
+      SettingsComponent: FogToolSettings,
+    },
+    brush: {
+      id: "brush",
+      icon: <BrushToolIcon />,
+      title: "Brush Tool",
+      SettingsComponent: BrushToolSettings,
+    },
+    shape: {
+      id: "shape",
+      icon: <ShapeToolIcon />,
+      title: "Shape Tool",
+      SettingsComponent: ShapeToolSettings,
+    },
+    erase: {
+      id: "erase",
+      icon: <EraseToolIcon />,
+      title: "Erase tool",
+      SettingsComponent: EraseToolSettings,
+    },
   };
-
-  const [currentSubmenu, setCurrentSubmenu] = useState(null);
-  const [currentSubmenuOptions, setCurrentSubmenuOptions] = useState({});
-
-  function handleToolClick(event, tool) {
-    if (tool !== selectedTool) {
-      onToolChange(tool);
-    } else if (currentSubmenu) {
-      setCurrentSubmenu(null);
-      setCurrentSubmenuOptions({});
-    } else if (subMenus[tool]) {
-      const toolRect = event.target.getBoundingClientRect();
-      setCurrentSubmenu(tool);
-      setCurrentSubmenuOptions({
-        // Align the right of the submenu to the left of the tool and center vertically
-        left: `${toolRect.left - 16}px`,
-        top: `${toolRect.bottom - toolRect.height / 2}px`,
-        style: { transform: "translate(-100%, -50%)" },
-        // Exclude this node from the sub menus auto close
-        excludeNode: event.target,
-      });
-    }
-  }
-
-  // Detect when a tool becomes disabled and switch to to the pan tool
-  useEffect(() => {
-    if (disabledTools.includes(selectedTool)) {
-      onToolChange("pan");
-    }
-  }, [selectedTool, disabledTools, onToolChange]);
-
-  const divider = (
-    <Box
-      my={2}
-      bg="text"
-      sx={{ height: "2px", width: "24px", borderRadius: "2px", opacity: 0.5 }}
-    ></Box>
-  );
-
-  const expanedMenuRef = useRef();
+  const tools = ["pan", "fog", "brush", "shape", "erase"];
 
   const sections = [];
-  if (allowMapChange) {
+  if (!disabledControls.includes("map")) {
     sections.push({
       id: "map",
       component: (
@@ -213,52 +80,34 @@ function MapControls({
       ),
     });
   }
-  if (allowDrawing) {
+  if (!disabledControls.includes("drawing")) {
     sections.push({
       id: "drawing",
+      component: tools.map((tool) => (
+        <RadioIconButton
+          key={tool}
+          title={toolsById[tool].title}
+          onClick={() => onSelectedToolChange(tool)}
+          isSelected={selectedToolId === tool}
+          disabled={disabledControls.includes(tool)}
+        >
+          {toolsById[tool].icon}
+        </RadioIconButton>
+      )),
+    });
+    sections.push({
+      id: "history",
       component: (
         <>
           <IconButton
-            aria-label="Pan Tool"
-            title="Pan Tool"
-            onClick={(e) => handleToolClick(e, "pan")}
-            sx={{ color: selectedTool === "pan" ? "primary" : "text" }}
-            disabled={disabledTools.includes("pan")}
-          >
-            <PanToolIcon />
-          </IconButton>
-          <IconButton
-            aria-label="Brush Tool"
-            title="Brush Tool"
-            onClick={(e) => handleToolClick(e, "brush")}
-            sx={{ color: selectedTool === "brush" ? "primary" : "text" }}
-            disabled={disabledTools.includes("brush")}
-          >
-            <BrushToolIcon />
-          </IconButton>
-          <IconButton
-            aria-label="Erase Tool"
-            title="Erase Tool"
-            onClick={(e) => handleToolClick(e, "erase")}
-            sx={{ color: selectedTool === "erase" ? "primary" : "text" }}
-            disabled={disabledTools.includes("erase")}
-          >
-            <EraseToolIcon />
-          </IconButton>
-          {divider}
-          <IconButton
-            aria-label="Undo"
-            title="Undo"
-            onClick={() => onUndo()}
-            disabled={undoDisabled}
+            onClick={onUndo}
+            disabled={disabledControls.includes("undo")}
           >
             <UndoIcon />
           </IconButton>
           <IconButton
-            aria-label="Redo"
-            title="Redo"
-            onClick={() => onRedo()}
-            disabled={redoDisabled}
+            onClick={onRedo}
+            disabled={disabledControls.includes("redo")}
           >
             <RedoIcon />
           </IconButton>
@@ -298,7 +147,6 @@ function MapControls({
         >
           <ExpandMoreIcon />
         </IconButton>
-
         <Box
           sx={{
             flexDirection: "column",
@@ -308,17 +156,44 @@ function MapControls({
             borderRadius: "4px",
           }}
           p={2}
-          ref={expanedMenuRef}
         >
           {sections.map((section, index) => (
             <Fragment key={section.id}>
               {section.component}
-              {index !== sections.length - 1 && divider}
+              {index !== sections.length - 1 && <Divider />}
             </Fragment>
           ))}
         </Box>
       </>
     );
+  }
+
+  function getToolSettings() {
+    const Settings = toolsById[selectedToolId].SettingsComponent;
+    if (Settings) {
+      return (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "4px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "overlay",
+            borderRadius: "4px",
+          }}
+          p={1}
+        >
+          <Settings
+            settings={toolSettings[selectedToolId]}
+            onSettingChange={(change) =>
+              onToolSettingChange(selectedToolId, change)
+            }
+          />
+        </Box>
+      );
+    } else {
+      return null;
+    }
   }
 
   return (
@@ -335,18 +210,9 @@ function MapControls({
       >
         {controls}
       </Flex>
-      <MapMenu
-        isOpen={!!currentSubmenu}
-        onRequestClose={() => {
-          setCurrentSubmenu(null);
-          setCurrentSubmenuOptions({});
-        }}
-        {...currentSubmenuOptions}
-      >
-        {currentSubmenu && subMenus[currentSubmenu]}
-      </MapMenu>
+      {getToolSettings()}
     </>
   );
 }
 
-export default MapControls;
+export default MapContols;

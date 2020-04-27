@@ -5,23 +5,22 @@ import shortid from "shortid";
 import colors from "../../helpers/colors";
 import { snapPositionToGrid } from "../../helpers/shared";
 
-import { pointsToGesture, gestureToData } from "../../helpers/gestures";
-
 function MapDrawing({
   width,
   height,
   selectedTool,
+  toolSettings,
   shapes,
   onShapeAdd,
   onShapeRemove,
-  brushColor,
-  useGridSnapping,
   gridSize,
-  useBrushBlending,
-  useBrushGesture,
 }) {
   const canvasRef = useRef();
   const containerRef = useRef();
+
+  const toolColor = toolSettings && toolSettings.color;
+  const useToolBlending = toolSettings && toolSettings.useBlending;
+  const useGridSnapping = toolSettings && toolSettings.useGridSnapping;
 
   const [brushPoints, setBrushPoints] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -91,22 +90,16 @@ function MapDrawing({
     if (selectedTool === "brush") {
       if (brushPoints.length > 1) {
         const simplifiedPoints = simplify(brushPoints, 0.001);
-        const type = useBrushGesture
-          ? pointsToGesture(simplifiedPoints)
-          : "path";
+        const type = "path";
 
         if (type !== null) {
-          const data =
-            type === "path"
-              ? { points: simplifiedPoints }
-              : gestureToData(simplifiedPoints, type);
-
+          const data = { points: simplifiedPoints };
           onShapeAdd({
             type,
             data,
             id: shortid.generate(),
-            color: brushColor,
-            blend: useBrushBlending,
+            color: toolColor,
+            blend: useToolBlending,
           });
         }
 
@@ -188,7 +181,7 @@ function MapDrawing({
       }
       if (selectedTool === "brush" && brushPoints.length > 0) {
         const path = pointsToPath(brushPoints);
-        drawPath(path, colors[brushColor], useBrushBlending, context);
+        drawPath(path, colors[toolColor], useToolBlending, context);
       }
       if (hoveredShape) {
         const path = shapeToPath(hoveredShape);
@@ -204,9 +197,8 @@ function MapDrawing({
     isDrawing,
     selectedTool,
     brushPoints,
-    brushColor,
-    useBrushGesture,
-    useBrushBlending,
+    toolColor,
+    useToolBlending,
   ]);
 
   return (

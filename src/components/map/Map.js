@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Box, Image } from "theme-ui";
-import interact from "interactjs";
 
 import ProxyToken from "../token/ProxyToken";
 import TokenMenu from "../token/TokenMenu";
@@ -10,13 +9,12 @@ import MapControls from "./MapControls";
 
 import { omit } from "../../helpers/shared";
 import useDataSource from "../../helpers/useDataSource";
+import MapInteraction from "./MapInteraction";
+
 import { mapSources as defaultMapSources } from "../../maps";
 
 const mapTokenProxyClassName = "map-token__proxy";
 const mapTokenMenuClassName = "map-token__menu";
-const zoomSpeed = -0.005;
-const minZoom = 0.1;
-const maxZoom = 5;
 
 function Map({
   map,
@@ -49,11 +47,31 @@ function Map({
    * Map drawing
    */
 
-  const [selectedTool, setSelectedTool] = useState("pan");
-  const [brushColor, setBrushColor] = useState("black");
-  const [useBrushGridSnapping, setUseBrushGridSnapping] = useState(false);
-  const [useBrushBlending, setUseBrushBlending] = useState(false);
-  const [useBrushGesture, setUseBrushGesture] = useState(false);
+  const [selectedToolId, setSelectedToolId] = useState("pan");
+  const [toolSettings, setToolSettings] = useState({
+    fog: { type: "add", useGridSnapping: false, useEdgeSnapping: true },
+    brush: {
+      color: "darkGray",
+      type: "stroke",
+      useBlending: false,
+      useGridSnapping: false,
+    },
+    shape: {
+      color: "red",
+      type: "rectangle",
+      useBlending: true,
+      useGridSnapping: true,
+    },
+  });
+  function handleToolSettingChange(tool, change) {
+    setToolSettings((prevSettings) => ({
+      ...prevSettings,
+      [tool]: {
+        ...prevSettings[tool],
+        ...change,
+      },
+    }));
+  }
 
   const [drawnShapes, setDrawnShapes] = useState([]);
   function handleShapeAdd(shape) {
@@ -88,121 +106,36 @@ function Map({
     setDrawnShapes(Object.values(shapesById));
   }, [mapState]);
 
-  const disabledTools = [];
+  const disabledControls = [];
+  if (!allowMapChange) {
+    disabledControls.push("map");
+  }
+  if (!allowDrawing) {
+    disabledControls.push("drawing");
+  }
   if (!map) {
-    disabledTools.push("pan");
-    disabledTools.push("brush");
+    disabledControls.push("pan");
+    disabledControls.push("brush");
   }
   if (drawnShapes.length === 0) {
-    disabledTools.push("erase");
+    disabledControls.push("erase");
   }
-
-  /**
-   * Map movement
-   */
-
-  const mapTranslateRef = useRef({ x: 0, y: 0 });
-  const mapScaleRef = useRef(1);
-  const mapMoveContainerRef = useRef();
-  function setTranslateAndScale(newTranslate, newScale) {
-    const moveContainer = mapMoveContainerRef.current;
-    moveContainer.style.transform = `translate(${newTranslate.x}px, ${newTranslate.y}px) scale(${newScale})`;
-    mapScaleRef.current = newScale;
-    mapTranslateRef.current = newTranslate;
+  if (!mapState || mapState.drawActionIndex < 0) {
+    disabledControls.push("undo");
   }
-
-  useEffect(() => {
-    function handleMove(event, isGesture) {
-      const scale = mapScaleRef.current;
-      const translate = mapTranslateRef.current;
-
-      let newScale = scale;
-      let newTranslate = translate;
-
-      if (isGesture) {
-        newScale = Math.max(Math.min(scale + event.ds, maxZoom), minZoom);
-      }
-
-      if (selectedTool === "pan" || isGesture) {
-        newTranslate = {
-          x: translate.x + event.dx,
-          y: translate.y + event.dy,
-        };
-      }
-      setTranslateAndScale(newTranslate, newScale);
-    }
-    const mapInteract = interact(".map")
-      .gesturable({
-        listeners: {
-          move: (e) => handleMove(e, true),
-        },
-      })
-      .draggable({
-        inertia: true,
-        listeners: {
-          move: (e) => handleMove(e, false),
-        },
-        cursorChecker: () => {
-          return selectedTool === "pan" && map ? "move" : "default";
-        },
-      })
-      .on("doubletap", (event) => {
-        event.preventDefault();
-        if (selectedTool === "pan") {
-          setTranslateAndScale({ x: 0, y: 0 }, 1);
-        }
-      });
-
-    return () => {
-      mapInteract.unset();
-    };
-  }, [selectedTool, map]);
-
-  // Reset map transform when map changes
-  useEffect(() => {
-    setTranslateAndScale({ x: 0, y: 0 }, 1);
-  }, [map]);
-
-  // Bind the wheel event of the map via a ref
-  // in order to support non-passive event listening
-  // to allow the track pad zoom to be interrupted
-  // see https://github.com/facebook/react/issues/14856
-  useEffect(() => {
-    const mapContainer = mapContainerRef.current;
-
-    function handleZoom(event) {
-      // Stop overscroll on chrome and safari
-      // also stop pinch to zoom on chrome
-      event.preventDefault();
-
-      const scale = mapScaleRef.current;
-      const translate = mapTranslateRef.current;
-
-      const deltaY = event.deltaY * zoomSpeed;
-      const newScale = Math.max(Math.min(scale + deltaY, maxZoom), minZoom);
-
-      setTranslateAndScale(translate, newScale);
-    }
-
-    if (mapContainer) {
-      mapContainer.addEventListener("wheel", handleZoom, {
-        passive: false,
-      });
-    }
-
-    return () => {
-      if (mapContainer) {
-        mapContainer.removeEventListener("wheel", handleZoom);
-      }
-    };
-  }, []);
+  if (
+    !mapState ||
+    mapState.drawActionIndex === mapState.drawActions.length - 1
+  ) {
+    disabledControls.push("redo");
+  }
 
   /**
    * Member setup
    */
 
   const mapRef = useRef(null);
-  const mapContainerRef = useRef();
+
   const gridX = map && map.gridX;
   const gridY = map && map.gridY;
   const gridSizeNormalized = { x: 1 / gridX || 0, y: 1 / gridY || 0 };
@@ -260,83 +193,43 @@ function Map({
     <MapDrawing
       width={map ? map.width : 0}
       height={map ? map.height : 0}
-      selectedTool={selectedTool}
+      selectedTool={selectedToolId}
+      toolSettings={toolSettings[selectedToolId]}
       shapes={drawnShapes}
       onShapeAdd={handleShapeAdd}
       onShapeRemove={handleShapeRemove}
-      brushColor={brushColor}
-      useGridSnapping={useBrushGridSnapping}
       gridSize={gridSizeNormalized}
-      useBrushBlending={useBrushBlending}
-      useBrushGesture={useBrushGesture}
     />
   );
 
+  const mapControls = (
+    <MapControls
+      onMapChange={onMapChange}
+      onMapStateChange={onMapStateChange}
+      currentMap={map}
+      onSelectedToolChange={setSelectedToolId}
+      selectedToolId={selectedToolId}
+      toolSettings={toolSettings}
+      onToolSettingChange={handleToolSettingChange}
+      disabledControls={disabledControls}
+      onUndo={onMapDrawUndo}
+      onRedo={onMapDrawRedo}
+    />
+  );
   return (
     <>
-      <Box
-        className="map"
-        sx={{
-          flexGrow: 1,
-          position: "relative",
-          overflow: "hidden",
-          backgroundColor: "rgba(0, 0, 0, 0.1)",
-          userSelect: "none",
-          touchAction: "none",
-        }}
-        bg="background"
-        ref={mapContainerRef}
+      <MapInteraction
+        map={map}
+        aspectRatio={aspectRatio}
+        selectedTool={selectedToolId}
+        toolSettings={toolSettings[selectedToolId]}
+        controls={(allowMapChange || allowDrawing) && mapControls}
       >
-        <Box
-          sx={{
-            position: "relative",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <Box ref={mapMoveContainerRef}>
-            <Box
-              sx={{
-                width: "100%",
-                height: 0,
-                paddingBottom: `${(1 / aspectRatio) * 100}%`,
-              }}
-            />
-            {map && mapImage}
-            {map && mapDrawing}
-            {map && mapTokens}
-          </Box>
-        </Box>
-        {(allowMapChange || allowDrawing) && (
-          <MapControls
-            onMapChange={onMapChange}
-            onMapStateChange={onMapStateChange}
-            currentMap={map}
-            onToolChange={setSelectedTool}
-            selectedTool={selectedTool}
-            disabledTools={disabledTools}
-            onUndo={onMapDrawUndo}
-            onRedo={onMapDrawRedo}
-            undoDisabled={!mapState || mapState.drawActionIndex < 0}
-            redoDisabled={
-              !mapState ||
-              mapState.drawActionIndex === mapState.drawActions.length - 1
-            }
-            brushColor={brushColor}
-            onBrushColorChange={setBrushColor}
-            onEraseAll={handleShapeRemoveAll}
-            useBrushGridSnapping={useBrushGridSnapping}
-            onBrushGridSnappingChange={setUseBrushGridSnapping}
-            useBrushBlending={useBrushBlending}
-            onBrushBlendingChange={setUseBrushBlending}
-            useBrushGesture={useBrushGesture}
-            onBrushGestureChange={setUseBrushGesture}
-            allowDrawing={allowDrawing}
-            allowMapChange={allowMapChange}
-          />
-        )}
-      </Box>
+        {map && mapImage}
+        {map && mapDrawing}
+        {map && mapTokens}
+      </MapInteraction>
+
       {allowTokenChange && (
         <>
           <ProxyToken
