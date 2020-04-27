@@ -60,7 +60,7 @@ function Map({
       color: "red",
       type: "rectangle",
       useBlending: true,
-      useGridSnapping: true,
+      useGridSnapping: false,
     },
   });
   function handleToolSettingChange(tool, change) {

@@ -30,16 +30,16 @@ function ShapeToolSettings({ settings, onSettingChange }) {
       <RadioIconButton
         title="Shape Type Circle"
         onClick={() => onSettingChange({ type: "circle" })}
-        isSelected={settings.type === "cricle"}
+        isSelected={settings.type === "circle"}
       >
-        <ShapeTriangleIcon />
+        <ShapeCircleIcon />
       </RadioIconButton>
       <RadioIconButton
         title="Shape Type Triangle"
         onClick={() => onSettingChange({ type: "triangle" })}
         isSelected={settings.type === "triangle"}
       >
-        <ShapeCircleIcon />
+        <ShapeTriangleIcon />
       </RadioIconButton>
       <Divider vertical />
       <AlphaBlendToggle
