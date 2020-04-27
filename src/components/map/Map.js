@@ -221,15 +221,13 @@ function Map({
       <MapInteraction
         map={map}
         aspectRatio={aspectRatio}
-        selectedTool={selectedToolId}
-        toolSettings={toolSettings[selectedToolId]}
+        isEnabled={selectedToolId === "pan"}
         controls={(allowMapChange || allowDrawing) && mapControls}
       >
         {map && mapImage}
         {map && mapDrawing}
         {map && mapTokens}
       </MapInteraction>
-
       {allowTokenChange && (
         <>
           <ProxyToken

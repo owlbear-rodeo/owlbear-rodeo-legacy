@@ -6,14 +6,7 @@ const zoomSpeed = -0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
 
-function MapInteraction({
-  map,
-  aspectRatio,
-  selectedTool,
-  selectedToolSettings,
-  children,
-  controls,
-}) {
+function MapInteraction({ map, aspectRatio, isEnabled, children, controls }) {
   const mapContainerRef = useRef();
   const mapMoveContainerRef = useRef();
   const mapTranslateRef = useRef({ x: 0, y: 0 });
@@ -37,7 +30,7 @@ function MapInteraction({
         newScale = Math.max(Math.min(scale + event.ds, maxZoom), minZoom);
       }
 
-      if (selectedTool === "pan" || isGesture) {
+      if (isEnabled || isGesture) {
         newTranslate = {
           x: translate.x + event.dx,
           y: translate.y + event.dy,
@@ -57,12 +50,12 @@ function MapInteraction({
           move: (e) => handleMove(e, false),
         },
         cursorChecker: () => {
-          return selectedTool === "pan" && map ? "move" : "default";
+          return isEnabled && map ? "move" : "default";
         },
       })
       .on("doubletap", (event) => {
         event.preventDefault();
-        if (selectedTool === "pan") {
+        if (isEnabled) {
           setTranslateAndScale({ x: 0, y: 0 }, 1);
         }
       });
@@ -70,7 +63,7 @@ function MapInteraction({
     return () => {
       mapInteract.unset();
     };
-  }, [selectedTool, map]);
+  }, [isEnabled, map]);
 
   // Reset map transform when map changes
   useEffect(() => {

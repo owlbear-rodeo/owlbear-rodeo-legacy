@@ -111,6 +111,27 @@ function MapDrawing({
     }
   }
 
+  // Add listeners for draw events on map to allow drawing past the bounds
+  // of the container
+  useEffect(() => {
+    const map = document.querySelector(".map");
+    map.addEventListener("mousedown", handleStart);
+    map.addEventListener("mousemove", handleMove);
+    map.addEventListener("mouseup", handleStop);
+    map.addEventListener("touchstart", handleStart);
+    map.addEventListener("touchmove", handleMove);
+    map.addEventListener("touchend", handleStop);
+
+    return () => {
+      map.removeEventListener("mousedown", handleStart);
+      map.removeEventListener("mousemove", handleMove);
+      map.removeEventListener("mouseup", handleStop);
+      map.removeEventListener("touchstart", handleStart);
+      map.removeEventListener("touchmove", handleMove);
+      map.removeEventListener("touchend", handleStop);
+    };
+  });
+
   const hoveredShapeRef = useRef(null);
   useEffect(() => {
     function pointsToPath(points) {
@@ -205,12 +226,6 @@ function MapDrawing({
     <div
       style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
       ref={containerRef}
-      onMouseDown={handleStart}
-      onMouseMove={handleMove}
-      onMouseUp={handleStop}
-      onTouchStart={handleStart}
-      onTouchMove={handleMove}
-      onTouchEnd={handleStop}
     >
       <canvas
         ref={canvasRef}
