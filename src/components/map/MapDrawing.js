@@ -136,13 +136,6 @@ function MapDrawing({
     setIsDrawing(false);
     if (selectedTool === "brush") {
       if (drawingShape.data.points.length > 1) {
-        // const simplifiedPoints = simplify(
-        //   drawingShape.data.points,
-        //   getStrokeSize(drawingShape.strokeWidth, gridSize, 1, 1) * 0.1
-        // );
-
-        // const data = { points: simplifiedPoints };
-        // onShapeAdd({ ...drawingShape, data });
         onShapeAdd(drawingShape);
       }
     } else if (selectedTool === "shape") {
@@ -176,6 +169,9 @@ function MapDrawing({
     };
   });
 
+  /**
+   * Rendering
+   */
   const hoveredShapeRef = useRef(null);
   useEffect(() => {
     function pointsToPath(points, close) {
@@ -232,6 +228,22 @@ function MapDrawing({
       }
     }
 
+    function isPathHovered(path, hasFill, context) {
+      if (hasFill) {
+        return context.isPointInPath(
+          path,
+          pointerPosition.x * width,
+          pointerPosition.y * height
+        );
+      } else {
+        return context.isPointInStroke(
+          path,
+          pointerPosition.x * width,
+          pointerPosition.y * height
+        );
+      }
+    }
+
     const canvas = canvasRef.current;
     if (canvas) {
       const context = canvas.getContext("2d");
@@ -242,13 +254,7 @@ function MapDrawing({
         const path = shapeToPath(shape);
         // Detect hover
         if (selectedTool === "erase") {
-          if (
-            context.isPointInPath(
-              path,
-              pointerPosition.x * width,
-              pointerPosition.y * height
-            )
-          ) {
+          if (isPathHovered(path, shapeHasFill(shape), context)) {
             hoveredShape = shape;
           }
         }
@@ -275,7 +281,14 @@ function MapDrawing({
       }
       if (hoveredShape) {
         const path = shapeToPath(hoveredShape);
-        drawPath(path, "#BB99FF", true, 1, true, context);
+        drawPath(
+          path,
+          "#BB99FF",
+          shapeHasFill(hoveredShape),
+          hoveredShape.strokeWidth,
+          true,
+          context
+        );
       }
       hoveredShapeRef.current = hoveredShape;
     }
