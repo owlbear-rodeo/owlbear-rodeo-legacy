@@ -155,19 +155,19 @@ function MapDrawing({
     if (event.touches && event.touches.length !== 0) {
       return;
     }
-    setIsDrawing(false);
-    if (selectedTool === "brush") {
+    if (selectedTool === "brush" && drawingShape) {
       if (drawingShape.data.points.length > 1) {
         onShapeAdd(drawingShape);
       }
-    } else if (selectedTool === "shape") {
+    } else if (selectedTool === "shape" && drawingShape) {
       onShapeAdd(drawingShape);
     }
 
-    setDrawingShape(null);
-    if (selectedTool === "erase" && hoveredShapeRef.current) {
+    if (selectedTool === "erase" && hoveredShapeRef.current && isDrawing) {
       onShapeRemove(hoveredShapeRef.current.id);
     }
+    setIsDrawing(false);
+    setDrawingShape(null);
   }
 
   // Add listeners for draw events on map to allow drawing past the bounds

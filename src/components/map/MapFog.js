@@ -122,7 +122,6 @@ function MapFog({
     if (event.touches && event.touches.length !== 0) {
       return;
     }
-    setIsDrawing(false);
     if (isEditing && toolSettings.type === "add" && drawingShape) {
       if (drawingShape.data.points.length > 1) {
         const shape = {
@@ -134,10 +133,15 @@ function MapFog({
       }
     }
 
-    setDrawingShape(null);
-    if (toolSettings.type === "remove" && hoveredShapeRef.current) {
+    if (
+      toolSettings.type === "remove" &&
+      hoveredShapeRef.current &&
+      isDrawing
+    ) {
       onShapeRemove(hoveredShapeRef.current.id);
     }
+    setDrawingShape(null);
+    setIsDrawing(false);
   }
 
   // Add listeners for draw events on map to allow drawing past the bounds
