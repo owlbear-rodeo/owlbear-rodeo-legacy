@@ -3,7 +3,6 @@ import { Flex } from "theme-ui";
 
 import ColorControl from "./ColorControl";
 import AlphaBlendToggle from "./AlphaBlendToggle";
-import GridSnappingToggle from "./GridSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
 
 import ShapeRectangleIcon from "../../../icons/ShapeRectangleIcon";
@@ -45,12 +44,6 @@ function ShapeToolSettings({ settings, onSettingChange }) {
       <AlphaBlendToggle
         useBlending={settings.useBlending}
         onBlendingChange={(useBlending) => onSettingChange({ useBlending })}
-      />
-      <GridSnappingToggle
-        useGridSnapping={settings.useGridSnapping}
-        onGridSnappingChange={(useGridSnapping) =>
-          onSettingChange({ useGridSnapping })
-        }
       />
     </Flex>
   );

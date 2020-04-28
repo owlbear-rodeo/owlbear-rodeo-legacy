@@ -1,17 +1,17 @@
-import { snapPositionToGrid } from "./shared";
 import * as Vector2 from "./vector2";
 import { toDegrees } from "./shared";
 import colors from "./colors";
 
-export function getBrushPositionForTool(
-  brushPosition,
-  settings,
-  gridSize,
-  shapes
-) {
+const snappingThreshold = 1 / 5;
+export function getBrushPositionForTool(brushPosition, tool, gridSize, shapes) {
   let position = brushPosition;
-  if (settings && settings.useGridSnapping) {
-    position = snapPositionToGrid(position, gridSize);
+  if (tool === "shape") {
+    const snapped = Vector2.roundTo(position, gridSize);
+    const minGrid = Vector2.min(gridSize);
+    const distance = Vector2.length(Vector2.subtract(snapped, position));
+    if (distance < minGrid * snappingThreshold) {
+      position = snapped;
+    }
   }
 
   return position;
@@ -187,7 +187,7 @@ export function shapeToPath(shape, canvasWidth, canvasHeight) {
         canvasWidth,
         canvasHeight
       );
-    } else if ((shape.shapeType === "rectangle", canvasWidth, canvasHeight)) {
+    } else if (shape.shapeType === "rectangle") {
       return rectangleToPath(
         data.x,
         data.y,

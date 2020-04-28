@@ -49,18 +49,16 @@ function Map({
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
   const [toolSettings, setToolSettings] = useState({
-    fog: { type: "add", useGridSnapping: false, useEdgeSnapping: true },
+    fog: { type: "add", useEdgeSnapping: true },
     brush: {
       color: "darkGray",
       type: "stroke",
       useBlending: false,
-      useGridSnapping: false,
     },
     shape: {
       color: "red",
       type: "rectangle",
       useBlending: true,
-      useGridSnapping: false,
     },
   });
   function handleToolSettingChange(tool, change) {

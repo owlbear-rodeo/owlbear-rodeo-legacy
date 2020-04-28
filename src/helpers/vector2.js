@@ -1,4 +1,4 @@
-import { toRadians } from "./shared";
+import { toRadians, roundTo as roundToNumber } from "./shared";
 
 export function lengthSquared(p) {
   return p.x * p.x + p.y * p.y;
@@ -69,4 +69,11 @@ export function min(a) {
 
 export function max(a) {
   return a.x > a.y ? a.x : a.y;
+}
+
+export function roundTo(p, to) {
+  return {
+    x: roundToNumber(p.x, to.x),
+    y: roundToNumber(p.y, to.y),
+  };
 }

@@ -56,7 +56,7 @@ function MapDrawing({
     setIsDrawing(true);
     const brushPosition = getBrushPositionForTool(
       position,
-      toolSettings,
+      selectedTool,
       gridSize,
       shapes
     );
@@ -97,7 +97,7 @@ function MapDrawing({
       setPointerPosition(position);
       const brushPosition = getBrushPositionForTool(
         position,
-        toolSettings,
+        selectedTool,
         gridSize,
         shapes
       );

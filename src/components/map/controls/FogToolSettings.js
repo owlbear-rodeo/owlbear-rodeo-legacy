@@ -1,7 +1,6 @@
 import React from "react";
 import { Flex } from "theme-ui";
 
-import GridSnappingToggle from "./GridSnappingToggle";
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
 
@@ -36,12 +35,6 @@ function BrushToolSettings({ settings, onSettingChange }) {
         <FogToggleIcon />
       </RadioIconButton>
       <Divider vertical />
-      <GridSnappingToggle
-        useGridSnapping={settings.useGridSnapping}
-        onGridSnappingChange={(useGridSnapping) =>
-          onSettingChange({ useGridSnapping })
-        }
-      />
       <EdgeSnappingToggle
         useEdgeSnapping={settings.useEdgeSnapping}
         onEdgeSnappingChange={(useEdgeSnapping) =>
