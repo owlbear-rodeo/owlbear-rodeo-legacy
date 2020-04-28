@@ -57,9 +57,6 @@ function MapFog({
       gridSize,
       shapes
     );
-    const commonShapeData = {
-      id: shortid.generate(),
-    };
     if (isEditing && toolSettings.type === "add") {
       setDrawingShape({
         type: "fog",
@@ -67,7 +64,8 @@ function MapFog({
         strokeWidth: 0.1,
         color: "black",
         blend: true, // Blend while drawing
-        ...commonShapeData,
+        id: shortid.generate(),
+        fogType: toolSettings.useGridSnapping ? "sharp" : "smooth",
       });
     }
   }

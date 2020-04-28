@@ -134,7 +134,7 @@ export function shapeHasFill(shape) {
   );
 }
 
-export function pointsToPath(points, close, canvasWidth, canvasHeight) {
+export function pointsToPathSmooth(points, close, canvasWidth, canvasHeight) {
   const path = new Path2D();
   if (points.length < 2) {
     return path;
@@ -166,6 +166,19 @@ export function pointsToPath(points, close, canvasWidth, canvasHeight) {
   if (close) {
     path.closePath();
   }
+  return path;
+}
+
+export function pointsToPathSharp(points, close, canvasWidth, canvasHeight) {
+  const path = new Path2D();
+  path.moveTo(points[0].x * canvasWidth, points[0].y * canvasHeight);
+  for (let point of points.slice(1)) {
+    path.lineTo(point.x * canvasWidth, point.y * canvasHeight);
+  }
+  if (close) {
+    path.closePath();
+  }
+
   return path;
 }
 
@@ -201,32 +214,10 @@ export function rectangleToPath(
   return path;
 }
 
-export function triangleToPath(points, canvasWidth, canvasHeight) {
-  const path = new Path2D();
-  path.moveTo(points[0].x * canvasWidth, points[0].y * canvasHeight);
-  for (let point of points.slice(1)) {
-    path.lineTo(point.x * canvasWidth, point.y * canvasHeight);
-  }
-  path.closePath();
-
-  return path;
-}
-
-export function fogToPath(points, canvasWidth, canvasHeight) {
-  const path = new Path2D();
-  path.moveTo(points[0].x * canvasWidth, points[0].y * canvasHeight);
-  for (let point of points.slice(1)) {
-    path.lineTo(point.x * canvasWidth, point.y * canvasHeight);
-  }
-  path.closePath();
-
-  return path;
-}
-
 export function shapeToPath(shape, canvasWidth, canvasHeight) {
   const data = shape.data;
   if (shape.type === "path") {
-    return pointsToPath(
+    return pointsToPathSmooth(
       data.points,
       shape.pathType === "fill",
       canvasWidth,
@@ -251,10 +242,24 @@ export function shapeToPath(shape, canvasWidth, canvasHeight) {
         canvasHeight
       );
     } else if (shape.shapeType === "triangle") {
-      return triangleToPath(data.points, canvasWidth, canvasHeight);
+      return pointsToPathSharp(data.points, true, canvasWidth, canvasHeight);
     }
   } else if (shape.type === "fog") {
-    return fogToPath(shape.data.points, canvasWidth, canvasHeight);
+    if (shape.fogType === "smooth") {
+      return pointsToPathSmooth(
+        shape.data.points,
+        true,
+        canvasWidth,
+        canvasHeight
+      );
+    } else if (shape.fogType === "sharp") {
+      return pointsToPathSharp(
+        shape.data.points,
+        true,
+        canvasWidth,
+        canvasHeight
+      );
+    }
   }
 }
 
