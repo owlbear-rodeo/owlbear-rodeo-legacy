@@ -23,7 +23,8 @@ function MapTile({
   const hasMapState =
     mapState &&
     (Object.values(mapState.tokens).length > 0 ||
-      mapState.drawActions.length > 0);
+      mapState.mapDrawActions.length > 0 ||
+      mapState.fogDrawActions.length > 0);
 
   const expandButton = (
     <IconButton

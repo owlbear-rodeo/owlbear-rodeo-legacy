@@ -19,8 +19,10 @@ const defaultMapState = {
   tokens: {},
   // An index into the draw actions array to which only actions before the
   // index will be performed (used in undo and redo)
-  drawActionIndex: -1,
-  drawActions: [],
+  mapDrawActionIndex: -1,
+  mapDrawActions: [],
+  fogDrawActionIndex: -1,
+  fogDrawActions: [],
   // Flags to determine what other people can edit
   editFlags: ["map", "drawings", "tokens"],
 };

@@ -308,3 +308,12 @@ const defaultSimplifySize = 1 / 100;
 export function simplifyPoints(points, gridSize) {
   return simplify(points, Vector2.min(gridSize) * defaultSimplifySize);
 }
+
+export function getRelativePointerPosition(event, container) {
+  if (container) {
+    const containerRect = container.getBoundingClientRect();
+    const x = (event.clientX - containerRect.x) / containerRect.width;
+    const y = (event.clientY - containerRect.y) / containerRect.height;
+    return { x, y };
+  }
+}

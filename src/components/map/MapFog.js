@@ -5,18 +5,16 @@ import { compare as comparePoints } from "../../helpers/vector2";
 
 import {
   getBrushPositionForTool,
-  getDefaultShapeData,
-  getUpdatedShapeData,
   isShapeHovered,
   drawShape,
   simplifyPoints,
   getRelativePointerPosition,
 } from "../../helpers/drawing";
 
-function MapDrawing({
+function MapFog({
   width,
   height,
-  selectedTool,
+  isEditing,
   toolSettings,
   shapes,
   onShapeAdd,
@@ -30,16 +28,14 @@ function MapDrawing({
   const [drawingShape, setDrawingShape] = useState(null);
   const [pointerPosition, setPointerPosition] = useState({ x: -1, y: -1 });
 
-  const shouldHover = selectedTool === "erase";
-  const isEditing =
-    selectedTool === "brush" ||
-    selectedTool === "shape" ||
-    selectedTool === "erase";
+  const shouldHover =
+    isEditing &&
+    (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
   // Reset pointer position when tool changes
   useEffect(() => {
     setPointerPosition({ x: -1, y: -1 });
-  }, [selectedTool]);
+  }, [isEditing, toolSettings]);
 
   function handleStart(event) {
     if (!isEditing) {
@@ -56,30 +52,21 @@ function MapDrawing({
     setIsDrawing(true);
     const brushPosition = getBrushPositionForTool(
       position,
-      selectedTool,
+      "fog",
       toolSettings,
       gridSize,
       shapes
     );
     const commonShapeData = {
-      color: toolSettings && toolSettings.color,
-      blend: toolSettings && toolSettings.useBlending,
       id: shortid.generate(),
     };
-    if (selectedTool === "brush") {
+    if (isEditing && toolSettings.type === "add") {
       setDrawingShape({
-        type: "path",
-        pathType: toolSettings.type,
+        type: "fog",
         data: { points: [brushPosition] },
-        strokeWidth: toolSettings.type === "stroke" ? 1 : 0,
-        ...commonShapeData,
-      });
-    } else if (selectedTool === "shape") {
-      setDrawingShape({
-        type: "shape",
-        shapeType: toolSettings.type,
-        data: getDefaultShapeData(toolSettings.type, brushPosition),
-        strokeWidth: 0,
+        strokeWidth: 0.1,
+        color: "black",
+        blend: true, // Blend while drawing
         ...commonShapeData,
       });
     }
@@ -93,28 +80,21 @@ function MapDrawing({
       return;
     }
     const pointer = event.touches ? event.touches[0] : event;
+    const position = getRelativePointerPosition(pointer, containerRef.current);
     // Set pointer position every frame for erase tool and fog
     if (shouldHover) {
-      const position = getRelativePointerPosition(
-        pointer,
-        containerRef.current
-      );
       setPointerPosition(position);
     }
     if (isDrawing) {
-      const position = getRelativePointerPosition(
-        pointer,
-        containerRef.current
-      );
       setPointerPosition(position);
       const brushPosition = getBrushPositionForTool(
         position,
-        selectedTool,
+        "fog",
         toolSettings,
         gridSize,
         shapes
       );
-      if (selectedTool === "brush") {
+      if (isEditing && toolSettings.type === "add" && drawingShape) {
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
           if (
@@ -126,24 +106,11 @@ function MapDrawing({
           ) {
             return prevShape;
           }
-          const simplified = simplifyPoints(
-            [...prevPoints, brushPosition],
-            gridSize
-          );
           return {
             ...prevShape,
-            data: { points: simplified },
+            data: { points: [...prevPoints, brushPosition] },
           };
         });
-      } else if (selectedTool === "shape") {
-        setDrawingShape((prevShape) => ({
-          ...prevShape,
-          data: getUpdatedShapeData(
-            prevShape.shapeType,
-            prevShape.data,
-            brushPosition
-          ),
-        }));
       }
     }
   }
@@ -156,16 +123,19 @@ function MapDrawing({
       return;
     }
     setIsDrawing(false);
-    if (selectedTool === "brush") {
+    if (isEditing && toolSettings.type === "add" && drawingShape) {
       if (drawingShape.data.points.length > 1) {
-        onShapeAdd(drawingShape);
+        const shape = {
+          ...drawingShape,
+          data: { points: simplifyPoints(drawingShape.data.points, gridSize) },
+          blend: false,
+        };
+        onShapeAdd(shape);
       }
-    } else if (selectedTool === "shape") {
-      onShapeAdd(drawingShape);
     }
 
     setDrawingShape(null);
-    if (selectedTool === "erase" && hoveredShapeRef.current) {
+    if (toolSettings.type === "remove" && hoveredShapeRef.current) {
       onShapeRemove(hoveredShapeRef.current.id);
     }
   }
@@ -208,7 +178,17 @@ function MapDrawing({
             hoveredShape = shape;
           }
         }
-        drawShape(shape, context, gridSize, width, height);
+        if (isEditing) {
+          drawShape(
+            { ...shape, blend: true },
+            context,
+            gridSize,
+            width,
+            height
+          );
+        } else {
+          drawShape(shape, context, gridSize, width, height);
+        }
       }
       if (drawingShape) {
         drawShape(drawingShape, context, gridSize, width, height);
@@ -225,7 +205,7 @@ function MapDrawing({
     height,
     pointerPosition,
     isDrawing,
-    selectedTool,
+    isEditing,
     drawingShape,
     gridSize,
     shouldHover,
@@ -253,4 +233,4 @@ function MapDrawing({
   );
 }
 
-export default MapDrawing;
+export default MapFog;
