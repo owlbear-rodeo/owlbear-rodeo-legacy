@@ -2,13 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import simplify from "simplify-js";
 import shortid from "shortid";
 
-import colors from "../../helpers/colors";
 import {
   getBrushPositionForTool,
   getDefaultShapeData,
   getUpdatedShapeData,
   getStrokeSize,
-  shapeHasFill,
+  isShapeHovered,
+  drawShape,
 } from "../../helpers/drawing";
 
 function MapDrawing({
@@ -174,107 +174,6 @@ function MapDrawing({
    */
   const hoveredShapeRef = useRef(null);
   useEffect(() => {
-    function pointsToPath(points, close) {
-      const path = new Path2D();
-      if (points.length < 2) {
-        return path;
-      }
-      path.moveTo(points[0].x * width, points[0].y * height);
-
-      // Draw a smooth curve between the points
-      for (let i = 1; i < points.length - 2; i++) {
-        var xc = (points[i].x * width + points[i + 1].x * width) / 2;
-        var yc = (points[i].y * height + points[i + 1].y * height) / 2;
-        path.quadraticCurveTo(
-          points[i].x * width,
-          points[i].y * height,
-          xc,
-          yc
-        );
-      }
-      // Curve through the last two points
-      path.quadraticCurveTo(
-        points[points.length - 2].x * width,
-        points[points.length - 2].y * height,
-        points[points.length - 1].x * width,
-        points[points.length - 1].y * height
-      );
-
-      if (close) {
-        path.closePath();
-      }
-      return path;
-    }
-
-    function circleToPath(x, y, radius) {
-      const path = new Path2D();
-      const minSide = width < height ? width : height;
-      path.arc(x * width, y * height, radius * minSide, 0, 2 * Math.PI, true);
-      return path;
-    }
-
-    function rectangleToPath(x, y, w, h) {
-      const path = new Path2D();
-      path.rect(x * width, y * height, w * width, h * height);
-      return path;
-    }
-
-    function triangleToPath(points) {
-      const path = new Path2D();
-      path.moveTo(points[0].x * width, points[0].y * height);
-      for (let point of points.slice(1)) {
-        path.lineTo(point.x * width, point.y * height);
-      }
-      path.closePath();
-
-      return path;
-    }
-
-    function shapeToPath(shape) {
-      const data = shape.data;
-      if (shape.type === "path") {
-        return pointsToPath(data.points, shape.pathType === "fill");
-      } else if (shape.type === "shape") {
-        if (shape.shapeType === "circle") {
-          return circleToPath(data.x, data.y, data.radius);
-        } else if (shape.shapeType === "rectangle") {
-          return rectangleToPath(data.x, data.y, data.width, data.height);
-        } else if (shape.shapeType === "triangle") {
-          return triangleToPath(data.points);
-        }
-      }
-    }
-
-    function drawPath(path, color, fill, strokeWidth, blend, context) {
-      context.globalAlpha = blend ? 0.5 : 1.0;
-      context.fillStyle = color;
-      context.strokeStyle = color;
-      if (strokeWidth > 0) {
-        context.lineCap = "round";
-        context.lineWidth = getStrokeSize(strokeWidth, gridSize, width, height);
-        context.stroke(path);
-      }
-      if (fill) {
-        context.fill(path);
-      }
-    }
-
-    function isPathHovered(path, hasFill, context) {
-      if (hasFill) {
-        return context.isPointInPath(
-          path,
-          pointerPosition.x * width,
-          pointerPosition.y * height
-        );
-      } else {
-        return context.isPointInStroke(
-          path,
-          pointerPosition.x * width,
-          pointerPosition.y * height
-        );
-      }
-    }
-
     const canvas = canvasRef.current;
     if (canvas) {
       const context = canvas.getContext("2d");
@@ -282,44 +181,20 @@ function MapDrawing({
       context.clearRect(0, 0, width, height);
       let hoveredShape = null;
       for (let shape of shapes) {
-        const path = shapeToPath(shape);
         // Detect hover
         if (selectedTool === "erase") {
-          if (isPathHovered(path, shapeHasFill(shape), context)) {
+          if (isShapeHovered(shape, context, pointerPosition, width, height)) {
             hoveredShape = shape;
           }
         }
-
-        drawPath(
-          path,
-          colors[shape.color],
-          shapeHasFill(shape),
-          shape.strokeWidth,
-          shape.blend,
-          context
-        );
+        drawShape(shape, context, gridSize, width, height);
       }
       if (drawingShape) {
-        const path = shapeToPath(drawingShape);
-        drawPath(
-          path,
-          colors[drawingShape.color],
-          shapeHasFill(drawingShape),
-          drawingShape.strokeWidth,
-          drawingShape.blend,
-          context
-        );
+        drawShape(drawingShape, context, gridSize, width, height);
       }
       if (hoveredShape) {
-        const path = shapeToPath(hoveredShape);
-        drawPath(
-          path,
-          "#BB99FF",
-          shapeHasFill(hoveredShape),
-          hoveredShape.strokeWidth,
-          true,
-          context
-        );
+        const shape = { ...hoveredShape, color: "#BB99FF", blend: true };
+        drawShape(shape, context, gridSize, width, height);
       }
       hoveredShapeRef.current = hoveredShape;
     }
