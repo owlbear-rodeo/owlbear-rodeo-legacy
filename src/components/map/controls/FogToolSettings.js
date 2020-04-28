@@ -3,6 +3,7 @@ import { Flex } from "theme-ui";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
+import GridSnappingToggle from "./GridSnappingToggle";
 
 import FogAddIcon from "../../../icons/FogAddIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
@@ -39,6 +40,12 @@ function BrushToolSettings({ settings, onSettingChange }) {
         useEdgeSnapping={settings.useEdgeSnapping}
         onEdgeSnappingChange={(useEdgeSnapping) =>
           onSettingChange({ useEdgeSnapping })
+        }
+      />
+      <GridSnappingToggle
+        useGridSnapping={settings.useGridSnapping}
+        onGridSnappingChange={(useGridSnapping) =>
+          onSettingChange({ useGridSnapping })
         }
       />
     </Flex>
