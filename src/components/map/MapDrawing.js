@@ -176,10 +176,30 @@ function MapDrawing({
   useEffect(() => {
     function pointsToPath(points, close) {
       const path = new Path2D();
-      path.moveTo(points[0].x * width, points[0].y * height);
-      for (let point of points.slice(1)) {
-        path.lineTo(point.x * width, point.y * height);
+      if (points.length < 2) {
+        return path;
       }
+      path.moveTo(points[0].x * width, points[0].y * height);
+
+      // Draw a smooth curve between the points
+      for (let i = 1; i < points.length - 2; i++) {
+        var xc = (points[i].x * width + points[i + 1].x * width) / 2;
+        var yc = (points[i].y * height + points[i + 1].y * height) / 2;
+        path.quadraticCurveTo(
+          points[i].x * width,
+          points[i].y * height,
+          xc,
+          yc
+        );
+      }
+      // Curve through the last two points
+      path.quadraticCurveTo(
+        points[points.length - 2].x * width,
+        points[points.length - 2].y * height,
+        points[points.length - 1].x * width,
+        points[points.length - 1].y * height
+      );
+
       if (close) {
         path.closePath();
       }
@@ -199,6 +219,17 @@ function MapDrawing({
       return path;
     }
 
+    function triangleToPath(points) {
+      const path = new Path2D();
+      path.moveTo(points[0].x * width, points[0].y * height);
+      for (let point of points.slice(1)) {
+        path.lineTo(point.x * width, point.y * height);
+      }
+      path.closePath();
+
+      return path;
+    }
+
     function shapeToPath(shape) {
       const data = shape.data;
       if (shape.type === "path") {
@@ -209,7 +240,7 @@ function MapDrawing({
         } else if (shape.shapeType === "rectangle") {
           return rectangleToPath(data.x, data.y, data.width, data.height);
         } else if (shape.shapeType === "triangle") {
-          return pointsToPath(data.points, true);
+          return triangleToPath(data.points);
         }
       }
     }
