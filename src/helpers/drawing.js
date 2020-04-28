@@ -1,9 +1,17 @@
+import simplify from "simplify-js";
+
 import * as Vector2 from "./vector2";
 import { toDegrees } from "./shared";
 import colors from "./colors";
 
 const snappingThreshold = 1 / 5;
-export function getBrushPositionForTool(brushPosition, tool, gridSize, shapes) {
+export function getBrushPositionForTool(
+  brushPosition,
+  tool,
+  toolSettings,
+  gridSize,
+  shapes
+) {
   let position = brushPosition;
   if (tool === "shape") {
     const snapped = Vector2.roundTo(position, gridSize);
@@ -11,6 +19,40 @@ export function getBrushPositionForTool(brushPosition, tool, gridSize, shapes) {
     const distance = Vector2.length(Vector2.subtract(snapped, position));
     if (distance < minGrid * snappingThreshold) {
       position = snapped;
+    }
+  }
+  if (tool === "fog" && toolSettings.type === "add") {
+    if (toolSettings.useGridSnapping) {
+      position = Vector2.roundTo(position, gridSize);
+    }
+    if (toolSettings.useEdgeSnapping) {
+      const minGrid = Vector2.min(gridSize);
+      let closestDistance = Number.MAX_VALUE;
+      let closestPosition = position;
+      // Find the closest point on all fog shapes
+      for (let shape of shapes) {
+        if (shape.type === "fog") {
+          const points = shape.data.points;
+          const isInShape = Vector2.pointInPolygon(position, points);
+
+          // Find the closest point to each line of the shape
+          for (let i = 0; i < points.length; i++) {
+            const a = points[i];
+            // Wrap around points to the start to account for closed shape
+            const b = points[(i + 1) % points.length];
+            const distanceToLine = Vector2.distanceToLine(position, a, b);
+            const isCloseToShape = distanceToLine < minGrid * snappingThreshold;
+            if (
+              (isInShape || isCloseToShape) &&
+              distanceToLine < closestDistance
+            ) {
+              closestPosition = Vector2.closestPointOnLine(position, a, b);
+              closestDistance = distanceToLine;
+            }
+          }
+        }
+      }
+      position = closestPosition;
     }
   }
 
@@ -86,6 +128,7 @@ export function getStrokeSize(multiplier, gridSize, canvasWidth, canvasHeight) {
 
 export function shapeHasFill(shape) {
   return (
+    shape.type === "fog" ||
     shape.type === "shape" ||
     (shape.type === "path" && shape.pathType === "fill")
   );
@@ -169,6 +212,17 @@ export function triangleToPath(points, canvasWidth, canvasHeight) {
   return path;
 }
 
+export function fogToPath(points, canvasWidth, canvasHeight) {
+  const path = new Path2D();
+  path.moveTo(points[0].x * canvasWidth, points[0].y * canvasHeight);
+  for (let point of points.slice(1)) {
+    path.lineTo(point.x * canvasWidth, point.y * canvasHeight);
+  }
+  path.closePath();
+
+  return path;
+}
+
 export function shapeToPath(shape, canvasWidth, canvasHeight) {
   const data = shape.data;
   if (shape.type === "path") {
@@ -199,6 +253,8 @@ export function shapeToPath(shape, canvasWidth, canvasHeight) {
     } else if (shape.shapeType === "triangle") {
       return triangleToPath(data.points, canvasWidth, canvasHeight);
     }
+  } else if (shape.type === "fog") {
+    return fogToPath(shape.data.points, canvasWidth, canvasHeight);
   }
 }
 
@@ -246,4 +302,9 @@ export function drawShape(shape, context, gridSize, canvasWidth, canvasHeight) {
   if (fill) {
     context.fill(path);
   }
+}
+
+const defaultSimplifySize = 1 / 100;
+export function simplifyPoints(points, gridSize) {
+  return simplify(points, Vector2.min(gridSize) * defaultSimplifySize);
 }
