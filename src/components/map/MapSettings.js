@@ -62,6 +62,16 @@ function MapSettings({
               <Label>
                 <Checkbox
                   checked={
+                    mapState !== null && mapState.editFlags.includes("fog")
+                  }
+                  disabled={mapState === null}
+                  onChange={(e) => handleFlagChange(e, "fog")}
+                />
+                Fog
+              </Label>
+              <Label>
+                <Checkbox
+                  checked={
                     mapState !== null && mapState.editFlags.includes("drawings")
                   }
                   disabled={mapState === null}

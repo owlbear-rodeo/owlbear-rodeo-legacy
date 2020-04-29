@@ -29,7 +29,8 @@ function Map({
   onFogDraw,
   onMapUndo,
   onMapRedo,
-  allowDrawing,
+  allowMapDrawing,
+  allowFogDrawing,
   allowTokenChange,
   allowMapChange,
 }) {
@@ -139,7 +140,7 @@ function Map({
   if (!allowMapChange) {
     disabledControls.push("map");
   }
-  if (!allowDrawing) {
+  if (!allowMapDrawing) {
     disabledControls.push("drawing");
   }
   if (!map) {
@@ -151,6 +152,9 @@ function Map({
   }
   if (!mapState || mapState.mapDrawActionIndex < 0) {
     disabledControls.push("undo");
+  }
+  if (!allowFogDrawing) {
+    disabledControls.push("fog");
   }
   if (
     !mapState ||
@@ -266,7 +270,7 @@ function Map({
         map={map}
         aspectRatio={aspectRatio}
         isEnabled={selectedToolId === "pan"}
-        controls={(allowMapChange || allowDrawing) && mapControls}
+        controls={(allowMapChange || allowMapDrawing) && mapControls}
       >
         {map && mapImage}
         {map && mapDrawing}

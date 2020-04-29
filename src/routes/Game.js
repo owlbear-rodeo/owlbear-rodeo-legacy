@@ -44,6 +44,7 @@ function Game() {
   const [map, setMap] = useState(null);
   const [mapState, setMapState] = useState(null);
 
+  // TODO: move into map, consider removing map lockdown
   const canChangeMap =
     map === null ||
     (map !== null &&
@@ -54,6 +55,11 @@ function Game() {
     map !== null &&
     mapState !== null &&
     (mapState.editFlags.includes("drawings") || map.owner === userId);
+
+  const canEditFogDrawing =
+    map !== null &&
+    mapState !== null &&
+    (mapState.editFlags.includes("fog") || map.owner === userId);
 
   const canEditTokens =
     map !== null &&
@@ -416,7 +422,8 @@ function Game() {
             onMapUndo={handleMapUndo}
             onMapRedo={handleMapRedo}
             onFogDraw={handleFogDraw}
-            allowDrawing={canEditMapDrawings}
+            allowMapDrawing={canEditMapDrawings}
+            allowFogDrawing={canEditFogDrawing}
             allowTokenChange={canEditTokens}
             allowMapChange={canChangeMap}
           />

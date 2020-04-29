@@ -202,6 +202,13 @@ function MapContols({
     }
   }
 
+  // Move back to pan tool if selected tool becomes disabled
+  useEffect(() => {
+    if (disabledControls.includes(selectedToolId)) {
+      onSelectedToolChange("pan");
+    }
+  }, [disabledControls]);
+
   // Stop map drawing from happening when selecting controls
   // Not using react events as they seem to trigger after dom events
   useEffect(() => {
