@@ -28,6 +28,7 @@ function MapContols({
   onSelectedToolChange,
   toolSettings,
   onToolSettingChange,
+  onToolAction,
   disabledControls,
   onUndo,
   onRedo,
@@ -192,6 +193,7 @@ function MapContols({
             onSettingChange={(change) =>
               onToolSettingChange(selectedToolId, change)
             }
+            onToolAction={onToolAction}
           />
         </Box>
       );

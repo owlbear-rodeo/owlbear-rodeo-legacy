@@ -63,6 +63,7 @@ function Map({
       useBlending: true,
     },
   });
+
   function handleToolSettingChange(tool, change) {
     setToolSettings((prevSettings) => ({
       ...prevSettings,
@@ -73,6 +74,16 @@ function Map({
     }));
   }
 
+  function handleToolAction(action) {
+    if (action === "eraseAll") {
+      onMapDraw({
+        type: "remove",
+        shapeIds: mapShapes.map((s) => s.id),
+        timestamp: Date.now(),
+      });
+    }
+  }
+
   const [mapShapes, setMapShapes] = useState([]);
   function handleMapShapeAdd(shape) {
     onMapDraw({ type: "add", shapes: [shape], timestamp: Date.now() });
@@ -80,14 +91,6 @@ function Map({
 
   function handleMapShapeRemove(shapeId) {
     onMapDraw({ type: "remove", shapeIds: [shapeId], timestamp: Date.now() });
-  }
-
-  function handleShapeRemoveAll() {
-    onMapDraw({
-      type: "remove",
-      shapeIds: mapShapes.map((s) => s.id),
-      timestamp: Date.now(),
-    });
   }
 
   const [fogShapes, setFogShapes] = useState([]);
@@ -251,6 +254,7 @@ function Map({
       selectedToolId={selectedToolId}
       toolSettings={toolSettings}
       onToolSettingChange={handleToolSettingChange}
+      onToolAction={handleToolAction}
       disabledControls={disabledControls}
       onUndo={onMapUndo}
       onRedo={onMapRedo}
