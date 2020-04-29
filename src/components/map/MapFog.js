@@ -12,6 +12,8 @@ import {
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
+import diagonalPattern from "../../images/DiagonalPattern.png";
+
 function MapFog({
   width,
   height,
@@ -20,12 +22,13 @@ function MapFog({
   shapes,
   onShapeAdd,
   onShapeRemove,
+  onShapeEdit,
   gridSize,
 }) {
   const canvasRef = useRef();
   const containerRef = useRef();
 
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isPointerDown, setIsPointerDown] = useState(false);
   const [drawingShape, setDrawingShape] = useState(null);
   const [pointerPosition, setPointerPosition] = useState({ x: -1, y: -1 });
 
@@ -45,14 +48,14 @@ function MapFog({
       return;
     }
     if (event.touches && event.touches.length !== 1) {
-      setIsDrawing(false);
+      setIsPointerDown(false);
       setDrawingShape(null);
       return;
     }
     const pointer = event.touches ? event.touches[0] : event;
     const position = getRelativePointerPosition(pointer, containerRef.current);
     setPointerPosition(position);
-    setIsDrawing(true);
+    setIsPointerDown(true);
     const brushPosition = getBrushPositionForTool(
       position,
       "fog",
@@ -68,6 +71,7 @@ function MapFog({
         color: "black",
         blend: true, // Blend while drawing
         id: shortid.generate(),
+        visible: true,
       });
     }
   }
@@ -85,7 +89,7 @@ function MapFog({
     if (shouldHover) {
       setPointerPosition(position);
     }
-    if (isDrawing) {
+    if (isPointerDown) {
       setPointerPosition(position);
       const brushPosition = getBrushPositionForTool(
         position,
@@ -140,15 +144,18 @@ function MapFog({
       }
     }
 
-    if (
-      toolSettings.type === "remove" &&
-      hoveredShapeRef.current &&
-      isDrawing
-    ) {
-      onShapeRemove(hoveredShapeRef.current.id);
+    if (hoveredShapeRef.current && isPointerDown) {
+      if (toolSettings.type === "remove") {
+        onShapeRemove(hoveredShapeRef.current.id);
+      } else if (toolSettings.type === "toggle") {
+        onShapeEdit({
+          ...hoveredShapeRef.current,
+          visible: !hoveredShapeRef.current.visible,
+        });
+      }
     }
     setDrawingShape(null);
-    setIsDrawing(false);
+    setIsPointerDown(false);
   }
 
   // Add listeners for draw events on map to allow drawing past the bounds
@@ -176,6 +183,14 @@ function MapFog({
    * Rendering
    */
   const hoveredShapeRef = useRef(null);
+  const diagonalPatternRef = useRef();
+
+  useEffect(() => {
+    let image = new Image();
+    image.src = diagonalPattern;
+    diagonalPatternRef.current = image;
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -183,30 +198,45 @@ function MapFog({
 
       context.clearRect(0, 0, width, height);
       let hoveredShape = null;
-      for (let shape of shapes) {
-        if (shouldHover) {
-          if (isShapeHovered(shape, context, pointerPosition, width, height)) {
-            hoveredShape = shape;
+      if (isEditing) {
+        const editPattern = context.createPattern(
+          diagonalPatternRef.current,
+          "repeat"
+        );
+        for (let shape of shapes) {
+          if (shouldHover) {
+            if (
+              isShapeHovered(shape, context, pointerPosition, width, height)
+            ) {
+              hoveredShape = shape;
+            }
           }
-        }
-        if (isEditing) {
           drawShape(
-            { ...shape, blend: true },
+            {
+              ...shape,
+              blend: true,
+              color: shape.visible ? "black" : editPattern,
+            },
             context,
             gridSize,
             width,
             height
           );
-        } else {
+        }
+        if (drawingShape) {
+          drawShape(drawingShape, context, gridSize, width, height);
+        }
+        if (hoveredShape) {
+          const shape = { ...hoveredShape, color: "#BB99FF", blend: true };
           drawShape(shape, context, gridSize, width, height);
         }
-      }
-      if (drawingShape) {
-        drawShape(drawingShape, context, gridSize, width, height);
-      }
-      if (hoveredShape) {
-        const shape = { ...hoveredShape, color: "#BB99FF", blend: true };
-        drawShape(shape, context, gridSize, width, height);
+      } else {
+        // Not editing
+        for (let shape of shapes) {
+          if (shape.visible) {
+            drawShape(shape, context, gridSize, width, height);
+          }
+        }
       }
       hoveredShapeRef.current = hoveredShape;
     }
@@ -215,7 +245,6 @@ function MapFog({
     width,
     height,
     pointerPosition,
-    isDrawing,
     isEditing,
     drawingShape,
     gridSize,

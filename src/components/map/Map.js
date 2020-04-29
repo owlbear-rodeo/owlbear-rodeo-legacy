@@ -99,6 +99,10 @@ function Map({
     onFogDraw({ type: "remove", shapeIds: [shapeId], timestamp: Date.now() });
   }
 
+  function handleFogShapeEdit(shape) {
+    onFogDraw({ type: "edit", shapes: [shape], timestamp: Date.now() });
+  }
+
   // Replay the draw actions and convert them to shapes for the map drawing
   useEffect(() => {
     if (!mapState) {
@@ -108,7 +112,7 @@ function Map({
       let shapesById = {};
       for (let i = 0; i <= actionIndex; i++) {
         const action = actions[i];
-        if (action.type === "add") {
+        if (action.type === "add" || action.type === "edit") {
           for (let shape of action.shapes) {
             shapesById[shape.id] = shape;
           }
@@ -233,6 +237,7 @@ function Map({
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
       onShapeRemove={handleFogShapeRemove}
+      onShapeEdit={handleFogShapeEdit}
       gridSize={gridSizeNormalized}
     />
   );

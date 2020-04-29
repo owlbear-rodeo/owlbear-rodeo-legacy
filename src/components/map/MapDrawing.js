@@ -27,7 +27,7 @@ function MapDrawing({
   const canvasRef = useRef();
   const containerRef = useRef();
 
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isPointerDown, setIsPointerDown] = useState(false);
   const [drawingShape, setDrawingShape] = useState(null);
   const [pointerPosition, setPointerPosition] = useState({ x: -1, y: -1 });
 
@@ -49,14 +49,14 @@ function MapDrawing({
       return;
     }
     if (event.touches && event.touches.length !== 1) {
-      setIsDrawing(false);
+      setIsPointerDown(false);
       setDrawingShape(null);
       return;
     }
     const pointer = event.touches ? event.touches[0] : event;
     const position = getRelativePointerPosition(pointer, containerRef.current);
     setPointerPosition(position);
-    setIsDrawing(true);
+    setIsPointerDown(true);
     const brushPosition = getBrushPositionForTool(
       position,
       selectedTool,
@@ -104,7 +104,7 @@ function MapDrawing({
       );
       setPointerPosition(position);
     }
-    if (isDrawing) {
+    if (isPointerDown) {
       const position = getRelativePointerPosition(
         pointer,
         containerRef.current
@@ -168,10 +168,10 @@ function MapDrawing({
       onShapeAdd(drawingShape);
     }
 
-    if (selectedTool === "erase" && hoveredShapeRef.current && isDrawing) {
+    if (selectedTool === "erase" && hoveredShapeRef.current && isPointerDown) {
       onShapeRemove(hoveredShapeRef.current.id);
     }
-    setIsDrawing(false);
+    setIsPointerDown(false);
     setDrawingShape(null);
   }
 
@@ -229,7 +229,7 @@ function MapDrawing({
     width,
     height,
     pointerPosition,
-    isDrawing,
+    isPointerDown,
     selectedTool,
     drawingShape,
     gridSize,
