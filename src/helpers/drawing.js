@@ -80,10 +80,25 @@ export function getDefaultShapeData(type, brushPosition) {
   }
 }
 
-export function getUpdatedShapeData(type, data, brushPosition) {
+export function getGridScale(gridSize) {
+  if (gridSize.x < gridSize.y) {
+    return { x: gridSize.y / gridSize.x, y: 1 };
+  } else if (gridSize.y < gridSize.x) {
+    return { x: 1, y: gridSize.x / gridSize.y };
+  } else {
+    return { x: 1, y: 1 };
+  }
+}
+
+export function getUpdatedShapeData(type, data, brushPosition, gridSize) {
+  const gridScale = getGridScale(gridSize);
   if (type === "circle") {
-    const dif = Vector2.subtract(brushPosition, { x: data.x, y: data.y });
-    const distance = Vector2.length(dif);
+    const dif = Vector2.subtract(brushPosition, {
+      x: data.x,
+      y: data.y,
+    });
+    const scaled = Vector2.multiply(dif, gridScale);
+    const distance = Vector2.length(scaled);
     return {
       ...data,
       radius: distance,
@@ -98,8 +113,10 @@ export function getUpdatedShapeData(type, data, brushPosition) {
   } else if (type === "triangle") {
     const points = data.points;
     const dif = Vector2.subtract(brushPosition, points[0]);
-    const length = Vector2.length(dif);
-    const direction = Vector2.normalize(dif);
+    // Scale the distance by the grid scale then unscale before adding
+    const scaled = Vector2.multiply(dif, gridScale);
+    const length = Vector2.length(scaled);
+    const direction = Vector2.normalize(scaled);
     // Get the angle for a triangle who's width is the same as it's length
     const angle = Math.atan(length / 2 / length);
     const sideLength = length / Math.cos(angle);
@@ -107,11 +124,14 @@ export function getUpdatedShapeData(type, data, brushPosition) {
     const leftDir = Vector2.rotateDirection(direction, toDegrees(angle));
     const rightDir = Vector2.rotateDirection(direction, -toDegrees(angle));
 
+    const leftDirUnscaled = Vector2.divide(leftDir, gridScale);
+    const rightDirUnscaled = Vector2.divide(rightDir, gridScale);
+
     return {
       points: [
         points[0],
-        Vector2.add(Vector2.multiply(leftDir, sideLength), points[0]),
-        Vector2.add(Vector2.multiply(rightDir, sideLength), points[0]),
+        Vector2.add(Vector2.multiply(leftDirUnscaled, sideLength), points[0]),
+        Vector2.add(Vector2.multiply(rightDirUnscaled, sideLength), points[0]),
       ],
     };
   }

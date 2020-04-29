@@ -141,7 +141,8 @@ function MapDrawing({
           data: getUpdatedShapeData(
             prevShape.shapeType,
             prevShape.data,
-            brushPosition
+            brushPosition,
+            gridSize
           ),
         }));
       }
