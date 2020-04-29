@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from "react";
 import { Box } from "theme-ui";
 import interact from "interactjs";
 
+import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
+
 const zoomSpeed = -0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
@@ -134,7 +136,14 @@ function MapInteraction({ map, aspectRatio, isEnabled, children, controls }) {
               paddingBottom: `${(1 / aspectRatio) * 100}%`,
             }}
           />
-          {children}
+          <MapInteractionProvider
+            value={{
+              translateRef: mapTranslateRef,
+              scaleRef: mapScaleRef,
+            }}
+          >
+            {children}
+          </MapInteractionProvider>
         </Box>
       </Box>
       {controls}

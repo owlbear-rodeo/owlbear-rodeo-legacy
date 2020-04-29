@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import shortid from "shortid";
 
 import { compare as comparePoints } from "../../helpers/vector2";
-
 import {
   getBrushPositionForTool,
   isShapeHovered,
@@ -10,6 +9,8 @@ import {
   simplifyPoints,
   getRelativePointerPosition,
 } from "../../helpers/drawing";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 function MapFog({
   width,
@@ -31,6 +32,8 @@ function MapFog({
   const shouldHover =
     isEditing &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
+
+  const { scaleRef } = useContext(MapInteractionContext);
 
   // Reset pointer position when tool changes
   useEffect(() => {
@@ -65,7 +68,6 @@ function MapFog({
         color: "black",
         blend: true, // Blend while drawing
         id: shortid.generate(),
-        fogType: toolSettings.useGridSnapping ? "sharp" : "smooth",
       });
     }
   }
@@ -124,7 +126,14 @@ function MapFog({
       if (drawingShape.data.points.length > 1) {
         const shape = {
           ...drawingShape,
-          data: { points: simplifyPoints(drawingShape.data.points, gridSize) },
+          data: {
+            points: simplifyPoints(
+              drawingShape.data.points,
+              gridSize,
+              // Downscale fog as smoothing doesn't currently work with edge snapping
+              scaleRef.current / 2
+            ),
+          },
           blend: false,
         };
         onShapeAdd(shape);

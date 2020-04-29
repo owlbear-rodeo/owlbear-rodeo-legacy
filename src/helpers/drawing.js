@@ -34,19 +34,22 @@ export function getBrushPositionForTool(
         if (shape.type === "fog") {
           const points = shape.data.points;
           const isInShape = Vector2.pointInPolygon(position, points);
-
           // Find the closest point to each line of the shape
           for (let i = 0; i < points.length; i++) {
             const a = points[i];
             // Wrap around points to the start to account for closed shape
             const b = points[(i + 1) % points.length];
-            const distanceToLine = Vector2.distanceToLine(position, a, b);
+
+            const {
+              distance: distanceToLine,
+              point: pointOnLine,
+            } = Vector2.distanceToLine(position, a, b);
             const isCloseToShape = distanceToLine < minGrid * snappingThreshold;
             if (
               (isInShape || isCloseToShape) &&
               distanceToLine < closestDistance
             ) {
-              closestPosition = Vector2.closestPointOnLine(position, a, b);
+              closestPosition = pointOnLine;
               closestDistance = distanceToLine;
             }
           }
@@ -154,6 +157,30 @@ export function shapeHasFill(shape) {
   );
 }
 
+export function pointsToQuadraticBezier(points) {
+  const quadraticPoints = [];
+
+  // Draw a smooth curve between the points where each control point
+  // is the current point in the array and the next point is the center of
+  // the current point and the next point
+  for (let i = 1; i < points.length - 2; i++) {
+    const start = points[i - 1];
+    const controlPoint = points[i];
+    const next = points[i + 1];
+    const end = Vector2.divide(Vector2.add(controlPoint, next), 2);
+
+    quadraticPoints.push({ start, controlPoint, end });
+  }
+  // Curve through the last two points
+  quadraticPoints.push({
+    start: points[points.length - 2],
+    controlPoint: points[points.length - 1],
+    end: points[points.length - 1],
+  });
+
+  return quadraticPoints;
+}
+
 export function pointsToPathSmooth(points, close, canvasWidth, canvasHeight) {
   const path = new Path2D();
   if (points.length < 2) {
@@ -161,27 +188,23 @@ export function pointsToPathSmooth(points, close, canvasWidth, canvasHeight) {
   }
   path.moveTo(points[0].x * canvasWidth, points[0].y * canvasHeight);
 
-  // Draw a smooth curve between the points
-  for (let i = 1; i < points.length - 2; i++) {
-    const pointScaled = Vector2.multiply(points[i], {
+  const quadraticPoints = pointsToQuadraticBezier(points);
+  for (let quadPoint of quadraticPoints) {
+    const pointScaled = Vector2.multiply(quadPoint.end, {
       x: canvasWidth,
       y: canvasHeight,
     });
-    const nextPointScaled = Vector2.multiply(points[i + 1], {
+    const controlScaled = Vector2.multiply(quadPoint.controlPoint, {
       x: canvasWidth,
       y: canvasHeight,
     });
-    var xc = (pointScaled.x + nextPointScaled.x) / 2;
-    var yc = (pointScaled.y + nextPointScaled.y) / 2;
-    path.quadraticCurveTo(pointScaled.x, pointScaled.y, xc, yc);
+    path.quadraticCurveTo(
+      controlScaled.x,
+      controlScaled.y,
+      pointScaled.x,
+      pointScaled.y
+    );
   }
-  // Curve through the last two points
-  path.quadraticCurveTo(
-    points[points.length - 2].x * canvasWidth,
-    points[points.length - 2].y * canvasHeight,
-    points[points.length - 1].x * canvasWidth,
-    points[points.length - 1].y * canvasHeight
-  );
 
   if (close) {
     path.closePath();
@@ -265,21 +288,12 @@ export function shapeToPath(shape, canvasWidth, canvasHeight) {
       return pointsToPathSharp(data.points, true, canvasWidth, canvasHeight);
     }
   } else if (shape.type === "fog") {
-    if (shape.fogType === "smooth") {
-      return pointsToPathSmooth(
-        shape.data.points,
-        true,
-        canvasWidth,
-        canvasHeight
-      );
-    } else if (shape.fogType === "sharp") {
-      return pointsToPathSharp(
-        shape.data.points,
-        true,
-        canvasWidth,
-        canvasHeight
-      );
-    }
+    return pointsToPathSharp(
+      shape.data.points,
+      true,
+      canvasWidth,
+      canvasHeight
+    );
   }
 }
 
@@ -330,8 +344,11 @@ export function drawShape(shape, context, gridSize, canvasWidth, canvasHeight) {
 }
 
 const defaultSimplifySize = 1 / 100;
-export function simplifyPoints(points, gridSize) {
-  return simplify(points, Vector2.min(gridSize) * defaultSimplifySize);
+export function simplifyPoints(points, gridSize, scale) {
+  return simplify(
+    points,
+    (Vector2.min(gridSize) * defaultSimplifySize) / scale
+  );
 }
 
 export function getRelativePointerPosition(event, container) {

@@ -78,19 +78,93 @@ export function roundTo(p, to) {
   };
 }
 
+export function sign(a) {
+  return { x: Math.sign(a.x), y: Math.sign(a.y) };
+}
+
+export function abs(a) {
+  return { x: Math.abs(a.x), y: Math.abs(a.y) };
+}
+
+export function pow(a, b) {
+  if (typeof b === "number") {
+    return { x: Math.pow(a.x, b), y: Math.pow(a.y, b) };
+  } else {
+    return { x: Math.pow(a.x, b.x), y: Math.pow(a.y, b.y) };
+  }
+}
+
+export function dot2(a) {
+  return dot(a, a);
+}
+
+export function clamp(a, min, max) {
+  return {
+    x: Math.min(Math.max(a.x, min), max),
+    y: Math.min(Math.max(a.y, min), max),
+  };
+}
+
 // https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d
 export function distanceToLine(p, a, b) {
   const pa = subtract(p, a);
   const ba = subtract(b, a);
   const h = Math.min(Math.max(dot(pa, ba) / dot(ba, ba), 0), 1);
-  return length(subtract(pa, multiply(ba, h)));
+  const distance = length(subtract(pa, multiply(ba, h)));
+  const point = add(a, multiply(ba, h));
+  return { distance, point };
 }
 
-export function closestPointOnLine(p, a, b) {
-  const pa = subtract(p, a);
-  const ba = subtract(b, a);
-  const h = dot(pa, ba) / lengthSquared(ba);
-  return add(a, multiply(ba, h));
+// TODO: Fix the robustness of this to allow smoothing on fog layers
+// https://www.shadertoy.com/view/MlKcDD
+export function distanceToQuadraticBezier(pos, A, B, C) {
+  let distance = 0;
+  let point = { x: pos.x, y: pos.y };
+
+  const a = subtract(B, A);
+  const b = add(subtract(A, multiply(B, 2)), C);
+  const c = multiply(a, 2);
+  const d = subtract(A, pos);
+
+  // Solve cubic roots to find closest points
+  const kk = 1 / dot(b, b);
+  const kx = kk * dot(a, b);
+  const ky = (kk * (2 * dot(a, a) + dot(d, b))) / 3;
+  const kz = kk * dot(d, a);
+
+  const p = ky - kx * kx;
+  const p3 = p * p * p;
+  const q = kx * (2 * kx * kx - 3 * ky) + kz;
+  let h = q * q + 4 * p3;
+
+  if (h >= 0) {
+    // 1 root
+    h = Math.sqrt(h);
+    const x = divide(subtract({ x: h, y: -h }, q), 2);
+    const uv = multiply(sign(x), pow(abs(x), 1 / 3));
+    const t = Math.min(Math.max(uv.x + uv.y - kx, 0), 1);
+    point = add(A, multiply(add(c, multiply(b, t)), t));
+    distance = dot2(add(d, multiply(add(c, multiply(b, t)), t)));
+  } else {
+    // 3 roots but ignore the 3rd one as it will never be closest
+    // https://www.shadertoy.com/view/MdXBzB
+    const z = Math.sqrt(-p);
+    const v = Math.acos(q / (p * z * 2)) / 3;
+    const m = Math.cos(v);
+    const n = Math.sin(v) * 1.732050808;
+
+    const t = clamp(subtract(multiply({ x: m + m, y: -n - m }, z), kx), 0, 1);
+    const d1 = dot2(add(d, multiply(add(c, multiply(b, t.x)), t.x)));
+    const d2 = dot2(add(d, multiply(add(c, multiply(b, t.y)), t.y)));
+    distance = Math.min(d1, d2);
+    if (d1 < d2) {
+      point = add(d, multiply(add(c, multiply(b, t.x)), t.x));
+    } else {
+      point = add(d, multiply(add(c, multiply(b, t.y)), t.y));
+    }
+  }
+
+  return { distance: Math.sqrt(distance), point: point };
 }
 
 export function getBounds(points) {

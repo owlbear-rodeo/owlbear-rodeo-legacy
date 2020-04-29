@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import shortid from "shortid";
 
 import { compare as comparePoints } from "../../helpers/vector2";
-
 import {
   getBrushPositionForTool,
   getDefaultShapeData,
@@ -12,6 +11,8 @@ import {
   simplifyPoints,
   getRelativePointerPosition,
 } from "../../helpers/drawing";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 function MapDrawing({
   width,
@@ -35,6 +36,8 @@ function MapDrawing({
     selectedTool === "brush" ||
     selectedTool === "shape" ||
     selectedTool === "erase";
+
+  const { scaleRef } = useContext(MapInteractionContext);
 
   // Reset pointer position when tool changes
   useEffect(() => {
@@ -128,7 +131,8 @@ function MapDrawing({
           }
           const simplified = simplifyPoints(
             [...prevPoints, brushPosition],
-            gridSize
+            gridSize,
+            scaleRef.current
           );
           return {
             ...prevShape,
