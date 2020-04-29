@@ -72,10 +72,10 @@ function MapSettings({
               <Label>
                 <Checkbox
                   checked={
-                    mapState !== null && mapState.editFlags.includes("drawings")
+                    mapState !== null && mapState.editFlags.includes("drawing")
                   }
                   disabled={mapState === null}
-                  onChange={(e) => handleFlagChange(e, "drawings")}
+                  onChange={(e) => handleFlagChange(e, "drawing")}
                 />
                 Drawings
               </Label>
@@ -88,16 +88,6 @@ function MapSettings({
                   onChange={(e) => handleFlagChange(e, "tokens")}
                 />
                 Tokens
-              </Label>
-              <Label>
-                <Checkbox
-                  checked={
-                    mapState !== null && mapState.editFlags.includes("map")
-                  }
-                  disabled={mapState === null}
-                  onChange={(e) => handleFlagChange(e, "map")}
-                />
-                Map
               </Label>
             </Flex>
           </Box>

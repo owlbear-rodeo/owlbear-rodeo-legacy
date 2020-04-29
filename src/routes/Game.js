@@ -44,17 +44,10 @@ function Game() {
   const [map, setMap] = useState(null);
   const [mapState, setMapState] = useState(null);
 
-  // TODO: move into map, consider removing map lockdown
-  const canChangeMap =
-    map === null ||
-    (map !== null &&
-      mapState !== null &&
-      (mapState.editFlags.includes("map") || map.owner === userId));
-
-  const canEditMapDrawings =
+  const canEditMapDrawing =
     map !== null &&
     mapState !== null &&
-    (mapState.editFlags.includes("drawings") || map.owner === userId);
+    (mapState.editFlags.includes("drawing") || map.owner === userId);
 
   const canEditFogDrawing =
     map !== null &&
@@ -422,17 +415,14 @@ function Game() {
             onMapUndo={handleMapUndo}
             onMapRedo={handleMapRedo}
             onFogDraw={handleFogDraw}
-            allowMapDrawing={canEditMapDrawings}
+            allowMapDrawing={canEditMapDrawing}
             allowFogDrawing={canEditFogDrawing}
             allowTokenChange={canEditTokens}
-            allowMapChange={canChangeMap}
           />
-          {canEditTokens && (
-            <Tokens
-              tokens={tokens}
-              onCreateMapTokenState={handleMapTokenStateChange}
-            />
-          )}
+          <Tokens
+            tokens={tokens}
+            onCreateMapTokenState={handleMapTokenStateChange}
+          />
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

@@ -68,9 +68,8 @@ function MapContols({
   };
   const tools = ["pan", "fog", "brush", "shape", "erase"];
 
-  const sections = [];
-  if (!disabledControls.includes("map")) {
-    sections.push({
+  const sections = [
+    {
       id: "map",
       component: (
         <SelectMapButton
@@ -79,10 +78,8 @@ function MapContols({
           currentMap={currentMap}
         />
       ),
-    });
-  }
-  if (!disabledControls.includes("drawing")) {
-    sections.push({
+    },
+    {
       id: "drawing",
       component: tools.map((tool) => (
         <RadioIconButton
@@ -95,8 +92,8 @@ function MapContols({
           {toolsById[tool].icon}
         </RadioIconButton>
       )),
-    });
-    sections.push({
+    },
+    {
       id: "history",
       component: (
         <>
@@ -114,8 +111,8 @@ function MapContols({
           </IconButton>
         </>
       ),
-    });
-  }
+    },
+  ];
 
   let controls = null;
   if (sections.length === 1 && sections[0].id === "map") {

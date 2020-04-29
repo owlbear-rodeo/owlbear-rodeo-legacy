@@ -32,7 +32,6 @@ function Map({
   allowMapDrawing,
   allowFogDrawing,
   allowTokenChange,
-  allowMapChange,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
 
@@ -137,15 +136,18 @@ function Map({
   }, [mapState]);
 
   const disabledControls = [];
-  if (!allowMapChange) {
-    disabledControls.push("map");
-  }
   if (!allowMapDrawing) {
-    disabledControls.push("drawing");
+    disabledControls.push("brush");
+    disabledControls.push("shape");
+    disabledControls.push("erase");
+  }
+  // If no actions that can be undone
+  if (!allowFogDrawing && !allowMapDrawing) {
+    disabledControls.push("undo");
+    disabledControls.push("redo");
   }
   if (!map) {
     disabledControls.push("pan");
-    disabledControls.push("brush");
   }
   if (mapShapes.length === 0) {
     disabledControls.push("erase");
@@ -270,7 +272,7 @@ function Map({
         map={map}
         aspectRatio={aspectRatio}
         isEnabled={selectedToolId === "pan"}
-        controls={(allowMapChange || allowMapDrawing) && mapControls}
+        controls={mapControls}
       >
         {map && mapImage}
         {map && mapDrawing}
