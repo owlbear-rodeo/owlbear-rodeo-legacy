@@ -9,9 +9,17 @@ import FogAddIcon from "../../../icons/FogAddIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
 
+import UndoButton from "./UndoButton";
+import RedoButton from "./RedoButton";
+
 import Divider from "./Divider";
 
-function BrushToolSettings({ settings, onSettingChange }) {
+function BrushToolSettings({
+  settings,
+  onSettingChange,
+  onToolAction,
+  disabledActions,
+}) {
   return (
     <Flex sx={{ alignItems: "center" }}>
       <RadioIconButton
@@ -47,6 +55,15 @@ function BrushToolSettings({ settings, onSettingChange }) {
         onGridSnappingChange={(useGridSnapping) =>
           onSettingChange({ useGridSnapping })
         }
+      />
+      <Divider vertical />
+      <UndoButton
+        onClick={() => onToolAction("fogUndo")}
+        disabled={disabledActions.includes("undo")}
+      />
+      <RedoButton
+        onClick={() => onToolAction("fogRedo")}
+        disabled={disabledActions.includes("redo")}
       />
     </Flex>
   );

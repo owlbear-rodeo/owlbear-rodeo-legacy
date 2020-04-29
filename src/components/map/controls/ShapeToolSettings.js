@@ -9,9 +9,17 @@ import ShapeRectangleIcon from "../../../icons/ShapeRectangleIcon";
 import ShapeCircleIcon from "../../../icons/ShapeCircleIcon";
 import ShapeTriangleIcon from "../../../icons/ShapeTriangleIcon";
 
+import UndoButton from "./UndoButton";
+import RedoButton from "./RedoButton";
+
 import Divider from "./Divider";
 
-function ShapeToolSettings({ settings, onSettingChange }) {
+function ShapeToolSettings({
+  settings,
+  onSettingChange,
+  onToolAction,
+  disabledActions,
+}) {
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ColorControl
@@ -44,6 +52,15 @@ function ShapeToolSettings({ settings, onSettingChange }) {
       <AlphaBlendToggle
         useBlending={settings.useBlending}
         onBlendingChange={(useBlending) => onSettingChange({ useBlending })}
+      />
+      <Divider vertical />
+      <UndoButton
+        onClick={() => onToolAction("mapUndo")}
+        disabled={disabledActions.includes("undo")}
+      />
+      <RedoButton
+        onClick={() => onToolAction("mapRedo")}
+        disabled={disabledActions.includes("redo")}
       />
     </Flex>
   );

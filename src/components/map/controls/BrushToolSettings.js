@@ -8,9 +8,17 @@ import RadioIconButton from "./RadioIconButton";
 import BrushStrokeIcon from "../../../icons/BrushStrokeIcon";
 import BrushFillIcon from "../../../icons/BrushFillIcon";
 
+import UndoButton from "./UndoButton";
+import RedoButton from "./RedoButton";
+
 import Divider from "./Divider";
 
-function BrushToolSettings({ settings, onSettingChange }) {
+function BrushToolSettings({
+  settings,
+  onSettingChange,
+  onToolAction,
+  disabledActions,
+}) {
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ColorControl
@@ -36,6 +44,15 @@ function BrushToolSettings({ settings, onSettingChange }) {
       <AlphaBlendToggle
         useBlending={settings.useBlending}
         onBlendingChange={(useBlending) => onSettingChange({ useBlending })}
+      />
+      <Divider vertical />
+      <UndoButton
+        onClick={() => onToolAction("mapUndo")}
+        disabled={disabledActions.includes("undo")}
+      />
+      <RedoButton
+        onClick={() => onToolAction("mapRedo")}
+        disabled={disabledActions.includes("redo")}
       />
     </Flex>
   );

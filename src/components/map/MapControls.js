@@ -16,8 +16,6 @@ import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
 import ShapeToolIcon from "../../icons/ShapeToolIcon";
 import EraseToolIcon from "../../icons/EraseToolIcon";
-import UndoIcon from "../../icons/UndoIcon";
-import RedoIcon from "../../icons/RedoIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 function MapContols({
@@ -30,8 +28,7 @@ function MapContols({
   onToolSettingChange,
   onToolAction,
   disabledControls,
-  onUndo,
-  onRedo,
+  disabledSettings,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -92,25 +89,6 @@ function MapContols({
           {toolsById[tool].icon}
         </RadioIconButton>
       )),
-    },
-    {
-      id: "history",
-      component: (
-        <>
-          <IconButton
-            onClick={onUndo}
-            disabled={disabledControls.includes("undo")}
-          >
-            <UndoIcon />
-          </IconButton>
-          <IconButton
-            onClick={onRedo}
-            disabled={disabledControls.includes("redo")}
-          >
-            <RedoIcon />
-          </IconButton>
-        </>
-      ),
     },
   ];
 
@@ -191,6 +169,7 @@ function MapContols({
               onToolSettingChange(selectedToolId, change)
             }
             onToolAction={onToolAction}
+            disabledActions={disabledSettings[selectedToolId]}
           />
         </Box>
       );
@@ -198,13 +177,6 @@ function MapContols({
       return null;
     }
   }
-
-  // Move back to pan tool if selected tool becomes disabled
-  useEffect(() => {
-    if (disabledControls.includes(selectedToolId)) {
-      onSelectedToolChange("pan");
-    }
-  }, [disabledControls]);
 
   // Stop map drawing from happening when selecting controls
   // Not using react events as they seem to trigger after dom events

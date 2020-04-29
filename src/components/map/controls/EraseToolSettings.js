@@ -3,7 +3,12 @@ import { Flex, IconButton } from "theme-ui";
 
 import EraseAllIcon from "../../../icons/EraseAllIcon";
 
-function EraseToolSettings({ onToolAction }) {
+import UndoButton from "./UndoButton";
+import RedoButton from "./RedoButton";
+
+import Divider from "./Divider";
+
+function EraseToolSettings({ onToolAction, disabledActions }) {
   return (
     <Flex sx={{ alignItems: "center" }}>
       <IconButton
@@ -13,6 +18,15 @@ function EraseToolSettings({ onToolAction }) {
       >
         <EraseAllIcon />
       </IconButton>
+      <Divider vertical />
+      <UndoButton
+        onClick={() => onToolAction("mapUndo")}
+        disabled={disabledActions.includes("undo")}
+      />
+      <RedoButton
+        onClick={() => onToolAction("mapRedo")}
+        disabled={disabledActions.includes("redo")}
+      />
     </Flex>
   );
 }

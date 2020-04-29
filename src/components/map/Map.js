@@ -26,9 +26,11 @@ function Map({
   onMapChange,
   onMapStateChange,
   onMapDraw,
+  onMapDrawUndo,
+  onMapDrawRedo,
   onFogDraw,
-  onMapUndo,
-  onMapRedo,
+  onFogDrawUndo,
+  onFogDrawRedo,
   allowMapDrawing,
   allowFogDrawing,
   allowTokenChange,
@@ -82,28 +84,40 @@ function Map({
         timestamp: Date.now(),
       });
     }
+    if (action === "mapUndo") {
+      onMapDrawUndo();
+    }
+    if (action === "mapRedo") {
+      onMapDrawRedo();
+    }
+    if (action === "fogUndo") {
+      onFogDrawUndo();
+    }
+    if (action === "fogRedo") {
+      onFogDrawRedo();
+    }
   }
 
   const [mapShapes, setMapShapes] = useState([]);
   function handleMapShapeAdd(shape) {
-    onMapDraw({ type: "add", shapes: [shape], timestamp: Date.now() });
+    onMapDraw({ type: "add", shapes: [shape] });
   }
 
   function handleMapShapeRemove(shapeId) {
-    onMapDraw({ type: "remove", shapeIds: [shapeId], timestamp: Date.now() });
+    onMapDraw({ type: "remove", shapeIds: [shapeId] });
   }
 
   const [fogShapes, setFogShapes] = useState([]);
   function handleFogShapeAdd(shape) {
-    onFogDraw({ type: "add", shapes: [shape], timestamp: Date.now() });
+    onFogDraw({ type: "add", shapes: [shape] });
   }
 
   function handleFogShapeRemove(shapeId) {
-    onFogDraw({ type: "remove", shapeIds: [shapeId], timestamp: Date.now() });
+    onFogDraw({ type: "remove", shapeIds: [shapeId] });
   }
 
   function handleFogShapeEdit(shape) {
-    onFogDraw({ type: "edit", shapes: [shape], timestamp: Date.now() });
+    onFogDraw({ type: "edit", shapes: [shape] });
   }
 
   // Replay the draw actions and convert them to shapes for the map drawing
@@ -141,28 +155,38 @@ function Map({
     disabledControls.push("shape");
     disabledControls.push("erase");
   }
-  // If no actions that can be undone
-  if (!allowFogDrawing && !allowMapDrawing) {
-    disabledControls.push("undo");
-    disabledControls.push("redo");
-  }
   if (!map) {
     disabledControls.push("pan");
   }
   if (mapShapes.length === 0) {
     disabledControls.push("erase");
   }
-  if (!mapState || mapState.mapDrawActionIndex < 0) {
-    disabledControls.push("undo");
-  }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
+  }
+
+  const disabledSettings = { fog: [], brush: [], shape: [], erase: [] };
+  if (!mapState || mapState.mapDrawActionIndex < 0) {
+    disabledSettings.brush.push("undo");
+    disabledSettings.shape.push("undo");
+    disabledSettings.erase.push("undo");
   }
   if (
     !mapState ||
     mapState.mapDrawActionIndex === mapState.mapDrawActions.length - 1
   ) {
-    disabledControls.push("redo");
+    disabledSettings.brush.push("redo");
+    disabledSettings.shape.push("redo");
+    disabledSettings.erase.push("redo");
+  }
+  if (fogShapes.length === 0) {
+    disabledSettings.fog.push("undo");
+  }
+  if (
+    !mapState ||
+    mapState.fogDrawActionIndex === mapState.fogDrawActions.length - 1
+  ) {
+    disabledSettings.fog.push("redo");
   }
 
   /**
@@ -262,8 +286,7 @@ function Map({
       onToolSettingChange={handleToolSettingChange}
       onToolAction={handleToolAction}
       disabledControls={disabledControls}
-      onUndo={onMapUndo}
-      onRedo={onMapRedo}
+      disabledSettings={disabledSettings}
     />
   );
   return (

@@ -118,79 +118,89 @@ function Game() {
     }
   }
 
-  function addNewMapDrawActions(actions) {
+  function addMapDrawActions(actions, indexKey, actionsKey) {
     setMapState((prevMapState) => {
       const newActions = [
-        ...prevMapState.mapDrawActions.slice(
-          0,
-          prevMapState.mapDrawActionIndex + 1
-        ),
+        ...prevMapState[actionsKey].slice(0, prevMapState[indexKey] + 1),
         ...actions,
       ];
       const newIndex = newActions.length - 1;
       return {
         ...prevMapState,
-        mapDrawActions: newActions,
-        mapDrawActionIndex: newIndex,
+        [actionsKey]: newActions,
+        [indexKey]: newIndex,
       };
     });
   }
 
+  function updateDrawActionIndex(change, indexKey, actionsKey, peerId) {
+    const newIndex = Math.min(
+      Math.max(mapState[indexKey] + change, -1),
+      mapState[actionsKey].length - 1
+    );
+
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      [indexKey]: newIndex,
+    }));
+    return newIndex;
+  }
+
   function handleMapDraw(action) {
-    addNewMapDrawActions([action]);
+    addMapDrawActions([action], "mapDrawActionIndex", "mapDrawActions");
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapDraw", data: [action] });
     }
   }
 
-  function handleMapUndo() {
-    // TODO: Check whether to pull from draw actions or fog actions
-    const newIndex = Math.max(mapState.mapDrawActionIndex - 1, -1);
-    setMapState((prevMapState) => ({
-      ...prevMapState,
-      mapDrawActionIndex: newIndex,
-    }));
-    for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
-    }
-  }
-
-  function handleMapRedo() {
-    const newIndex = Math.min(
-      mapState.mapDrawActionIndex + 1,
-      mapState.mapDrawActions.length - 1
+  function handleMapDrawUndo() {
+    const index = updateDrawActionIndex(
+      -1,
+      "mapDrawActionIndex",
+      "mapDrawActions"
     );
-    setMapState((prevMapState) => ({
-      ...prevMapState,
-      mapDrawActionIndex: newIndex,
-    }));
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
+      peer.connection.send({ id: "mapDrawIndex", data: index });
     }
   }
 
-  function addNewFogDrawActions(actions) {
-    setMapState((prevMapState) => {
-      const newActions = [
-        ...prevMapState.fogDrawActions.slice(
-          0,
-          prevMapState.fogDrawActionIndex + 1
-        ),
-        ...actions,
-      ];
-      const newIndex = newActions.length - 1;
-      return {
-        ...prevMapState,
-        fogDrawActions: newActions,
-        fogDrawActionIndex: newIndex,
-      };
-    });
+  function handleMapDrawRedo() {
+    const index = updateDrawActionIndex(
+      1,
+      "mapDrawActionIndex",
+      "mapDrawActions"
+    );
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapDrawIndex", data: index });
+    }
   }
 
   function handleFogDraw(action) {
-    addNewFogDrawActions([action]);
+    addMapDrawActions([action], "fogDrawActionIndex", "fogDrawActions");
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapFog", data: [action] });
+    }
+  }
+
+  function handleFogDrawUndo() {
+    const index = updateDrawActionIndex(
+      -1,
+      "fogDrawActionIndex",
+      "fogDrawActions"
+    );
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "fogDrawIndex", data: index });
+    }
+  }
+
+  function handleFogDrawRedo() {
+    const index = updateDrawActionIndex(
+      1,
+      "fogDrawActionIndex",
+      "fogDrawActions"
+    );
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "fogDrawIndex", data: index });
     }
   }
 
@@ -261,7 +271,7 @@ function Game() {
       }));
     }
     if (data.id === "mapDraw") {
-      addNewMapDrawActions(data.data);
+      addMapDrawActions(data.data, "mapDrawActionIndex", "mapDrawActions");
     }
     if (data.id === "mapDrawIndex") {
       setMapState((prevMapState) => ({
@@ -270,7 +280,7 @@ function Game() {
       }));
     }
     if (data.id === "mapFog") {
-      addNewFogDrawActions(data.data);
+      addMapDrawActions(data.data, "fogDrawActionIndex", "fogDrawActions");
     }
     if (data.id === "mapFogIndex") {
       setMapState((prevMapState) => ({
@@ -412,9 +422,11 @@ function Game() {
             onMapChange={handleMapChange}
             onMapStateChange={handleMapStateChange}
             onMapDraw={handleMapDraw}
-            onMapUndo={handleMapUndo}
-            onMapRedo={handleMapRedo}
+            onMapDrawUndo={handleMapDrawUndo}
+            onMapDrawRedo={handleMapDrawRedo}
             onFogDraw={handleFogDraw}
+            onFogDrawUndo={handleFogDrawUndo}
+            onFogDrawRedo={handleFogDrawRedo}
             allowMapDrawing={canEditMapDrawing}
             allowFogDrawing={canEditFogDrawing}
             allowTokenChange={canEditTokens}
