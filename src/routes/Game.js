@@ -79,7 +79,18 @@ function Game() {
       // Clear the map so the new map state isn't shown on an old map
       peer.connection.send({ id: "map", data: null });
       peer.connection.send({ id: "mapState", data: newMapState });
-      peer.connection.send({ id: "map", data: newMap });
+      sendMapDataToPeer(peer, newMap);
+    }
+  }
+
+  function sendMapDataToPeer(peer, mapData) {
+    // Omit file from map change, receiver will request the file if
+    // they have an outdated version
+    if (mapData.type === "file") {
+      const { file, ...rest } = mapData;
+      peer.connection.send({ id: "map", data: rest });
+    } else {
+      peer.connection.send({ id: "map", data: mapData });
     }
   }
 
@@ -237,14 +248,42 @@ function Game() {
         peer.connection.send({ id: "mapState", data: mapState });
       }
       if (map) {
-        peer.connection.send({ id: "map", data: map });
+        sendMapDataToPeer(peer, map);
       }
     }
     if (data.id === "map") {
+      const newMap = data.data;
+      // If is a file map check cache and request the full file if outdated
+      if (newMap && newMap.type === "file") {
+        db.table("maps")
+          .get(newMap.id)
+          .then((cachedMap) => {
+            if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
+              setMap(cachedMap);
+            } else {
+              peer.connection.send({ id: "mapRequest" });
+            }
+          });
+      } else {
+        setMap(newMap);
+      }
+    }
+    // Send full map data including file
+    if (data.id === "mapRequest") {
+      peer.connection.send({ id: "mapResponse", data: map });
+    }
+    // A new map response with a file attached
+    if (data.id === "mapResponse") {
       if (data.data && data.data.type === "file") {
         // Convert file back to blob after peer transfer
         const file = new Blob([data.data.file]);
-        setMap({ ...data.data, file });
+        const newMap = { ...data.data, file };
+        // Store in db
+        db.table("maps")
+          .put(newMap)
+          .then(() => {
+            setMap(newMap);
+          });
       } else {
         setMap(data.data);
       }
@@ -387,15 +426,19 @@ function Game() {
    */
   const [tokens, setTokens] = useState([]);
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
     const defaultTokensWithIds = [];
     for (let defaultToken of defaultTokens) {
       defaultTokensWithIds.push({
         ...defaultToken,
         id: `__default-${defaultToken.name}`,
+        owner: userId,
       });
     }
     setTokens(defaultTokensWithIds);
-  }, []);
+  }, [userId]);
 
   return (
     <>

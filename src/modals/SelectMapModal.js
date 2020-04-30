@@ -67,7 +67,8 @@ function SelectMapModal({
           id,
           owner: userId,
           // Emulate the time increasing to avoid sort errors
-          timestamp: Date.now() + i,
+          created: Date.now() + i,
+          lastModified: Date.now() + i,
           ...defaultMapProps,
         });
         // Add a state for the map if there isn't one already
@@ -80,12 +81,16 @@ function SelectMapModal({
     }
 
     async function loadMaps() {
-      let storedMaps = await db.table("maps").toArray();
+      let storedMaps = await db
+        .table("maps")
+        .where({ owner: userId })
+        .toArray();
       const defaultMapsWithIds = await getDefaultMaps();
       const sortedMaps = [...defaultMapsWithIds, ...storedMaps].sort(
-        (a, b) => a.timestamp - b.timestamp
+        (a, b) => a.created - b.created
       );
       setMaps(sortedMaps);
+      // TODO: Does this work with default maps?
       if (selectedMap) {
         const map = await db.table("maps").get(selectedMap.id);
         const state = await db.table("states").get(selectedMap.id);
@@ -147,7 +152,8 @@ function SelectMapModal({
         width: image.width,
         height: image.height,
         id: shortid.generate(),
-        timestamp: Date.now(),
+        created: Date.now(),
+        lastModified: Date.now(),
         owner: userId,
         ...defaultMapProps,
       });
@@ -246,8 +252,9 @@ function SelectMapModal({
   const [showMoreSettings, setShowMoreSettings] = useState(false);
 
   async function handleMapSettingsChange(key, value) {
-    db.table("maps").update(selectedMap.id, { [key]: value });
-    const newMap = { ...selectedMap, [key]: value };
+    const change = { [key]: value, lastModified: Date.now() };
+    db.table("maps").update(selectedMap.id, change);
+    const newMap = { ...selectedMap, ...change };
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === selectedMap.id);

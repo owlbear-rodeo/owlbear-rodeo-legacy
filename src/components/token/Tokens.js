@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Box } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
@@ -9,10 +9,13 @@ import NumberInput from "../NumberInput";
 
 import { fromEntries } from "../../helpers/shared";
 
+import AuthContext from "../../contexts/AuthContext";
+
 const listTokenClassName = "list-token";
 
 function Tokens({ onCreateMapTokenState, tokens }) {
   const [tokenSize, setTokenSize] = useState(1);
+  const { userId } = useContext(AuthContext);
 
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onCreateMapTokenState) {
@@ -20,6 +23,7 @@ function Tokens({ onCreateMapTokenState, tokens }) {
       onCreateMapTokenState({
         id: shortid.generate(),
         tokenId: token.id,
+        owner: userId,
         size: tokenSize,
         label: "",
         statuses: [],
