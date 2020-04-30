@@ -119,18 +119,22 @@ function SelectMapModal({
     let fileGridY = defaultMapSize;
     let name = "Unknown Map";
     if (file.name) {
-      // Match against a regex to find the grid size in the file name
-      // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
-      const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
-      if (gridMatches.length > 0) {
-        const lastMatch = gridMatches[gridMatches.length - 1];
-        const matchX = parseInt(lastMatch[1]);
-        const matchY = parseInt(lastMatch[3]);
-        if (!isNaN(matchX) && !isNaN(matchY)) {
-          fileGridX = matchX;
-          fileGridY = matchY;
+      // TODO: match all not supported on safari, find alternative
+      if (file.name.matchAll) {
+        // Match against a regex to find the grid size in the file name
+        // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
+        const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+        if (gridMatches.length > 0) {
+          const lastMatch = gridMatches[gridMatches.length - 1];
+          const matchX = parseInt(lastMatch[1]);
+          const matchY = parseInt(lastMatch[3]);
+          if (!isNaN(matchX) && !isNaN(matchY)) {
+            fileGridX = matchX;
+            fileGridY = matchY;
+          }
         }
       }
+
       // Remove file extension
       name = file.name.replace(/\.[^/.]+$/, "");
       // Removed grid size expression
