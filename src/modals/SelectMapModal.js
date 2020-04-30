@@ -11,7 +11,6 @@ import MapSettings from "../components/map/MapSettings";
 import AuthContext from "../contexts/AuthContext";
 
 import usePrevious from "../helpers/usePrevious";
-import blobToBuffer from "../helpers/blobToBuffer";
 
 import { maps as defaultMaps } from "../maps";
 
@@ -86,11 +85,10 @@ function SelectMapModal({
         .table("maps")
         .where({ owner: userId })
         .toArray();
+      const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();
-      const sortedMaps = [...defaultMapsWithIds, ...storedMaps].sort(
-        (a, b) => a.created - b.created
-      );
-      setMaps(sortedMaps);
+      const allMaps = [...sortedMaps, ...defaultMapsWithIds];
+      setMaps(allMaps);
       // TODO: Does this work with default maps?
       if (selectedMap) {
         const map = await db.table("maps").get(selectedMap.id);
