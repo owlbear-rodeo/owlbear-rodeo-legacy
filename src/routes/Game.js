@@ -54,10 +54,21 @@ function Game() {
     mapState !== null &&
     (mapState.editFlags.includes("fog") || map.owner === userId);
 
-  const canEditTokens =
-    map !== null &&
+  const disabledMapTokens = {};
+  // If we have a map and state and have the token permission disabled
+  // and are not the map owner
+  if (
     mapState !== null &&
-    (mapState.editFlags.includes("tokens") || map.owner === userId);
+    map !== null &&
+    !mapState.editFlags.includes("tokens") &&
+    map.owner !== userId
+  ) {
+    for (let token of Object.values(mapState.tokens)) {
+      if (token.owner !== userId) {
+        disabledMapTokens[token.id] = true;
+      }
+    }
+  }
 
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(mapState, 500);
@@ -472,7 +483,7 @@ function Game() {
             onFogDrawRedo={handleFogDrawRedo}
             allowMapDrawing={canEditMapDrawing}
             allowFogDrawing={canEditFogDrawing}
-            allowTokenChange={canEditTokens}
+            disabledTokens={disabledMapTokens}
           />
           <Tokens
             tokens={tokens}

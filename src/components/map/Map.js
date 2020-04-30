@@ -33,7 +33,7 @@ function Map({
   onFogDrawRedo,
   allowMapDrawing,
   allowFogDrawing,
-  allowTokenChange,
+  disabledTokens,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
 
@@ -302,20 +302,18 @@ function Map({
         {map && mapFog}
         {map && mapTokens}
       </MapInteraction>
-      {allowTokenChange && (
-        <>
-          <ProxyToken
-            tokenClassName={mapTokenProxyClassName}
-            onProxyDragEnd={handleProxyDragEnd}
-            tokens={mapState && mapState.tokens}
-          />
-          <TokenMenu
-            tokenClassName={mapTokenMenuClassName}
-            onTokenChange={onMapTokenStateChange}
-            tokens={mapState && mapState.tokens}
-          />
-        </>
-      )}
+      <ProxyToken
+        tokenClassName={mapTokenProxyClassName}
+        onProxyDragEnd={handleProxyDragEnd}
+        tokens={mapState && mapState.tokens}
+        disabledTokens={disabledTokens}
+      />
+      <TokenMenu
+        tokenClassName={mapTokenMenuClassName}
+        onTokenChange={onMapTokenStateChange}
+        tokens={mapState && mapState.tokens}
+        disabledTokens={disabledTokens}
+      />
     </>
   );
 }

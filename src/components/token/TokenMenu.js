@@ -16,8 +16,9 @@ import colors, { colorOptions } from "../../helpers/colors";
  * @param {string} tokenClassName The class name to attach the interactjs handler to
  * @param {onProxyDragEnd} onTokenChange Called when the the token data is changed
  * @param {Object} tokens An mapping of tokens to use as a base when calling onTokenChange
+ * @param {Object} disabledTokens An optional mapping of tokens that shouldn't allow interaction
  */
-function TokenMenu({ tokenClassName, onTokenChange, tokens }) {
+function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleRequestClose() {
@@ -27,9 +28,11 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens }) {
   // Store the tokens in a ref and access in the interactjs loop
   // This is needed to stop interactjs from creating multiple listeners
   const tokensRef = useRef(tokens);
+  const disabledTokensRef = useRef(disabledTokens);
   useEffect(() => {
     tokensRef.current = tokens;
-  }, [tokens]);
+    disabledTokensRef.current = disabledTokens;
+  }, [tokens, disabledTokens]);
 
   const [currentToken, setCurrentToken] = useState({});
   const [menuLeft, setMenuLeft] = useState(0);
@@ -67,6 +70,9 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens }) {
     function handleTokenMenuOpen(event) {
       const target = event.target;
       const id = target.getAttribute("data-id");
+      if (id in disabledTokensRef.current) {
+        return;
+      }
       const token = tokensRef.current[id] || {};
       setCurrentToken(token);
 
