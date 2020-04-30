@@ -110,8 +110,8 @@ function ProxyToken({
           }
           let proxy = proxyRef.current;
           if (proxy) {
-            if (onProxyDragEnd) {
-              const mapImage = document.querySelector(".mapImage");
+            const mapImage = document.querySelector(".mapImage");
+            if (onProxyDragEnd && mapImage) {
               const mapImageRect = mapImage.getBoundingClientRect();
 
               let x = parseFloat(proxy.getAttribute("data-x")) || 0;
