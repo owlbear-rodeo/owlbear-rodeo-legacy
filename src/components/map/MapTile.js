@@ -130,7 +130,12 @@ function MapTile({
         }}
         p={2}
       >
-        <Text as="p" variant="heading" color="hsl(210, 50%, 96%)">
+        <Text
+          as="p"
+          variant="heading"
+          color="hsl(210, 50%, 96%)"
+          sx={{ textAlign: "center" }}
+        >
           {map.name}
         </Text>
       </Flex>
