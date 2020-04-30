@@ -89,23 +89,12 @@ function SelectMapModal({
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];
       setMaps(allMaps);
-      // TODO: Does this work with default maps?
-      if (selectedMap) {
-        const map = await db.table("maps").get(selectedMap.id);
-        const state = await db.table("states").get(selectedMap.id);
-        if (map) {
-          setSelectedMap(map);
-        }
-        if (state) {
-          setSelectedMapState(state);
-        }
-      }
     }
 
     if (!wasOpen && isOpen) {
       loadMaps();
     }
-  }, [userId, isOpen, wasOpen, selectedMap]);
+  }, [userId, isOpen, wasOpen]);
 
   const fileInputRef = useRef();
 
