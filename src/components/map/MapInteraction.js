@@ -5,11 +5,20 @@ import normalizeWheel from "normalize-wheel";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 
+import LoadingOverlay from "../LoadingOverlay";
+
 const zoomSpeed = -0.001;
 const minZoom = 0.1;
 const maxZoom = 5;
 
-function MapInteraction({ map, aspectRatio, isEnabled, children, controls }) {
+function MapInteraction({
+  map,
+  aspectRatio,
+  isEnabled,
+  children,
+  controls,
+  loading,
+}) {
   const mapContainerRef = useRef();
   const mapMoveContainerRef = useRef();
   const mapTranslateRef = useRef({ x: 0, y: 0 });
@@ -151,6 +160,7 @@ function MapInteraction({ map, aspectRatio, isEnabled, children, controls }) {
         </Box>
       </Box>
       {controls}
+      {loading && <LoadingOverlay />}
     </Box>
   );
 }

@@ -43,6 +43,7 @@ function Game() {
 
   const [map, setMap] = useState(null);
   const [mapState, setMapState] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   const canEditMapDrawing =
     map !== null &&
@@ -272,6 +273,7 @@ function Game() {
             if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
               setMap(cachedMap);
             } else {
+              setMapLoading(true);
               peer.connection.send({ id: "mapRequest" });
             }
           });
@@ -285,6 +287,7 @@ function Game() {
     }
     // A new map response with a file attached
     if (data.id === "mapResponse") {
+      setMapLoading(false);
       if (data.data && data.data.type === "file") {
         // Convert file back to blob after peer transfer
         const file = new Blob([data.data.file]);
@@ -471,6 +474,7 @@ function Game() {
             map={map}
             mapState={mapState}
             tokens={tokens}
+            loading={mapLoading}
             onMapTokenStateChange={handleMapTokenStateChange}
             onMapTokenStateRemove={handleMapTokenStateRemove}
             onMapChange={handleMapChange}

@@ -34,6 +34,7 @@ function Map({
   allowMapDrawing,
   allowFogDrawing,
   disabledTokens,
+  loading,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
 
@@ -296,6 +297,7 @@ function Map({
         aspectRatio={aspectRatio}
         isEnabled={selectedToolId === "pan"}
         controls={mapControls}
+        loading={loading}
       >
         {map && mapImage}
         {map && mapDrawing}
