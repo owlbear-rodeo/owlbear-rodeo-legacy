@@ -89,12 +89,20 @@ function SelectMapModal({
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];
       setMaps(allMaps);
+
+      // reload map state as is may have changed while the modal was closed
+      if (selectedMap) {
+        const state = await db.table("states").get(selectedMap.id);
+        if (state) {
+          setSelectedMapState(state);
+        }
+      }
     }
 
     if (!wasOpen && isOpen) {
       loadMaps();
     }
-  }, [userId, isOpen, wasOpen]);
+  }, [userId, isOpen, wasOpen, selectedMap]);
 
   const fileInputRef = useRef();
 
