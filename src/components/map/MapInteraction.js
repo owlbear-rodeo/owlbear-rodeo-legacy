@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Box } from "theme-ui";
 import interact from "interactjs";
+import normalizeWheel from "normalize-wheel";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 
@@ -84,10 +85,13 @@ function MapInteraction({ map, aspectRatio, isEnabled, children, controls }) {
       // also stop pinch to zoom on chrome
       event.preventDefault();
 
+      // Try and normalize the wheel event to prevent OS differences for zoom speed
+      const normalized = normalizeWheel(event);
+
       const scale = mapScaleRef.current;
       const translate = mapTranslateRef.current;
 
-      const deltaY = event.deltaY * zoomSpeed;
+      const deltaY = normalized.pixelY * zoomSpeed;
       const newScale = Math.max(Math.min(scale + deltaY, maxZoom), minZoom);
 
       setTranslateAndScale(translate, newScale);

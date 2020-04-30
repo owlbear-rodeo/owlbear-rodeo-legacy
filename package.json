@@ -10,6 +10,7 @@
     "dexie": "^2.0.4",
     "interactjs": "^1.9.7",
     "js-binarypack": "^0.0.9",
+    "normalize-wheel": "^1.0.1",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-modal": "^3.11.2",
