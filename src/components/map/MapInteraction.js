@@ -5,7 +5,7 @@ import normalizeWheel from "normalize-wheel";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 
-const zoomSpeed = -0.005;
+const zoomSpeed = -0.001;
 const minZoom = 0.1;
 const maxZoom = 5;
 
