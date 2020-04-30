@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Box, Label, Flex, Button, useColorMode, Checkbox } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import AuthContext from "../contexts/AuthContext";
+
 import db from "../database";
 
 function SettingsModal({ isOpen, onRequestClose }) {
+  const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   async function handleEraseAllData() {
     await db.delete();
+    window.location.reload();
+  }
+
+  async function handleClearCache() {
+    await db.table("maps").where("owner").notEqual(userId).delete();
+    // TODO: With custom tokens look up all tokens that aren't being used in a state
     window.location.reload();
   }
 
@@ -30,6 +39,11 @@ function SettingsModal({ isOpen, onRequestClose }) {
               pl={1}
             />
           </Label>
+          <Flex py={2}>
+            <Button sx={{ flexGrow: 1 }} onClick={handleClearCache}>
+              Clear cache
+            </Button>
+          </Flex>
           <Flex py={2}>
             <Button
               sx={{ flexGrow: 1 }}
