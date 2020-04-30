@@ -28,9 +28,10 @@ export function roundTo(x, to) {
   return Math.round(x / to) * to;
 }
 
-export function snapPositionToGrid(position, gridSize) {
-  return {
-    x: roundTo(position.x, gridSize.x),
-    y: roundTo(position.y, gridSize.y),
-  };
+export function toRadians(angle) {
+  return angle * (Math.PI / 180);
+}
+
+export function toDegrees(angle) {
+  return angle * (180 / Math.PI);
 }

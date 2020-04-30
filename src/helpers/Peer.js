@@ -1,7 +1,8 @@
 import SimplePeer from "simple-peer";
 import BinaryPack from "js-binarypack";
-import toBuffer from "blob-to-buffer";
 import shortid from "shortid";
+
+import blobToBuffer from "./blobToBuffer";
 
 // Limit buffer size to 16kb to avoid issues with chrome packet size
 // http://viblast.com/blog/2015/2/5/webrtc-data-channel-message-size/
@@ -40,13 +41,9 @@ class Peer extends SimplePeer {
     });
   }
 
-  sendPackedData(packedData) {
-    toBuffer(packedData, (error, buffer) => {
-      if (error) {
-        throw error;
-      }
-      super.send(buffer);
-    });
+  async sendPackedData(packedData) {
+    const buffer = await blobToBuffer(packedData);
+    super.send(buffer);
   }
 
   send(data) {

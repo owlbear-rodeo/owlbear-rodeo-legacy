@@ -2711,11 +2711,6 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-blob-to-buffer@^1.2.8:
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/blob-to-buffer/-/blob-to-buffer-1.2.8.tgz#78eeeb332f1280ed0ca6fb2b60693a8c6d36903a"
-  integrity sha512-re0AIxakF504MgeMtIyJkVcZ8T5aUxtp/QmTMlmjyb3P44E1BEv5x3LATBGApWAJATyXHtkXRD+gWTmeyYLiQA==
-
 blob@0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
@@ -4004,6 +3999,11 @@ detect-port-alt@1.1.6:
   dependencies:
     address "^1.0.1"
     debug "^2.6.0"
+
+dexie@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/dexie/-/dexie-2.0.4.tgz#6027a5e05879424e8f9979d8c14e7420f27e3a11"
+  integrity sha512-aQ/s1U2wHxwBKRrt2Z/mwFNHMQWhESerFsMYzE+5P5OsIe5o1kgpFMWkzKTtkvkyyEni6mWr/T4HUJuY9xIHLA==
 
 diff-sequences@^24.9.0:
   version "24.9.0"
@@ -7459,6 +7459,11 @@ normalize-url@^3.0.0:
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-3.3.0.tgz#b2e1c4dc4f7c6d57743df733a4f5978d18650559"
   integrity sha512-U+JJi7duF1o+u2pynbp2zXDW2/PADgC30f0GsHZtRh+HOcXHnw137TrNlyxxRvWW5fjKd3bcLHPxofWuCjaeZg==
 
+normalize-wheel@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/normalize-wheel/-/normalize-wheel-1.0.1.tgz#aec886affdb045070d856447df62ecf86146ec45"
+  integrity sha1-rsiGr/2wRQcNhWRH32Ls+GFG7EU=
+
 npm-run-path@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-2.0.2.tgz#35a9232dfa35d7067b4cb2ddf2357b1871536c5f"
@@ -9831,11 +9836,6 @@ shallow-clone@^3.0.0:
   integrity sha512-/6KqX+GVUdqPuPPd2LxDDxzX6CAbjJehAAOKlNpqqUpAqPM6HeL8f+o3a+JsyGjn2lv0WY8UsTgUJjU9Ok55NA==
   dependencies:
     kind-of "^6.0.2"
-
-shape-detector@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/shape-detector/-/shape-detector-0.2.1.tgz#d69acf8a5f595100fee08b2d69d6b5c74d887e1e"
-  integrity sha1-1prPil9ZUQD+4Istada1x02Ifh4=
 
 shebang-command@^1.2.0:
   version "1.2.0"

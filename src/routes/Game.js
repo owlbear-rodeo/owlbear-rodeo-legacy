@@ -1,20 +1,16 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
+import db from "../database";
+
 import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
-import useNickname from "../helpers/useNickname";
+import useDebounce from "../helpers/useDebounce";
 
-import Party from "../components/Party";
-import Tokens from "../components/Tokens";
-import Map from "../components/Map";
+import Party from "../components/party/Party";
+import Tokens from "../components/token/Tokens";
+import Map from "../components/map/Map";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
@@ -23,9 +19,13 @@ import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 
+import { tokens as defaultTokens } from "../tokens";
+
 function Game() {
   const { id: gameId } = useParams();
-  const { authenticationStatus } = useContext(AuthContext);
+  const { authenticationStatus, userId, nickname, setNickname } = useContext(
+    AuthContext
+  );
 
   const { peers, socket } = useSession(
     gameId,
@@ -41,83 +41,189 @@ function Game() {
    * Map state
    */
 
-  const [mapSource, setMapSource] = useState(null);
-  const mapDataRef = useRef(null);
+  const [map, setMap] = useState(null);
+  const [mapState, setMapState] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
-  function handleMapChange(mapData, mapSource) {
-    mapDataRef.current = mapData;
-    setMapSource(mapSource);
-    for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "map", data: mapDataRef.current });
+  const canEditMapDrawing =
+    map !== null &&
+    mapState !== null &&
+    (mapState.editFlags.includes("drawing") || map.owner === userId);
+
+  const canEditFogDrawing =
+    map !== null &&
+    mapState !== null &&
+    (mapState.editFlags.includes("fog") || map.owner === userId);
+
+  const disabledMapTokens = {};
+  // If we have a map and state and have the token permission disabled
+  // and are not the map owner
+  if (
+    mapState !== null &&
+    map !== null &&
+    !mapState.editFlags.includes("tokens") &&
+    map.owner !== userId
+  ) {
+    for (let token of Object.values(mapState.tokens)) {
+      if (token.owner !== userId) {
+        disabledMapTokens[token.id] = true;
+      }
     }
   }
 
-  const [mapTokens, setMapTokens] = useState({});
+  // Sync the map state to the database after 500ms of inactivity
+  const debouncedMapState = useDebounce(mapState, 500);
+  useEffect(() => {
+    if (
+      debouncedMapState &&
+      debouncedMapState.mapId &&
+      map &&
+      map.owner === userId
+    ) {
+      db.table("states").update(debouncedMapState.mapId, debouncedMapState);
+    }
+  }, [map, debouncedMapState, userId]);
 
-  function handleMapTokenChange(token) {
-    if (!mapSource) {
+  function handleMapChange(newMap, newMapState) {
+    setMapState(newMapState);
+    setMap(newMap);
+    for (let peer of Object.values(peers)) {
+      // Clear the map so the new map state isn't shown on an old map
+      peer.connection.send({ id: "map", data: null });
+      peer.connection.send({ id: "mapState", data: newMapState });
+      sendMapDataToPeer(peer, newMap);
+    }
+  }
+
+  function sendMapDataToPeer(peer, mapData) {
+    // Omit file from map change, receiver will request the file if
+    // they have an outdated version
+    if (mapData.type === "file") {
+      const { file, ...rest } = mapData;
+      peer.connection.send({ id: "map", data: rest });
+    } else {
+      peer.connection.send({ id: "map", data: mapData });
+    }
+  }
+
+  function handleMapStateChange(newMapState) {
+    setMapState(newMapState);
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapState", data: newMapState });
+    }
+  }
+
+  async function handleMapTokenStateChange(token) {
+    if (mapState === null) {
       return;
     }
-    setMapTokens((prevMapTokens) => ({
-      ...prevMapTokens,
-      [token.id]: token,
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      tokens: {
+        ...prevMapState.tokens,
+        [token.id]: token,
+      },
     }));
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.connection.send({ id: "tokenEdit", data });
+      peer.connection.send({ id: "tokenStateEdit", data });
     }
   }
 
-  function handleMapTokenRemove(token) {
-    setMapTokens((prevMapTokens) => {
-      const { [token.id]: old, ...rest } = prevMapTokens;
-      return rest;
+  function handleMapTokenStateRemove(token) {
+    setMapState((prevMapState) => {
+      const { [token.id]: old, ...rest } = prevMapState.tokens;
+      return { ...prevMapState, tokens: rest };
     });
     for (let peer of Object.values(peers)) {
       const data = { [token.id]: token };
-      peer.connection.send({ id: "tokenRemove", data });
+      peer.connection.send({ id: "tokenStateRemove", data });
     }
   }
 
-  const [mapDrawActions, setMapDrawActions] = useState([]);
-  // An index into the draw actions array to which only actions before the
-  // index will be performed (used in undo and redo)
-  const [mapDrawActionIndex, setMapDrawActionIndex] = useState(-1);
-  function addNewMapDrawActions(actions) {
-    setMapDrawActions((prevActions) => {
+  function addMapDrawActions(actions, indexKey, actionsKey) {
+    setMapState((prevMapState) => {
       const newActions = [
-        ...prevActions.slice(0, mapDrawActionIndex + 1),
+        ...prevMapState[actionsKey].slice(0, prevMapState[indexKey] + 1),
         ...actions,
       ];
       const newIndex = newActions.length - 1;
-      setMapDrawActionIndex(newIndex);
-      return newActions;
+      return {
+        ...prevMapState,
+        [actionsKey]: newActions,
+        [indexKey]: newIndex,
+      };
     });
   }
 
+  function updateDrawActionIndex(change, indexKey, actionsKey, peerId) {
+    const newIndex = Math.min(
+      Math.max(mapState[indexKey] + change, -1),
+      mapState[actionsKey].length - 1
+    );
+
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      [indexKey]: newIndex,
+    }));
+    return newIndex;
+  }
+
   function handleMapDraw(action) {
-    addNewMapDrawActions([action]);
+    addMapDrawActions([action], "mapDrawActionIndex", "mapDrawActions");
     for (let peer of Object.values(peers)) {
       peer.connection.send({ id: "mapDraw", data: [action] });
     }
   }
 
   function handleMapDrawUndo() {
-    const newIndex = Math.max(mapDrawActionIndex - 1, -1);
-    setMapDrawActionIndex(newIndex);
+    const index = updateDrawActionIndex(
+      -1,
+      "mapDrawActionIndex",
+      "mapDrawActions"
+    );
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
+      peer.connection.send({ id: "mapDrawIndex", data: index });
     }
   }
 
   function handleMapDrawRedo() {
-    const newIndex = Math.min(
-      mapDrawActionIndex + 1,
-      mapDrawActions.length - 1
+    const index = updateDrawActionIndex(
+      1,
+      "mapDrawActionIndex",
+      "mapDrawActions"
     );
-    setMapDrawActionIndex(newIndex);
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "mapDrawIndex", data: newIndex });
+      peer.connection.send({ id: "mapDrawIndex", data: index });
+    }
+  }
+
+  function handleFogDraw(action) {
+    addMapDrawActions([action], "fogDrawActionIndex", "fogDrawActions");
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "mapFog", data: [action] });
+    }
+  }
+
+  function handleFogDrawUndo() {
+    const index = updateDrawActionIndex(
+      -1,
+      "fogDrawActionIndex",
+      "fogDrawActions"
+    );
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "fogDrawIndex", data: index });
+    }
+  }
+
+  function handleFogDrawRedo() {
+    const index = updateDrawActionIndex(
+      1,
+      "fogDrawActionIndex",
+      "fogDrawActions"
+    );
+    for (let peer of Object.values(peers)) {
+      peer.connection.send({ id: "fogDrawIndex", data: index });
     }
   }
 
@@ -125,7 +231,6 @@ function Game() {
    * Party state
    */
 
-  const { nickname, setNickname } = useNickname();
   const [partyNicknames, setPartyNicknames] = useState({});
 
   function handleNicknameChange(nickname) {
@@ -151,34 +256,66 @@ function Game() {
 
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
-      if (mapSource) {
-        peer.connection.send({ id: "map", data: mapDataRef.current });
+      if (mapState) {
+        peer.connection.send({ id: "mapState", data: mapState });
       }
-      if (mapTokens) {
-        peer.connection.send({ id: "tokenEdit", data: mapTokens });
-      }
-      if (mapDrawActions) {
-        peer.connection.send({ id: "mapDraw", data: mapDrawActions });
-      }
-      if (mapDrawActionIndex !== mapDrawActions.length - 1) {
-        peer.connection.send({ id: "mapDrawIndex", data: mapDrawActionIndex });
+      if (map) {
+        sendMapDataToPeer(peer, map);
       }
     }
     if (data.id === "map") {
-      const blob = new Blob([data.data.file]);
-      mapDataRef.current = { ...data.data, file: blob };
-      setMapSource(URL.createObjectURL(mapDataRef.current.file));
+      const newMap = data.data;
+      // If is a file map check cache and request the full file if outdated
+      if (newMap && newMap.type === "file") {
+        db.table("maps")
+          .get(newMap.id)
+          .then((cachedMap) => {
+            if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
+              setMap(cachedMap);
+            } else {
+              setMapLoading(true);
+              peer.connection.send({ id: "mapRequest" });
+            }
+          });
+      } else {
+        setMap(newMap);
+      }
     }
-    if (data.id === "tokenEdit") {
-      setMapTokens((prevMapTokens) => ({
-        ...prevMapTokens,
-        ...data.data,
+    // Send full map data including file
+    if (data.id === "mapRequest") {
+      peer.connection.send({ id: "mapResponse", data: map });
+    }
+    // A new map response with a file attached
+    if (data.id === "mapResponse") {
+      setMapLoading(false);
+      if (data.data && data.data.type === "file") {
+        // Convert file back to blob after peer transfer
+        const file = new Blob([data.data.file]);
+        const newMap = { ...data.data, file };
+        // Store in db
+        db.table("maps")
+          .put(newMap)
+          .then(() => {
+            setMap(newMap);
+          });
+      } else {
+        setMap(data.data);
+      }
+    }
+    if (data.id === "mapState") {
+      setMapState(data.data);
+    }
+    if (data.id === "tokenStateEdit") {
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        tokens: { ...prevMapState.tokens, ...data.data },
       }));
     }
-    if (data.id === "tokenRemove") {
-      setMapTokens((prevMapTokens) =>
-        omit(prevMapTokens, Object.keys(data.data))
-      );
+    if (data.id === "tokenStateRemove") {
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        tokens: omit(prevMapState.tokens, Object.keys(data.data)),
+      }));
     }
     if (data.id === "nickname") {
       setPartyNicknames((prevNicknames) => ({
@@ -187,10 +324,22 @@ function Game() {
       }));
     }
     if (data.id === "mapDraw") {
-      addNewMapDrawActions(data.data);
+      addMapDrawActions(data.data, "mapDrawActionIndex", "mapDrawActions");
     }
     if (data.id === "mapDrawIndex") {
-      setMapDrawActionIndex(data.data);
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        mapDrawActionIndex: data.data,
+      }));
+    }
+    if (data.id === "mapFog") {
+      addMapDrawActions(data.data, "fogDrawActionIndex", "fogDrawActions");
+    }
+    if (data.id === "mapFogIndex") {
+      setMapState((prevMapState) => ({
+        ...prevMapState,
+        fogDrawActionIndex: data.data,
+      }));
     }
   }
 
@@ -286,6 +435,25 @@ function Game() {
     }
   }, [stream, peers, handleStreamEnd]);
 
+  /**
+   * Token data
+   */
+  const [tokens, setTokens] = useState([]);
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+    const defaultTokensWithIds = [];
+    for (let defaultToken of defaultTokens) {
+      defaultTokensWithIds.push({
+        ...defaultToken,
+        id: `__default-${defaultToken.name}`,
+        owner: userId,
+      });
+    }
+    setTokens(defaultTokensWithIds);
+  }, [userId]);
+
   return (
     <>
       <Flex sx={{ flexDirection: "column", height: "100%" }}>
@@ -303,19 +471,28 @@ function Game() {
             onStreamEnd={handleStreamEnd}
           />
           <Map
-            mapSource={mapSource}
-            mapData={mapDataRef.current}
-            tokens={mapTokens}
-            onMapTokenChange={handleMapTokenChange}
-            onMapTokenRemove={handleMapTokenRemove}
+            map={map}
+            mapState={mapState}
+            tokens={tokens}
+            loading={mapLoading}
+            onMapTokenStateChange={handleMapTokenStateChange}
+            onMapTokenStateRemove={handleMapTokenStateRemove}
             onMapChange={handleMapChange}
+            onMapStateChange={handleMapStateChange}
             onMapDraw={handleMapDraw}
             onMapDrawUndo={handleMapDrawUndo}
             onMapDrawRedo={handleMapDrawRedo}
-            drawActions={mapDrawActions}
-            drawActionIndex={mapDrawActionIndex}
+            onFogDraw={handleFogDraw}
+            onFogDrawUndo={handleFogDrawUndo}
+            onFogDrawRedo={handleFogDrawRedo}
+            allowMapDrawing={canEditMapDrawing}
+            allowFogDrawing={canEditFogDrawing}
+            disabledTokens={disabledMapTokens}
           />
-          <Tokens onCreateMapToken={handleMapTokenChange} />
+          <Tokens
+            tokens={tokens}
+            onCreateMapTokenState={handleMapTokenStateChange}
+          />
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

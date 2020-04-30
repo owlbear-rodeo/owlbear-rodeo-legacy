@@ -9,6 +9,17 @@ export default {
     muted: "hsla(230, 20%, 0%, 20%)",
     gray: "hsl(0, 0%, 70%)",
     overlay: "hsla(230, 25%, 18%, 0.8)",
+    modes: {
+      light: {
+        text: "hsl(10, 20%, 20%)",
+        background: "hsl(10, 10%, 98%)",
+        primary: "hsl(260, 100%, 80%)",
+        secondary: "hsl(290, 100%, 80%)",
+        highlight: "hsl(260, 20%, 40%)",
+        muted: "hsla(230, 20%, 60%, 20%)",
+        overlay: "hsla(230, 100%, 97%, 0.8)",
+      },
+    },
   },
   fonts: {
     body: "'Bree Serif', serif",
@@ -180,6 +191,8 @@ export default {
       },
       "&:disabled": {
         backgroundColor: "muted",
+        color: "gray",
+        borderColor: "text",
       },
     },
   },

@@ -19,7 +19,7 @@ import swords from "./Swords.png";
 import tree from "./Tree.png";
 import triangle from "./Triangle.png";
 
-export {
+export const tokenSources = {
   axes,
   bird,
   book,
@@ -39,5 +39,11 @@ export {
   sun,
   swords,
   tree,
-  triangle
+  triangle,
 };
+
+export const tokens = Object.keys(tokenSources).map((key) => ({
+  key,
+  name: key.charAt(0).toUpperCase() + key.slice(1),
+  type: "default",
+}));
