@@ -67,7 +67,7 @@ function MapFog({
       setDrawingShape({
         type: "fog",
         data: { points: [brushPosition] },
-        strokeWidth: 0.1,
+        strokeWidth: 0.5,
         color: "black",
         blend: true, // Blend while drawing
         id: shortid.generate(),
