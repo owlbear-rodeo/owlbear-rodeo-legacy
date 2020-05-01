@@ -289,9 +289,7 @@ function Game() {
     if (data.id === "mapResponse") {
       setMapLoading(false);
       if (data.data && data.data.type === "file") {
-        // Convert file back to blob after peer transfer
-        const file = new Blob([data.data.file]);
-        const newMap = { ...data.data, file };
+        const newMap = { ...data.data, file: data.data.file };
         // Store in db
         db.table("maps")
           .put(newMap)

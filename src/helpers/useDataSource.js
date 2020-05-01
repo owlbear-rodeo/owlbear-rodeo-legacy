@@ -11,7 +11,7 @@ function useDataSource(data, defaultSources) {
     }
     let url = null;
     if (data.type === "file") {
-      url = URL.createObjectURL(data.file);
+      url = URL.createObjectURL(new Blob([data.file]));
     } else if (data.type === "default") {
       url = defaultSources[data.key];
     }

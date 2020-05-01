@@ -11,6 +11,7 @@ import MapSettings from "../components/map/MapSettings";
 import AuthContext from "../contexts/AuthContext";
 
 import usePrevious from "../helpers/usePrevious";
+import blobToBuffer from "../helpers/blobToBuffer";
 
 import { maps as defaultMaps } from "../maps";
 
@@ -141,31 +142,34 @@ function SelectMapModal({
     let image = new Image();
     setImageLoading(true);
 
-    // Copy file to avoid permissions issues
-    const copy = new Blob([file], { type: file.type });
-    // Create and load the image temporarily to get its dimensions
-    const url = URL.createObjectURL(copy);
-    image.onload = function () {
-      handleMapAdd({
-        file: copy,
-        name,
-        type: "file",
-        gridX: fileGridX,
-        gridY: fileGridY,
-        width: image.width,
-        height: image.height,
-        id: shortid.generate(),
-        created: Date.now(),
-        lastModified: Date.now(),
-        owner: userId,
-        ...defaultMapProps,
-      });
-      setImageLoading(false);
-      URL.revokeObjectURL(url);
-    };
-    image.src = url;
-    // Set file input to null to allow adding the same image 2 times in a row
-    fileInputRef.current.value = null;
+    blobToBuffer(file).then((buffer) => {
+      // Copy file to avoid permissions issues
+      const blob = new Blob([buffer]);
+      // Create and load the image temporarily to get its dimensions
+      const url = URL.createObjectURL(blob);
+      image.onload = function () {
+        handleMapAdd({
+          file: buffer,
+          name,
+          type: "file",
+          gridX: fileGridX,
+          gridY: fileGridY,
+          width: image.width,
+          height: image.height,
+          id: shortid.generate(),
+          created: Date.now(),
+          lastModified: Date.now(),
+          owner: userId,
+          ...defaultMapProps,
+        });
+        setImageLoading(false);
+        URL.revokeObjectURL(url);
+      };
+      image.src = url;
+
+      // Set file input to null to allow adding the same image 2 times in a row
+      fileInputRef.current.value = null;
+    });
   }
 
   function openImageDialog() {
