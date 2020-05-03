@@ -88,36 +88,6 @@ class Peer extends SimplePeer {
 
     return chunks;
   }
-
-  // // Converted from https://github.com/peers/peerjs/
-  // chunk(blob) {
-  //   const chunks = [];
-  //   const size = blob.size;
-  //   const total = Math.ceil(size / MAX_BUFFER_SIZE);
-  //   const id = shortid.generate();
-
-  //   let index = 0;
-  //   let start = 0;
-
-  //   while (start < size) {
-  //     const end = Math.min(size, start + MAX_BUFFER_SIZE);
-  //     const slice = blob.slice(start, end);
-
-  //     const chunk = {
-  //       __chunked: true,
-  //       data: slice,
-  //       id,
-  //       index,
-  //       total,
-  //     };
-
-  //     chunks.push(chunk);
-  //     start = end;
-  //     index++;
-  //   }
-
-  //   return chunks;
-  // }
 }
 
 export default Peer;
