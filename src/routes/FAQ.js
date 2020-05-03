@@ -131,6 +131,20 @@ function FAQ() {
           </ExternalLink>
           .
         </Text>
+        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
+          Saving
+        </Text>
+        <Text my={1} variant="heading" as="h3">
+          Database is disabled.
+        </Text>
+        <Text variant="body2" as="p">
+          Owlbear Rodeo uses a local database to store saved data. If you are
+          seeing a database is disabled message this usually means you have data
+          storage disabled. The most common occurances of this is if you are
+          using Private Browsing modes or in Firefox have the Never Remember
+          History option enabled. The site will still function in these cases
+          however all data will be lost when the page closes or reloads.
+        </Text>
       </Flex>
       <Footer />
     </Flex>
