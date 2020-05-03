@@ -26,7 +26,7 @@ function FAQ() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Frequently Asked Questions
         </Text>
-        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
+        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }} id="radio">
           Using Radio (experimental)
         </Text>
         <Text my={1} variant="heading" as="h3">
@@ -61,7 +61,13 @@ function FAQ() {
           </ExternalLink>{" "}
           on the Mozilla Developer Network.
         </Text>
-        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
+        <Text
+          my={1}
+          variant="heading"
+          as="h2"
+          sx={{ fontSize: 3 }}
+          id="connection"
+        >
           Connection
         </Text>
         <Text my={1} variant="heading" as="h3">
@@ -131,7 +137,7 @@ function FAQ() {
           </ExternalLink>
           .
         </Text>
-        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }}>
+        <Text my={1} variant="heading" as="h2" sx={{ fontSize: 3 }} id="saving">
           Saving
         </Text>
         <Text my={1} variant="heading" as="h3">

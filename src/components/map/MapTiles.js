@@ -87,8 +87,8 @@ function MapTiles({
           p={1}
         >
           <Text as="p" variant="body2">
-            Map saving is unavailable. See <Link to="/faq">FAQ</Link> for more
-            information.
+            Map saving is unavailable. See <Link to="/faq#saving">FAQ</Link> for
+            more information.
           </Text>
         </Box>
       )}

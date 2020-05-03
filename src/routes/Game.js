@@ -501,7 +501,8 @@ function Game() {
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
         <Box p={1}>
           <Text as="p" variant="body2">
-            {peerError} See <Link to="/faq">FAQ</Link> for more information.
+            {peerError} See <Link to="/faq#connection">FAQ</Link> for more
+            information.
           </Text>
         </Box>
       </Banner>
