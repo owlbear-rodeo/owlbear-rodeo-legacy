@@ -3,25 +3,27 @@ import Dexie from "dexie";
 import blobToBuffer from "./helpers/blobToBuffer";
 
 function loadVersions(db) {
+  // v1.2.0
   db.version(1).stores({
     maps: "id, owner",
     states: "mapId",
     tokens: "id, owner",
     user: "key",
   });
-  // Upgrade move from blob files to array buffers
+  // v1.2.1 - Move from blob files to array buffers
   db.version(2)
     .stores({})
-    .upgrade((tx) => {
+    .upgrade(async (tx) => {
+      const maps = await Dexie.waitFor(tx.table("maps").toArray());
+      let mapBuffers = {};
+      for (let map of maps) {
+        mapBuffers[map.id] = await Dexie.waitFor(blobToBuffer(map.file));
+      }
       return tx
         .table("maps")
         .toCollection()
         .modify((map) => {
-          if (map.file instanceof Blob) {
-            blobToBuffer(map.file).then((buffer) => {
-              map.file = buffer;
-            });
-          }
+          map.file = mapBuffers[map.id];
         });
     });
 }
