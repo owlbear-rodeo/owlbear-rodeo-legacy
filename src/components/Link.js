@@ -1,6 +1,6 @@
 import React from "react";
 import { Link as ThemeLink } from "theme-ui";
-import { Link as RouterLink } from "react-router-dom";
+import { HashLink as RouterLink } from "react-router-hash-link";
 
 function Link({ to, ...rest }) {
   return (

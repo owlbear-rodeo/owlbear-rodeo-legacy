@@ -1,5 +1,5 @@
 import SimplePeer from "simple-peer";
-import BinaryPack from "js-binarypack";
+import { encode, decode } from "@msgpack/msgpack";
 import shortid from "shortid";
 
 import blobToBuffer from "./blobToBuffer";
@@ -14,7 +14,7 @@ class Peer extends SimplePeer {
     this.currentChunks = {};
 
     this.on("data", (packed) => {
-      const unpacked = BinaryPack.unpack(packed);
+      const unpacked = decode(packed);
       // If the special property __chunked is set and true
       // The data is a partial chunk of the a larger file
       // So wait until all chunks are collected and assembled
@@ -31,9 +31,13 @@ class Peer extends SimplePeer {
 
         // All chunks have been loaded
         if (chunk.count === chunk.total) {
-          const merged = BinaryPack.unpack(Buffer.concat(chunk.data));
-          this.emit("dataComplete", merged);
-          delete this.currentChunks[unpacked.id];
+          // Merge chunks with a blob
+          // TODO: Look at a more efficient way to recombine buffer data
+          const merged = new Blob(chunk.data);
+          blobToBuffer(merged).then((buffer) => {
+            this.emit("dataComplete", decode(buffer));
+            delete this.currentChunks[unpacked.id];
+          });
         }
       } else {
         this.emit("dataComplete", unpacked);
@@ -41,29 +45,24 @@ class Peer extends SimplePeer {
     });
   }
 
-  async sendPackedData(packedData) {
-    const buffer = await blobToBuffer(packedData);
-    super.send(buffer);
-  }
-
   send(data) {
-    const packedData = BinaryPack.pack(data);
+    const packedData = encode(data);
 
-    if (packedData.size > MAX_BUFFER_SIZE) {
+    if (packedData.byteLength > MAX_BUFFER_SIZE) {
       const chunks = this.chunk(packedData);
       for (let chunk of chunks) {
-        this.sendPackedData(BinaryPack.pack(chunk));
+        super.send(encode(chunk));
       }
       return;
     } else {
-      this.sendPackedData(packedData);
+      super.send(packedData);
     }
   }
 
   // Converted from https://github.com/peers/peerjs/
-  chunk(blob) {
+  chunk(data) {
     const chunks = [];
-    const size = blob.size;
+    const size = data.byteLength;
     const total = Math.ceil(size / MAX_BUFFER_SIZE);
     const id = shortid.generate();
 
@@ -72,7 +71,7 @@ class Peer extends SimplePeer {
 
     while (start < size) {
       const end = Math.min(size, start + MAX_BUFFER_SIZE);
-      const slice = blob.slice(start, end);
+      const slice = data.slice(start, end);
 
       const chunk = {
         __chunked: true,

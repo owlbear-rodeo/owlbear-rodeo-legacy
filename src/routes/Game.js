@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
-import db from "../database";
-
 import { omit, isStreamStopped } from "../helpers/shared";
 import useSession from "../helpers/useSession";
 import useDebounce from "../helpers/useDebounce";
@@ -18,10 +16,12 @@ import Link from "../components/Link";
 import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
+import DatabaseContext from "../contexts/DatabaseContext";
 
 import { tokens as defaultTokens } from "../tokens";
 
 function Game() {
+  const { database } = useContext(DatabaseContext);
   const { id: gameId } = useParams();
   const { authenticationStatus, userId, nickname, setNickname } = useContext(
     AuthContext
@@ -78,11 +78,14 @@ function Game() {
       debouncedMapState &&
       debouncedMapState.mapId &&
       map &&
-      map.owner === userId
+      map.owner === userId &&
+      database
     ) {
-      db.table("states").update(debouncedMapState.mapId, debouncedMapState);
+      database
+        .table("states")
+        .update(debouncedMapState.mapId, debouncedMapState);
     }
-  }, [map, debouncedMapState, userId]);
+  }, [map, debouncedMapState, userId, database]);
 
   function handleMapChange(newMap, newMapState) {
     setMapState(newMapState);
@@ -267,7 +270,8 @@ function Game() {
       const newMap = data.data;
       // If is a file map check cache and request the full file if outdated
       if (newMap && newMap.type === "file") {
-        db.table("maps")
+        database
+          .table("maps")
           .get(newMap.id)
           .then((cachedMap) => {
             if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
@@ -289,11 +293,10 @@ function Game() {
     if (data.id === "mapResponse") {
       setMapLoading(false);
       if (data.data && data.data.type === "file") {
-        // Convert file back to blob after peer transfer
-        const file = new Blob([data.data.file]);
-        const newMap = { ...data.data, file };
+        const newMap = { ...data.data, file: data.data.file };
         // Store in db
-        db.table("maps")
+        database
+          .table("maps")
           .put(newMap)
           .then(() => {
             setMap(newMap);
@@ -498,7 +501,8 @@ function Game() {
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
         <Box p={1}>
           <Text as="p" variant="body2">
-            {peerError} See <Link to="/faq">FAQ</Link> for more information.
+            {peerError} See <Link to="/faq#connection">FAQ</Link> for more
+            information.
           </Text>
         </Box>
       </Banner>

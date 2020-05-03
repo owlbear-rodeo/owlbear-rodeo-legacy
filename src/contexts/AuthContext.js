@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import shortid from "shortid";
 
-import { getRandomMonster } from "../helpers/monsters";
+import DatabaseContext from "./DatabaseContext";
 
-import db from "../database";
+import { getRandomMonster } from "../helpers/monsters";
 
 const AuthContext = React.createContext();
 
 export function AuthProvider({ children }) {
+  const { database } = useContext(DatabaseContext);
+
   const [password, setPassword] = useState(
     sessionStorage.getItem("auth") || ""
   );
@@ -20,41 +22,47 @@ export function AuthProvider({ children }) {
 
   const [userId, setUserId] = useState();
   useEffect(() => {
+    if (!database) {
+      return;
+    }
     async function loadUserId() {
-      const storedUserId = await db.table("user").get("userId");
+      const storedUserId = await database.table("user").get("userId");
       if (storedUserId) {
         setUserId(storedUserId.value);
       } else {
         const id = shortid.generate();
         setUserId(id);
-        db.table("user").add({ key: "userId", value: id });
+        database.table("user").add({ key: "userId", value: id });
       }
     }
 
     loadUserId();
-  }, []);
+  }, [database]);
 
   const [nickname, setNickname] = useState("");
   useEffect(() => {
+    if (!database) {
+      return;
+    }
     async function loadNickname() {
-      const storedNickname = await db.table("user").get("nickname");
+      const storedNickname = await database.table("user").get("nickname");
       if (storedNickname) {
         setNickname(storedNickname.value);
       } else {
         const name = getRandomMonster();
         setNickname(name);
-        db.table("user").add({ key: "nickname", value: name });
+        database.table("user").add({ key: "nickname", value: name });
       }
     }
 
     loadNickname();
-  }, []);
+  }, [database]);
 
   useEffect(() => {
-    if (nickname !== undefined) {
-      db.table("user").update("nickname", { value: nickname });
+    if (nickname !== undefined && database !== undefined) {
+      database.table("user").update("nickname", { value: nickname });
     }
-  }, [nickname]);
+  }, [nickname, database]);
 
   const value = {
     userId,
