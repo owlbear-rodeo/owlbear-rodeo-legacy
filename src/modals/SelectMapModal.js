@@ -149,6 +149,7 @@ function SelectMapModal({
       const url = URL.createObjectURL(blob);
       image.onload = function () {
         handleMapAdd({
+          // Save as a buffer to send with msgpack
           file: buffer,
           name,
           type: "file",
