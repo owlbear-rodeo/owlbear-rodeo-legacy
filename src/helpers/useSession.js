@@ -6,7 +6,7 @@ import Peer from "../helpers/Peer";
 
 import AuthContext from "../contexts/AuthContext";
 
-const socket = io("https://agent.owlbear.rodeo");
+const socket = io("https://broker.owlbear.rodeo");
 
 function useSession(
   partyId,
