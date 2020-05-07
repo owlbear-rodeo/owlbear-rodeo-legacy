@@ -7,6 +7,7 @@ import Home from "./routes/Home";
 import Game from "./routes/Game";
 import About from "./routes/About";
 import FAQ from "./routes/FAQ";
+import ReleaseNotes from "./routes/ReleaseNotes";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
@@ -18,6 +19,9 @@ function App() {
         <AuthProvider>
           <Router>
             <Switch>
+              <Route path="/releaseNotes">
+                <ReleaseNotes />
+              </Route>
               <Route path="/about">
                 <About />
               </Route>

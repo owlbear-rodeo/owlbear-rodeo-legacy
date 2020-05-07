@@ -5,11 +5,10 @@ import raw from "raw.macro";
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
 
-const connection = raw("../docs/faq/connection.md");
-const radio = raw("../docs/faq/radio.md");
-const saving = raw("../docs/faq/saving.md");
+const v110 = raw("../docs/releaseNotes/v1.1.0.md");
+const v120 = raw("../docs/releaseNotes/v1.2.0.md");
 
-function FAQ() {
+function ReleaseNotes() {
   return (
     <Flex
       sx={{
@@ -28,16 +27,13 @@ function FAQ() {
         m={4}
       >
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
-          Frequently Asked Questions
+          Release Notes
         </Text>
-        <div id="connection">
-          <Markdown source={connection} />
+        <div id="v120">
+          <Markdown source={v120} />
         </div>
-        <div id="radio">
-          <Markdown source={radio} />
-        </div>
-        <div id="saving">
-          <Markdown source={saving} />
+        <div id="v110">
+          <Markdown source={v110} />
         </div>
       </Flex>
       <Footer />
@@ -45,4 +41,4 @@ function FAQ() {
   );
 }
 
-export default FAQ;
+export default ReleaseNotes;
