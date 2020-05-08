@@ -79,6 +79,10 @@ function MapDice() {
 
   function update(scene) {
     const die = dieRef.current;
+    if (die.length === 0) {
+      return;
+    }
+
     for (let i = 0; i < die.length; i++) {
       const dice = die[i];
       const diceAsleep = dieSleepRef.current[i];
@@ -134,9 +138,12 @@ function MapDice() {
         position: "absolute",
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: "500px",
+        height: "500px",
+        borderRadius: "4px",
       }}
+      bg="overlay"
+      m={2}
     >
       <Scene onSceneMount={handleSceneMount} />
       <div

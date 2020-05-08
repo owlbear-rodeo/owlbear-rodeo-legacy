@@ -118,7 +118,6 @@ function MapInteraction({
 
   return (
     <Box
-      className="map"
       sx={{
         flexGrow: 1,
         position: "relative",
@@ -128,15 +127,16 @@ function MapInteraction({
         touchAction: "none",
       }}
       bg="background"
-      ref={mapContainerRef}
     >
       <Box
+        className="map"
         sx={{
           position: "relative",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
         }}
+        ref={mapContainerRef}
       >
         <Box ref={mapMoveContainerRef}>
           <Box
