@@ -4,14 +4,8 @@ import { Box } from "theme-ui";
 
 import environment from "../../../dice/environment.dds";
 
-import ColorDice from "../../../dice/color/ColorDice";
-import GemStoneDice from "../../../dice/gemStone/GemStoneDice";
-import GlassDice from "../../../dice/glass/GlassDice";
-import MetalDice from "../../../dice/metal/MetalDice";
-import MetalStoneDice from "../../../dice/metalStone/MetalStoneDice";
-import WoodDice from "../../../dice/wood/WoodDice";
-
 import Scene from "./DiceScene";
+import DiceControls from "./DiceControls";
 
 function DiceTray({ isOpen }) {
   const sceneRef = useRef();
@@ -133,7 +127,7 @@ function DiceTray({ isOpen }) {
     }
   }
 
-  async function handleAddDice(style, type) {
+  async function handleDiceAdd(style, type) {
     const scene = sceneRef.current;
     if (scene) {
       const instance = await style.createInstance(type, scene);
@@ -146,12 +140,13 @@ function DiceTray({ isOpen }) {
   return (
     <Box
       sx={{
-        width: "500px",
+        width: "250px",
         height: "500px",
         borderRadius: "4px",
-        display: isOpen ? "box" : "none",
+        display: isOpen ? "block" : "none",
+        position: "relative",
       }}
-      bg="overlay"
+      bg="background"
     >
       <Scene onSceneMount={handleSceneMount} />
       <div
@@ -183,24 +178,7 @@ function DiceTray({ isOpen }) {
           transform: "translateX(-50%)",
         }}
       >
-        <button onClick={() => handleAddDice(ColorDice, "d20")}>
-          Add color d20
-        </button>
-        <button onClick={() => handleAddDice(GemStoneDice, "d20")}>
-          Add gem d20
-        </button>
-        <button onClick={() => handleAddDice(GlassDice, "d20")}>
-          Add glass d20
-        </button>
-        <button onClick={() => handleAddDice(MetalDice, "d20")}>
-          Add metal d20
-        </button>
-        <button onClick={() => handleAddDice(MetalStoneDice, "d20")}>
-          Add metal stone d20
-        </button>
-        <button onClick={() => handleAddDice(WoodDice, "d20")}>
-          Add wood d20
-        </button>
+        <DiceControls onDiceAdd={handleDiceAdd} />
       </div>
     </Box>
   );
