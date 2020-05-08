@@ -2178,6 +2178,10 @@ alphanum-sort@^1.0.0:
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
   integrity sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=
 
+ammo.js@kripken/ammo.js#aab297a4164779c3a9d8dc8d9da26958de3cb778:
+  version "0.0.2"
+  resolved "https://codeload.github.com/kripken/ammo.js/tar.gz/aab297a4164779c3a9d8dc8d9da26958de3cb778"
+
 ansi-colors@^3.0.0:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-3.2.4.tgz#e3a3da4bfbae6c86a9c285625de124a234026fbf"
@@ -2641,6 +2645,24 @@ babylon@^6.18.0:
   version "6.18.0"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.18.0.tgz#af2f3b88fa6f5c1e4c634d1a0f8eac4f55b395e3"
   integrity sha512-q/UEjfGJ2Cm3oKV71DJz9d25TPnq5rhBVL2Q4fA5wcC3jcrdn7+SssEybFIxwAvvP+YCsCYNKughoF33GxgycQ==
+
+babylonjs-gltf2interface@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/babylonjs-gltf2interface/-/babylonjs-gltf2interface-4.1.0.tgz#95ec994e352ac5cb74869e238218a1b4df18e2f4"
+  integrity sha512-H2obg+4t8bcmLyzGiOQqmUaTQqTu+6mJUlsMWZvmRBf0k2fQVeTdAkH7aDy6HVIz/THvpIx4ntG1Lsyquvmc5Q==
+
+babylonjs-loaders@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/babylonjs-loaders/-/babylonjs-loaders-4.1.0.tgz#b056423b98c1e3a3962491ec72dce5e0b8852295"
+  integrity sha512-gNC+XEVI5cLJLVRTlkFHVfSY4EZS0VzWzEmNb8M49ZMFNuqOuHsVnQZg4Vms9e4LgvNtws4Z0SWrRanZnkIX5g==
+  dependencies:
+    babylonjs "4.1.0"
+    babylonjs-gltf2interface "4.1.0"
+
+babylonjs@4.1.0, babylonjs@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/babylonjs/-/babylonjs-4.1.0.tgz#a2d1d6765795e9d44f002831554d63d6275394bd"
+  integrity sha512-MnaH1BQIL+PYgqGaAvGVdP8yd7nM1j6sbQi/K/6+RlkHPxIETW2NbjqxiW7Sywgy7r3PwqWT/gxG4Bz95Z6/yA==
 
 backo2@1.0.2:
   version "1.0.2"

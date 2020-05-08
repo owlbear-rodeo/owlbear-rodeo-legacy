@@ -7,6 +7,8 @@ import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapControls from "./MapControls";
+import MapDice from "./MapDice";
+import LoadingOverlay from "../LoadingOverlay";
 
 import { omit } from "../../helpers/shared";
 import useDataSource from "../../helpers/useDataSource";
@@ -296,8 +298,13 @@ function Map({
         map={map}
         aspectRatio={aspectRatio}
         isEnabled={selectedToolId === "pan"}
-        controls={mapControls}
-        loading={loading}
+        sideContent={
+          <>
+            <MapDice />
+            {mapControls}
+            {loading && <LoadingOverlay />}
+          </>
+        }
       >
         {map && mapImage}
         {map && mapDrawing}
