@@ -3,7 +3,7 @@ import * as BABYLON from "babylonjs";
 import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 
-function MapDiceScene({ onSceneMount }) {
+function DiceScene({ onSceneMount }) {
   const sceneRef = useRef();
   const engineRef = useRef();
   const canvasRef = useRef();
@@ -121,4 +121,4 @@ function MapDiceScene({ onSceneMount }) {
   );
 }
 
-export default MapDiceScene;
+export default DiceScene;

@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useRef } from "react";
+import React, { useState, Fragment } from "react";
 import { IconButton, Flex, Box } from "theme-ui";
 
 import RadioIconButton from "./controls/RadioIconButton";
@@ -144,9 +144,6 @@ function MapContols({
     );
   }
 
-  const controlsRef = useRef();
-  const settingsRef = useRef();
-
   function getToolSettings() {
     const Settings = toolsById[selectedToolId].SettingsComponent;
     if (Settings) {
@@ -161,7 +158,6 @@ function MapContols({
             borderRadius: "4px",
           }}
           p={1}
-          ref={settingsRef}
         >
           <Settings
             settings={toolSettings[selectedToolId]}
@@ -189,7 +185,6 @@ function MapContols({
           alignItems: "center",
         }}
         mx={1}
-        ref={controlsRef}
       >
         {controls}
       </Flex>
