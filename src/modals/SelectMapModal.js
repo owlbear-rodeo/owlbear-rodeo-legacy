@@ -2,15 +2,15 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import { Box, Button, Flex, Label, Text } from "theme-ui";
 import shortid from "shortid";
 
-import db from "../database";
-
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
 import MapSettings from "../components/map/MapSettings";
 
 import AuthContext from "../contexts/AuthContext";
+import DatabaseContext from "../contexts/DatabaseContext";
 
 import usePrevious from "../helpers/usePrevious";
+import blobToBuffer from "../helpers/blobToBuffer";
 
 import { maps as defaultMaps } from "../maps";
 
@@ -42,6 +42,7 @@ function SelectMapModal({
   // The map currently being view in the map screen
   currentMap,
 }) {
+  const { database } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
 
   const wasOpen = usePrevious(isOpen);
@@ -54,7 +55,7 @@ function SelectMapModal({
   const [maps, setMaps] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !database) {
       return;
     }
     async function getDefaultMaps() {
@@ -72,16 +73,16 @@ function SelectMapModal({
           ...defaultMapProps,
         });
         // Add a state for the map if there isn't one already
-        const state = await db.table("states").get(id);
+        const state = await database.table("states").get(id);
         if (!state) {
-          await db.table("states").add({ ...defaultMapState, mapId: id });
+          await database.table("states").add({ ...defaultMapState, mapId: id });
         }
       }
       return defaultMapsWithIds;
     }
 
     async function loadMaps() {
-      let storedMaps = await db
+      let storedMaps = await database
         .table("maps")
         .where({ owner: userId })
         .toArray();
@@ -92,7 +93,7 @@ function SelectMapModal({
 
       // reload map state as is may have changed while the modal was closed
       if (selectedMap) {
-        const state = await db.table("states").get(selectedMap.id);
+        const state = await database.table("states").get(selectedMap.id);
         if (state) {
           setSelectedMapState(state);
         }
@@ -102,7 +103,7 @@ function SelectMapModal({
     if (!wasOpen && isOpen) {
       loadMaps();
     }
-  }, [userId, isOpen, wasOpen, selectedMap]);
+  }, [userId, database, isOpen, wasOpen, selectedMap]);
 
   const fileInputRef = useRef();
 
@@ -141,31 +142,35 @@ function SelectMapModal({
     let image = new Image();
     setImageLoading(true);
 
-    // Copy file to avoid permissions issues
-    const copy = new Blob([file], { type: file.type });
-    // Create and load the image temporarily to get its dimensions
-    const url = URL.createObjectURL(copy);
-    image.onload = function () {
-      handleMapAdd({
-        file: copy,
-        name,
-        type: "file",
-        gridX: fileGridX,
-        gridY: fileGridY,
-        width: image.width,
-        height: image.height,
-        id: shortid.generate(),
-        created: Date.now(),
-        lastModified: Date.now(),
-        owner: userId,
-        ...defaultMapProps,
-      });
-      setImageLoading(false);
-      URL.revokeObjectURL(url);
-    };
-    image.src = url;
-    // Set file input to null to allow adding the same image 2 times in a row
-    fileInputRef.current.value = null;
+    blobToBuffer(file).then((buffer) => {
+      // Copy file to avoid permissions issues
+      const blob = new Blob([buffer]);
+      // Create and load the image temporarily to get its dimensions
+      const url = URL.createObjectURL(blob);
+      image.onload = function () {
+        handleMapAdd({
+          // Save as a buffer to send with msgpack
+          file: buffer,
+          name,
+          type: "file",
+          gridX: fileGridX,
+          gridY: fileGridY,
+          width: image.width,
+          height: image.height,
+          id: shortid.generate(),
+          created: Date.now(),
+          lastModified: Date.now(),
+          owner: userId,
+          ...defaultMapProps,
+        });
+        setImageLoading(false);
+        URL.revokeObjectURL(url);
+      };
+      image.src = url;
+
+      // Set file input to null to allow adding the same image 2 times in a row
+      fileInputRef.current.value = null;
+    });
   }
 
   function openImageDialog() {
@@ -175,21 +180,21 @@ function SelectMapModal({
   }
 
   async function handleMapAdd(map) {
-    await db.table("maps").add(map);
+    await database.table("maps").add(map);
     const state = { ...defaultMapState, mapId: map.id };
-    await db.table("states").add(state);
+    await database.table("states").add(state);
     setMaps((prevMaps) => [map, ...prevMaps]);
     setSelectedMap(map);
     setSelectedMapState(state);
   }
 
   async function handleMapRemove(id) {
-    await db.table("maps").delete(id);
-    await db.table("states").delete(id);
+    await database.table("maps").delete(id);
+    await database.table("states").delete(id);
     setMaps((prevMaps) => {
       const filtered = prevMaps.filter((map) => map.id !== id);
       setSelectedMap(filtered[0]);
-      db.table("states").get(filtered[0].id).then(setSelectedMapState);
+      database.table("states").get(filtered[0].id).then(setSelectedMapState);
       return filtered;
     });
     // Removed the map from the map screen if needed
@@ -199,14 +204,14 @@ function SelectMapModal({
   }
 
   async function handleMapSelect(map) {
-    const state = await db.table("states").get(map.id);
+    const state = await database.table("states").get(map.id);
     setSelectedMapState(state);
     setSelectedMap(map);
   }
 
   async function handleMapReset(id) {
     const state = { ...defaultMapState, mapId: id };
-    await db.table("states").put(state);
+    await database.table("states").put(state);
     setSelectedMapState(state);
     // Reset the state of the current map if needed
     if (currentMap && currentMap.id === selectedMap.id) {
@@ -256,7 +261,7 @@ function SelectMapModal({
 
   async function handleMapSettingsChange(key, value) {
     const change = { [key]: value, lastModified: Date.now() };
-    db.table("maps").update(selectedMap.id, change);
+    database.table("maps").update(selectedMap.id, change);
     const newMap = { ...selectedMap, ...change };
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -270,7 +275,7 @@ function SelectMapModal({
   }
 
   async function handleMapStateSettingsChange(key, value) {
-    db.table("states").update(selectedMap.id, { [key]: value });
+    database.table("states").update(selectedMap.id, { [key]: value });
     setSelectedMapState((prevState) => ({ ...prevState, [key]: value }));
   }
 

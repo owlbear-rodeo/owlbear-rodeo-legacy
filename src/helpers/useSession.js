@@ -6,7 +6,7 @@ import Peer from "../helpers/Peer";
 
 import AuthContext from "../contexts/AuthContext";
 
-const socket = io("https://broker.owlbear.rodeo");
+const socket = io(process.env.REACT_APP_BROKER_URL);
 
 function useSession(
   partyId,
@@ -18,9 +18,16 @@ function useSession(
   onPeerError
 ) {
   const { password, setAuthenticationStatus } = useContext(AuthContext);
+  const [iceServers, setIceServers] = useState([]);
 
   useEffect(() => {
-    socket.emit("join party", partyId, password);
+    async function joinParty() {
+      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      const data = await response.json();
+      setIceServers(data.iceServers);
+      socket.emit("join party", partyId, password);
+    }
+    joinParty();
   }, [partyId, password]);
 
   const [peers, setPeers] = useState({});
@@ -127,7 +134,11 @@ function useSession(
   // Setup event listeners for the socket
   useEffect(() => {
     function addPeer(id, initiator, sync) {
-      const connection = new Peer({ initiator, trickle: false });
+      const connection = new Peer({
+        initiator,
+        trickle: false,
+        config: { iceServers },
+      });
 
       setPeers((prevPeers) => ({
         ...prevPeers,
@@ -178,7 +189,7 @@ function useSession(
       socket.removeListener("signal", handleSignal);
       socket.removeListener("auth error", handleAuthError);
     };
-  }, [peers, setAuthenticationStatus]);
+  }, [peers, setAuthenticationStatus, iceServers]);
 
   return { peers, socket };
 }
