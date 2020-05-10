@@ -7,7 +7,6 @@ function Paragraph(props) {
 }
 
 function Heading({ level, ...props }) {
-  console.log(props);
   const fontSize = level === 1 ? 5 : level === 2 ? 3 : 1;
   return (
     <Text
