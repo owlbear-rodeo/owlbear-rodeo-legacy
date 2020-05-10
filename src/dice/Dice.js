@@ -22,6 +22,7 @@ class Dice {
 
     mesh.material = material;
 
+    mesh.receiveShadows = true;
     mesh.isVisible = false;
     return mesh;
   }
@@ -55,7 +56,7 @@ class Dice {
     );
 
     // TODO: put in random start position
-    instance.position.y = 5;
+    instance.position.y = 2;
 
     return instance;
   }

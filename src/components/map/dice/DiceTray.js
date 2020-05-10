@@ -7,8 +7,11 @@ import environment from "../../../dice/environment.dds";
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
 
+import createDiceTray from "../../../dice/diceTray/DiceTrayMesh";
+
 function DiceTray({ isOpen }) {
   const sceneRef = useRef();
+  const shadowGeneratorRef = useRef();
   const dieRef = useRef([]);
   const dieSleepRef = useRef([]);
   const [dieNumbers, setDieNumbers] = useState([]);
@@ -30,6 +33,19 @@ function DiceTray({ isOpen }) {
   }, []);
 
   async function initializeScene(scene) {
+    var light = new BABYLON.DirectionalLight(
+      "DirectionalLight",
+      new BABYLON.Vector3(-0.5, -1, -0.5),
+      scene
+    );
+    light.position = new BABYLON.Vector3(5, 10, 5);
+    light.shadowMinZ = 1;
+    light.shadowMaxZ = 50;
+    let shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+    shadowGenerator.useCloseExponentialShadowMap = true;
+    shadowGenerator.darkness = 0.7;
+    shadowGeneratorRef.current = shadowGenerator;
+
     var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, scene);
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(
       ground,
@@ -59,10 +75,10 @@ function DiceTray({ isOpen }) {
       wall.isVisible = false;
     }
 
-    createWall("wallTop", 0, -35, 0);
-    createWall("wallRight", -35, 0, Math.PI / 2);
-    createWall("wallBottom", 0, 35, Math.PI);
-    createWall("wallLeft", 35, 0, -Math.PI / 2);
+    createWall("wallTop", 0, -34.5, 0);
+    createWall("wallRight", -29.5, 0, Math.PI / 2);
+    createWall("wallBottom", 0, 34.5, Math.PI);
+    createWall("wallLeft", 29.5, 0, -Math.PI / 2);
 
     var roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
     roof.physicsImpostor = new BABYLON.PhysicsImpostor(
@@ -71,20 +87,22 @@ function DiceTray({ isOpen }) {
       { mass: 0, friction: 1.0 },
       scene
     );
-    roof.position.y = 10;
+    roof.position.y = 5;
     roof.isVisible = false;
 
     scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
       environment,
       scene
     );
-    scene.environmentIntensity = 1.5;
+    scene.environmentIntensity = 1.0;
+
+    createDiceTray(scene, shadowGenerator);
   }
 
   function update(scene) {
     const die = dieRef.current;
     const shouldSleep = sceneSleepRef.current;
-    if (die.length === 0 || shouldSleep) {
+    if (shouldSleep) {
       return;
     }
 
@@ -129,8 +147,10 @@ function DiceTray({ isOpen }) {
 
   async function handleDiceAdd(style, type) {
     const scene = sceneRef.current;
-    if (scene) {
+    const shadowGenerator = shadowGeneratorRef.current;
+    if (scene && shadowGenerator) {
       const instance = await style.createInstance(type, scene);
+      shadowGenerator.addShadowCaster(instance);
       dieRef.current.push(instance);
       dieSleepRef.current.push(false);
       setDieNumbers((prevNumbers) => [...prevNumbers, null]);
@@ -145,6 +165,7 @@ function DiceTray({ isOpen }) {
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",
+        overflow: "hidden",
       }}
       bg="background"
     >

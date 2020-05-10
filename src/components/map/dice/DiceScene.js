@@ -25,10 +25,10 @@ function DiceScene({ onSceneMount }) {
 
     let camera = new BABYLON.TargetCamera(
       "camera",
-      new BABYLON.Vector3(0, 85, 0),
+      new BABYLON.Vector3(0, 34, 0),
       scene
     );
-    camera.fov = 0.25;
+    camera.fov = 0.65;
     camera.setTarget(BABYLON.Vector3.Zero());
 
     onSceneMount && onSceneMount({ scene, engine, canvas });
@@ -76,7 +76,7 @@ function DiceScene({ onSceneMount }) {
     const scene = sceneRef.current;
     if (scene) {
       const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
-      if (pickInfo.hit) {
+      if (pickInfo.hit && pickInfo.pickedMesh.id !== "tray") {
         pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(
           new BABYLON.Vector3(0, 0, 0)
         );
