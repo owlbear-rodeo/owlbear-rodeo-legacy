@@ -7,6 +7,7 @@ import Markdown from "../components/Markdown";
 
 const v110 = raw("../docs/releaseNotes/v1.1.0.md");
 const v120 = raw("../docs/releaseNotes/v1.2.0.md");
+const v121 = raw("../docs/releaseNotes/v1.2.1.md");
 
 function ReleaseNotes() {
   return (
@@ -29,6 +30,9 @@ function ReleaseNotes() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
+        <div id="v121">
+          <Markdown source={v121} />
+        </div>
         <div id="v120">
           <Markdown source={v120} />
         </div>
