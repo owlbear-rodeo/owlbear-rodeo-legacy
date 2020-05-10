@@ -25,19 +25,39 @@ function DiceControls({ onDiceAdd }) {
       >
         <D20Icon />
       </IconButton>
-      <IconButton title="Add D12" aria-label="Add D12">
+      <IconButton
+        title="Add D12"
+        aria-label="Add D12"
+        onClick={() => onDiceAdd(GemStoneDice, "d20")}
+      >
         <D12Icon />
       </IconButton>
-      <IconButton title="Add D10" aria-label="Add D10">
+      <IconButton
+        title="Add D10"
+        aria-label="Add D10"
+        onClick={() => onDiceAdd(GlassDice, "d20")}
+      >
         <D10Icon />
       </IconButton>
-      <IconButton title="Add D8" aria-label="Add D8">
+      <IconButton
+        title="Add D8"
+        aria-label="Add D8"
+        onClick={() => onDiceAdd(MetalDice, "d20")}
+      >
         <D8Icon />
       </IconButton>
-      <IconButton title="Add D6" aria-label="Add D6">
+      <IconButton
+        title="Add D6"
+        aria-label="Add D6"
+        onClick={() => onDiceAdd(MetalStoneDice, "d20")}
+      >
         <D6Icon />
       </IconButton>
-      <IconButton title="Add D4" aria-label="Add D4">
+      <IconButton
+        title="Add D4"
+        aria-label="Add D4"
+        onClick={() => onDiceAdd(WoodDice, "d20")}
+      >
         <D4Icon />
       </IconButton>
     </Flex>
