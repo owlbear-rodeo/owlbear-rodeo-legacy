@@ -54,6 +54,7 @@ function DiceTray({ isOpen }) {
       scene
     );
     ground.isVisible = false;
+    ground.position.y = 0.2;
 
     function createWall(name, x, z, yaw) {
       let wall = BABYLON.Mesh.CreateBox(
@@ -75,10 +76,10 @@ function DiceTray({ isOpen }) {
       wall.isVisible = false;
     }
 
-    createWall("wallTop", 0, -34.5, 0);
-    createWall("wallRight", -29.5, 0, Math.PI / 2);
-    createWall("wallBottom", 0, 34.5, Math.PI);
-    createWall("wallLeft", 29.5, 0, -Math.PI / 2);
+    createWall("wallTop", 0, -32.5, 0);
+    createWall("wallRight", -28.5, 0, Math.PI / 2);
+    createWall("wallBottom", 0, 32.5, Math.PI);
+    createWall("wallLeft", 28.5, 0, -Math.PI / 2);
 
     var roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
     roof.physicsImpostor = new BABYLON.PhysicsImpostor(
@@ -125,7 +126,7 @@ function DiceTray({ isOpen }) {
           }
         }
         dieSleepRef.current[i] = true;
-        const newNumber = parseInt(highestLocator.name.slice(8));
+        const newNumber = parseInt(highestLocator.name.slice(12));
         setDieNumbers((prevNumbers) => {
           let newNumbers = [...prevNumbers];
           newNumbers[i] = newNumber;
@@ -160,8 +161,8 @@ function DiceTray({ isOpen }) {
   return (
     <Box
       sx={{
-        width: "250px",
-        height: "500px",
+        width: "275px",
+        height: "550px",
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",
@@ -173,7 +174,7 @@ function DiceTray({ isOpen }) {
       <div
         style={{
           position: "absolute",
-          top: "8px",
+          bottom: "8px",
           left: "50%",
           transform: "translateX(-50%)",
           display: "flex",
@@ -194,7 +195,7 @@ function DiceTray({ isOpen }) {
       <div
         style={{
           position: "absolute",
-          bottom: "24px",
+          top: "24px",
           left: "50%",
           transform: "translateX(-50%)",
         }}

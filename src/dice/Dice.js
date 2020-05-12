@@ -1,16 +1,30 @@
 import * as BABYLON from "babylonjs";
 
-import d20SharpSource from "./meshes/d20Sharp.glb";
-import d20RoundSource from "./meshes/d20Round.glb";
+import d4Source from "./meshes/d4.glb";
+import d6Source from "./meshes/d6.glb";
+import d8Source from "./meshes/d8.glb";
+import d10Source from "./meshes/d10.glb";
+import d12Source from "./meshes/d12.glb";
+import d20Source from "./meshes/d20.glb";
+import d100Source from "./meshes/d100.glb";
 
 class Dice {
   static instanceCount = 0;
 
-  static async loadMeshes(diceStyle, material, scene) {
+  static async loadMeshes(material, scene, sourceOverrides) {
     let meshes = {};
-    const d20Source = diceStyle === "round" ? d20RoundSource : d20SharpSource;
-    const d20Mesh = await this.loadMesh(d20Source, material, scene);
-    meshes.d20 = d20Mesh;
+    const addToMeshes = async (type, defaultSource) => {
+      let source = sourceOverrides ? sourceOverrides[type] : defaultSource;
+      const mesh = await this.loadMesh(source, material, scene);
+      meshes[type] = mesh;
+    };
+    await addToMeshes("d4", d4Source);
+    await addToMeshes("d6", d6Source);
+    await addToMeshes("d8", d8Source);
+    await addToMeshes("d10", d10Source);
+    await addToMeshes("d12", d12Source);
+    await addToMeshes("d20", d20Source);
+    await addToMeshes("d100", d100Source);
     return meshes;
   }
 

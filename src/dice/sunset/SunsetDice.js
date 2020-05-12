@@ -4,24 +4,24 @@ import albedo from "./albedo.jpg";
 import metalRoughness from "./metalRoughness.jpg";
 import normal from "./normal.jpg";
 
-class MetalStoneDice extends Dice {
+class SunsetDice extends Dice {
   static meshes;
   static material;
 
   static async createInstance(diceType, scene) {
     if (!this.material) {
       this.material = this.loadMaterial(
-        "metal_stone_pbr",
+        "sunset_pbr",
         { albedo, metalRoughness, normal },
         scene
       );
     }
     if (!this.meshes) {
-      this.meshes = await this.loadMeshes("round", this.material, scene);
+      this.meshes = await this.loadMeshes(this.material, scene);
     }
 
     return Dice.createInstance(this.meshes[diceType], scene);
   }
 }
 
-export default MetalStoneDice;
+export default SunsetDice;
