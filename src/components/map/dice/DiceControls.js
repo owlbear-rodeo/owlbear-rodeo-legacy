@@ -1,7 +1,7 @@
 import React from "react";
 import { Flex, IconButton } from "theme-ui";
 
-import SunsetDice from "../../../dice/sunset/SunsetDice";
+import SunsetDice from "../../../dice/galaxy/GalaxyDice";
 
 import D20Icon from "../../../icons/D20Icon";
 import D12Icon from "../../../icons/D12Icon";
