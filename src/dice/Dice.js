@@ -8,6 +8,8 @@ import d12Source from "./meshes/d12.glb";
 import d20Source from "./meshes/d20.glb";
 import d100Source from "./meshes/d100.glb";
 
+import { diceTraySize } from "./diceTray/DiceTrayMesh";
+
 class Dice {
   static instanceCount = 0;
 
@@ -69,8 +71,25 @@ class Dice {
       scene
     );
 
-    // TODO: put in random start position
-    instance.position.y = 2;
+    const trayOffsetHeight = diceTraySize.height / 2 - 0.5;
+    const initialPosition = new BABYLON.Vector3(
+      ((Math.random() * 2 - 1) * diceTraySize.width) / 2,
+      5,
+      this.instanceCount % 2 === 0 ? trayOffsetHeight : -trayOffsetHeight
+    );
+    instance.position = initialPosition;
+    instance.addRotation(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2
+    );
+
+    const impulse = BABYLON.Vector3.Zero()
+      .subtract(initialPosition)
+      .normalizeToNew()
+      .scale(10);
+
+    instance.physicsImpostor.applyImpulse(impulse, initialPosition);
 
     return instance;
   }

@@ -6,6 +6,8 @@ import albedo from "./albedo.jpg";
 import metalRoughness from "./metalRoughness.jpg";
 import normal from "./normal.jpg";
 
+export const diceTraySize = { width: 8, height: 16 };
+
 export default async function createDiceTray(scene, shadowGenerator) {
   let mesh = (
     await BABYLON.SceneLoader.ImportMeshAsync("", meshSource, "", scene)

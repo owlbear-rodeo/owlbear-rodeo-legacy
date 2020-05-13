@@ -7,7 +7,9 @@ import environment from "../../../dice/environment.dds";
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
 
-import createDiceTray from "../../../dice/diceTray/DiceTrayMesh";
+import createDiceTray, {
+  diceTraySize,
+} from "../../../dice/diceTray/DiceTrayMesh";
 
 function DiceTray({ isOpen }) {
   const sceneRef = useRef();
@@ -56,10 +58,12 @@ function DiceTray({ isOpen }) {
     ground.isVisible = false;
     ground.position.y = 0.2;
 
+    const wallSize = 50;
+
     function createWall(name, x, z, yaw) {
       let wall = BABYLON.Mesh.CreateBox(
         name,
-        50,
+        wallSize,
         scene,
         true,
         BABYLON.Mesh.DOUBLESIDE
@@ -76,10 +80,12 @@ function DiceTray({ isOpen }) {
       wall.isVisible = false;
     }
 
-    createWall("wallTop", 0, -32.5, 0);
-    createWall("wallRight", -28.5, 0, Math.PI / 2);
-    createWall("wallBottom", 0, 32.5, Math.PI);
-    createWall("wallLeft", 28.5, 0, -Math.PI / 2);
+    const wallOffsetWidth = wallSize / 2 + diceTraySize.width / 2 - 0.5;
+    const wallOffsetHeight = wallSize / 2 + diceTraySize.height / 2 - 0.5;
+    createWall("wallTop", 0, -wallOffsetHeight, 0);
+    createWall("wallRight", -wallOffsetWidth, 0, Math.PI / 2);
+    createWall("wallBottom", 0, wallOffsetHeight, Math.PI);
+    createWall("wallLeft", wallOffsetWidth, 0, -Math.PI / 2);
 
     var roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
     roof.physicsImpostor = new BABYLON.PhysicsImpostor(
@@ -88,7 +94,7 @@ function DiceTray({ isOpen }) {
       { mass: 0, friction: 1.0 },
       scene
     );
-    roof.position.y = 5;
+    roof.position.y = 10;
     roof.isVisible = false;
 
     scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
