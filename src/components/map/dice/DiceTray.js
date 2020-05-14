@@ -6,6 +6,7 @@ import environment from "../../../dice/environment.dds";
 
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
+import DiceResults from "./DiceResults";
 
 import createDiceTray, {
   diceTraySize,
@@ -16,7 +17,7 @@ function DiceTray({ isOpen }) {
   const shadowGeneratorRef = useRef();
   const dieRef = useRef([]);
   const dieSleepRef = useRef([]);
-  const [dieNumbers, setDieNumbers] = useState([]);
+  const [diceRolls, setDiceRolls] = useState([]);
 
   const sceneSleepRef = useRef(true);
 
@@ -107,6 +108,57 @@ function DiceTray({ isOpen }) {
   }
 
   function update(scene) {
+    function getDiceSpeed(dice) {
+      const diceSpeed = dice.instance.physicsImpostor
+        .getLinearVelocity()
+        .length();
+      // If the dice is a d100 check the d10 as well
+      if (dice.type === "d100") {
+        const d10Speed = dice.d10Instance.physicsImpostor
+          .getLinearVelocity()
+          .length();
+        return Math.max(diceSpeed, d10Speed);
+      } else {
+        return diceSpeed;
+      }
+    }
+
+    // Find the number facing up on a dice object
+    function getDiceRoll(dice) {
+      let number = getDiceInstanceRoll(dice.instance);
+      // If the dice is a d100 add the d10
+      if (dice.type === "d100") {
+        const d10Number = getDiceInstanceRoll(dice.d10Instance);
+        // Both zero set to 100
+        if (d10Number === 0 && number === 0) {
+          number = 100;
+        } else {
+          number += d10Number;
+        }
+      } else if (dice.type === "d10" && number === 0) {
+        number = 10;
+      }
+      return number;
+    }
+
+    // Find the number facing up on a mesh instance of a dice
+    function getDiceInstanceRoll(instance) {
+      let highestDot = -1;
+      let highestLocator;
+      for (let locator of instance.getChildTransformNodes()) {
+        let dif = locator
+          .getAbsolutePosition()
+          .subtract(instance.getAbsolutePosition());
+        let direction = dif.normalize();
+        const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
+        if (dot > highestDot) {
+          highestDot = dot;
+          highestLocator = locator;
+        }
+      }
+      return parseInt(highestLocator.name.slice(12));
+    }
+
     const die = dieRef.current;
     const shouldSleep = sceneSleepRef.current;
     if (shouldSleep) {
@@ -119,15 +171,15 @@ function DiceTray({ isOpen }) {
       const speed = getDiceSpeed(dice);
       if (speed < 0.01 && !diceIsAsleep) {
         dieSleepRef.current[i] = true;
-        let newNumber = getDiceNumber(dice);
-        setDieNumbers((prevNumbers) => {
+        let newNumber = getDiceRoll(dice);
+        setDiceRolls((prevNumbers) => {
           let newNumbers = [...prevNumbers];
           newNumbers[i] = newNumber;
           return newNumbers;
         });
       } else if (speed > 0.5 && diceIsAsleep) {
         dieSleepRef.current[i] = false;
-        setDieNumbers((prevNumbers) => {
+        setDiceRolls((prevNumbers) => {
           let newNumbers = [...prevNumbers];
           newNumbers[i] = "unknown";
           return newNumbers;
@@ -137,57 +189,6 @@ function DiceTray({ isOpen }) {
     if (scene) {
       scene.render();
     }
-  }
-
-  function getDiceSpeed(dice) {
-    const diceSpeed = dice.instance.physicsImpostor
-      .getLinearVelocity()
-      .length();
-    // If the dice is a d100 check the d10 as well
-    if (dice.type === "d100") {
-      const d10Speed = dice.d10Instance.physicsImpostor
-        .getLinearVelocity()
-        .length();
-      return Math.max(diceSpeed, d10Speed);
-    } else {
-      return diceSpeed;
-    }
-  }
-
-  // Find the number facing up on a dice object
-  function getDiceNumber(dice) {
-    let number = getDiceInstanceNumber(dice.instance);
-    // If the dice is a d100 add the d10
-    if (dice.type === "d100") {
-      const d10Number = getDiceInstanceNumber(dice.d10Instance);
-      // Both zero set to 100
-      if (d10Number === 0 && number === 0) {
-        number = 100;
-      } else {
-        number += d10Number;
-      }
-    } else if (dice.type === "d10" && number === 0) {
-      number = 10;
-    }
-    return number;
-  }
-
-  // Find the number facing up on a mesh instance of a dice
-  function getDiceInstanceNumber(instance) {
-    let highestDot = -1;
-    let highestLocator;
-    for (let locator of instance.getChildTransformNodes()) {
-      let dif = locator
-        .getAbsolutePosition()
-        .subtract(instance.getAbsolutePosition());
-      let direction = dif.normalize();
-      const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
-      if (dot > highestDot) {
-        highestDot = dot;
-        highestLocator = locator;
-      }
-    }
-    return parseInt(highestLocator.name.slice(12));
   }
 
   async function handleDiceAdd(style, type) {
@@ -205,7 +206,7 @@ function DiceTray({ isOpen }) {
       }
       dieRef.current.push(dice);
       dieSleepRef.current.push(false);
-      setDieNumbers((prevNumbers) => [...prevNumbers, "unknown"]);
+      setDiceRolls((prevNumbers) => [...prevNumbers, "unknown"]);
     }
   }
 
@@ -222,28 +223,18 @@ function DiceTray({ isOpen }) {
       bg="background"
     >
       <Scene onSceneMount={handleSceneMount} />
-      {!dieNumbers.includes("unknown") && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "8px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            color: "white",
-          }}
-        >
-          {dieNumbers.map((num, index) => (
-            <h3 key={index}>
-              {num}
-              {index === dieNumbers.length - 1 ? "" : "+"}
-            </h3>
-          ))}
-          <h3>
-            {dieNumbers.length > 0 && `= ${dieNumbers.reduce((a, b) => a + b)}`}
-          </h3>
-        </div>
-      )}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "16px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          color: "white",
+        }}
+      >
+        <DiceResults diceRolls={diceRolls} />
+      </div>
       <div
         style={{
           position: "absolute",
