@@ -9,6 +9,7 @@ import D10Icon from "../../../icons/D10Icon";
 import D8Icon from "../../../icons/D8Icon";
 import D6Icon from "../../../icons/D6Icon";
 import D4Icon from "../../../icons/D4Icon";
+import D100Icon from "../../../icons/D100Icon";
 
 function DiceControls({ onDiceAdd }) {
   return (
@@ -54,6 +55,13 @@ function DiceControls({ onDiceAdd }) {
         onClick={() => onDiceAdd(SunsetDice, "d4")}
       >
         <D4Icon />
+      </IconButton>
+      <IconButton
+        title="Add D100"
+        aria-label="Add D100"
+        onClick={() => onDiceAdd(SunsetDice, "d100")}
+      >
+        <D100Icon />
       </IconButton>
     </Flex>
   );

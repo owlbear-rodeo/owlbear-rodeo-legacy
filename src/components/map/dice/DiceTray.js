@@ -115,34 +115,21 @@ function DiceTray({ isOpen }) {
 
     for (let i = 0; i < die.length; i++) {
       const dice = die[i];
-      const diceAsleep = dieSleepRef.current[i];
-      const speed = dice.physicsImpostor.getLinearVelocity().length();
-      if (speed < 0.01 && !diceAsleep) {
-        let highestDot = -1;
-        let highestLocator;
-        for (let locator of dice.getChildTransformNodes()) {
-          let dif = locator
-            .getAbsolutePosition()
-            .subtract(dice.getAbsolutePosition());
-          let direction = dif.normalize();
-          const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
-          if (dot > highestDot) {
-            highestDot = dot;
-            highestLocator = locator;
-          }
-        }
+      const diceIsAsleep = dieSleepRef.current[i];
+      const speed = getDiceSpeed(dice);
+      if (speed < 0.01 && !diceIsAsleep) {
         dieSleepRef.current[i] = true;
-        const newNumber = parseInt(highestLocator.name.slice(12));
+        let newNumber = getDiceNumber(dice);
         setDieNumbers((prevNumbers) => {
           let newNumbers = [...prevNumbers];
           newNumbers[i] = newNumber;
           return newNumbers;
         });
-      } else if (speed > 0.5 && diceAsleep) {
+      } else if (speed > 0.5 && diceIsAsleep) {
         dieSleepRef.current[i] = false;
         setDieNumbers((prevNumbers) => {
           let newNumbers = [...prevNumbers];
-          newNumbers[i] = null;
+          newNumbers[i] = "unknown";
           return newNumbers;
         });
       }
@@ -152,15 +139,73 @@ function DiceTray({ isOpen }) {
     }
   }
 
+  function getDiceSpeed(dice) {
+    const diceSpeed = dice.instance.physicsImpostor
+      .getLinearVelocity()
+      .length();
+    // If the dice is a d100 check the d10 as well
+    if (dice.type === "d100") {
+      const d10Speed = dice.d10Instance.physicsImpostor
+        .getLinearVelocity()
+        .length();
+      return Math.max(diceSpeed, d10Speed);
+    } else {
+      return diceSpeed;
+    }
+  }
+
+  // Find the number facing up on a dice object
+  function getDiceNumber(dice) {
+    let number = getDiceInstanceNumber(dice.instance);
+    // If the dice is a d100 add the d10
+    if (dice.type === "d100") {
+      const d10Number = getDiceInstanceNumber(dice.d10Instance);
+      // Both zero set to 100
+      if (d10Number === 0 && number === 0) {
+        number = 100;
+      } else {
+        number += d10Number;
+      }
+    } else if (dice.type === "d10" && number === 0) {
+      number = 10;
+    }
+    return number;
+  }
+
+  // Find the number facing up on a mesh instance of a dice
+  function getDiceInstanceNumber(instance) {
+    let highestDot = -1;
+    let highestLocator;
+    for (let locator of instance.getChildTransformNodes()) {
+      let dif = locator
+        .getAbsolutePosition()
+        .subtract(instance.getAbsolutePosition());
+      let direction = dif.normalize();
+      const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
+      if (dot > highestDot) {
+        highestDot = dot;
+        highestLocator = locator;
+      }
+    }
+    return parseInt(highestLocator.name.slice(12));
+  }
+
   async function handleDiceAdd(style, type) {
     const scene = sceneRef.current;
     const shadowGenerator = shadowGeneratorRef.current;
     if (scene && shadowGenerator) {
       const instance = await style.createInstance(type, scene);
       shadowGenerator.addShadowCaster(instance);
-      dieRef.current.push(instance);
+      let dice = { type, instance };
+      // If we have a d100 add a d10 as well
+      if (type === "d100") {
+        const d10Instance = await style.createInstance("d10", scene);
+        shadowGenerator.addShadowCaster(d10Instance);
+        dice.d10Instance = d10Instance;
+      }
+      dieRef.current.push(dice);
       dieSleepRef.current.push(false);
-      setDieNumbers((prevNumbers) => [...prevNumbers, null]);
+      setDieNumbers((prevNumbers) => [...prevNumbers, "unknown"]);
     }
   }
 
@@ -177,27 +222,28 @@ function DiceTray({ isOpen }) {
       bg="background"
     >
       <Scene onSceneMount={handleSceneMount} />
-      <div
-        style={{
-          position: "absolute",
-          bottom: "8px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          color: "white",
-        }}
-      >
-        {dieNumbers.map((num, index) => (
-          <h3 key={index}>
-            {num || "?"}
-            {index === dieNumbers.length - 1 ? "" : "+"}
+      {!dieNumbers.includes("unknown") && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "8px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            color: "white",
+          }}
+        >
+          {dieNumbers.map((num, index) => (
+            <h3 key={index}>
+              {num}
+              {index === dieNumbers.length - 1 ? "" : "+"}
+            </h3>
+          ))}
+          <h3>
+            {dieNumbers.length > 0 && `= ${dieNumbers.reduce((a, b) => a + b)}`}
           </h3>
-        ))}
-        <h3>
-          {dieNumbers.length > 0 &&
-            `= ${dieNumbers.reduce((a, b) => (a || 0) + (b || 0))}`}
-        </h3>
-      </div>
+        </div>
+      )}
       <div
         style={{
           position: "absolute",
