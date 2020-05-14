@@ -71,13 +71,17 @@ class Dice {
       scene
     );
 
+    return instance;
+  }
+
+  static roll(instance) {
     const trayOffsetHeight = diceTraySize.height / 2 - 0.5;
-    const initialPosition = new BABYLON.Vector3(
+    const position = new BABYLON.Vector3(
       ((Math.random() * 2 - 1) * diceTraySize.width) / 2,
       5,
-      this.instanceCount % 2 === 0 ? trayOffsetHeight : -trayOffsetHeight
+      Math.random() > 0.5 ? trayOffsetHeight : -trayOffsetHeight
     );
-    instance.position = initialPosition;
+    instance.position = position;
     instance.addRotation(
       Math.random() * Math.PI * 2,
       Math.random() * Math.PI * 2,
@@ -85,13 +89,11 @@ class Dice {
     );
 
     const impulse = BABYLON.Vector3.Zero()
-      .subtract(initialPosition)
+      .subtract(position)
       .normalizeToNew()
       .scale(10);
 
-    instance.physicsImpostor.applyImpulse(impulse, initialPosition);
-
-    return instance;
+    instance.physicsImpostor.applyImpulse(impulse, position);
   }
 
   static async createInstance(mesh, scene) {

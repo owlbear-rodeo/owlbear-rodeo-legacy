@@ -7,6 +7,7 @@ import environment from "../../../dice/environment.dds";
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
 import DiceResults from "./DiceResults";
+import Dice from "../../../dice/Dice";
 
 import createDiceTray, {
   diceTraySize,
@@ -197,16 +198,41 @@ function DiceTray({ isOpen }) {
     if (scene && shadowGenerator) {
       const instance = await style.createInstance(type, scene);
       shadowGenerator.addShadowCaster(instance);
+      Dice.roll(instance);
       let dice = { type, instance };
       // If we have a d100 add a d10 as well
       if (type === "d100") {
         const d10Instance = await style.createInstance("d10", scene);
         shadowGenerator.addShadowCaster(d10Instance);
+        Dice.roll(d10Instance);
         dice.d10Instance = d10Instance;
       }
       dieRef.current.push(dice);
       dieSleepRef.current.push(false);
       setDiceRolls((prevRolls) => [...prevRolls, { type, roll: "unknown" }]);
+    }
+  }
+
+  function handleDiceClear() {
+    const die = dieRef.current;
+    for (let dice of die) {
+      dice.instance.dispose();
+      if (dice.type === "d100") {
+        dice.d10Instance.dispose();
+      }
+    }
+    dieRef.current = [];
+    dieSleepRef.current = [];
+    setDiceRolls([]);
+  }
+
+  function handleDiceReroll() {
+    const die = dieRef.current;
+    for (let dice of die) {
+      Dice.roll(dice.instance);
+      if (dice.type === "d100") {
+        Dice.roll(dice.d10Instance);
+      }
     }
   }
 
@@ -227,13 +253,17 @@ function DiceTray({ isOpen }) {
         style={{
           position: "absolute",
           bottom: "16px",
-          left: "50%",
-          transform: "translateX(-50%)",
+          left: 0,
+          right: 0,
           display: "flex",
           color: "white",
         }}
       >
-        <DiceResults diceRolls={diceRolls} />
+        <DiceResults
+          diceRolls={diceRolls}
+          onDiceClear={handleDiceClear}
+          onDiceReroll={handleDiceReroll}
+        />
       </div>
       <div
         style={{
