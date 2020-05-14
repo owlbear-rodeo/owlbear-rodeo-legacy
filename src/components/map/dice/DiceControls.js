@@ -18,6 +18,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D20"
         aria-label="Add D20"
         onClick={() => onDiceAdd(SunsetDice, "d20")}
+        color="hsl(210, 50%, 96%)"
       >
         <D20Icon />
       </IconButton>
@@ -25,6 +26,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D12"
         aria-label="Add D12"
         onClick={() => onDiceAdd(SunsetDice, "d12")}
+        color="hsl(210, 50%, 96%)"
       >
         <D12Icon />
       </IconButton>
@@ -32,6 +34,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D10"
         aria-label="Add D10"
         onClick={() => onDiceAdd(SunsetDice, "d10")}
+        color="hsl(210, 50%, 96%)"
       >
         <D10Icon />
       </IconButton>
@@ -39,6 +42,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D8"
         aria-label="Add D8"
         onClick={() => onDiceAdd(SunsetDice, "d8")}
+        color="hsl(210, 50%, 96%)"
       >
         <D8Icon />
       </IconButton>
@@ -46,6 +50,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D6"
         aria-label="Add D6"
         onClick={() => onDiceAdd(SunsetDice, "d6")}
+        color="hsl(210, 50%, 96%)"
       >
         <D6Icon />
       </IconButton>
@@ -53,6 +58,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D4"
         aria-label="Add D4"
         onClick={() => onDiceAdd(SunsetDice, "d4")}
+        color="hsl(210, 50%, 96%)"
       >
         <D4Icon />
       </IconButton>
@@ -60,6 +66,7 @@ function DiceControls({ onDiceAdd }) {
         title="Add D100"
         aria-label="Add D100"
         onClick={() => onDiceAdd(SunsetDice, "d100")}
+        color="hsl(210, 50%, 96%)"
       >
         <D100Icon />
       </IconButton>
