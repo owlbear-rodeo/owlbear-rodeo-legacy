@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, IconButton } from "theme-ui";
+import { Flex } from "theme-ui";
 
 import SunsetDice from "../../../dice/galaxy/GalaxyDice";
 
@@ -11,65 +11,69 @@ import D6Icon from "../../../icons/D6Icon";
 import D4Icon from "../../../icons/D4Icon";
 import D100Icon from "../../../icons/D100Icon";
 
-function DiceControls({ onDiceAdd }) {
+import DiceButton from "./DiceButton";
+
+function DiceControls({ diceRolls, onDiceAdd }) {
+  const diceCounts = {};
+  for (let dice of diceRolls) {
+    if (dice.type in diceCounts) {
+      diceCounts[dice.type] += 1;
+    } else {
+      diceCounts[dice.type] = 1;
+    }
+  }
+
   return (
     <Flex>
-      <IconButton
+      <DiceButton
         title="Add D20"
-        aria-label="Add D20"
+        count={diceCounts.d20}
         onClick={() => onDiceAdd(SunsetDice, "d20")}
-        color="hsl(210, 50%, 96%)"
       >
         <D20Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D12"
-        aria-label="Add D12"
+        count={diceCounts.d12}
         onClick={() => onDiceAdd(SunsetDice, "d12")}
-        color="hsl(210, 50%, 96%)"
       >
         <D12Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D10"
-        aria-label="Add D10"
+        count={diceCounts.d10}
         onClick={() => onDiceAdd(SunsetDice, "d10")}
-        color="hsl(210, 50%, 96%)"
       >
         <D10Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D8"
-        aria-label="Add D8"
+        count={diceCounts.d8}
         onClick={() => onDiceAdd(SunsetDice, "d8")}
-        color="hsl(210, 50%, 96%)"
       >
         <D8Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D6"
-        aria-label="Add D6"
+        count={diceCounts.d6}
         onClick={() => onDiceAdd(SunsetDice, "d6")}
-        color="hsl(210, 50%, 96%)"
       >
         <D6Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D4"
-        aria-label="Add D4"
+        count={diceCounts.d4}
         onClick={() => onDiceAdd(SunsetDice, "d4")}
-        color="hsl(210, 50%, 96%)"
       >
         <D4Icon />
-      </IconButton>
-      <IconButton
+      </DiceButton>
+      <DiceButton
         title="Add D100"
-        aria-label="Add D100"
+        count={diceCounts.d100}
         onClick={() => onDiceAdd(SunsetDice, "d100")}
-        color="hsl(210, 50%, 96%)"
       >
         <D100Icon />
-      </IconButton>
+      </DiceButton>
     </Flex>
   );
 }

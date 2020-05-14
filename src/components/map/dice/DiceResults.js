@@ -6,16 +6,19 @@ const maxDiceRollsShown = 6;
 function DiceResults({ diceRolls }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (diceRolls.includes("unknown") || diceRolls.length === 0) {
+  if (
+    diceRolls.map((dice) => dice.roll).includes("unknown") ||
+    diceRolls.length === 0
+  ) {
     return null;
   }
 
   let rolls = [];
   if (diceRolls.length > 1) {
-    rolls = diceRolls.map((roll, index) => (
+    rolls = diceRolls.map((dice, index) => (
       <React.Fragment key={index}>
         <Text variant="body2" as="p" color="hsl(210, 50%, 96%)">
-          {roll}
+          {dice.roll}
         </Text>
         <Text variant="body2" as="p" color="grey">
           {index === diceRolls.length - 1 ? "" : "+"}
@@ -38,7 +41,7 @@ function DiceResults({ diceRolls }) {
         sx={{ fontSize: 5 }}
         mb={diceRolls.length === 1 ? "24px" : 0}
       >
-        {diceRolls.reduce((a, b) => a + b)}
+        {diceRolls.reduce((accumulator, dice) => accumulator + dice.roll, 0)}
       </Text>
       {rolls.length > maxDiceRollsShown ? (
         <Button

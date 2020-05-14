@@ -138,7 +138,7 @@ function DiceTray({ isOpen }) {
       } else if (dice.type === "d10" && number === 0) {
         number = 10;
       }
-      return number;
+      return { type: dice.type, roll: number };
     }
 
     // Find the number facing up on a mesh instance of a dice
@@ -171,18 +171,18 @@ function DiceTray({ isOpen }) {
       const speed = getDiceSpeed(dice);
       if (speed < 0.01 && !diceIsAsleep) {
         dieSleepRef.current[i] = true;
-        let newNumber = getDiceRoll(dice);
-        setDiceRolls((prevNumbers) => {
-          let newNumbers = [...prevNumbers];
-          newNumbers[i] = newNumber;
-          return newNumbers;
+        let roll = getDiceRoll(dice);
+        setDiceRolls((prevRolls) => {
+          let newRolls = [...prevRolls];
+          newRolls[i] = roll;
+          return newRolls;
         });
       } else if (speed > 0.5 && diceIsAsleep) {
         dieSleepRef.current[i] = false;
-        setDiceRolls((prevNumbers) => {
-          let newNumbers = [...prevNumbers];
-          newNumbers[i] = "unknown";
-          return newNumbers;
+        setDiceRolls((prevRolls) => {
+          let newRolls = [...prevRolls];
+          newRolls[i].roll = "unknown";
+          return newRolls;
         });
       }
     }
@@ -206,7 +206,7 @@ function DiceTray({ isOpen }) {
       }
       dieRef.current.push(dice);
       dieSleepRef.current.push(false);
-      setDiceRolls((prevNumbers) => [...prevNumbers, "unknown"]);
+      setDiceRolls((prevRolls) => [...prevRolls, { type, roll: "unknown" }]);
     }
   }
 
@@ -243,7 +243,7 @@ function DiceTray({ isOpen }) {
           transform: "translateX(-50%)",
         }}
       >
-        <DiceControls onDiceAdd={handleDiceAdd} />
+        <DiceControls diceRolls={diceRolls} onDiceAdd={handleDiceAdd} />
       </div>
     </Box>
   );
