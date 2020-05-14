@@ -5,7 +5,7 @@ import ExpandMoreDiceIcon from "../../icons/ExpandMoreDiceIcon";
 import DiceTray from "./dice/DiceTray";
 
 function MapDice() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <Flex

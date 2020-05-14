@@ -3,7 +3,7 @@ import * as BABYLON from "babylonjs";
 import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 
-function DiceScene({ onSceneMount }) {
+function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   const sceneRef = useRef();
   const engineRef = useRef();
   const canvasRef = useRef();
@@ -86,6 +86,7 @@ function DiceScene({ onSceneMount }) {
         selectedMeshRef.current = pickInfo.pickedMesh;
       }
     }
+    onPointerDown();
   }
 
   function handlePointerUp() {
@@ -105,6 +106,8 @@ function DiceScene({ onSceneMount }) {
     }
     selectedMeshRef.current = null;
     selectedMeshDeltaPositionRef.current = null;
+
+    onPointerUp();
   }
 
   return (
@@ -120,5 +123,10 @@ function DiceScene({ onSceneMount }) {
     </div>
   );
 }
+
+DiceScene.defaultProps = {
+  onPointerDown() {},
+  onPointerUp() {},
+};
 
 export default DiceScene;

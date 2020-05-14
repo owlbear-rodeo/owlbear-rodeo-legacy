@@ -1,80 +1,123 @@
-import React from "react";
-import { Flex } from "theme-ui";
+import React, { useEffect, useState } from "react";
+import * as BABYLON from "babylonjs";
 
-import SunsetDice from "../../../dice/galaxy/GalaxyDice";
+import DiceButtons from "./DiceButtons";
+import DiceResults from "./DiceResults";
 
-import D20Icon from "../../../icons/D20Icon";
-import D12Icon from "../../../icons/D12Icon";
-import D10Icon from "../../../icons/D10Icon";
-import D8Icon from "../../../icons/D8Icon";
-import D6Icon from "../../../icons/D6Icon";
-import D4Icon from "../../../icons/D4Icon";
-import D100Icon from "../../../icons/D100Icon";
+function DiceControls({
+  diceRefs,
+  sceneVisibleRef,
+  onDiceAdd,
+  onDiceClear,
+  onDiceReroll,
+}) {
+  const [diceRolls, setDiceRolls] = useState([]);
 
-import DiceButton from "./DiceButton";
-
-function DiceControls({ diceRolls, onDiceAdd }) {
-  const diceCounts = {};
-  for (let dice of diceRolls) {
-    if (dice.type in diceCounts) {
-      diceCounts[dice.type] += 1;
-    } else {
-      diceCounts[dice.type] = 1;
+  // Update dice rolls
+  useEffect(() => {
+    // Find the number facing up on a dice object
+    function getDiceRoll(dice) {
+      let number = getDiceInstanceRoll(dice.instance);
+      // If the dice is a d100 add the d10
+      if (dice.type === "d100") {
+        const d10Number = getDiceInstanceRoll(dice.d10Instance);
+        // Both zero set to 100
+        if (d10Number === 0 && number === 0) {
+          number = 100;
+        } else {
+          number += d10Number;
+        }
+      } else if (dice.type === "d10" && number === 0) {
+        number = 10;
+      }
+      return { type: dice.type, roll: number };
     }
-  }
+
+    // Find the number facing up on a mesh instance of a dice
+    function getDiceInstanceRoll(instance) {
+      let highestDot = -1;
+      let highestLocator;
+      for (let locator of instance.getChildTransformNodes()) {
+        let dif = locator
+          .getAbsolutePosition()
+          .subtract(instance.getAbsolutePosition());
+        let direction = dif.normalize();
+        const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
+        if (dot > highestDot) {
+          highestDot = dot;
+          highestLocator = locator;
+        }
+      }
+      return parseInt(highestLocator.name.slice(12));
+    }
+
+    function updateDiceRolls() {
+      const die = diceRefs.current;
+      const sceneVisible = sceneVisibleRef.current;
+      if (!sceneVisible) {
+        return;
+      }
+      const diceAwake = die.map((dice) => dice.asleep).includes(false);
+      if (!diceAwake) {
+        return;
+      }
+
+      let newRolls = [];
+      for (let i = 0; i < die.length; i++) {
+        const dice = die[i];
+        let roll = getDiceRoll(dice);
+        newRolls[i] = roll;
+      }
+      setDiceRolls(newRolls);
+    }
+
+    const updateInterval = setInterval(updateDiceRolls, 100);
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [diceRefs, sceneVisibleRef]);
 
   return (
-    <Flex>
-      <DiceButton
-        title="Add D20"
-        count={diceCounts.d20}
-        onClick={() => onDiceAdd(SunsetDice, "d20")}
+    <>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "16px",
+          left: 0,
+          right: 0,
+          display: "flex",
+          color: "white",
+        }}
       >
-        <D20Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D12"
-        count={diceCounts.d12}
-        onClick={() => onDiceAdd(SunsetDice, "d12")}
+        <DiceResults
+          diceRolls={diceRolls}
+          onDiceClear={() => {
+            onDiceClear();
+            setDiceRolls([]);
+          }}
+          onDiceReroll={onDiceReroll}
+        />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: "24px",
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
       >
-        <D12Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D10"
-        count={diceCounts.d10}
-        onClick={() => onDiceAdd(SunsetDice, "d10")}
-      >
-        <D10Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D8"
-        count={diceCounts.d8}
-        onClick={() => onDiceAdd(SunsetDice, "d8")}
-      >
-        <D8Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D6"
-        count={diceCounts.d6}
-        onClick={() => onDiceAdd(SunsetDice, "d6")}
-      >
-        <D6Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D4"
-        count={diceCounts.d4}
-        onClick={() => onDiceAdd(SunsetDice, "d4")}
-      >
-        <D4Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D100"
-        count={diceCounts.d100}
-        onClick={() => onDiceAdd(SunsetDice, "d100")}
-      >
-        <D100Icon />
-      </DiceButton>
-    </Flex>
+        <DiceButtons
+          diceRolls={diceRolls}
+          onDiceAdd={(style, type) => {
+            onDiceAdd(style, type);
+            setDiceRolls((prevRolls) => [
+              ...prevRolls,
+              { type, roll: "unknown" },
+            ]);
+          }}
+        />
+      </div>
+    </>
   );
 }
 

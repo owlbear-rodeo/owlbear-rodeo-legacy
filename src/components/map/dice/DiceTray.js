@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import * as BABYLON from "babylonjs";
 import { Box } from "theme-ui";
 
@@ -6,7 +6,6 @@ import environment from "../../../dice/environment.dds";
 
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
-import DiceResults from "./DiceResults";
 import Dice from "../../../dice/Dice";
 
 import createDiceTray, {
@@ -16,18 +15,29 @@ import createDiceTray, {
 function DiceTray({ isOpen }) {
   const sceneRef = useRef();
   const shadowGeneratorRef = useRef();
-  const dieRef = useRef([]);
-  const dieSleepRef = useRef([]);
-  const [diceRolls, setDiceRolls] = useState([]);
-
-  const sceneSleepRef = useRef(true);
+  const diceRefs = useRef([]);
+  const sceneVisibleRef = useRef(false);
+  const sceneInteractionRef = useRef(false);
+  // Set to true to ignore scene sleep and visible values
+  const forceSceneRenderRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      sceneSleepRef.current = true;
+    let openTimeout;
+    if (isOpen) {
+      sceneVisibleRef.current = true;
+      // Force scene rendering on open for 1s to ensure dice tray is rendered
+      forceSceneRenderRef.current = true;
+      openTimeout = setTimeout(() => {
+        forceSceneRenderRef.current = false;
+      }, 1000);
     } else {
-      sceneSleepRef.current = false;
+      sceneVisibleRef.current = false;
     }
+    return () => {
+      if (openTimeout) {
+        clearTimeout(openTimeout);
+      }
+    };
   }, [isOpen]);
 
   const handleSceneMount = useCallback(({ scene, engine }) => {
@@ -124,69 +134,34 @@ function DiceTray({ isOpen }) {
       }
     }
 
-    // Find the number facing up on a dice object
-    function getDiceRoll(dice) {
-      let number = getDiceInstanceRoll(dice.instance);
-      // If the dice is a d100 add the d10
-      if (dice.type === "d100") {
-        const d10Number = getDiceInstanceRoll(dice.d10Instance);
-        // Both zero set to 100
-        if (d10Number === 0 && number === 0) {
-          number = 100;
-        } else {
-          number += d10Number;
-        }
-      } else if (dice.type === "d10" && number === 0) {
-        number = 10;
-      }
-      return { type: dice.type, roll: number };
+    const die = diceRefs.current;
+    const sceneVisible = sceneVisibleRef.current;
+    if (!sceneVisible) {
+      return;
     }
-
-    // Find the number facing up on a mesh instance of a dice
-    function getDiceInstanceRoll(instance) {
-      let highestDot = -1;
-      let highestLocator;
-      for (let locator of instance.getChildTransformNodes()) {
-        let dif = locator
-          .getAbsolutePosition()
-          .subtract(instance.getAbsolutePosition());
-        let direction = dif.normalize();
-        const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
-        if (dot > highestDot) {
-          highestDot = dot;
-          highestLocator = locator;
-        }
-      }
-      return parseInt(highestLocator.name.slice(12));
-    }
-
-    const die = dieRef.current;
-    const shouldSleep = sceneSleepRef.current;
-    if (shouldSleep) {
+    const sceneInteraction = sceneInteractionRef.current;
+    const forceSceneRender = forceSceneRenderRef.current;
+    const diceAwake = die.map((dice) => dice.asleep).includes(false);
+    // Return early if scene doesn't need to be re-rendered
+    if (!forceSceneRender && !sceneInteraction && !diceAwake) {
       return;
     }
 
     for (let i = 0; i < die.length; i++) {
       const dice = die[i];
-      const diceIsAsleep = dieSleepRef.current[i];
       const speed = getDiceSpeed(dice);
-      if (speed < 0.01 && !diceIsAsleep) {
-        dieSleepRef.current[i] = true;
-        let roll = getDiceRoll(dice);
-        setDiceRolls((prevRolls) => {
-          let newRolls = [...prevRolls];
-          newRolls[i] = roll;
-          return newRolls;
-        });
-      } else if (speed > 0.5 && diceIsAsleep) {
-        dieSleepRef.current[i] = false;
-        setDiceRolls((prevRolls) => {
-          let newRolls = [...prevRolls];
-          newRolls[i].roll = "unknown";
-          return newRolls;
-        });
+      // If the speed has been below 0.01 for 1s set dice to sleep
+      if (speed < 0.01 && !dice.sleepTimout) {
+        dice.sleepTimout = setTimeout(() => {
+          dice.asleep = true;
+        }, 1000);
+      } else if (speed > 0.5 && (dice.asleep || dice.sleepTimout)) {
+        dice.asleep = false;
+        clearTimeout(dice.sleepTimout);
+        dice.sleepTimout = null;
       }
     }
+
     if (scene) {
       scene.render();
     }
@@ -199,7 +174,7 @@ function DiceTray({ isOpen }) {
       const instance = await style.createInstance(type, scene);
       shadowGenerator.addShadowCaster(instance);
       Dice.roll(instance);
-      let dice = { type, instance };
+      let dice = { type, instance, asleep: false };
       // If we have a d100 add a d10 as well
       if (type === "d100") {
         const d10Instance = await style.createInstance("d10", scene);
@@ -207,32 +182,36 @@ function DiceTray({ isOpen }) {
         Dice.roll(d10Instance);
         dice.d10Instance = d10Instance;
       }
-      dieRef.current.push(dice);
-      dieSleepRef.current.push(false);
-      setDiceRolls((prevRolls) => [...prevRolls, { type, roll: "unknown" }]);
+      diceRefs.current.push(dice);
     }
   }
 
   function handleDiceClear() {
-    const die = dieRef.current;
+    const die = diceRefs.current;
     for (let dice of die) {
       dice.instance.dispose();
       if (dice.type === "d100") {
         dice.d10Instance.dispose();
       }
     }
-    dieRef.current = [];
-    dieSleepRef.current = [];
-    setDiceRolls([]);
+    diceRefs.current = [];
+    // Force scene rendering to show cleared dice
+    forceSceneRenderRef.current = true;
+    setTimeout(() => {
+      if (forceSceneRenderRef) {
+        forceSceneRenderRef.current = false;
+      }
+    }, 100);
   }
 
   function handleDiceReroll() {
-    const die = dieRef.current;
+    const die = diceRefs.current;
     for (let dice of die) {
       Dice.roll(dice.instance);
       if (dice.type === "d100") {
         Dice.roll(dice.d10Instance);
       }
+      dice.asleep = false;
     }
   }
 
@@ -248,33 +227,22 @@ function DiceTray({ isOpen }) {
       }}
       bg="background"
     >
-      <Scene onSceneMount={handleSceneMount} />
-      <div
-        style={{
-          position: "absolute",
-          bottom: "16px",
-          left: 0,
-          right: 0,
-          display: "flex",
-          color: "white",
+      <Scene
+        onSceneMount={handleSceneMount}
+        onPointerDown={() => {
+          sceneInteractionRef.current = true;
         }}
-      >
-        <DiceResults
-          diceRolls={diceRolls}
-          onDiceClear={handleDiceClear}
-          onDiceReroll={handleDiceReroll}
-        />
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          top: "24px",
-          left: "50%",
-          transform: "translateX(-50%)",
+        onPointerUp={() => {
+          sceneInteractionRef.current = false;
         }}
-      >
-        <DiceControls diceRolls={diceRolls} onDiceAdd={handleDiceAdd} />
-      </div>
+      />
+      <DiceControls
+        diceRefs={diceRefs}
+        sceneVisibleRef={sceneVisibleRef}
+        onDiceAdd={handleDiceAdd}
+        onDiceClear={handleDiceClear}
+        onDiceReroll={handleDiceReroll}
+      />
     </Box>
   );
 }
