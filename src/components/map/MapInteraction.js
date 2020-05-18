@@ -21,11 +21,14 @@ function MapInteraction({
 }) {
   const mapContainerRef = useRef();
   const mapMoveContainerRef = useRef();
+  const mapScaleContainerRef = useRef();
   const mapTranslateRef = useRef({ x: 0, y: 0 });
   const mapScaleRef = useRef(1);
   function setTranslateAndScale(newTranslate, newScale) {
     const moveContainer = mapMoveContainerRef.current;
-    moveContainer.style.transform = `translate(${newTranslate.x}px, ${newTranslate.y}px) scale(${newScale})`;
+    const scaleContainer = mapScaleContainerRef.current;
+    moveContainer.style.transform = `translate(${newTranslate.x}px, ${newTranslate.y}px)`;
+    scaleContainer.style.transform = ` scale(${newScale})`;
     mapScaleRef.current = newScale;
     mapTranslateRef.current = newTranslate;
   }
@@ -44,8 +47,8 @@ function MapInteraction({
 
       if (isEnabled || isGesture) {
         newTranslate = {
-          x: translate.x + event.dx,
-          y: translate.y + event.dy,
+          x: translate.x + event.dx / newScale,
+          y: translate.y + event.dy / newScale,
         };
       }
       setTranslateAndScale(newTranslate, newScale);
@@ -141,22 +144,24 @@ function MapInteraction({
           transform: "translate(-50%, -50%)",
         }}
       >
-        <Box ref={mapMoveContainerRef}>
-          <Box
-            sx={{
-              width: "100%",
-              height: 0,
-              paddingBottom: `${(1 / aspectRatio) * 100}%`,
-            }}
-          />
-          <MapInteractionProvider
-            value={{
-              translateRef: mapTranslateRef,
-              scaleRef: mapScaleRef,
-            }}
-          >
-            {children}
-          </MapInteractionProvider>
+        <Box ref={mapScaleContainerRef}>
+          <Box ref={mapMoveContainerRef}>
+            <Box
+              sx={{
+                width: "100%",
+                height: 0,
+                paddingBottom: `${(1 / aspectRatio) * 100}%`,
+              }}
+            />
+            <MapInteractionProvider
+              value={{
+                translateRef: mapTranslateRef,
+                scaleRef: mapScaleRef,
+              }}
+            >
+              {children}
+            </MapInteractionProvider>
+          </Box>
         </Box>
       </Box>
       {controls}
