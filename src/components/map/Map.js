@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { Box, Image } from "theme-ui";
 
 import ProxyToken from "../token/ProxyToken";
@@ -11,6 +11,8 @@ import MapControls from "./MapControls";
 import { omit } from "../../helpers/shared";
 import useDataSource from "../../helpers/useDataSource";
 import MapInteraction from "./MapInteraction";
+
+import AuthContext from "../../contexts/AuthContext";
 
 import { mapSources as defaultMapSources } from "../../maps";
 
@@ -36,15 +38,16 @@ function Map({
   disabledTokens,
   loading,
 }) {
+  const { userId } = useContext(AuthContext);
   const mapSource = useDataSource(map, defaultMapSources);
 
   function handleProxyDragEnd(isOnMap, tokenState) {
     if (isOnMap && onMapTokenStateChange) {
-      onMapTokenStateChange(tokenState);
+      onMapTokenStateChange({ ...tokenState, lastEditedBy: userId });
     }
 
     if (!isOnMap && onMapTokenStateRemove) {
-      onMapTokenStateRemove(tokenState);
+      onMapTokenStateRemove({ ...tokenState, lastEditedBy: userId });
     }
   }
 
