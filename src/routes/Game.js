@@ -450,7 +450,7 @@ function Game() {
     for (let defaultToken of defaultTokens) {
       defaultTokensWithIds.push({
         ...defaultToken,
-        id: `__default-${defaultToken.name}`,
+        id: `__default-${defaultToken.key}`,
         owner: userId,
       });
     }

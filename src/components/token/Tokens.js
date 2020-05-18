@@ -23,6 +23,7 @@ function Tokens({ onCreateMapTokenState, tokens }) {
       onCreateMapTokenState({
         id: shortid.generate(),
         tokenId: token.id,
+        type: token.type,
         owner: userId,
         size: tokenSize,
         label: "",

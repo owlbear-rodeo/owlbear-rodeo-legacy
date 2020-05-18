@@ -1,45 +1,67 @@
-import axes from "./Axes.png";
-import bird from "./Bird.png";
-import book from "./Book.png";
-import crown from "./Crown.png";
+import aberration from "./Aberration.png";
+import artificer from "./Artificer.png";
+import barbarian from "./Barbarian.png";
+import bard from "./Bard.png";
+import beast from "./Beast.png";
+import bloodHunter from "./Blood Hunter.png";
+import celestial from "./Celestial.png";
+import cleric from "./Cleric.png";
+import construct from "./Construct.png";
 import dragon from "./Dragon.png";
-import eye from "./Eye.png";
-import fist from "./Fist.png";
-import horse from "./Horse.png";
-import leaf from "./Leaf.png";
-import lion from "./Lion.png";
-import money from "./Money.png";
-import moon from "./Moon.png";
-import potion from "./Potion.png";
-import shield from "./Shield.png";
-import skull from "./Skull.png";
-import snake from "./Snake.png";
-import sun from "./Sun.png";
-import swords from "./Swords.png";
-import tree from "./Tree.png";
-import triangle from "./Triangle.png";
+import druid from "./Druid.png";
+import elemental from "./Elemental.png";
+import fey from "./Fey.png";
+import fiend from "./Fiend.png";
+import fighter from "./Fighter.png";
+import giant from "./Giant.png";
+import goblinoid from "./Goblinoid.png";
+import humanoid from "./Humanoid.png";
+import monk from "./Monk.png";
+import monstrosity from "./Monstrosity.png";
+import ooze from "./Ooze.png";
+import paladin from "./Paladin.png";
+import plant from "./Plant.png";
+import ranger from "./Ranger.png";
+import rouge from "./Rouge.png";
+import shapechanger from "./Shapechanger.png";
+import sorcerer from "./Sorcerer.png";
+import titan from "./Titan.png";
+import undead from "./Undead.png";
+import warlock from "./Warlock.png";
+import wizard from "./Wizard.png";
 
 export const tokenSources = {
-  axes,
-  bird,
-  book,
-  crown,
+  barbarian,
+  bard,
+  cleric,
+  druid,
+  fighter,
+  monk,
+  paladin,
+  ranger,
+  rouge,
+  sorcerer,
+  warlock,
+  wizard,
+  artificer,
+  bloodHunter,
+  aberration,
+  beast,
+  celestial,
+  construct,
   dragon,
-  eye,
-  fist,
-  horse,
-  leaf,
-  lion,
-  money,
-  moon,
-  potion,
-  shield,
-  skull,
-  snake,
-  sun,
-  swords,
-  tree,
-  triangle,
+  elemental,
+  fey,
+  fiend,
+  giant,
+  goblinoid,
+  humanoid,
+  monstrosity,
+  ooze,
+  plant,
+  shapechanger,
+  titan,
+  undead,
 };
 
 export const tokens = Object.keys(tokenSources).map((key) => ({
