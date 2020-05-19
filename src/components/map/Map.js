@@ -13,6 +13,7 @@ import useDataSource from "../../helpers/useDataSource";
 import MapInteraction from "./MapInteraction";
 
 import AuthContext from "../../contexts/AuthContext";
+import TokenDataContext from "../../contexts/TokenDataContext";
 
 import { mapSources as defaultMapSources } from "../../maps";
 
@@ -22,7 +23,6 @@ const mapTokenMenuClassName = "map-token__menu";
 function Map({
   map,
   mapState,
-  tokens,
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
@@ -39,6 +39,8 @@ function Map({
   loading,
 }) {
   const { userId } = useContext(AuthContext);
+  const { tokens } = useContext(TokenDataContext);
+
   const mapSource = useDataSource(map, defaultMapSources);
 
   function handleProxyDragEnd(isOnMap, tokenState) {

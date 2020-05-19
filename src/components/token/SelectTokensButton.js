@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
-import SelectMapModal from "../../modals/SelectMapModal";
-import SelectMapIcon from "../../icons/SelectMapIcon";
+import SelectTokensIcon from "../../icons/SelectTokensIcon";
 
-function SelectMapButton({ onMapChange, onMapStateChange, currentMap }) {
+import SelectTokensModal from "../../modals/SelectTokensModal";
+
+function SelectTokensButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   function openModal() {
     setIsModalOpen(true);
@@ -16,26 +17,22 @@ function SelectMapButton({ onMapChange, onMapStateChange, currentMap }) {
   function handleDone() {
     closeModal();
   }
-
   return (
     <>
       <IconButton
-        aria-label="Select Map"
-        title="Select Map"
+        aria-label="Edit Tokens"
+        title="Edit Tokens"
         onClick={openModal}
       >
-        <SelectMapIcon />
+        <SelectTokensIcon />
       </IconButton>
-      <SelectMapModal
+      <SelectTokensModal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         onDone={handleDone}
-        onMapChange={onMapChange}
-        onMapStateChange={onMapStateChange}
-        currentMap={currentMap}
       />
     </>
   );
 }
 
-export default SelectMapButton;
+export default SelectTokensButton;

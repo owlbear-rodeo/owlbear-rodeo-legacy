@@ -11,6 +11,8 @@ import ReleaseNotes from "./routes/ReleaseNotes";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
+import { MapDataProvider } from "./contexts/MapDataContext";
+import { TokenDataProvider } from "./contexts/TokenDataContext";
 
 function App() {
   return (
@@ -29,7 +31,11 @@ function App() {
                 <FAQ />
               </Route>
               <Route path="/game/:id">
-                <Game />
+                <MapDataProvider>
+                  <TokenDataProvider>
+                    <Game />
+                  </TokenDataProvider>
+                </MapDataProvider>
               </Route>
               <Route path="/">
                 <Home />

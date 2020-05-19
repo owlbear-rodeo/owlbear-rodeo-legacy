@@ -17,8 +17,7 @@ import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
-
-import { tokens as defaultTokens } from "../tokens";
+import MapDataContext from "../contexts/MapDataContext";
 
 function Game() {
   const { database } = useContext(DatabaseContext);
@@ -71,6 +70,7 @@ function Game() {
     }
   }
 
+  const { updateMapState } = useContext(MapDataContext);
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(mapState, 500);
   useEffect(() => {
@@ -81,11 +81,9 @@ function Game() {
       map.owner === userId &&
       database
     ) {
-      database
-        .table("states")
-        .update(debouncedMapState.mapId, debouncedMapState);
+      updateMapState(debouncedMapState.mapId, debouncedMapState);
     }
-  }, [map, debouncedMapState, userId, database]);
+  }, [map, debouncedMapState, userId, database, updateMapState]);
 
   function handleMapChange(newMap, newMapState) {
     setMapState(newMapState);
@@ -116,7 +114,7 @@ function Game() {
     }
   }
 
-  async function handleMapTokenStateChange(token) {
+  function handleMapTokenStateChange(token) {
     if (mapState === null) {
       return;
     }
@@ -438,30 +436,15 @@ function Game() {
     }
   }, [stream, peers, handleStreamEnd]);
 
-  /**
-   * Token data
-   */
-  const [tokens, setTokens] = useState([]);
-  useEffect(() => {
-    if (!userId) {
-      return;
-    }
-    const defaultTokensWithIds = [];
-    for (let defaultToken of defaultTokens) {
-      defaultTokensWithIds.push({
-        ...defaultToken,
-        id: `__default-${defaultToken.key}`,
-        owner: userId,
-      });
-    }
-    setTokens(defaultTokensWithIds);
-  }, [userId]);
-
   return (
     <>
       <Flex sx={{ flexDirection: "column", height: "100%" }}>
         <Flex
-          sx={{ justifyContent: "space-between", flexGrow: 1, height: "100%" }}
+          sx={{
+            justifyContent: "space-between",
+            flexGrow: 1,
+            height: "100%",
+          }}
         >
           <Party
             nickname={nickname}
@@ -476,7 +459,6 @@ function Game() {
           <Map
             map={map}
             mapState={mapState}
-            tokens={tokens}
             loading={mapLoading}
             onMapTokenStateChange={handleMapTokenStateChange}
             onMapTokenStateRemove={handleMapTokenStateRemove}
@@ -492,10 +474,7 @@ function Game() {
             allowFogDrawing={canEditFogDrawing}
             disabledTokens={disabledMapTokens}
           />
-          <Tokens
-            tokens={tokens}
-            onCreateMapTokenState={handleMapTokenStateChange}
-          />
+          <Tokens onMapTokenStateCreate={handleMapTokenStateChange} />
         </Flex>
       </Flex>
       <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>

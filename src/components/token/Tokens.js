@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Box } from "theme-ui";
+import { Box, Flex } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
 
@@ -7,23 +7,27 @@ import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
 import NumberInput from "../NumberInput";
 
+import SelectTokensButton from "./SelectTokensButton";
+
 import { fromEntries } from "../../helpers/shared";
 
 import AuthContext from "../../contexts/AuthContext";
+import TokenDataContext from "../../contexts/TokenDataContext";
 
 const listTokenClassName = "list-token";
 
-function Tokens({ onCreateMapTokenState, tokens }) {
-  const [tokenSize, setTokenSize] = useState(1);
+function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useContext(AuthContext);
+  const { tokens } = useContext(TokenDataContext);
+
+  const [tokenSize, setTokenSize] = useState(1);
 
   function handleProxyDragEnd(isOnMap, token) {
-    if (isOnMap && onCreateMapTokenState) {
+    if (isOnMap && onMapTokenStateCreate) {
       // Create a token state from the dragged token
-      onCreateMapTokenState({
+      onMapTokenStateCreate({
         id: shortid.generate(),
         tokenId: token.id,
-        type: token.type,
         owner: userId,
         size: tokenSize,
         label: "",
@@ -44,7 +48,7 @@ function Tokens({ onCreateMapTokenState, tokens }) {
           overflow: "hidden",
         }}
       >
-        <SimpleBar style={{ height: "calc(100% - 58px)", overflowX: "hidden" }}>
+        <SimpleBar style={{ height: "calc(100% - 48px)", overflowX: "hidden" }}>
           {tokens.map((token) => (
             <ListToken
               key={token.id}
@@ -53,15 +57,23 @@ function Tokens({ onCreateMapTokenState, tokens }) {
             />
           ))}
         </SimpleBar>
-        <Box pt={1} bg="muted" sx={{ height: "58px" }}>
-          <NumberInput
+        <Flex
+          bg="muted"
+          sx={{
+            justifyContent: "center",
+            height: "48px",
+            alignItems: "center",
+          }}
+        >
+          <SelectTokensButton />
+          {/* <NumberInput
             value={tokenSize}
             onChange={setTokenSize}
             title="Size"
             min={1}
             max={9}
-          />
-        </Box>
+          /> */}
+        </Flex>
       </Box>
       <ProxyToken
         tokenClassName={listTokenClassName}

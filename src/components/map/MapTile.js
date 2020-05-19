@@ -15,7 +15,7 @@ function MapTile({
   onMapSelect,
   onMapRemove,
   onMapReset,
-  onSubmit,
+  onDone,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
@@ -108,7 +108,7 @@ function MapTile({
       }}
       onDoubleClick={(e) => {
         if (!isMapTileMenuOpen) {
-          onSubmit(e);
+          onDone(e);
         }
       }}
     >
