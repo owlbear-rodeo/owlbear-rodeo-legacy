@@ -17,7 +17,6 @@ import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
-import MapDataContext from "../contexts/MapDataContext";
 
 function Game() {
   const { database } = useContext(DatabaseContext);
@@ -70,7 +69,6 @@ function Game() {
     }
   }
 
-  const { updateMapState } = useContext(MapDataContext);
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(mapState, 500);
   useEffect(() => {
@@ -81,9 +79,11 @@ function Game() {
       map.owner === userId &&
       database
     ) {
-      updateMapState(debouncedMapState.mapId, debouncedMapState);
+      database
+        .table("states")
+        .update(debouncedMapState.mapId, debouncedMapState);
     }
-  }, [map, debouncedMapState, userId, database, updateMapState]);
+  }, [map, debouncedMapState, userId, database]);
 
   function handleMapChange(newMap, newMapState) {
     setMapState(newMapState);

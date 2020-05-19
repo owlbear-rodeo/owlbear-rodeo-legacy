@@ -286,6 +286,7 @@ function Map({
       onMapChange={onMapChange}
       onMapStateChange={onMapStateChange}
       currentMap={map}
+      currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}
       selectedToolId={selectedToolId}
       toolSettings={toolSettings}
