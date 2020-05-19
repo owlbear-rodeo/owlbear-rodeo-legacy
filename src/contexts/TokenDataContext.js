@@ -68,11 +68,21 @@ export function TokenDataProvider({ children }) {
   }
 
   async function putToken(token) {
-    if (tokens.includes((t) => t.id === token.id)) {
-      await updateToken(token.id, token);
-    } else {
-      await addToken(token);
-    }
+    await database.table("tokens").put(token);
+    setTokens((prevTokens) => {
+      const newTokens = [...prevTokens];
+      const i = newTokens.findIndex((t) => t.id === token.id);
+      if (i > -1) {
+        newTokens[i] = { ...newTokens[i], ...token };
+      } else {
+        newTokens.unshift(token);
+      }
+      return newTokens;
+    });
+  }
+
+  function getToken(tokenId) {
+    return tokens.find((token) => token.id === tokenId);
   }
 
   const ownedTokens = tokens.filter((token) => token.owner === userId);
@@ -84,6 +94,7 @@ export function TokenDataProvider({ children }) {
     removeToken,
     updateToken,
     putToken,
+    getToken,
   };
 
   return (

@@ -30,7 +30,7 @@ function SelectMapModal({
 }) {
   const { userId } = useContext(AuthContext);
   const {
-    maps,
+    ownedMaps,
     mapStates,
     addMap,
     removeMap,
@@ -44,7 +44,7 @@ function SelectMapModal({
   // The map selected in the modal
   const [selectedMapId, setSelectedMapId] = useState(null);
 
-  const selectedMap = maps.find((map) => map.id === selectedMapId);
+  const selectedMap = ownedMaps.find((map) => map.id === selectedMapId);
   const selectedMapState = mapStates.find(
     (state) => state.mapId === selectedMapId
   );
@@ -189,7 +189,7 @@ function SelectMapModal({
             Select or import a map
           </Label>
           <MapTiles
-            maps={maps}
+            maps={ownedMaps}
             onMapAdd={openImageDialog}
             onMapRemove={handleMapRemove}
             selectedMap={selectedMap}

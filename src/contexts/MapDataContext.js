@@ -54,10 +54,7 @@ export function MapDataProvider({ children }) {
     }
 
     async function loadMaps() {
-      let storedMaps = await database
-        .table("maps")
-        .where({ owner: userId })
-        .toArray();
+      let storedMaps = await database.table("maps").toArray();
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];
@@ -129,14 +126,37 @@ export function MapDataProvider({ children }) {
     });
   }
 
+  async function putMap(map) {
+    await database.table("maps").put(map);
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      const i = newMaps.findIndex((m) => m.id === map.id);
+      if (i > -1) {
+        newMaps[i] = { ...newMaps[i], ...map };
+      } else {
+        newMaps.unshift(map);
+      }
+      return newMaps;
+    });
+  }
+
+  function getMap(mapId) {
+    return maps.find((map) => map.id === mapId);
+  }
+
+  const ownedMaps = maps.filter((map) => map.owner === userId);
+
   const value = {
     maps,
+    ownedMaps,
     mapStates,
     addMap,
     removeMap,
     resetMap,
     updateMap,
     updateMapState,
+    putMap,
+    getMap,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>
