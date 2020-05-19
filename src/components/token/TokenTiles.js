@@ -6,7 +6,13 @@ import AddIcon from "../../icons/AddIcon";
 
 import TokenTile from "./TokenTile";
 
-function TokenTiles({ tokens, onTokenAdd }) {
+function TokenTiles({
+  tokens,
+  onTokenAdd,
+  onTokenSelect,
+  selectedToken,
+  onTokenRemove,
+}) {
   return (
     <SimpleBar style={{ maxHeight: "300px", width: "500px" }}>
       <Flex
@@ -45,7 +51,13 @@ function TokenTiles({ tokens, onTokenAdd }) {
           <AddIcon large />
         </Flex>
         {tokens.map((token) => (
-          <TokenTile key={token.id} token={token} />
+          <TokenTile
+            key={token.id}
+            token={token}
+            isSelected={selectedToken && token.id === selectedToken.id}
+            onTokenSelect={onTokenSelect}
+            onTokenRemove={onTokenRemove}
+          />
         ))}
       </Flex>
     </SimpleBar>

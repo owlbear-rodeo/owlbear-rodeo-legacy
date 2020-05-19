@@ -18,7 +18,7 @@ const listTokenClassName = "list-token";
 
 function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useContext(AuthContext);
-  const { tokens } = useContext(TokenDataContext);
+  const { ownedTokens, tokens } = useContext(TokenDataContext);
 
   const [tokenSize, setTokenSize] = useState(1);
 
@@ -28,6 +28,7 @@ function Tokens({ onMapTokenStateCreate }) {
       onMapTokenStateCreate({
         id: shortid.generate(),
         tokenId: token.id,
+        tokenType: token.type,
         owner: userId,
         size: tokenSize,
         label: "",
@@ -49,13 +50,15 @@ function Tokens({ onMapTokenStateCreate }) {
         }}
       >
         <SimpleBar style={{ height: "calc(100% - 48px)", overflowX: "hidden" }}>
-          {tokens.map((token) => (
-            <ListToken
-              key={token.id}
-              token={token}
-              className={listTokenClassName}
-            />
-          ))}
+          {ownedTokens
+            .filter((token) => token.owner === userId)
+            .map((token) => (
+              <ListToken
+                key={token.id}
+                token={token}
+                className={listTokenClassName}
+              />
+            ))}
         </SimpleBar>
         <Flex
           bg="muted"

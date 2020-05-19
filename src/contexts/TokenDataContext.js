@@ -14,21 +14,77 @@ export function TokenDataProvider({ children }) {
   const [tokens, setTokens] = useState([]);
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !database) {
       return;
     }
-    const defaultTokensWithIds = [];
-    for (let defaultToken of defaultTokens) {
-      defaultTokensWithIds.push({
-        ...defaultToken,
-        id: `__default-${defaultToken.key}`,
-        owner: userId,
-      });
+    function getDefaultTokes() {
+      const defaultTokensWithIds = [];
+      for (let defaultToken of defaultTokens) {
+        defaultTokensWithIds.push({
+          ...defaultToken,
+          id: `__default-${defaultToken.key}`,
+          owner: userId,
+        });
+      }
+      return defaultTokensWithIds;
     }
-    setTokens(defaultTokensWithIds);
-  }, [userId]);
 
-  const value = { tokens };
+    async function loadTokens() {
+      let storedTokens = await database.table("tokens").toArray();
+      const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
+      const defaultTokensWithIds = getDefaultTokes();
+      const allTokens = [...sortedTokens, ...defaultTokensWithIds];
+      setTokens(allTokens);
+    }
+
+    loadTokens();
+  }, [userId, database]);
+
+  async function addToken(token) {
+    await database.table("tokens").add(token);
+    setTokens((prevTokens) => [token, ...prevTokens]);
+  }
+
+  async function removeToken(id) {
+    // TODO when removing token also remove it from all states that reference it and replicate
+    await database.table("tokens").delete(id);
+    setTokens((prevTokens) => {
+      const filtered = prevTokens.filter((token) => token.id !== id);
+      return filtered;
+    });
+  }
+
+  async function updateToken(id, update) {
+    const change = { ...update, lastModified: Date.now() };
+    await database.table("tokens").update(id, change);
+    setTokens((prevTokens) => {
+      const newTokens = [...prevTokens];
+      const i = newTokens.findIndex((token) => token.id === id);
+      if (i > -1) {
+        newTokens[i] = { ...newTokens[i], ...change };
+      }
+      return newTokens;
+    });
+  }
+
+  async function putToken(token) {
+    if (tokens.includes((t) => t.id === token.id)) {
+      await updateToken(token.id, token);
+    } else {
+      await addToken(token);
+    }
+  }
+
+  const ownedTokens = tokens.filter((token) => token.owner === userId);
+
+  const value = {
+    tokens,
+    ownedTokens,
+    addToken,
+    removeToken,
+    updateToken,
+    putToken,
+  };
 
   return (
     <TokenDataContext.Provider value={value}>

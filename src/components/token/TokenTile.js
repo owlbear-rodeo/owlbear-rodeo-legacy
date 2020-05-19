@@ -1,15 +1,18 @@
 import React from "react";
-import { Flex, Image, Text } from "theme-ui";
+import { Flex, Image, Text, Box, IconButton } from "theme-ui";
+
+import RemoveMapIcon from "../../icons/RemoveMapIcon";
 
 import useDataSource from "../../helpers/useDataSource";
-
 import { tokenSources as defaultTokenSources } from "../../tokens";
 
-function TokenTile({ token, isSelected }) {
+function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
   const tokenSource = useDataSource(token, defaultTokenSources);
+  const isDefault = token.type === "default";
 
   return (
     <Flex
+      onClick={() => onTokenSelect(token)}
       sx={{
         borderColor: "primary",
         borderStyle: isSelected ? "solid" : "none",
@@ -52,6 +55,22 @@ function TokenTile({ token, isSelected }) {
           {token.name}
         </Text>
       </Flex>
+      {isSelected && !isDefault && (
+        <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+          <IconButton
+            aria-label="Remove Map"
+            title="Remove Map"
+            onClick={() => {
+              onTokenRemove(token.id);
+            }}
+            bg="overlay"
+            sx={{ borderRadius: "50%" }}
+            m={1}
+          >
+            <RemoveMapIcon />
+          </IconButton>
+        </Box>
+      )}
     </Flex>
   );
 }
