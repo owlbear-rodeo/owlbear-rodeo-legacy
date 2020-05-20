@@ -176,10 +176,10 @@ function ProxyToken({
           }}
         />
         {tokens[tokenId] && tokens[tokenId].statuses && (
-          <TokenStatus statuses={tokens[tokenId].statuses} />
+          <TokenStatus token={tokens[tokenId]} />
         )}
         {tokens[tokenId] && tokens[tokenId].label && (
-          <TokenLabel label={tokens[tokenId].label} />
+          <TokenLabel token={tokens[tokenId]} />
         )}
       </Box>
     </Box>,

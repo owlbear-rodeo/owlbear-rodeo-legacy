@@ -42,16 +42,13 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
   const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
 
   function handleLabelChange(event) {
-    // Slice to remove Label: text
     const label = event.target.value;
-    if (label.length <= 1) {
-      setCurrentToken((prevToken) => ({
-        ...prevToken,
-        label: label,
-      }));
+    setCurrentToken((prevToken) => ({
+      ...prevToken,
+      label: label,
+    }));
 
-      onTokenChange({ ...currentToken, label: label });
-    }
+    onTokenChange({ ...currentToken, label: label });
   }
 
   function handleStatusChange(status) {
@@ -230,7 +227,7 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             Size:
           </Text>
           <Slider
-            value={currentToken.size}
+            value={currentToken.size || 1}
             onChange={handleSizeChange}
             step={1}
             min={1}

@@ -66,10 +66,8 @@ function MapToken({ token, tokenState, tokenSizePercent, className }) {
             data-id={tokenState.id}
             ref={imageRef}
           />
-          {tokenState.statuses && (
-            <TokenStatus statuses={tokenState.statuses} />
-          )}
-          {tokenState.label && <TokenLabel label={tokenState.label} />}
+          {tokenState.statuses && <TokenStatus token={tokenState} />}
+          {tokenState.label && <TokenLabel token={tokenState} />}
         </Box>
       </Box>
     </Box>

@@ -1,48 +1,57 @@
 import React from "react";
-import { Image, Box, Text } from "theme-ui";
+import { Box, Text } from "theme-ui";
 
-import tokenLabel from "../../images/TokenLabel.png";
-
-function TokenLabel({ label }) {
+function TokenLabel({ token }) {
   return (
     <Box
       sx={{
         position: "absolute",
-        transform: "scale(0.3) translate(0, 20%)",
+        transform: `scale(${0.3 / token.size}) translate(0, 20%)`,
         transformOrigin: "bottom center",
         pointerEvents: "none",
         width: "100%",
-        display: "flex", // Set display to flex to fix height being calculated wrong
-        flexDirection: "column",
+        height: "100%",
       }}
     >
-      <Image sx={{ width: "100%" }} src={tokenLabel} />
+      {/* Use SVG so text is scaled with token size */}
       <svg
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
         viewBox="0 0 100 100"
         xmlns="http://www.w3.org/2000/svg"
+        width="100%"
+        height="100%"
+        style={{ overflow: "visible" }}
       >
-        <foreignObject width="100%" height="100%">
-          <Text
-            as="p"
-            variant="heading"
-            sx={{
-              // This value is actually 66%
-              fontSize: "66px",
-              width: "100px",
-              height: "100px",
-              textAlign: "center",
-              verticalAlign: "middle",
-              lineHeight: 1.4,
-            }}
-            color="hsl(210, 50%, 96%)"
-          >
-            {label}
-          </Text>
+        <foreignObject
+          width="100%"
+          height="100%"
+          style={{ overflow: "visible" }}
+        >
+          <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
+            <Text
+              as="p"
+              variant="heading"
+              sx={{
+                fontSize: "66px",
+                textAlign: "center",
+                verticalAlign: "middle",
+                lineHeight: 1.4,
+                whiteSpace: "nowrap",
+                minWidth: "100%",
+                display: "inline-block",
+                position: "absolute",
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                borderRadius: "66px",
+                border: "2px solid",
+                borderColor: "muted",
+              }}
+              bg="overlay"
+              px={4}
+            >
+              {token.label}
+            </Text>
+          </Box>
         </foreignObject>
       </svg>
     </Box>

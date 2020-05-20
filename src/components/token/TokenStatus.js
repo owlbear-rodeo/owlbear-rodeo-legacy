@@ -3,7 +3,7 @@ import { Box } from "theme-ui";
 
 import colors from "../../helpers/colors";
 
-function TokenStatus({ statuses }) {
+function TokenStatus({ token }) {
   return (
     <Box
       sx={{
@@ -13,7 +13,7 @@ function TokenStatus({ statuses }) {
         pointerEvents: "none",
       }}
     >
-      {statuses.map((status, index) => (
+      {token.statuses.map((status, index) => (
         <Box
           key={status}
           sx={{
@@ -21,7 +21,7 @@ function TokenStatus({ statuses }) {
             height: "100%",
             position: "absolute",
             opacity: 0.8,
-            transform: `scale(${1 - index / 10})`,
+            transform: `scale(${1 - index / 10 / token.size})`,
           }}
         >
           <svg
@@ -35,7 +35,7 @@ function TokenStatus({ statuses }) {
               cy={50}
               fill="none"
               stroke={colors[status]}
-              strokeWidth={4}
+              strokeWidth={4 / token.size}
             />
           </svg>
         </Box>
