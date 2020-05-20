@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import interact from "interactjs";
-import { Box, Input } from "theme-ui";
+import { Box, Input, Slider, Flex, Text } from "theme-ui";
 
 import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
+
+const defaultTokenMaxSize = 6;
 
 /**
  * @callback onTokenChange
@@ -37,10 +39,11 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
   const [currentToken, setCurrentToken] = useState({});
   const [menuLeft, setMenuLeft] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
+  const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
 
   function handleLabelChange(event) {
     // Slice to remove Label: text
-    const label = event.target.value.slice(7);
+    const label = event.target.value;
     if (label.length <= 1) {
       setCurrentToken((prevToken) => ({
         ...prevToken,
@@ -66,6 +69,15 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
     onTokenChange({ ...currentToken, statuses: newStatuses });
   }
 
+  function handleSizeChange(event) {
+    const newSize = parseInt(event.target.value);
+    setCurrentToken((prevToken) => ({
+      ...prevToken,
+      size: newSize,
+    }));
+    onTokenChange({ ...currentToken, size: newSize });
+  }
+
   useEffect(() => {
     function handleTokenMenuOpen(event) {
       const target = event.target;
@@ -75,6 +87,8 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
       }
       const token = tokensRef.current[id] || {};
       setCurrentToken(token);
+      // Set token max size to be higher if needed
+      setTokenMaxSize(Math.max(token.size, defaultTokenMaxSize));
 
       const targetRect = target.getBoundingClientRect();
       setMenuLeft(targetRect.left);
@@ -113,7 +127,7 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
       // Focus input
       const tokenLabelInput = node.querySelector("#changeTokenLabel");
       tokenLabelInput.focus();
-      tokenLabelInput.setSelectionRange(7, 8);
+      tokenLabelInput.select();
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
@@ -139,18 +153,27 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
       left={`${menuLeft}px`}
       onModalContent={handleModalContent}
     >
-      <Box sx={{ width: "104px" }} p={1}>
-        <Box
+      <Box sx={{ width: "156px" }} p={1}>
+        <Flex
           as="form"
           onSubmit={(e) => {
             e.preventDefault();
             handleRequestClose();
           }}
+          sx={{ alignItems: "center" }}
         >
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "45%", fontSize: "16px" }}
+            p={1}
+          >
+            Label:
+          </Text>
           <Input
             id="changeTokenLabel"
             onChange={handleLabelChange}
-            value={`Label: ${currentToken.label}`}
+            value={currentToken.label}
             sx={{
               padding: "4px",
               border: "none",
@@ -160,7 +183,7 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             }}
             autoComplete="off"
           />
-        </Box>
+        </Flex>
         <Box
           sx={{
             display: "flex",
@@ -172,8 +195,8 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             <Box
               key={color}
               sx={{
-                width: "25%",
-                paddingTop: "25%",
+                width: "16.66%",
+                paddingTop: "16.66%",
                 borderRadius: "50%",
                 transform: "scale(0.75)",
                 backgroundColor: colors[color],
@@ -197,6 +220,24 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             </Box>
           ))}
         </Box>
+        <Flex sx={{ alignItems: "center" }}>
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "40%", fontSize: "16px" }}
+            p={1}
+          >
+            Size:
+          </Text>
+          <Slider
+            value={currentToken.size}
+            onChange={handleSizeChange}
+            step={1}
+            min={1}
+            max={tokenMaxSize}
+            mr={1}
+          />
+        </Flex>
       </Box>
     </MapMenu>
   );
