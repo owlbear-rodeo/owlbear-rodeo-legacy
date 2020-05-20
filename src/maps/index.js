@@ -5,6 +5,8 @@ import stoneImage from "./Stone Grid 22x22.jpg";
 import waterImage from "./Water Grid 22x22.jpg";
 import woodImage from "./Wood Grid 22x22.jpg";
 
+import unknownImage from "./Unknown Grid 22x22.jpg";
+
 export const mapSources = {
   blank: blankImage,
   grass: grassImage,
@@ -23,3 +25,5 @@ export const maps = Object.keys(mapSources).map((key) => ({
   height: 1024,
   type: "default",
 }));
+
+export const unknownSource = unknownImage;

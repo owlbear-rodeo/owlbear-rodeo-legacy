@@ -46,7 +46,6 @@ export function TokenDataProvider({ children }) {
   }
 
   async function removeToken(id) {
-    // TODO when removing token also remove it from all states that reference it and replicate
     await database.table("tokens").delete(id);
     setTokens((prevTokens) => {
       const filtered = prevTokens.filter((token) => token.id !== id);

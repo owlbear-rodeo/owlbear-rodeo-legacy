@@ -219,9 +219,11 @@ function Game() {
       ) {
         sentTokens[tokenState.tokenId] = true;
         const token = getToken(tokenState.tokenId);
-        // Omit file from token peer will request file if needed
-        const { file, ...rest } = token;
-        peer.connection.send({ id: "token", data: rest });
+        if (token) {
+          // Omit file from token peer will request file if needed
+          const { file, ...rest } = token;
+          peer.connection.send({ id: "token", data: rest });
+        }
       }
     }
   }

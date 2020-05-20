@@ -4,10 +4,13 @@ import { Flex, Image, Text, Box, IconButton } from "theme-ui";
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 
 import useDataSource from "../../helpers/useDataSource";
-import { tokenSources as defaultTokenSources } from "../../tokens";
+import {
+  tokenSources as defaultTokenSources,
+  unknownSource,
+} from "../../tokens";
 
 function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
-  const tokenSource = useDataSource(token, defaultTokenSources);
+  const tokenSource = useDataSource(token, defaultTokenSources, unknownSource);
   const isDefault = token.type === "default";
 
   return (

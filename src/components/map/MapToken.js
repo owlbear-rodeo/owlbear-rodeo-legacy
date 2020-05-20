@@ -9,11 +9,11 @@ import useDataSource from "../../helpers/useDataSource";
 
 import AuthContext from "../../contexts/AuthContext";
 
-import { tokenSources } from "../../tokens";
+import { tokenSources, unknownSource } from "../../tokens";
 
 function MapToken({ token, tokenState, tokenSizePercent, className }) {
   const { userId } = useContext(AuthContext);
-  const imageSource = useDataSource(token, tokenSources);
+  const imageSource = useDataSource(token, tokenSources, unknownSource);
 
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS

@@ -29,6 +29,7 @@ import titan from "./Titan.png";
 import undead from "./Undead.png";
 import warlock from "./Warlock.png";
 import wizard from "./Wizard.png";
+import unknown from "./Unknown.png";
 
 export const tokenSources = {
   barbarian,
@@ -69,3 +70,5 @@ export const tokens = Object.keys(tokenSources).map((key) => ({
   name: key.charAt(0).toUpperCase() + key.slice(1),
   type: "default",
 }));
+
+export const unknownSource = unknown;

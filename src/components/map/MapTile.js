@@ -6,7 +6,7 @@ import ResetMapIcon from "../../icons/ResetMapIcon";
 import ExpandMoreDotIcon from "../../icons/ExpandMoreDotIcon";
 
 import useDataSource from "../../helpers/useDataSource";
-import { mapSources as defaultMapSources } from "../../maps";
+import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
 function MapTile({
   map,
@@ -17,7 +17,7 @@ function MapTile({
   onMapReset,
   onDone,
 }) {
-  const mapSource = useDataSource(map, defaultMapSources);
+  const mapSource = useDataSource(map, defaultMapSources, unknownSource);
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
   const hasMapState =

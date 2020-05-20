@@ -4,10 +4,10 @@ import { Box, Image } from "theme-ui";
 import usePreventTouch from "../../helpers/usePreventTouch";
 import useDataSource from "../../helpers/useDataSource";
 
-import { tokenSources } from "../../tokens";
+import { tokenSources, unknownSource } from "../../tokens";
 
 function ListToken({ token, className }) {
-  const imageSource = useDataSource(token, tokenSources);
+  const imageSource = useDataSource(token, tokenSources, unknownSource);
 
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS
