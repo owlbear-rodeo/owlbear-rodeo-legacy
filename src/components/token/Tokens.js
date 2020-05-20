@@ -1,11 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { Box, Flex } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
 
 import ListToken from "./ListToken";
 import ProxyToken from "./ProxyToken";
-import NumberInput from "../NumberInput";
 
 import SelectTokensButton from "./SelectTokensButton";
 
@@ -20,8 +19,6 @@ function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useContext(AuthContext);
   const { ownedTokens, tokens } = useContext(TokenDataContext);
 
-  const [tokenSize, setTokenSize] = useState(1);
-
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenStateCreate) {
       // Create a token state from the dragged token
@@ -30,7 +27,7 @@ function Tokens({ onMapTokenStateCreate }) {
         tokenId: token.id,
         tokenType: token.type,
         owner: userId,
-        size: tokenSize,
+        size: token.defaultSize,
         label: "",
         statuses: [],
         x: token.x,
@@ -69,13 +66,6 @@ function Tokens({ onMapTokenStateCreate }) {
           }}
         >
           <SelectTokensButton />
-          {/* <NumberInput
-            value={tokenSize}
-            onChange={setTokenSize}
-            title="Size"
-            min={1}
-            max={9}
-          /> */}
         </Flex>
       </Box>
       <ProxyToken

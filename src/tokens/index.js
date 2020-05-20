@@ -65,10 +65,24 @@ export const tokenSources = {
   undead,
 };
 
+function getDefaultTokenSize(key) {
+  switch (key) {
+    case "dragon":
+    case "elemental":
+    case "giant":
+    case "ooze":
+    case "titan":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
 export const tokens = Object.keys(tokenSources).map((key) => ({
   key,
   name: key.charAt(0).toUpperCase() + key.slice(1),
   type: "default",
+  defaultSize: getDefaultTokenSize(key),
 }));
 
 export const unknownSource = unknown;

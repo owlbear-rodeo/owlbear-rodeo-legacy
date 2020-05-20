@@ -1,10 +1,11 @@
 import React, { useRef, useContext, useState } from "react";
-import { Flex, Label } from "theme-ui";
+import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
+import TokenSettings from "../components/token/TokenSettings";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 
@@ -13,7 +14,9 @@ import AuthContext from "../contexts/AuthContext";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, addToken, removeToken } = useContext(TokenDataContext);
+  const { ownedTokens, addToken, removeToken, updateToken } = useContext(
+    TokenDataContext
+  );
   const fileInputRef = useRef();
 
   const [imageLoading, setImageLoading] = useState(false);
@@ -60,6 +63,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           created: Date.now(),
           lastModified: Date.now(),
           owner: userId,
+          defaultSize: 1,
         });
       };
       image.src = url;
@@ -76,6 +80,15 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   async function handleTokenRemove(id) {
     await removeToken(id);
     setSelectedTokenId(null);
+  }
+
+  /**
+   * Token settings
+   */
+  const [showMoreSettings, setShowMoreSettings] = useState(false);
+
+  async function handleTokenSettingsChange(key, value) {
+    await updateToken(selectedTokenId, { [key]: value });
   }
 
   return (
@@ -103,6 +116,19 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             onTokenSelect={handleTokenSelect}
             onTokenRemove={handleTokenRemove}
           />
+          <TokenSettings
+            token={selectedToken}
+            showMore={showMoreSettings}
+            onSettingsChange={handleTokenSettingsChange}
+            onShowMoreChange={setShowMoreSettings}
+          />
+          <Button
+            variant="primary"
+            disabled={imageLoading}
+            onClick={onRequestClose}
+          >
+            Done
+          </Button>
         </Flex>
       </ImageDrop>
     </Modal>
