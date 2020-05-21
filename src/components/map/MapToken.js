@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
-import { Image as KonvaImage } from "react-konva";
+import { Image as KonvaImage, Group } from "react-konva";
 import useImage from "use-image";
 
 import useDataSource from "../../helpers/useDataSource";
@@ -7,6 +7,9 @@ import useDebounce from "../../helpers/useDebounce";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
+
+import TokenStatus from "../token/TokenStatus";
+import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
@@ -57,32 +60,49 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
-    if (image) {
+    if (image && tokenSourceStatus === "loaded") {
       image.cache({
         pixelRatio: debouncedStageScale,
       });
       image.drawHitFromCache();
       // Force redraw
-      image.parent.draw();
+      image.getLayer().draw();
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
 
   return (
-    <KonvaImage
-      ref={imageRef}
+    <Group
       width={tokenWidth}
       height={tokenHeight}
       x={tokenState.x * mapWidth}
       y={tokenState.y * mapHeight}
-      image={tokenSourceImage}
       draggable
-      onDragEnd={handleDragEnd}
-      onClick={handleClick}
       onMouseDown={() => setPreventMapInteraction(true)}
       onMouseUp={() => setPreventMapInteraction(false)}
       onTouchStart={() => setPreventMapInteraction(true)}
       onTouchEnd={() => setPreventMapInteraction(false)}
-    />
+      onClick={handleClick}
+      onDragEnd={handleDragEnd}
+    >
+      <KonvaImage
+        ref={imageRef}
+        width={tokenWidth}
+        height={tokenHeight}
+        x={0}
+        y={0}
+        image={tokenSourceImage}
+      />
+      <TokenStatus
+        tokenState={tokenState}
+        width={tokenWidth}
+        height={tokenHeight}
+      />
+      <TokenLabel
+        tokenState={tokenState}
+        width={tokenWidth}
+        height={tokenHeight}
+      />
+    </Group>
   );
 }
 

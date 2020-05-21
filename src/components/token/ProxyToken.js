@@ -5,9 +5,6 @@ import interact from "interactjs";
 
 import usePortal from "../../helpers/usePortal";
 
-import TokenLabel from "./TokenLabel";
-import TokenStatus from "./TokenStatus";
-
 import MapStageContext from "../../contexts/MapStageContext";
 
 /**
@@ -21,15 +18,9 @@ import MapStageContext from "../../contexts/MapStageContext";
  * @param {string} tokenClassName The class name to attach the interactjs handler to
  * @param {onProxyDragEnd} onProxyDragEnd Called when the proxy token is dropped
  * @param {Object} tokens An optional mapping of tokens to use as a base when calling OnProxyDragEnd
- * @param {Object} disabledTokens An optional mapping of tokens that shouldn't allow movement
 
  */
-function ProxyToken({
-  tokenClassName,
-  onProxyDragEnd,
-  tokens,
-  disabledTokens,
-}) {
+function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
@@ -39,11 +30,9 @@ function ProxyToken({
   // Store the tokens in a ref and access in the interactjs loop
   // This is needed to stop interactjs from creating multiple listeners
   const tokensRef = useRef(tokens);
-  const disabledTokensRef = useRef(disabledTokens);
   useEffect(() => {
     tokensRef.current = tokens;
-    disabledTokensRef.current = disabledTokens;
-  }, [tokens, disabledTokens]);
+  }, [tokens]);
 
   const proxyOnMap = useRef(false);
   const mapStageRef = useContext(MapStageContext);
@@ -54,9 +43,6 @@ function ProxyToken({
         start: (event) => {
           let target = event.target;
           const id = target.dataset.id;
-          if (id in disabledTokensRef.current) {
-            return;
-          }
 
           // Hide the token and copy it's image to the proxy
           target.parentElement.style.opacity = "0.25";
@@ -108,9 +94,6 @@ function ProxyToken({
         end: (event) => {
           let target = event.target;
           const id = target.dataset.id;
-          if (id in disabledTokensRef.current) {
-            return;
-          }
           let proxy = proxyRef.current;
           if (proxy) {
             const mapStage = mapStageRef.current;
@@ -187,12 +170,6 @@ function ProxyToken({
             width: "100%",
           }}
         />
-        {tokens[tokenId] && tokens[tokenId].statuses && (
-          <TokenStatus token={tokens[tokenId]} />
-        )}
-        {tokens[tokenId] && tokens[tokenId].label && (
-          <TokenLabel token={tokens[tokenId]} />
-        )}
       </Box>
     </Box>,
     proxyContainer
@@ -201,7 +178,6 @@ function ProxyToken({
 
 ProxyToken.defaultProps = {
   tokens: {},
-  disabledTokens: {},
 };
 
 export default ProxyToken;

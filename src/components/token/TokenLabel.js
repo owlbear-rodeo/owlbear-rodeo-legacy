@@ -1,60 +1,49 @@
-import React from "react";
-import { Box, Text } from "theme-ui";
+import React, { useRef, useEffect, useState } from "react";
+import { Rect, Text, Group } from "react-konva";
 
-function TokenLabel({ token }) {
+function TokenLabel({ tokenState, width, height }) {
+  const fontSize = height / 6 / tokenState.size;
+  const paddingY = height / 16 / tokenState.size;
+  const paddingX = height / 8 / tokenState.size;
+
+  const [rectWidth, setRectWidth] = useState(0);
+  useEffect(() => {
+    const text = textRef.current;
+    if (text && tokenState.label) {
+      setRectWidth(text.getTextWidth() + paddingX);
+    } else {
+      setRectWidth(0);
+    }
+  }, [tokenState.label, paddingX]);
+
+  const textRef = useRef();
+
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        transform: `scale(${0.3 / token.size}) translate(0, 20%)`,
-        transformOrigin: "bottom center",
-        pointerEvents: "none",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      {/* Use SVG so text is scaled with token size */}
-      <svg
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-        width="100%"
-        height="100%"
-        style={{ overflow: "visible" }}
-      >
-        <foreignObject
-          width="100%"
-          height="100%"
-          style={{ overflow: "visible" }}
-        >
-          <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
-            <Text
-              as="p"
-              variant="heading"
-              sx={{
-                fontSize: "66px",
-                textAlign: "center",
-                verticalAlign: "middle",
-                lineHeight: 1.4,
-                whiteSpace: "nowrap",
-                minWidth: "100%",
-                display: "inline-block",
-                position: "absolute",
-                top: 0,
-                left: "50%",
-                transform: "translateX(-50%)",
-                borderRadius: "66px",
-                border: "2px solid",
-                borderColor: "muted",
-              }}
-              bg="overlay"
-              px={4}
-            >
-              {token.label}
-            </Text>
-          </Box>
-        </foreignObject>
-      </svg>
-    </Box>
+    <Group y={height - (fontSize + paddingY) / 2}>
+      <Rect
+        y={-paddingY / 2}
+        width={rectWidth}
+        offsetX={width / 2}
+        x={width - rectWidth / 2}
+        height={fontSize + paddingY}
+        fill="hsla(230, 25%, 18%, 0.8)"
+        cornerRadius={(fontSize + paddingY) / 2}
+      />
+      <Text
+        ref={textRef}
+        width={width}
+        text={tokenState.label}
+        fontSize={fontSize}
+        lineHeight={1}
+        align="center"
+        verticalAlign="bottom"
+        fill="white"
+        paddingX={paddingX}
+        paddingY={paddingY}
+        wrap="none"
+        ellipsis={true}
+      />
+    </Group>
   );
 }
 
