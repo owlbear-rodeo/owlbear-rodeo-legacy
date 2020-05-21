@@ -19,6 +19,8 @@ function MapToken({
   tokenSizePercent,
   onTokenStateChange,
   onTokenMenuOpen,
+  onTokenDragStart,
+  onTokenDragEnd,
 }) {
   const { userId } = useContext(AuthContext);
   const {
@@ -46,6 +48,7 @@ function MapToken({
       y: event.target.y() / mapHeight,
       lastEditedBy: userId,
     });
+    onTokenDragEnd();
   }
 
   function handleClick(event) {
@@ -61,7 +64,12 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
-    if (image && tokenSourceStatus === "loaded") {
+    if (
+      image &&
+      tokenSourceStatus === "loaded" &&
+      tokenWidth > 0 &&
+      tokenHeight > 0
+    ) {
       image.cache({
         pixelRatio: debouncedStageScale,
       });
@@ -70,6 +78,10 @@ function MapToken({
       image.getLayer().draw();
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
+
+  if (!tokenWidth || !tokenHeight) {
+    return null;
+  }
 
   return (
     <Group
@@ -84,6 +96,7 @@ function MapToken({
       onTouchEnd={() => setPreventMapInteraction(false)}
       onClick={handleClick}
       onDragEnd={handleDragEnd}
+      onDragStart={onTokenDragStart}
     >
       <KonvaImage
         ref={imageRef}

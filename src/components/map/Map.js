@@ -7,6 +7,7 @@ import MapToken from "./MapToken";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import TokenMenu from "../token/TokenMenu";
+import TokenDragOverlay from "../token/TokenDragOverlay";
 
 function Map({
   map,
@@ -141,6 +142,7 @@ function Map({
 
   const [isTokenMenuOpen, setIsTokenMenuOpen] = useState(false);
   const [tokenMenuOptions, setTokenMenuOptions] = useState({});
+  const [draggingTokenState, setDraggingTokenState] = useState();
   function handleTokenMenuOpen(tokenStateId, tokenImage) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
@@ -156,6 +158,8 @@ function Map({
         tokenSizePercent={tokenSizePercent}
         onTokenStateChange={onMapTokenStateChange}
         onTokenMenuOpen={handleTokenMenuOpen}
+        onTokenDragStart={() => setDraggingTokenState(tokenState)}
+        onTokenDragEnd={() => setDraggingTokenState(null)}
       />
     ));
 
@@ -169,6 +173,15 @@ function Map({
     />
   );
 
+  const tokenDragOverlay = draggingTokenState && (
+    <TokenDragOverlay
+      onTokenStateRemove={() => {
+        onMapTokenStateRemove(draggingTokenState);
+        setDraggingTokenState(null);
+      }}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -176,6 +189,7 @@ function Map({
         <>
           {mapControls}
           {tokenMenu}
+          {tokenDragOverlay}
         </>
       }
     >
