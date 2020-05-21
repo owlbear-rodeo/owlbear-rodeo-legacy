@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Modal from "react-modal";
-
 import { useThemeUI } from "theme-ui";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 function MapMenu({
   isOpen,
@@ -21,6 +22,8 @@ function MapMenu({
   // callback
   const [modalContentNode, setModalContentNode] = useState(null);
 
+  const { setPreventMapInteraction } = useContext(MapInteractionContext);
+
   useEffect(() => {
     // Close modal if interacting with any other element
     function handlePointerDown(event) {
@@ -29,17 +32,20 @@ function MapMenu({
         !path.includes(modalContentNode) &&
         !(excludeNode && path.includes(excludeNode))
       ) {
+        setPreventMapInteraction(false);
         onRequestClose();
         document.body.removeEventListener("pointerdown", handlePointerDown);
       }
     }
 
     if (modalContentNode) {
+      setPreventMapInteraction(true);
       document.body.addEventListener("pointerdown", handlePointerDown);
       // Check for wheel event to close modal as well
       document.body.addEventListener(
         "wheel",
         () => {
+          setPreventMapInteraction(false);
           onRequestClose();
         },
         { once: true }
@@ -50,7 +56,7 @@ function MapMenu({
         document.body.removeEventListener("pointerdown", handlePointerDown);
       }
     };
-  }, [modalContentNode, excludeNode, onRequestClose]);
+  }, [modalContentNode, excludeNode, onRequestClose, setPreventMapInteraction]);
 
   function handleModalContent(node) {
     setModalContentNode(node);

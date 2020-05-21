@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useRef,
+} from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
@@ -19,6 +25,7 @@ import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 import TokenDataContext from "../contexts/TokenDataContext";
 import MapDataContext from "../contexts/MapDataContext";
+import { MapStageProvider } from "../contexts/MapStageContext";
 
 function Game() {
   const { id: gameId } = useParams();
@@ -500,8 +507,12 @@ function Game() {
     }
   }, [stream, peers, handleStreamEnd]);
 
+  // A ref to the Konva stage
+  // the ref will be assigned in the MapInteraction component
+  const mapStageRef = useRef();
+
   return (
-    <>
+    <MapStageProvider value={mapStageRef}>
       <Flex sx={{ flexDirection: "column", height: "100%" }}>
         <Flex
           sx={{
@@ -551,7 +562,7 @@ function Game() {
       </Banner>
       <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
       {authenticationStatus === "unknown" && <LoadingOverlay />}
-    </>
+    </MapStageProvider>
   );
 }
 

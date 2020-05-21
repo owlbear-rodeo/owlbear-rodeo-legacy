@@ -1,171 +1,129 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { Box } from "theme-ui";
-import interact from "interactjs";
-import normalizeWheel from "normalize-wheel";
+import { useGesture } from "react-use-gesture";
+import ReactResizeDetector from "react-resize-detector";
+import useImage from "use-image";
+import { Stage, Layer, Image } from "react-konva";
+
+import usePreventOverscroll from "../../helpers/usePreventOverscroll";
+import useDataSource from "../../helpers/useDataSource";
+
+import { mapSources as defaultMapSources } from "../../maps";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-
-import LoadingOverlay from "../LoadingOverlay";
+import MapStageContext from "../../contexts/MapStageContext";
+import AuthContext from "../../contexts/AuthContext";
 
 const zoomSpeed = -0.001;
 const minZoom = 0.1;
 const maxZoom = 5;
 
-function MapInteraction({
-  map,
-  aspectRatio,
-  isEnabled,
-  children,
-  controls,
-  loading,
-}) {
-  const mapContainerRef = useRef();
-  const mapMoveContainerRef = useRef();
-  const mapScaleContainerRef = useRef();
-  const mapTranslateRef = useRef({ x: 0, y: 0 });
-  const mapScaleRef = useRef(1);
-  function setTranslateAndScale(newTranslate, newScale) {
-    const moveContainer = mapMoveContainerRef.current;
-    const scaleContainer = mapScaleContainerRef.current;
-    moveContainer.style.transform = `translate(${newTranslate.x}px, ${newTranslate.y}px)`;
-    scaleContainer.style.transform = ` scale(${newScale})`;
-    mapScaleRef.current = newScale;
-    mapTranslateRef.current = newTranslate;
-  }
+function MapInteraction({ map, children, controls }) {
+  const mapSource = useDataSource(map, defaultMapSources);
+  const [mapSourceImage] = useImage(mapSource);
+
+  const [stageWidth, setStageWidth] = useState(1);
+  const [stageHeight, setStageHeight] = useState(1);
+  const [stageScale, setStageScale] = useState(1);
+  const [stageTranslate, setStageTranslate] = useState({ x: 0, y: 0 });
+  const [preventMapInteraction, setPreventMapInteraction] = useState(false);
+
+  const stageWidthRef = useRef(stageWidth);
+  const stageHeightRef = useRef(stageHeight);
+  const stageScaleRef = useRef(stageScale);
+  const stageTranslateRef = useRef(stageTranslate);
 
   useEffect(() => {
-    function handleMove(event, isGesture) {
-      const scale = mapScaleRef.current;
-      const translate = mapTranslateRef.current;
-
-      let newScale = scale;
-      let newTranslate = translate;
-
-      if (isGesture) {
-        newScale = Math.max(Math.min(scale + event.ds, maxZoom), minZoom);
-      }
-
-      if (isEnabled || isGesture) {
-        newTranslate = {
-          x: translate.x + event.dx / newScale,
-          y: translate.y + event.dy / newScale,
-        };
-      }
-      setTranslateAndScale(newTranslate, newScale);
+    if (map) {
+      const mapHeight = stageWidthRef.current * (map.height / map.width);
+      setStageTranslate({ x: 0, y: -(mapHeight - stageHeightRef.current) / 2 });
     }
-    const mapInteract = interact(".map")
-      .gesturable({
-        listeners: {
-          move: (e) => handleMove(e, true),
-        },
-      })
-      .draggable({
-        inertia: true,
-        listeners: {
-          move: (e) => handleMove(e, false),
-        },
-        cursorChecker: () => {
-          return isEnabled && map ? "move" : "default";
-        },
-      })
-      .on("doubletap", (event) => {
-        event.preventDefault();
-        if (isEnabled) {
-          setTranslateAndScale({ x: 0, y: 0 }, 1);
-        }
-      });
-
-    return () => {
-      mapInteract.unset();
-    };
-  }, [isEnabled, map]);
-
-  // Reset map transform when map changes
-  useEffect(() => {
-    setTranslateAndScale({ x: 0, y: 0 }, 1);
   }, [map]);
 
-  // Bind the wheel event of the map via a ref
-  // in order to support non-passive event listening
-  // to allow the track pad zoom to be interrupted
-  // see https://github.com/facebook/react/issues/14856
-  useEffect(() => {
-    const mapContainer = mapContainerRef.current;
-
-    function handleZoom(event) {
-      // Stop overscroll on chrome and safari
-      // also stop pinch to zoom on chrome
-      event.preventDefault();
-
-      // Try and normalize the wheel event to prevent OS differences for zoom speed
-      const normalized = normalizeWheel(event);
-
-      const scale = mapScaleRef.current;
-      const translate = mapTranslateRef.current;
-
-      const deltaY = normalized.pixelY * zoomSpeed;
-      const newScale = Math.max(Math.min(scale + deltaY, maxZoom), minZoom);
-
-      setTranslateAndScale(translate, newScale);
-    }
-
-    if (mapContainer) {
-      mapContainer.addEventListener("wheel", handleZoom, {
-        passive: false,
-      });
-    }
-
-    return () => {
-      if (mapContainer) {
-        mapContainer.removeEventListener("wheel", handleZoom);
+  const bind = useGesture({
+    onWheel: ({ delta }) => {
+      const newScale = Math.min(
+        Math.max(stageScale - delta[1] * zoomSpeed, minZoom),
+        maxZoom
+      );
+      setStageScale(newScale);
+      stageScaleRef.current = newScale;
+    },
+    onDrag: ({ delta }) => {
+      if (!preventMapInteraction) {
+        const newTranslate = {
+          x: stageTranslate.x + delta[0] / stageScale,
+          y: stageTranslate.y + delta[1] / stageScale,
+        };
+        setStageTranslate(newTranslate);
+        stageTranslateRef.current = newTranslate;
       }
-    };
-  }, []);
+    },
+  });
+
+  function handleResize(width, height) {
+    setStageWidth(width);
+    setStageHeight(height);
+    stageWidthRef.current = width;
+    stageHeightRef.current = height;
+  }
+
+  const containerRef = useRef();
+  usePreventOverscroll(containerRef);
+
+  const mapWidth = stageWidth;
+  const mapHeight = map ? stageWidth * (map.height / map.width) : stageHeight;
+
+  const mapStageRef = useContext(MapStageContext);
+
+  const auth = useContext(AuthContext);
+
+  const mapInteraction = {
+    stageTranslate,
+    stageScale,
+    stageWidth,
+    stageHeight,
+    setPreventMapInteraction,
+    mapWidth,
+    mapHeight,
+  };
 
   return (
     <Box
+      sx={{ flexGrow: 1, position: "relative" }}
+      ref={containerRef}
+      {...bind()}
       className="map"
-      sx={{
-        flexGrow: 1,
-        position: "relative",
-        overflow: "hidden",
-        backgroundColor: "rgba(0, 0, 0, 0.1)",
-        userSelect: "none",
-        touchAction: "none",
-      }}
-      bg="background"
-      ref={mapContainerRef}
     >
-      <Box
-        sx={{
-          position: "relative",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        <Box ref={mapScaleContainerRef}>
-          <Box ref={mapMoveContainerRef}>
-            <Box
-              sx={{
-                width: "100%",
-                height: 0,
-                paddingBottom: `${(1 / aspectRatio) * 100}%`,
-              }}
+      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+        <Stage
+          width={stageWidth}
+          height={stageHeight}
+          scale={{ x: stageScale, y: stageScale }}
+          x={stageWidth / 2}
+          y={stageHeight / 2}
+          offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
+          ref={mapStageRef}
+        >
+          <Layer x={stageTranslate.x} y={stageTranslate.y}>
+            <Image
+              image={mapSourceImage}
+              width={mapWidth}
+              height={mapHeight}
+              id="mapImage"
             />
-            <MapInteractionProvider
-              value={{
-                translateRef: mapTranslateRef,
-                scaleRef: mapScaleRef,
-              }}
-            >
-              {children}
-            </MapInteractionProvider>
-          </Box>
-        </Box>
-      </Box>
-      {controls}
-      {loading && <LoadingOverlay />}
+            {/* Forward auth context to konva elements */}
+            <AuthContext.Provider value={auth}>
+              <MapInteractionProvider value={mapInteraction}>
+                {children}
+              </MapInteractionProvider>
+            </AuthContext.Provider>
+          </Layer>
+        </Stage>
+      </ReactResizeDetector>
+      <MapInteractionProvider value={mapInteraction}>
+        {controls}
+      </MapInteractionProvider>
     </Box>
   );
 }

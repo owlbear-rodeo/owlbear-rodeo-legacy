@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import ReactDOM from "react-dom";
 import { Image, Box } from "theme-ui";
 import interact from "interactjs";
@@ -7,6 +7,8 @@ import usePortal from "../../helpers/usePortal";
 
 import TokenLabel from "./TokenLabel";
 import TokenStatus from "./TokenStatus";
+
+import MapStageContext from "../../contexts/MapStageContext";
 
 /**
  * @callback onProxyDragEnd
@@ -44,6 +46,7 @@ function ProxyToken({
   }, [tokens, disabledTokens]);
 
   const proxyOnMap = useRef(false);
+  const mapStageRef = useContext(MapStageContext);
 
   useEffect(() => {
     interact(`.${tokenClassName}`).draggable({
@@ -110,18 +113,27 @@ function ProxyToken({
           }
           let proxy = proxyRef.current;
           if (proxy) {
-            const mapImage = document.querySelector(".mapImage");
-            if (onProxyDragEnd && mapImage) {
-              const mapImageRect = mapImage.getBoundingClientRect();
+            const mapStage = mapStageRef.current;
+            if (onProxyDragEnd && mapStage) {
+              const mapImageRect = mapStage
+                .findOne("#mapImage")
+                .getClientRect();
+
+              const map = document.querySelector(".map");
+              const mapRect = map.getBoundingClientRect();
 
               let x = parseFloat(proxy.getAttribute("data-x")) || 0;
               let y = parseFloat(proxy.getAttribute("data-y")) || 0;
+
+              // TODO: This seems to be wrong when map is zoomed
+
               // Convert coordiantes to be relative to the map
-              x = x - mapImageRect.left;
-              y = y - mapImageRect.top;
+              x = x - mapRect.left - mapImageRect.x;
+              y = y - mapRect.top - mapImageRect.y;
+
               // Normalize to map width
-              x = x / (mapImageRect.right - mapImageRect.left);
-              y = y / (mapImageRect.bottom - mapImageRect.top);
+              x = x / mapImageRect.width;
+              y = y / mapImageRect.height;
 
               // Get the token from the supplied tokens if it exists
               const token = tokensRef.current[id] || {};
@@ -145,7 +157,7 @@ function ProxyToken({
         },
       },
     });
-  }, [onProxyDragEnd, tokenClassName, proxyContainer]);
+  }, [onProxyDragEnd, tokenClassName, proxyContainer, mapStageRef]);
 
   if (!imageSource) {
     return null;
