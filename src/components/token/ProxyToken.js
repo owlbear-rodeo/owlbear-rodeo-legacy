@@ -24,7 +24,6 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
   const proxyContainer = usePortal("root");
 
   const [imageSource, setImageSource] = useState("");
-  const [tokenId, setTokenId] = useState(null);
   const proxyRef = useRef();
 
   // Store the tokens in a ref and access in the interactjs loop
@@ -42,12 +41,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
       listeners: {
         start: (event) => {
           let target = event.target;
-          const id = target.dataset.id;
 
           // Hide the token and copy it's image to the proxy
           target.parentElement.style.opacity = "0.25";
           setImageSource(target.src);
-          setTokenId(id);
 
           let proxy = proxyRef.current;
           if (proxy) {
