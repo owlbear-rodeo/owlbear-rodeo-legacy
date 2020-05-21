@@ -1,7 +1,7 @@
 import React from "react";
 import { Flex, Image, Text, Box, IconButton } from "theme-ui";
 
-import RemoveMapIcon from "../../icons/RemoveMapIcon";
+import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 
 import useDataSource from "../../helpers/useDataSource";
 import {
@@ -70,7 +70,7 @@ function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
             sx={{ borderRadius: "50%" }}
             m={1}
           >
-            <RemoveMapIcon />
+            <RemoveTokenIcon />
           </IconButton>
         </Box>
       )}
