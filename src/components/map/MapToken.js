@@ -39,6 +39,7 @@ function MapToken({
   }, [tokenSourceImage]);
 
   function handleDragEnd(event) {
+    setPreventMapInteraction(false);
     onTokenStateChange({
       ...tokenState,
       x: event.target.x() / mapWidth,
