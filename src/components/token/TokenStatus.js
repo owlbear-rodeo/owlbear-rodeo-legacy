@@ -8,6 +8,7 @@ function TokenStatus({ tokenState, width, height }) {
     <Group x={width} y={height} offsetX={width / 2} offsetY={height / 2}>
       {tokenState.statuses.map((status, index) => (
         <Circle
+          key={status}
           width={width}
           height={height}
           stroke={colors[status]}
