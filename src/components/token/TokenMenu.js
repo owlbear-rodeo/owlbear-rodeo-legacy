@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Box, Input, Slider, Flex, Text } from "theme-ui";
 
 import MapMenu from "../map/MapMenu";
@@ -6,6 +6,8 @@ import MapMenu from "../map/MapMenu";
 import colors, { colorOptions } from "../../helpers/colors";
 
 import usePrevious from "../../helpers/usePrevious";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 const defaultTokenMaxSize = 6;
 
@@ -97,6 +99,8 @@ function TokenMenu({
     }
   }
 
+  const { setPreventMapInteraction } = useContext(MapInteractionContext);
+
   return (
     <MapMenu
       isOpen={isOpen}
@@ -110,6 +114,7 @@ function TokenMenu({
           as="form"
           onSubmit={(e) => {
             e.preventDefault();
+            setPreventMapInteraction(false);
             onRequestClose();
           }}
           sx={{ alignItems: "center" }}
