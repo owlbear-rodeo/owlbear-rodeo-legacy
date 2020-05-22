@@ -92,12 +92,7 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
-    if (
-      image &&
-      tokenSourceStatus === "loaded" &&
-      tokenWidth > 0 &&
-      tokenHeight > 0
-    ) {
+    if (image && tokenSourceStatus === "loaded") {
       image.cache({
         pixelRatio: debouncedStageScale * window.devicePixelRatio,
       });
@@ -107,7 +102,7 @@ function MapToken({
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
 
-  if (!tokenWidth || !tokenHeight) {
+  if (!tokenWidth || !tokenHeight || tokenSourceStatus === "loading") {
     return null;
   }
 

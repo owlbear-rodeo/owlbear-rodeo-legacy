@@ -10,6 +10,7 @@ import MapFog from "./MapFog";
 import TokenDataContext from "../../contexts/TokenDataContext";
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
+import LoadingOverlay from "../LoadingOverlay";
 
 import { omit } from "../../helpers/shared";
 
@@ -35,7 +36,10 @@ function Map({
 
   const gridX = map && map.gridX;
   const gridY = map && map.gridY;
-  const gridSizeNormalized = { x: 1 / gridX || 0, y: 1 / gridY || 0 };
+  const gridSizeNormalized = {
+    x: gridX ? 1 / gridX : 0,
+    y: gridY ? 1 / gridY : 0,
+  };
   const tokenSizePercent = gridSizeNormalized.x;
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
@@ -271,6 +275,7 @@ function Map({
           {mapControls}
           {tokenMenu}
           {tokenDragOverlay}
+          {loading && <LoadingOverlay />}
         </>
       }
       selectedToolId={selectedToolId}
