@@ -17,13 +17,13 @@ function TokenDragOverlay({ onTokenStateRemove }) {
     <Box
       sx={{
         position: "absolute",
-        bottom: "12px",
+        bottom: "24px",
         left: "50%",
         borderRadius: "50%",
-        transform: "translateX(-50%)",
+        transform: "translateX(-50%) scale(1.5)",
         transition: "transform 250ms ease",
         ":hover": {
-          transform: "translateX(-50%) scale(1.5)",
+          transform: "translateX(-50%) scale(2.0)",
         },
       }}
       bg="overlay"
