@@ -244,10 +244,11 @@ function Game() {
         peer.connection.send({ id: "token", data: rest });
       }
     }
-    handleMapTokenStateChange(tokenState);
+    handleMapTokenStateChange({ [tokenState.id]: tokenState });
   }
 
-  function handleMapTokenStateChange(tokenState) {
+  function handleMapTokenStateChange(change) {
+    console.log(change);
     if (currentMapState === null) {
       return;
     }
@@ -255,12 +256,11 @@ function Game() {
       ...prevMapState,
       tokens: {
         ...prevMapState.tokens,
-        [tokenState.id]: tokenState,
+        ...change,
       },
     }));
     for (let peer of Object.values(peers)) {
-      const data = { [tokenState.id]: tokenState };
-      peer.connection.send({ id: "tokenStateEdit", data });
+      peer.connection.send({ id: "tokenStateEdit", data: change });
     }
   }
 

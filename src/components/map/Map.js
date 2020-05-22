@@ -237,7 +237,7 @@ function Map({
     <TokenMenu
       isOpen={isTokenMenuOpen}
       onRequestClose={() => setIsTokenMenuOpen(false)}
-      onTokenChange={onMapTokenStateChange}
+      onTokenStateChange={onMapTokenStateChange}
       tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
       tokenImage={tokenMenuOptions.tokenImage}
     />

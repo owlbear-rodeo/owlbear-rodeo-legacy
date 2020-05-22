@@ -8,25 +8,12 @@ import colors, { colorOptions } from "../../helpers/colors";
 import usePrevious from "../../helpers/usePrevious";
 
 const defaultTokenMaxSize = 6;
-
-/**
- * @callback onTokenChange
- * @param {Object} token the token that was changed
- */
-
-/**
- *
- * @param {string} tokenClassName The class name to attach the interactjs handler to
- * @param {onProxyDragEnd} onTokenChange Called when the the token data is changed
- * @param {Object} tokens An mapping of tokens to use as a base when calling onTokenChange
- * @param {Object} disabledTokens An optional mapping of tokens that shouldn't allow interaction
- */
 function TokenMenu({
   isOpen,
   onRequestClose,
   tokenState,
   tokenImage,
-  onTokenChange,
+  onTokenStateChange,
 }) {
   const wasOpen = usePrevious(isOpen);
 
@@ -39,7 +26,7 @@ function TokenMenu({
 
   function handleLabelChange(event) {
     const label = event.target.value;
-    onTokenChange({ ...tokenState, label: label });
+    onTokenStateChange({ [tokenState.id]: { ...tokenState, label: label } });
   }
 
   const [menuLeft, setMenuLeft] = useState(0);
@@ -66,17 +53,21 @@ function TokenMenu({
     } else {
       newStatuses = [...statuses, status];
     }
-    onTokenChange({ ...tokenState, statuses: newStatuses });
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, statuses: newStatuses },
+    });
   }
 
   function handleSizeChange(event) {
     const newSize = parseInt(event.target.value);
-    onTokenChange({ ...tokenState, size: newSize });
+    onTokenStateChange({ [tokenState.id]: { ...tokenState, size: newSize } });
   }
 
   function handleRotationChange(event) {
     const newRotation = parseInt(event.target.value);
-    onTokenChange({ ...tokenState, rotation: newRotation });
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, rotation: newRotation },
+    });
   }
 
   function handleModalContent(node) {

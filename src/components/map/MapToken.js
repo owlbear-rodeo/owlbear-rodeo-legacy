@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
+import Konva from "konva";
 import useImage from "use-image";
 
 import useDataSource from "../../helpers/useDataSource";
 import useDebounce from "../../helpers/useDebounce";
+import usePrevious from "../../helpers/usePrevious";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
@@ -80,6 +82,7 @@ function MapToken({
   function handleDragEnd(event) {
     const tokenImage = event.target;
 
+    const mountChanges = {};
     if (token.isVehicle) {
       const layer = tokenImage.getLayer();
       const mountedTokens = tokenImage.find(".token");
@@ -88,21 +91,24 @@ function MapToken({
         const position = mountedToken.absolutePosition();
         mountedToken.moveTo(layer);
         mountedToken.absolutePosition(position);
-        onTokenStateChange({
+        mountChanges[mountedToken.id()] = {
           ...mapState.tokens[mountedToken.id()],
           x: mountedToken.x() / mapWidth,
           y: mountedToken.y() / mapHeight,
           lastEditedBy: userId,
-        });
+        };
       }
     }
 
     setPreventMapInteraction(false);
     onTokenStateChange({
-      ...tokenState,
-      x: tokenImage.x() / mapWidth,
-      y: tokenImage.y() / mapHeight,
-      lastEditedBy: userId,
+      ...mountChanges,
+      [tokenState.id]: {
+        ...tokenState,
+        x: tokenImage.x() / mapWidth,
+        y: tokenImage.y() / mapHeight,
+        lastEditedBy: userId,
+      },
     });
     onTokenDragEnd(event);
   }
@@ -147,7 +153,12 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
-    if (image && tokenSourceStatus === "loaded") {
+    if (
+      image &&
+      tokenSourceStatus === "loaded" &&
+      tokenWidth > 0 &&
+      tokenHeight > 0
+    ) {
       image.cache({
         pixelRatio: debouncedStageScale * window.devicePixelRatio,
       });
@@ -157,16 +168,35 @@ function MapToken({
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
 
-  if (!tokenWidth || !tokenHeight || tokenSourceStatus === "loading") {
-    return null;
-  }
+  // Animate to new token positions if edited by others
+  const containerRef = useRef();
+  const tokenX = tokenState.x * mapWidth;
+  const tokenY = tokenState.y * mapHeight;
+
+  const previousWidth = usePrevious(mapWidth);
+  const previousHeight = usePrevious(mapHeight);
+  const resized = mapWidth !== previousWidth || mapHeight !== previousHeight;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      if (tokenState.lastEditedBy === userId || resized) {
+        container.x(tokenX);
+        container.y(tokenY);
+      } else {
+        container.to({
+          x: tokenX,
+          y: tokenY,
+          duration: 0.3,
+          easing: Konva.Easings.EaseInOut,
+        });
+      }
+    }
+  }, [tokenX, tokenY, tokenState.lastEditedBy, userId, resized]);
 
   return (
     <Group
       width={tokenWidth}
       height={tokenHeight}
-      x={tokenState.x * mapWidth}
-      y={tokenState.y * mapHeight}
       draggable={draggable}
       onMouseDown={handlePointerDown}
       onMouseUp={handlePointerUp}
@@ -180,6 +210,7 @@ function MapToken({
       opacity={tokenOpacity}
       name={token && token.isVehicle ? "vehicle" : "token"}
       id={tokenState.id}
+      ref={containerRef}
     >
       <KonvaImage
         ref={imageRef}

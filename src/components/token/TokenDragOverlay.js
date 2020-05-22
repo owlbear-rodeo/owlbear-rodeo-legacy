@@ -30,10 +30,12 @@ function TokenDragOverlay({
         mountedToken.moveTo(layer);
         mountedToken.absolutePosition(position);
         onTokenStateChange({
-          ...mapState.tokens[mountedToken.id()],
-          x: mountedToken.x() / mapWidth,
-          y: mountedToken.y() / mapHeight,
-          lastEditedBy: userId,
+          [mountedToken.id()]: {
+            ...mapState.tokens[mountedToken.id()],
+            x: mountedToken.x() / mapWidth,
+            y: mountedToken.y() / mapHeight,
+            lastEditedBy: userId,
+          },
         });
       }
     }
