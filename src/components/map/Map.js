@@ -163,12 +163,12 @@ function Map({
       />
     ));
 
-  const tokenMenu = isTokenMenuOpen && (
+  const tokenMenu = (
     <TokenMenu
       isOpen={isTokenMenuOpen}
       onRequestClose={() => setIsTokenMenuOpen(false)}
       onTokenChange={onMapTokenStateChange}
-      tokenState={mapState.tokens[tokenMenuOptions.tokenStateId]}
+      tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
       tokenImage={tokenMenuOptions.tokenImage}
     />
   );

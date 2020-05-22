@@ -4,6 +4,8 @@ import { useThemeUI } from "theme-ui";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
+import usePrevious from "../../helpers/usePrevious";
+
 function MapMenu({
   isOpen,
   onRequestClose,
@@ -22,7 +24,16 @@ function MapMenu({
   // callback
   const [modalContentNode, setModalContentNode] = useState(null);
 
+  // Toggle map interaction when menu is opened
+  const wasOpen = usePrevious(isOpen);
   const { setPreventMapInteraction } = useContext(MapInteractionContext);
+  useEffect(() => {
+    if (isOpen && !wasOpen) {
+      setPreventMapInteraction(true);
+    } else if (wasOpen && !isOpen) {
+      setPreventMapInteraction(false);
+    }
+  }, [isOpen, setPreventMapInteraction, wasOpen]);
 
   useEffect(() => {
     // Close modal if interacting with any other element
@@ -32,31 +43,29 @@ function MapMenu({
         !path.includes(modalContentNode) &&
         !(excludeNode && path.includes(excludeNode))
       ) {
-        setPreventMapInteraction(false);
         onRequestClose();
         document.body.removeEventListener("pointerdown", handlePointerDown);
       }
     }
 
     if (modalContentNode) {
-      setPreventMapInteraction(true);
       document.body.addEventListener("pointerdown", handlePointerDown);
       // Check for wheel event to close modal as well
       document.body.addEventListener(
         "wheel",
         () => {
-          setPreventMapInteraction(false);
           onRequestClose();
         },
         { once: true }
       );
     }
+
     return () => {
       if (modalContentNode) {
         document.body.removeEventListener("pointerdown", handlePointerDown);
       }
     };
-  }, [modalContentNode, excludeNode, onRequestClose, setPreventMapInteraction]);
+  }, [modalContentNode, excludeNode, onRequestClose]);
 
   function handleModalContent(node) {
     setModalContentNode(node);
