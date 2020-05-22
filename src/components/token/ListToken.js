@@ -19,7 +19,13 @@ function ListToken({ token, className }) {
         src={imageSource}
         ref={imageRef}
         className={className}
-        sx={{ userSelect: "none", touchAction: "none" }}
+        sx={{
+          userSelect: "none",
+          touchAction: "none",
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
         // pass id into the dom element which is then used by the ProxyToken
         data-id={token.id}
       />
