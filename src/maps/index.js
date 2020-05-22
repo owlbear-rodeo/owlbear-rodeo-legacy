@@ -1,3 +1,5 @@
+import Case from "case";
+
 import blankImage from "./Blank Grid 22x22.jpg";
 import grassImage from "./Grass Grid 22x22.jpg";
 import sandImage from "./Sand Grid 22x22.jpg";
@@ -18,7 +20,7 @@ export const mapSources = {
 
 export const maps = Object.keys(mapSources).map((key) => ({
   key,
-  name: key.charAt(0).toUpperCase() + key.slice(1),
+  name: Case.capital(key),
   gridX: 22,
   gridY: 22,
   width: 1024,

@@ -1,3 +1,5 @@
+import Case from "case";
+
 import aberration from "./Aberration.png";
 import artificer from "./Artificer.png";
 import barbarian from "./Barbarian.png";
@@ -80,7 +82,7 @@ function getDefaultTokenSize(key) {
 
 export const tokens = Object.keys(tokenSources).map((key) => ({
   key,
-  name: key.charAt(0).toUpperCase() + key.slice(1),
+  name: Case.capital(key),
   type: "default",
   defaultSize: getDefaultTokenSize(key),
 }));
