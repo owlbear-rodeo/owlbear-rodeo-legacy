@@ -21,6 +21,7 @@ function MapToken({
   onTokenMenuOpen,
   onTokenDragStart,
   onTokenDragEnd,
+  draggable,
 }) {
   const { userId } = useContext(AuthContext);
   const {
@@ -52,8 +53,35 @@ function MapToken({
   }
 
   function handleClick(event) {
-    const tokenImage = event.target;
-    onTokenMenuOpen(tokenState.id, tokenImage);
+    if (draggable) {
+      const tokenImage = event.target;
+      onTokenMenuOpen(tokenState.id, tokenImage);
+    }
+  }
+
+  const [tokenOpacity, setTokenOpacity] = useState(1);
+  function handlePointerDown() {
+    if (draggable) {
+      setPreventMapInteraction(true);
+    }
+  }
+
+  function handlePointerUp() {
+    if (draggable) {
+      setPreventMapInteraction(false);
+    }
+  }
+
+  function handlePointerOver() {
+    if (!draggable) {
+      setTokenOpacity(0.5);
+    }
+  }
+
+  function handlePointerOut() {
+    if (!draggable) {
+      setTokenOpacity(1.0);
+    }
   }
 
   const tokenWidth = tokenSizePercent * mapWidth * tokenState.size;
@@ -89,14 +117,17 @@ function MapToken({
       height={tokenHeight}
       x={tokenState.x * mapWidth}
       y={tokenState.y * mapHeight}
-      draggable
-      onMouseDown={() => setPreventMapInteraction(true)}
-      onMouseUp={() => setPreventMapInteraction(false)}
-      onTouchStart={() => setPreventMapInteraction(true)}
-      onTouchEnd={() => setPreventMapInteraction(false)}
+      draggable={draggable}
+      onMouseDown={handlePointerDown}
+      onMouseUp={handlePointerUp}
+      onMouseOver={handlePointerOver}
+      onMouseOut={handlePointerOut}
+      onTouchStart={handlePointerDown}
+      onTouchEnd={handlePointerUp}
       onClick={handleClick}
       onDragEnd={handleDragEnd}
       onDragStart={onTokenDragStart}
+      opacity={tokenOpacity}
     >
       <KonvaImage
         ref={imageRef}

@@ -200,6 +200,10 @@ function Map({
         onTokenMenuOpen={handleTokenMenuOpen}
         onTokenDragStart={() => setDraggingTokenState(tokenState)}
         onTokenDragEnd={() => setDraggingTokenState(null)}
+        draggable={
+          (selectedToolId === "pan" || selectedToolId === "erase") &&
+          !(tokenState.id in disabledTokens)
+        }
       />
     ));
 
