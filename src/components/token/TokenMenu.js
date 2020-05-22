@@ -74,6 +74,11 @@ function TokenMenu({
     onTokenChange({ ...tokenState, size: newSize });
   }
 
+  function handleRotationChange(event) {
+    const newRotation = parseInt(event.target.value);
+    onTokenChange({ ...tokenState, rotation: newRotation });
+  }
+
   function handleModalContent(node) {
     if (node) {
       // Focus input
@@ -189,6 +194,24 @@ function TokenMenu({
             step={1}
             min={1}
             max={tokenMaxSize}
+            mr={1}
+          />
+        </Flex>
+        <Flex sx={{ alignItems: "center" }}>
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "95%", fontSize: "16px" }}
+            p={1}
+          >
+            Rotation:
+          </Text>
+          <Slider
+            value={(tokenState && tokenState.rotation) || 0}
+            onChange={handleRotationChange}
+            step={45}
+            min={0}
+            max={360}
             mr={1}
           />
         </Flex>

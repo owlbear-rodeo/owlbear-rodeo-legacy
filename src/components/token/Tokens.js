@@ -33,6 +33,7 @@ function Tokens({ onMapTokenStateCreate }) {
         x: token.x,
         y: token.y,
         lastEditedBy: userId,
+        rotation: 0,
       });
     }
   }

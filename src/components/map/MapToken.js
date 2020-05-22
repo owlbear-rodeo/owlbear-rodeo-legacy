@@ -178,7 +178,7 @@ function MapToken({
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       opacity={tokenOpacity}
-      name={token.isVehicle ? "vehicle" : "token"}
+      name={token && token.isVehicle ? "vehicle" : "token"}
       id={tokenState.id}
     >
       <KonvaImage
@@ -188,17 +188,22 @@ function MapToken({
         x={0}
         y={0}
         image={tokenSourceImage}
+        rotation={tokenState.rotation}
+        offsetX={tokenWidth / 2}
+        offsetY={tokenHeight / 2}
       />
-      <TokenStatus
-        tokenState={tokenState}
-        width={tokenWidth}
-        height={tokenHeight}
-      />
-      <TokenLabel
-        tokenState={tokenState}
-        width={tokenWidth}
-        height={tokenHeight}
-      />
+      <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
+        <TokenStatus
+          tokenState={tokenState}
+          width={tokenWidth}
+          height={tokenHeight}
+        />
+        <TokenLabel
+          tokenState={tokenState}
+          width={tokenWidth}
+          height={tokenHeight}
+        />
+      </Group>
     </Group>
   );
 }
