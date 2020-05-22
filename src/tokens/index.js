@@ -85,6 +85,7 @@ export const tokens = Object.keys(tokenSources).map((key) => ({
   name: Case.capital(key),
   type: "default",
   defaultSize: getDefaultTokenSize(key),
+  isVehicle: false,
 }));
 
 export const unknownSource = unknown;

@@ -32,7 +32,7 @@ function Map({
   disabledTokens,
   loading,
 }) {
-  const { tokens } = useContext(TokenDataContext);
+  const { tokensById } = useContext(TokenDataContext);
 
   const gridX = map && map.gridX;
   const gridY = map && map.gridY;
@@ -200,7 +200,7 @@ function Map({
 
   const [isTokenMenuOpen, setIsTokenMenuOpen] = useState(false);
   const [tokenMenuOptions, setTokenMenuOptions] = useState({});
-  const [draggingTokenState, setDraggingTokenState] = useState();
+  const [draggingTokenOptions, setDraggingTokenOptions] = useState();
   function handleTokenMenuOpen(tokenStateId, tokenImage) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
@@ -208,22 +208,30 @@ function Map({
 
   const mapTokens =
     mapState &&
-    Object.values(mapState.tokens).map((tokenState) => (
-      <MapToken
-        key={tokenState.id}
-        token={tokens.find((token) => token.id === tokenState.tokenId)}
-        tokenState={tokenState}
-        tokenSizePercent={tokenSizePercent}
-        onTokenStateChange={onMapTokenStateChange}
-        onTokenMenuOpen={handleTokenMenuOpen}
-        onTokenDragStart={() => setDraggingTokenState(tokenState)}
-        onTokenDragEnd={() => setDraggingTokenState(null)}
-        draggable={
-          (selectedToolId === "pan" || selectedToolId === "erase") &&
-          !(tokenState.id in disabledTokens)
-        }
-      />
-    ));
+    Object.values(mapState.tokens)
+      .sort(
+        (a, b) =>
+          tokensById[b.tokenId].isVehicle - tokensById[a.tokenId].isVehicle
+      ) // Sort so vehicles render below other tokens
+      .map((tokenState) => (
+        <MapToken
+          key={tokenState.id}
+          token={tokensById[tokenState.tokenId]}
+          tokenState={tokenState}
+          tokenSizePercent={tokenSizePercent}
+          onTokenStateChange={onMapTokenStateChange}
+          onTokenMenuOpen={handleTokenMenuOpen}
+          onTokenDragStart={(e) =>
+            setDraggingTokenOptions({ tokenState, tokenImage: e.target })
+          }
+          onTokenDragEnd={() => setDraggingTokenOptions(null)}
+          draggable={
+            (selectedToolId === "pan" || selectedToolId === "erase") &&
+            !(tokenState.id in disabledTokens)
+          }
+          mapState={mapState}
+        />
+      ));
 
   const tokenMenu = (
     <TokenMenu
@@ -235,12 +243,17 @@ function Map({
     />
   );
 
-  const tokenDragOverlay = draggingTokenState && (
+  const tokenDragOverlay = draggingTokenOptions && (
     <TokenDragOverlay
-      onTokenStateRemove={() => {
-        onMapTokenStateRemove(draggingTokenState);
-        setDraggingTokenState(null);
+      onTokenStateRemove={(state) => {
+        onMapTokenStateRemove(state);
+        setDraggingTokenOptions(null);
       }}
+      onTokenStateChange={onMapTokenStateChange}
+      tokenState={draggingTokenOptions && draggingTokenOptions.tokenState}
+      tokenImage={draggingTokenOptions && draggingTokenOptions.tokenImage}
+      token={tokensById[draggingTokenOptions.tokenState.tokenId]}
+      mapState={mapState}
     />
   );
 

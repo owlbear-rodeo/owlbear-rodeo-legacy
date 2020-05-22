@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, Box, Input, IconButton, Label } from "theme-ui";
+import { Flex, Box, Input, IconButton, Label, Checkbox } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
@@ -29,7 +29,7 @@ function TokenSettings({
       </Flex>
       {showMore && (
         <>
-          <Box my={2} sx={{ flexGrow: 1 }}>
+          <Box mt={2} sx={{ flexGrow: 1 }}>
             <Label htmlFor="name">Name</Label>
             <Input
               name="name"
@@ -38,6 +38,18 @@ function TokenSettings({
               disabled={!token || token.type === "default"}
               my={1}
             />
+          </Box>
+          <Box my={2}>
+            <Label>
+              <Checkbox
+                checked={token && token.isVehicle}
+                disabled={!token || token.type === "default"}
+                onChange={(e) =>
+                  onSettingsChange("isVehicle", e.target.checked)
+                }
+              />
+              Vehicle / Mount
+            </Label>
           </Box>
         </>
       )}

@@ -86,6 +86,11 @@ export function TokenDataProvider({ children }) {
 
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 
+  const tokensById = tokens.reduce((obj, token) => {
+    obj[token.id] = token;
+    return obj;
+  }, {});
+
   const value = {
     tokens,
     ownedTokens,
@@ -94,6 +99,7 @@ export function TokenDataProvider({ children }) {
     updateToken,
     putToken,
     getToken,
+    tokensById,
   };
 
   return (

@@ -22,6 +22,7 @@ function MapToken({
   onTokenDragStart,
   onTokenDragEnd,
   draggable,
+  mapState,
 }) {
   const { userId } = useContext(AuthContext);
   const {
@@ -41,15 +42,69 @@ function MapToken({
     }
   }, [tokenSourceImage]);
 
+  function handleDragStart(event) {
+    const tokenImage = event.target;
+    const tokenImageRect = tokenImage.getClientRect();
+
+    if (token.isVehicle) {
+      // Find all other tokens on the map
+      const layer = tokenImage.getLayer();
+      const tokens = layer.find(".token");
+      for (let other of tokens) {
+        if (other === tokenImage) {
+          continue;
+        }
+        const otherRect = other.getClientRect();
+        const otherCenter = {
+          x: otherRect.x + otherRect.width / 2,
+          y: otherRect.y + otherRect.height / 2,
+        };
+        // Check the other tokens center overlaps this tokens bounding box
+        if (
+          otherCenter.x > tokenImageRect.x &&
+          otherCenter.x < tokenImageRect.x + tokenImageRect.width &&
+          otherCenter.y > tokenImageRect.y &&
+          otherCenter.y < tokenImageRect.y + tokenImageRect.height
+        ) {
+          // Save and restore token position after moving layer
+          const position = other.absolutePosition();
+          other.moveTo(tokenImage);
+          other.absolutePosition(position);
+        }
+      }
+    }
+
+    onTokenDragStart(event);
+  }
+
   function handleDragEnd(event) {
+    const tokenImage = event.target;
+
+    if (token.isVehicle) {
+      const layer = tokenImage.getLayer();
+      const mountedTokens = tokenImage.find(".token");
+      for (let mountedToken of mountedTokens) {
+        // Save and restore token position after moving layer
+        const position = mountedToken.absolutePosition();
+        mountedToken.moveTo(layer);
+        mountedToken.absolutePosition(position);
+        onTokenStateChange({
+          ...mapState.tokens[mountedToken.id()],
+          x: mountedToken.x() / mapWidth,
+          y: mountedToken.y() / mapHeight,
+          lastEditedBy: userId,
+        });
+      }
+    }
+
     setPreventMapInteraction(false);
     onTokenStateChange({
       ...tokenState,
-      x: event.target.x() / mapWidth,
-      y: event.target.y() / mapHeight,
+      x: tokenImage.x() / mapWidth,
+      y: tokenImage.y() / mapHeight,
       lastEditedBy: userId,
     });
-    onTokenDragEnd();
+    onTokenDragEnd(event);
   }
 
   function handleClick(event) {
@@ -121,8 +176,10 @@ function MapToken({
       onTouchEnd={handlePointerUp}
       onClick={handleClick}
       onDragEnd={handleDragEnd}
-      onDragStart={onTokenDragStart}
+      onDragStart={handleDragStart}
       opacity={tokenOpacity}
+      name={token.isVehicle ? "vehicle" : "token"}
+      id={tokenState.id}
     >
       <KonvaImage
         ref={imageRef}

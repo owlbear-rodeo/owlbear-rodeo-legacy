@@ -64,6 +64,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           lastModified: Date.now(),
           owner: userId,
           defaultSize: 1,
+          isVehicle: false,
         });
         setImageLoading(false);
       };
