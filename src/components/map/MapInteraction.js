@@ -99,6 +99,19 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     stageHeightRef.current = height;
   }
 
+  function getCursorForTool(tool) {
+    switch (tool) {
+      case "pan":
+        return "move";
+      case "fog":
+      case "brush":
+      case "shape":
+        return "crosshair";
+      default:
+        return "default";
+    }
+  }
+
   const containerRef = useRef();
   usePreventOverscroll(containerRef);
 
@@ -124,7 +137,11 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   return (
     <Box
-      sx={{ flexGrow: 1, position: "relative" }}
+      sx={{
+        flexGrow: 1,
+        position: "relative",
+        cursor: getCursorForTool(selectedToolId),
+      }}
       ref={containerRef}
       {...bind()}
       className="map"
