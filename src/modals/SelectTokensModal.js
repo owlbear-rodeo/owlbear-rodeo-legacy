@@ -65,6 +65,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           owner: userId,
           defaultSize: 1,
         });
+        setImageLoading(false);
       };
       image.src = url;
 
