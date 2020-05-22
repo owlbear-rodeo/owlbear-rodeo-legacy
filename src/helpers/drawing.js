@@ -140,13 +140,13 @@ export function getUpdatedShapeData(type, data, brushPosition, gridSize) {
   }
 }
 
-const defaultStrokeSize = 1 / 10;
-export function getStrokeSize(multiplier, gridSize, canvasWidth, canvasHeight) {
+const defaultStrokeWidth = 1 / 10;
+export function getStrokeWidth(multiplier, gridSize, mapWidth, mapHeight) {
   const gridPixelSize = Vector2.multiply(gridSize, {
-    x: canvasWidth,
-    y: canvasHeight,
+    x: mapWidth,
+    y: mapHeight,
   });
-  return Vector2.min(gridPixelSize) * defaultStrokeSize * multiplier;
+  return Vector2.min(gridPixelSize) * defaultStrokeWidth * multiplier;
 }
 
 export function shapeHasFill(shape) {
@@ -330,7 +330,7 @@ export function drawShape(shape, context, gridSize, canvasWidth, canvasHeight) {
   context.strokeStyle = color;
   if (shape.strokeWidth > 0) {
     context.lineCap = "round";
-    context.lineWidth = getStrokeSize(
+    context.lineWidth = getStrokeWidth(
       shape.strokeWidth,
       gridSize,
       canvasWidth,

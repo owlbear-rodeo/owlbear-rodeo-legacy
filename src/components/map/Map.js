@@ -1,13 +1,16 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 
 import MapControls from "./MapControls";
 
 import MapInteraction from "./MapInteraction";
 import MapToken from "./MapToken";
+import MapDrawing from "./MapDrawing";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
+
+import { omit } from "../../helpers/shared";
 
 function Map({
   map,
@@ -83,6 +86,43 @@ function Map({
 
   const [mapShapes, setMapShapes] = useState([]);
   const [fogShapes, setFogShapes] = useState([]);
+
+  // Replay the draw actions and convert them to shapes for the map drawing
+  useEffect(() => {
+    if (!mapState) {
+      return;
+    }
+    function actionsToShapes(actions, actionIndex) {
+      let shapesById = {};
+      for (let i = 0; i <= actionIndex; i++) {
+        const action = actions[i];
+        if (action.type === "add" || action.type === "edit") {
+          for (let shape of action.shapes) {
+            shapesById[shape.id] = shape;
+          }
+        }
+        if (action.type === "remove") {
+          shapesById = omit(shapesById, action.shapeIds);
+        }
+      }
+      return Object.values(shapesById);
+    }
+
+    setMapShapes(
+      actionsToShapes(mapState.mapDrawActions, mapState.mapDrawActionIndex)
+    );
+    setFogShapes(
+      actionsToShapes(mapState.fogDrawActions, mapState.fogDrawActionIndex)
+    );
+  }, [mapState]);
+
+  function handleMapShapeAdd(shape) {
+    onMapDraw({ type: "add", shapes: [shape] });
+  }
+
+  function handleMapShapeRemove(shapeId) {
+    onMapDraw({ type: "remove", shapeIds: [shapeId] });
+  }
 
   const disabledControls = [];
   if (!allowMapDrawing) {
@@ -182,6 +222,17 @@ function Map({
     />
   );
 
+  const mapDrawing = (
+    <MapDrawing
+      shapes={mapShapes}
+      onShapeAdd={handleMapShapeAdd}
+      onShapeRemove={handleMapShapeRemove}
+      selectedToolId={selectedToolId}
+      selectedToolSettings={toolSettings[selectedToolId]}
+      gridSize={gridSizeNormalized}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -192,7 +243,9 @@ function Map({
           {tokenDragOverlay}
         </>
       }
+      selectedToolId={selectedToolId}
     >
+      {mapDrawing}
       {mapTokens}
     </MapInteraction>
   );
