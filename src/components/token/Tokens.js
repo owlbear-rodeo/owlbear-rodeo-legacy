@@ -32,6 +32,7 @@ function Tokens({ onMapTokenStateCreate }) {
         statuses: [],
         x: token.x,
         y: token.y,
+        lastEditedBy: userId,
       });
     }
   }
