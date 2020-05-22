@@ -187,6 +187,7 @@ function MapFog({
         onMouseOver={(e) => handleShapeMouseOver(e, shape)}
         onMouseOut={(e) => handleShapeMouseOut(e, shape)}
         onClick={(e) => handleShapeClick(e, shape)}
+        onTap={(e) => handleShapeClick(e, shape)}
         points={shape.data.points.reduce(
           (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
           []

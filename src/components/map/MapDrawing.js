@@ -191,6 +191,7 @@ function MapDrawing({
       onMouseOver: (e) => handleShapeMouseOver(e, shape),
       onMouseOut: (e) => handleShapeMouseOut(e, shape),
       onClick: (e) => handleShapeClick(e, shape),
+      onTap: (e) => handleShapeClick(e, shape),
       fill: colors[shape.color] || shape.color,
       opacity: shape.blend ? 0.5 : 1,
     };

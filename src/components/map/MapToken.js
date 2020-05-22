@@ -205,6 +205,7 @@ function MapToken({
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
       onClick={handleClick}
+      onTap={handleClick}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       opacity={tokenOpacity}
