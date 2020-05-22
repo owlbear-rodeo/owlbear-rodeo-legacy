@@ -14,7 +14,8 @@ import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
-const zoomSpeed = -0.001;
+const wheelZoomSpeed = 0.001;
+const touchZoomSpeed = 0.01;
 const minZoom = 0.1;
 const maxZoom = 5;
 
@@ -65,7 +66,16 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
   const bind = useGesture({
     onWheel: ({ delta }) => {
       const newScale = Math.min(
-        Math.max(stageScale - delta[1] * zoomSpeed, minZoom),
+        Math.max(stageScale + delta[1] * wheelZoomSpeed, minZoom),
+        maxZoom
+      );
+      setStageScale(newScale);
+      stageScaleRef.current = newScale;
+    },
+    onPinch: ({ offset }) => {
+      const [d] = offset;
+      const newScale = Math.min(
+        Math.max(1 + d * touchZoomSpeed, minZoom),
         maxZoom
       );
       setStageScale(newScale);
@@ -141,6 +151,7 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         flexGrow: 1,
         position: "relative",
         cursor: getCursorForTool(selectedToolId),
+        touchAction: "none",
       }}
       ref={containerRef}
       {...bind()}
