@@ -5,6 +5,7 @@ import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
+import MapFog from "./MapFog";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import TokenMenu from "../token/TokenMenu";
@@ -85,7 +86,28 @@ function Map({
   }
 
   const [mapShapes, setMapShapes] = useState([]);
+
+  function handleMapShapeAdd(shape) {
+    onMapDraw({ type: "add", shapes: [shape] });
+  }
+
+  function handleMapShapeRemove(shapeId) {
+    onMapDraw({ type: "remove", shapeIds: [shapeId] });
+  }
+
   const [fogShapes, setFogShapes] = useState([]);
+
+  function handleFogShapeAdd(shape) {
+    onFogDraw({ type: "add", shapes: [shape] });
+  }
+
+  function handleFogShapeRemove(shapeId) {
+    onFogDraw({ type: "remove", shapeIds: [shapeId] });
+  }
+
+  function handleFogShapeEdit(shape) {
+    onFogDraw({ type: "edit", shapes: [shape] });
+  }
 
   // Replay the draw actions and convert them to shapes for the map drawing
   useEffect(() => {
@@ -115,14 +137,6 @@ function Map({
       actionsToShapes(mapState.fogDrawActions, mapState.fogDrawActionIndex)
     );
   }, [mapState]);
-
-  function handleMapShapeAdd(shape) {
-    onMapDraw({ type: "add", shapes: [shape] });
-  }
-
-  function handleMapShapeRemove(shapeId) {
-    onMapDraw({ type: "remove", shapeIds: [shapeId] });
-  }
 
   const disabledControls = [];
   if (!allowMapDrawing) {
@@ -237,6 +251,18 @@ function Map({
     />
   );
 
+  const mapFog = (
+    <MapFog
+      shapes={fogShapes}
+      onShapeAdd={handleFogShapeAdd}
+      onShapeRemove={handleFogShapeRemove}
+      onShapeEdit={handleFogShapeEdit}
+      selectedToolId={selectedToolId}
+      selectedToolSettings={toolSettings[selectedToolId]}
+      gridSize={gridSizeNormalized}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -251,6 +277,7 @@ function Map({
     >
       {mapDrawing}
       {mapTokens}
+      {mapFog}
     </MapInteraction>
   );
 }

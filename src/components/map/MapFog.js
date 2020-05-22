@@ -1,104 +1,82 @@
-import React, { useRef, useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import shortid from "shortid";
+import { Group, Line } from "react-konva";
+import useImage from "use-image";
+
+import diagonalPattern from "../../images/DiagonalPattern.png";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 import { compare as comparePoints } from "../../helpers/vector2";
 import {
   getBrushPositionForTool,
-  isShapeHovered,
-  drawShape,
   simplifyPoints,
-  getRelativePointerPosition,
+  getStrokeWidth,
 } from "../../helpers/drawing";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-
-import diagonalPattern from "../../images/DiagonalPattern.png";
+import colors from "../../helpers/colors";
 
 function MapFog({
-  width,
-  height,
-  isEditing,
-  toolSettings,
   shapes,
   onShapeAdd,
   onShapeRemove,
   onShapeEdit,
+  selectedToolId,
+  selectedToolSettings,
   gridSize,
 }) {
-  const canvasRef = useRef();
-  const containerRef = useRef();
-
-  const [isPointerDown, setIsPointerDown] = useState(false);
+  const {
+    stageDragState,
+    mapDragPosition,
+    stageScale,
+    mapWidth,
+    mapHeight,
+  } = useContext(MapInteractionContext);
   const [drawingShape, setDrawingShape] = useState(null);
-  const [pointerPosition, setPointerPosition] = useState({ x: -1, y: -1 });
 
+  const isEditing = selectedToolId === "fog";
   const shouldHover =
     isEditing &&
-    (toolSettings.type === "toggle" || toolSettings.type === "remove");
+    (selectedToolSettings.type === "toggle" ||
+      selectedToolSettings.type === "remove");
 
-  const { scaleRef } = useContext(MapInteractionContext);
+  const [patternImage] = useImage(diagonalPattern);
 
-  // Reset pointer position when tool changes
   useEffect(() => {
-    setPointerPosition({ x: -1, y: -1 });
-  }, [isEditing, toolSettings]);
-
-  function handleStart(event) {
     if (!isEditing) {
       return;
     }
-    if (event.touches && event.touches.length !== 1) {
-      setIsPointerDown(false);
-      setDrawingShape(null);
-      return;
-    }
-    const pointer = event.touches ? event.touches[0] : event;
-    const position = getRelativePointerPosition(pointer, containerRef.current);
-    setPointerPosition(position);
-    setIsPointerDown(true);
-    const brushPosition = getBrushPositionForTool(
-      position,
-      "fog",
-      toolSettings,
-      gridSize,
-      shapes
-    );
-    if (isEditing && toolSettings.type === "add") {
-      setDrawingShape({
-        type: "fog",
-        data: { points: [brushPosition] },
-        strokeWidth: 0.5,
-        color: "black",
-        blend: true, // Blend while drawing
-        id: shortid.generate(),
-        visible: true,
-      });
-    }
-  }
 
-  function handleMove(event) {
-    if (!isEditing) {
-      return;
-    }
-    if (event.touches && event.touches.length !== 1) {
-      return;
-    }
-    const pointer = event.touches ? event.touches[0] : event;
-    const position = getRelativePointerPosition(pointer, containerRef.current);
-    // Set pointer position every frame for erase tool and fog
-    if (shouldHover) {
-      setPointerPosition(position);
-    }
-    if (isPointerDown) {
-      setPointerPosition(position);
+    function startShape() {
       const brushPosition = getBrushPositionForTool(
-        position,
-        "fog",
-        toolSettings,
+        mapDragPosition,
+        selectedToolId,
+        selectedToolSettings,
         gridSize,
         shapes
       );
-      if (isEditing && toolSettings.type === "add" && drawingShape) {
+      if (selectedToolSettings.type === "add") {
+        setDrawingShape({
+          type: "fog",
+          data: { points: [brushPosition] },
+          strokeWidth: 0.5,
+          color: "black",
+          blend: false,
+          id: shortid.generate(),
+          visible: true,
+        });
+      }
+    }
+
+    function continueShape() {
+      const brushPosition = getBrushPositionForTool(
+        mapDragPosition,
+        selectedToolId,
+        selectedToolSettings,
+        gridSize,
+        shapes
+      );
+      if (selectedToolSettings.type === "add") {
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
           if (
@@ -117,159 +95,125 @@ function MapFog({
         });
       }
     }
-  }
 
-  function handleStop(event) {
+    function endShape() {
+      if (selectedToolSettings.type === "add" && drawingShape) {
+        if (drawingShape.data.points.length > 1) {
+          const shape = {
+            ...drawingShape,
+            data: {
+              points: simplifyPoints(
+                drawingShape.data.points,
+                gridSize,
+                // Downscale fog as smoothing doesn't currently work with edge snapping
+                stageScale / 2
+              ),
+            },
+          };
+          onShapeAdd(shape);
+        }
+      }
+      setDrawingShape(null);
+    }
+
+    switch (stageDragState) {
+      case "first":
+        startShape();
+        return;
+      case "dragging":
+        continueShape();
+        return;
+      case "last":
+        endShape();
+        return;
+      default:
+        return;
+    }
+  }, [
+    stageDragState,
+    mapDragPosition,
+    selectedToolId,
+    selectedToolSettings,
+    isEditing,
+    gridSize,
+    stageScale,
+    onShapeAdd,
+    shapes,
+    drawingShape,
+  ]);
+
+  function handleShapeClick(_, shape) {
     if (!isEditing) {
       return;
     }
-    if (event.touches && event.touches.length !== 0) {
-      return;
-    }
-    if (isEditing && toolSettings.type === "add" && drawingShape) {
-      if (drawingShape.data.points.length > 1) {
-        const shape = {
-          ...drawingShape,
-          data: {
-            points: simplifyPoints(
-              drawingShape.data.points,
-              gridSize,
-              // Downscale fog as smoothing doesn't currently work with edge snapping
-              scaleRef.current / 2
-            ),
-          },
-          blend: false,
-        };
-        onShapeAdd(shape);
-      }
-    }
 
-    if (hoveredShapeRef.current && isPointerDown) {
-      if (toolSettings.type === "remove") {
-        onShapeRemove(hoveredShapeRef.current.id);
-      } else if (toolSettings.type === "toggle") {
-        onShapeEdit({
-          ...hoveredShapeRef.current,
-          visible: !hoveredShapeRef.current.visible,
-        });
-      }
+    if (selectedToolSettings.type === "remove") {
+      onShapeRemove(shape.id);
+    } else if (selectedToolSettings.type === "toggle") {
+      onShapeEdit({ ...shape, visible: !shape.visible });
     }
-    setDrawingShape(null);
-    setIsPointerDown(false);
   }
 
-  // Add listeners for draw events on map to allow drawing past the bounds
-  // of the container
-  useEffect(() => {
-    const map = document.querySelector(".map");
-    map.addEventListener("mousedown", handleStart);
-    map.addEventListener("mousemove", handleMove);
-    map.addEventListener("mouseup", handleStop);
-    map.addEventListener("touchstart", handleStart);
-    map.addEventListener("touchmove", handleMove);
-    map.addEventListener("touchend", handleStop);
-
-    return () => {
-      map.removeEventListener("mousedown", handleStart);
-      map.removeEventListener("mousemove", handleMove);
-      map.removeEventListener("mouseup", handleStop);
-      map.removeEventListener("touchstart", handleStart);
-      map.removeEventListener("touchmove", handleMove);
-      map.removeEventListener("touchend", handleStop);
-    };
-  });
-
-  /**
-   * Rendering
-   */
-  const hoveredShapeRef = useRef(null);
-  const diagonalPatternRef = useRef();
-
-  useEffect(() => {
-    let image = new Image();
-    image.src = diagonalPattern;
-    diagonalPatternRef.current = image;
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const context = canvas.getContext("2d");
-
-      context.clearRect(0, 0, width, height);
-      let hoveredShape = null;
-      if (isEditing) {
-        const editPattern = context.createPattern(
-          diagonalPatternRef.current,
-          "repeat"
-        );
-        for (let shape of shapes) {
-          if (shouldHover) {
-            if (
-              isShapeHovered(shape, context, pointerPosition, width, height)
-            ) {
-              hoveredShape = shape;
-            }
-          }
-          drawShape(
-            {
-              ...shape,
-              blend: true,
-              color: shape.visible ? "black" : editPattern,
-            },
-            context,
-            gridSize,
-            width,
-            height
-          );
-        }
-        if (drawingShape) {
-          drawShape(drawingShape, context, gridSize, width, height);
-        }
-        if (hoveredShape) {
-          const shape = { ...hoveredShape, color: "#BB99FF", blend: true };
-          drawShape(shape, context, gridSize, width, height);
-        }
+  function handleShapeMouseOver(event, shape) {
+    if (shouldHover) {
+      const path = event.target;
+      if (shape.visible) {
+        const hoverColor = "#BB99FF";
+        path.fill(hoverColor);
       } else {
-        // Not editing
-        for (let shape of shapes) {
-          if (shape.visible) {
-            drawShape(shape, context, gridSize, width, height);
-          }
-        }
+        path.opacity(1);
       }
-      hoveredShapeRef.current = hoveredShape;
+      path.getLayer().draw();
     }
-  }, [
-    shapes,
-    width,
-    height,
-    pointerPosition,
-    isEditing,
-    drawingShape,
-    gridSize,
-    shouldHover,
-  ]);
+  }
+
+  function handleShapeMouseOut(event, shape) {
+    if (shouldHover) {
+      const path = event.target;
+      if (shape.visible) {
+        const color = colors[shape.color] || shape.color;
+        path.fill(color);
+      } else {
+        path.opacity(0.5);
+      }
+      path.getLayer().draw();
+    }
+  }
+
+  function renderShape(shape) {
+    return (
+      <Line
+        key={shape.id}
+        onMouseOver={(e) => handleShapeMouseOver(e, shape)}
+        onMouseOut={(e) => handleShapeMouseOut(e, shape)}
+        onClick={(e) => handleShapeClick(e, shape)}
+        points={shape.data.points.reduce(
+          (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+          []
+        )}
+        stroke={colors[shape.color] || shape.color}
+        fill={colors[shape.color] || shape.color}
+        closed
+        lineCap="round"
+        strokeWidth={getStrokeWidth(
+          shape.strokeWidth,
+          gridSize,
+          mapWidth,
+          mapHeight
+        )}
+        visible={isEditing || shape.visible}
+        opacity={isEditing ? 0.5 : 1}
+        fillPatternImage={patternImage}
+        fillPriority={isEditing && !shape.visible ? "pattern" : "color"}
+      />
+    );
+  }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pointerEvents: "none",
-      }}
-      ref={containerRef}
-    >
-      <canvas
-        ref={canvasRef}
-        width={width}
-        height={height}
-        style={{ width: "100%", height: "100%" }}
-      />
-    </div>
+    <Group>
+      {shapes.map(renderShape)}
+      {drawingShape && renderShape(drawingShape)}
+    </Group>
   );
 }
 
