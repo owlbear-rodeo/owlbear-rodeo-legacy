@@ -71,7 +71,7 @@ function MapToken({
       tokenHeight > 0
     ) {
       image.cache({
-        pixelRatio: debouncedStageScale,
+        pixelRatio: debouncedStageScale * window.devicePixelRatio,
       });
       image.drawHitFromCache();
       // Force redraw
