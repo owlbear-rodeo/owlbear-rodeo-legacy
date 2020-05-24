@@ -248,7 +248,6 @@ function Game() {
   }
 
   function handleMapTokenStateChange(change) {
-    console.log(change);
     if (currentMapState === null) {
       return;
     }
