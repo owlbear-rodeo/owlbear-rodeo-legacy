@@ -22,7 +22,7 @@ export function TokenDataProvider({ children }) {
       for (let defaultToken of defaultTokens) {
         defaultTokensWithIds.push({
           ...defaultToken,
-          id: `__default-${defaultToken.key}`,
+          id: `__default-${defaultToken.name}`,
           owner: userId,
         });
       }

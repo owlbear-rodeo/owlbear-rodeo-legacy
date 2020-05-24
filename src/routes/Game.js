@@ -43,6 +43,9 @@ function Game() {
     handlePeerError
   );
 
+  const { putToken, getToken } = useContext(TokenDataContext);
+  const { putMap, getMap } = useContext(MapDataContext);
+
   /**
    * Map state
    */
@@ -220,25 +223,24 @@ function Game() {
   function sendTokensToPeer(peer, state) {
     let sentTokens = {};
     for (let tokenState of Object.values(state.tokens)) {
+      const token = getToken(tokenState.tokenId);
       if (
-        tokenState.tokenType === "file" &&
+        token &&
+        token.type === "file" &&
         !(tokenState.tokenId in sentTokens)
       ) {
         sentTokens[tokenState.tokenId] = true;
-        const token = getToken(tokenState.tokenId);
-        if (token) {
-          // Omit file from token peer will request file if needed
-          const { file, ...rest } = token;
-          peer.connection.send({ id: "token", data: rest });
-        }
+        // Omit file from token peer will request file if needed
+        const { file, ...rest } = token;
+        peer.connection.send({ id: "token", data: rest });
       }
     }
   }
 
   async function handleMapTokenStateCreate(tokenState) {
     // If file type token send the token to the other peers
-    if (tokenState.tokenType === "file") {
-      const token = getToken(tokenState.tokenId);
+    const token = getToken(tokenState.tokenId);
+    if (token && token.type === "file") {
       const { file, ...rest } = token;
       for (let peer of Object.values(peers)) {
         peer.connection.send({ id: "token", data: rest });
@@ -300,9 +302,6 @@ function Game() {
   /**
    * Peer handlers
    */
-
-  const { putToken, getToken } = useContext(TokenDataContext);
-  const { putMap, getMap } = useContext(MapDataContext);
 
   function handlePeerData({ data, peer }) {
     if (data.id === "sync") {
