@@ -206,13 +206,25 @@ function Map({
     setIsTokenMenuOpen(true);
   }
 
+  // Sort so vehicles render below other tokens
+  function sortMapTokenStates(a, b) {
+    const tokenA = tokensById[a.tokenId];
+    const tokenB = tokensById[b.tokenId];
+    if (tokenA && tokenB) {
+      return tokenB.isVehicle - tokenA.isVehicle;
+    } else if (tokenA) {
+      return 1;
+    } else if (tokenB) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
   const mapTokens =
     mapState &&
     Object.values(mapState.tokens)
-      .sort(
-        (a, b) =>
-          tokensById[b.tokenId].isVehicle - tokensById[a.tokenId].isVehicle
-      ) // Sort so vehicles render below other tokens
+      .sort(sortMapTokenStates)
       .map((tokenState) => (
         <MapToken
           key={tokenState.id}
