@@ -26,7 +26,6 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
-  const [stageTranslate, setStageTranslate] = useState({ x: 0, y: 0 });
   // "none" | "first" | "dragging" | "last"
   const [stageDragState, setStageDragState] = useState("none");
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
@@ -34,13 +33,21 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   const stageWidthRef = useRef(stageWidth);
   const stageHeightRef = useRef(stageHeight);
-  const stageScaleRef = useRef(stageScale);
-  const stageTranslateRef = useRef(stageTranslate);
+  // Avoid state udpates when panning the map by using a ref and updating the konva element directly
+  const stageTranslateRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (map) {
+    const layer = mapLayerRef.current;
+    if (map && layer) {
       const mapHeight = stageWidthRef.current * (map.height / map.width);
-      setStageTranslate({ x: 0, y: -(mapHeight - stageHeightRef.current) / 2 });
+      const newTranslate = {
+        x: 0,
+        y: -(mapHeight - stageHeightRef.current) / 2,
+      };
+      layer.x(newTranslate.x);
+      layer.y(newTranslate.y);
+      layer.draw();
+      stageTranslateRef.current = newTranslate;
     }
   }, [map]);
 
@@ -70,7 +77,6 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         maxZoom
       );
       setStageScale(newScale);
-      stageScaleRef.current = newScale;
     },
     onPinch: ({ offset }) => {
       const [d] = offset;
@@ -79,22 +85,27 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         maxZoom
       );
       setStageScale(newScale);
-      stageScaleRef.current = newScale;
     },
     onDrag: ({ delta, xy, first, last }) => {
       if (preventMapInteraction) {
         return;
       }
-      setMapDragPosition(getMapDragPosition(xy));
-      setStageDragState(first ? "first" : last ? "last" : "dragging");
+
       const [dx, dy] = delta;
+      const stageTranslate = stageTranslateRef.current;
+      const layer = mapLayerRef.current;
       if (selectedToolId === "pan") {
         const newTranslate = {
           x: stageTranslate.x + dx / stageScale,
           y: stageTranslate.y + dy / stageScale,
         };
-        setStageTranslate(newTranslate);
+        layer.x(newTranslate.x);
+        layer.y(newTranslate.y);
+        layer.draw();
         stageTranslateRef.current = newTranslate;
+      } else {
+        setMapDragPosition(getMapDragPosition(xy));
+        setStageDragState(first ? "first" : last ? "last" : "dragging");
       }
     },
     onDragEnd: () => {
@@ -129,12 +140,12 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
   const mapHeight = map ? stageWidth * (map.height / map.width) : stageHeight;
 
   const mapStageRef = useContext(MapStageContext);
+  const mapLayerRef = useRef();
   const mapImageRef = useRef();
 
   const auth = useContext(AuthContext);
 
   const mapInteraction = {
-    stageTranslate,
     stageScale,
     stageWidth,
     stageHeight,
@@ -167,7 +178,7 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
           offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
           ref={mapStageRef}
         >
-          <Layer x={stageTranslate.x} y={stageTranslate.y}>
+          <Layer ref={mapLayerRef}>
             <Image
               image={mapSourceImage}
               width={mapWidth}

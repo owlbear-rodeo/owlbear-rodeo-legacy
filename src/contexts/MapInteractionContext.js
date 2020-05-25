@@ -1,7 +1,6 @@
 import React from "react";
 
 const MapInteractionContext = React.createContext({
-  stageTranslate: { x: 0, y: 0 },
   stageScale: 1,
   stageWidth: 1,
   stageHeight: 1,
