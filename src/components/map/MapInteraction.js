@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-} from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { Box } from "theme-ui";
 import { useGesture } from "react-use-gesture";
 import ReactResizeDetector from "react-resize-detector";
@@ -42,7 +36,8 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapDragPositionRef = useRef({ x: 0, y: 0 });
 
-  const resetMapTransform = useCallback(() => {
+  // Reset transform when map changes
+  useEffect(() => {
     const layer = mapLayerRef.current;
     if (map && layer) {
       const mapHeight = stageWidthRef.current * (map.height / map.width);
@@ -58,11 +53,6 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       setStageScale(1);
     }
   }, [map]);
-
-  // Reset transform when map changes
-  useEffect(() => {
-    resetMapTransform();
-  }, [map, resetMapTransform]);
 
   // Convert a client space XY to be normalized to the map image
   function getMapDragPosition(xy) {
@@ -210,7 +200,6 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       ref={containerRef}
       {...bind()}
       className="map"
-      onDoubleClick={resetMapTransform}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage
