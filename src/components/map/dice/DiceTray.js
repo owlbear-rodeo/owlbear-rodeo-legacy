@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect, useContext } from "react";
 import * as BABYLON from "babylonjs";
 import { Box } from "theme-ui";
 
@@ -11,6 +11,8 @@ import Dice from "../../../dice/Dice";
 import createDiceTray, {
   diceTraySize,
 } from "../../../dice/diceTray/DiceTrayMesh";
+
+import MapInteractionContext from "../../../contexts/MapInteractionContext";
 
 function DiceTray({ isOpen }) {
   const sceneRef = useRef();
@@ -215,6 +217,8 @@ function DiceTray({ isOpen }) {
     }
   }
 
+  const { setPreventMapInteraction } = useContext(MapInteractionContext);
+
   return (
     <Box
       sx={{
@@ -232,9 +236,11 @@ function DiceTray({ isOpen }) {
         onSceneMount={handleSceneMount}
         onPointerDown={() => {
           sceneInteractionRef.current = true;
+          setPreventMapInteraction(true);
         }}
         onPointerUp={() => {
           sceneInteractionRef.current = false;
+          setPreventMapInteraction(false);
         }}
       />
       <DiceControls
