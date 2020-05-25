@@ -110,7 +110,7 @@ function TokenDragOverlay({
     <Box
       sx={{
         position: "absolute",
-        bottom: "24px",
+        bottom: "32px",
         left: "50%",
         borderRadius: "50%",
         transform: isRemoveHovered
