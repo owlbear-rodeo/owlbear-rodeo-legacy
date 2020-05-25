@@ -29,12 +29,12 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
   // "none" | "first" | "dragging" | "last"
   const [stageDragState, setStageDragState] = useState("none");
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
-  const [mapDragPosition, setMapDragPosition] = useState({ x: 0, y: 0 });
 
   const stageWidthRef = useRef(stageWidth);
   const stageHeightRef = useRef(stageHeight);
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
+  const mapDragPositionRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const layer = mapLayerRef.current;
@@ -103,9 +103,11 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         layer.y(newTranslate.y);
         layer.draw();
         stageTranslateRef.current = newTranslate;
-      } else {
-        setMapDragPosition(getMapDragPosition(xy));
-        setStageDragState(first ? "first" : last ? "last" : "dragging");
+      }
+      mapDragPositionRef.current = getMapDragPosition(xy);
+      const newDragState = first ? "first" : last ? "last" : "dragging";
+      if (stageDragState !== newDragState) {
+        setStageDragState(newDragState);
       }
     },
     onDragEnd: () => {
@@ -153,7 +155,7 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
-    mapDragPosition,
+    mapDragPositionRef,
   };
 
   return (

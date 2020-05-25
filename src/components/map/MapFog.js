@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState, useCallback } from "react";
 import shortid from "shortid";
 import { Group, Line } from "react-konva";
 import useImage from "use-image";
@@ -15,6 +15,7 @@ import {
 } from "../../helpers/drawing";
 
 import colors from "../../helpers/colors";
+import useMapBrush from "../../helpers/useMapBrush";
 
 function MapFog({
   shapes,
@@ -25,13 +26,7 @@ function MapFog({
   selectedToolSettings,
   gridSize,
 }) {
-  const {
-    stageDragState,
-    mapDragPosition,
-    stageScale,
-    mapWidth,
-    mapHeight,
-  } = useContext(MapInteractionContext);
+  const { stageScale, mapWidth, mapHeight } = useContext(MapInteractionContext);
   const [drawingShape, setDrawingShape] = useState(null);
 
   const isEditing = selectedToolId === "fog";
@@ -42,105 +37,103 @@ function MapFog({
 
   const [patternImage] = useImage(diagonalPattern);
 
-  useEffect(() => {
-    if (!isEditing) {
-      return;
-    }
-
-    function startShape() {
-      const brushPosition = getBrushPositionForTool(
-        mapDragPosition,
-        selectedToolId,
-        selectedToolSettings,
-        gridSize,
-        shapes
-      );
-      if (selectedToolSettings.type === "add") {
-        setDrawingShape({
-          type: "fog",
-          data: { points: [brushPosition] },
-          strokeWidth: 0.5,
-          color: "black",
-          blend: false,
-          id: shortid.generate(),
-          visible: true,
-        });
-      }
-    }
-
-    function continueShape() {
-      const brushPosition = getBrushPositionForTool(
-        mapDragPosition,
-        selectedToolId,
-        selectedToolSettings,
-        gridSize,
-        shapes
-      );
-      if (selectedToolSettings.type === "add") {
-        setDrawingShape((prevShape) => {
-          const prevPoints = prevShape.data.points;
-          if (
-            comparePoints(
-              prevPoints[prevPoints.length - 1],
-              brushPosition,
-              0.001
-            )
-          ) {
-            return prevShape;
-          }
-          return {
-            ...prevShape,
-            data: { points: [...prevPoints, brushPosition] },
-          };
-        });
-      }
-    }
-
-    function endShape() {
-      if (selectedToolSettings.type === "add" && drawingShape) {
-        if (drawingShape.data.points.length > 1) {
-          const shape = {
-            ...drawingShape,
-            data: {
-              points: simplifyPoints(
-                drawingShape.data.points,
-                gridSize,
-                // Downscale fog as smoothing doesn't currently work with edge snapping
-                stageScale / 2
-              ),
-            },
-          };
-          onShapeAdd(shape);
+  const handleShapeDraw = useCallback(
+    (brushState, mapBrushPosition) => {
+      function startShape() {
+        const brushPosition = getBrushPositionForTool(
+          mapBrushPosition,
+          selectedToolId,
+          selectedToolSettings,
+          gridSize,
+          shapes
+        );
+        if (selectedToolSettings.type === "add") {
+          setDrawingShape({
+            type: "fog",
+            data: { points: [brushPosition] },
+            strokeWidth: 0.5,
+            color: "black",
+            blend: false,
+            id: shortid.generate(),
+            visible: true,
+          });
         }
       }
-      setDrawingShape(null);
-    }
 
-    switch (stageDragState) {
-      case "first":
-        startShape();
-        return;
-      case "dragging":
-        continueShape();
-        return;
-      case "last":
-        endShape();
-        return;
-      default:
-        return;
-    }
-  }, [
-    stageDragState,
-    mapDragPosition,
-    selectedToolId,
-    selectedToolSettings,
-    isEditing,
-    gridSize,
-    stageScale,
-    onShapeAdd,
-    shapes,
-    drawingShape,
-  ]);
+      function continueShape() {
+        const brushPosition = getBrushPositionForTool(
+          mapBrushPosition,
+          selectedToolId,
+          selectedToolSettings,
+          gridSize,
+          shapes
+        );
+        if (selectedToolSettings.type === "add") {
+          setDrawingShape((prevShape) => {
+            const prevPoints = prevShape.data.points;
+            if (
+              comparePoints(
+                prevPoints[prevPoints.length - 1],
+                brushPosition,
+                0.001
+              )
+            ) {
+              return prevShape;
+            }
+            return {
+              ...prevShape,
+              data: { points: [...prevPoints, brushPosition] },
+            };
+          });
+        }
+      }
+
+      function endShape() {
+        if (selectedToolSettings.type === "add" && drawingShape) {
+          if (drawingShape.data.points.length > 1) {
+            const shape = {
+              ...drawingShape,
+              data: {
+                points: simplifyPoints(
+                  drawingShape.data.points,
+                  gridSize,
+                  // Downscale fog as smoothing doesn't currently work with edge snapping
+                  stageScale / 2
+                ),
+              },
+            };
+            onShapeAdd(shape);
+          }
+        }
+        setDrawingShape(null);
+      }
+
+      switch (brushState) {
+        case "first":
+          startShape();
+          return;
+        case "drawing":
+          continueShape();
+          return;
+        case "last":
+          endShape();
+          return;
+        default:
+          return;
+      }
+    },
+    [
+      selectedToolId,
+      selectedToolSettings,
+      gridSize,
+      stageScale,
+      onShapeAdd,
+      shapes,
+      drawingShape,
+    ]
+  );
+
+  useMapBrush(isEditing, handleShapeDraw);
 
   function handleShapeClick(_, shape) {
     if (!isEditing) {
