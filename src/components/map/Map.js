@@ -1,28 +1,24 @@
-import React, { useRef, useEffect, useState } from "react";
-import { Box, Image } from "theme-ui";
+import React, { useState, useContext, useEffect } from "react";
 
-import ProxyToken from "../token/ProxyToken";
-import TokenMenu from "../token/TokenMenu";
+import MapControls from "./MapControls";
+import MapInteraction from "./MapInteraction";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
-import MapControls from "./MapControls";
 import MapDice from "./MapDice";
+
+import TokenDataContext from "../../contexts/TokenDataContext";
+import MapLoadingContext from "../../contexts/MapLoadingContext";
+
+import TokenMenu from "../token/TokenMenu";
+import TokenDragOverlay from "../token/TokenDragOverlay";
 import LoadingOverlay from "../LoadingOverlay";
 
 import { omit } from "../../helpers/shared";
-import useDataSource from "../../helpers/useDataSource";
-import MapInteraction from "./MapInteraction";
-
-import { mapSources as defaultMapSources } from "../../maps";
-
-const mapTokenProxyClassName = "map-token__proxy";
-const mapTokenMenuClassName = "map-token__menu";
 
 function Map({
   map,
   mapState,
-  tokens,
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
@@ -36,23 +32,17 @@ function Map({
   allowMapDrawing,
   allowFogDrawing,
   disabledTokens,
-  loading,
 }) {
-  const mapSource = useDataSource(map, defaultMapSources);
+  const { tokensById } = useContext(TokenDataContext);
+  const { isLoading } = useContext(MapLoadingContext);
 
-  function handleProxyDragEnd(isOnMap, tokenState) {
-    if (isOnMap && onMapTokenStateChange) {
-      onMapTokenStateChange(tokenState);
-    }
-
-    if (!isOnMap && onMapTokenStateRemove) {
-      onMapTokenStateRemove(tokenState);
-    }
-  }
-
-  /**
-   * Map drawing
-   */
+  const gridX = map && map.gridX;
+  const gridY = map && map.gridY;
+  const gridSizeNormalized = {
+    x: gridX ? 1 / gridX : 0,
+    y: gridY ? 1 / gridY : 0,
+  };
+  const tokenSizePercent = gridSizeNormalized.x;
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
   const [toolSettings, setToolSettings] = useState({
@@ -102,6 +92,7 @@ function Map({
   }
 
   const [mapShapes, setMapShapes] = useState([]);
+
   function handleMapShapeAdd(shape) {
     onMapDraw({ type: "add", shapes: [shape] });
   }
@@ -111,6 +102,7 @@ function Map({
   }
 
   const [fogShapes, setFogShapes] = useState([]);
+
   function handleFogShapeAdd(shape) {
     onFogDraw({ type: "add", shapes: [shape] });
   }
@@ -192,97 +184,12 @@ function Map({
     disabledSettings.fog.push("redo");
   }
 
-  /**
-   * Member setup
-   */
-
-  const mapRef = useRef(null);
-
-  const gridX = map && map.gridX;
-  const gridY = map && map.gridY;
-  const gridSizeNormalized = { x: 1 / gridX || 0, y: 1 / gridY || 0 };
-  const tokenSizePercent = gridSizeNormalized.x * 100;
-  const aspectRatio = (map && map.width / map.height) || 1;
-
-  const mapImage = (
-    <Box
-      sx={{
-        position: "absolute",
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-      }}
-    >
-      <Image
-        ref={mapRef}
-        className="mapImage"
-        sx={{
-          width: "100%",
-          userSelect: "none",
-          touchAction: "none",
-        }}
-        src={mapSource}
-      />
-    </Box>
-  );
-
-  const mapTokens = (
-    <Box
-      sx={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pointerEvents: "none",
-      }}
-    >
-      {mapState &&
-        Object.values(mapState.tokens).map((tokenState) => (
-          <MapToken
-            key={tokenState.id}
-            token={tokens.find((token) => token.id === tokenState.tokenId)}
-            tokenState={tokenState}
-            tokenSizePercent={tokenSizePercent}
-            className={`${mapTokenProxyClassName} ${mapTokenMenuClassName}`}
-          />
-        ))}
-    </Box>
-  );
-
-  const mapDrawing = (
-    <MapDrawing
-      width={map ? map.width : 0}
-      height={map ? map.height : 0}
-      selectedTool={selectedToolId !== "fog" ? selectedToolId : "none"}
-      toolSettings={toolSettings[selectedToolId]}
-      shapes={mapShapes}
-      onShapeAdd={handleMapShapeAdd}
-      onShapeRemove={handleMapShapeRemove}
-      gridSize={gridSizeNormalized}
-    />
-  );
-
-  const mapFog = (
-    <MapFog
-      width={map ? map.width : 0}
-      height={map ? map.height : 0}
-      isEditing={selectedToolId === "fog"}
-      toolSettings={toolSettings["fog"]}
-      shapes={fogShapes}
-      onShapeAdd={handleFogShapeAdd}
-      onShapeRemove={handleFogShapeRemove}
-      onShapeEdit={handleFogShapeEdit}
-      gridSize={gridSizeNormalized}
-    />
-  );
-
   const mapControls = (
     <MapControls
       onMapChange={onMapChange}
       onMapStateChange={onMapStateChange}
       currentMap={map}
+      currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}
       selectedToolId={selectedToolId}
       toolSettings={toolSettings}
@@ -292,38 +199,119 @@ function Map({
       disabledSettings={disabledSettings}
     />
   );
+
+  const [isTokenMenuOpen, setIsTokenMenuOpen] = useState(false);
+  const [tokenMenuOptions, setTokenMenuOptions] = useState({});
+  const [draggingTokenOptions, setDraggingTokenOptions] = useState();
+  function handleTokenMenuOpen(tokenStateId, tokenImage) {
+    setTokenMenuOptions({ tokenStateId, tokenImage });
+    setIsTokenMenuOpen(true);
+  }
+
+  // Sort so vehicles render below other tokens
+  function sortMapTokenStates(a, b) {
+    const tokenA = tokensById[a.tokenId];
+    const tokenB = tokensById[b.tokenId];
+    if (tokenA && tokenB) {
+      return tokenB.isVehicle - tokenA.isVehicle;
+    } else if (tokenA) {
+      return 1;
+    } else if (tokenB) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
+  const mapTokens =
+    mapState &&
+    Object.values(mapState.tokens)
+      .sort(sortMapTokenStates)
+      .map((tokenState) => (
+        <MapToken
+          key={tokenState.id}
+          token={tokensById[tokenState.tokenId]}
+          tokenState={tokenState}
+          tokenSizePercent={tokenSizePercent}
+          onTokenStateChange={onMapTokenStateChange}
+          onTokenMenuOpen={handleTokenMenuOpen}
+          onTokenDragStart={(e) =>
+            setDraggingTokenOptions({ tokenState, tokenImage: e.target })
+          }
+          onTokenDragEnd={() => setDraggingTokenOptions(null)}
+          draggable={
+            (selectedToolId === "pan" || selectedToolId === "erase") &&
+            !(tokenState.id in disabledTokens)
+          }
+          mapState={mapState}
+        />
+      ));
+
+  const tokenMenu = (
+    <TokenMenu
+      isOpen={isTokenMenuOpen}
+      onRequestClose={() => setIsTokenMenuOpen(false)}
+      onTokenStateChange={onMapTokenStateChange}
+      tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
+      tokenImage={tokenMenuOptions.tokenImage}
+    />
+  );
+
+  const tokenDragOverlay = draggingTokenOptions && (
+    <TokenDragOverlay
+      onTokenStateRemove={(state) => {
+        onMapTokenStateRemove(state);
+        setDraggingTokenOptions(null);
+      }}
+      onTokenStateChange={onMapTokenStateChange}
+      tokenState={draggingTokenOptions && draggingTokenOptions.tokenState}
+      tokenImage={draggingTokenOptions && draggingTokenOptions.tokenImage}
+      token={tokensById[draggingTokenOptions.tokenState.tokenId]}
+      mapState={mapState}
+    />
+  );
+
+  const mapDrawing = (
+    <MapDrawing
+      shapes={mapShapes}
+      onShapeAdd={handleMapShapeAdd}
+      onShapeRemove={handleMapShapeRemove}
+      selectedToolId={selectedToolId}
+      selectedToolSettings={toolSettings[selectedToolId]}
+      gridSize={gridSizeNormalized}
+    />
+  );
+
+  const mapFog = (
+    <MapFog
+      shapes={fogShapes}
+      onShapeAdd={handleFogShapeAdd}
+      onShapeRemove={handleFogShapeRemove}
+      onShapeEdit={handleFogShapeEdit}
+      selectedToolId={selectedToolId}
+      selectedToolSettings={toolSettings[selectedToolId]}
+      gridSize={gridSizeNormalized}
+    />
+  );
+
   return (
-    <>
-      <MapInteraction
-        map={map}
-        aspectRatio={aspectRatio}
-        isEnabled={selectedToolId === "pan"}
-        sideContent={
-          <>
-            <MapDice />
-            {mapControls}
-            {loading && <LoadingOverlay />}
-          </>
-        }
-      >
-        {map && mapImage}
-        {map && mapDrawing}
-        {map && mapFog}
-        {map && mapTokens}
-      </MapInteraction>
-      <ProxyToken
-        tokenClassName={mapTokenProxyClassName}
-        onProxyDragEnd={handleProxyDragEnd}
-        tokens={mapState && mapState.tokens}
-        disabledTokens={disabledTokens}
-      />
-      <TokenMenu
-        tokenClassName={mapTokenMenuClassName}
-        onTokenChange={onMapTokenStateChange}
-        tokens={mapState && mapState.tokens}
-        disabledTokens={disabledTokens}
-      />
-    </>
+    <MapInteraction
+      map={map}
+      controls={
+        <>
+          {mapControls}
+          {tokenMenu}
+          {tokenDragOverlay}
+          <MapDice />
+          {isLoading && <LoadingOverlay />}
+        </>
+      }
+      selectedToolId={selectedToolId}
+    >
+      {mapDrawing}
+      {mapTokens}
+      {mapFog}
+    </MapInteraction>
   );
 }
 

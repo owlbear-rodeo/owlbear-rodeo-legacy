@@ -1,46 +1,24 @@
 import React from "react";
-import { Box } from "theme-ui";
+import { Circle, Group } from "react-konva";
 
 import colors from "../../helpers/colors";
 
-function TokenStatus({ statuses }) {
+function TokenStatus({ tokenState, width, height }) {
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-      }}
-    >
-      {statuses.map((status, index) => (
-        <Box
+    <Group x={width} y={height} offsetX={width / 2} offsetY={height / 2}>
+      {tokenState.statuses.map((status, index) => (
+        <Circle
           key={status}
-          sx={{
-            width: "100%",
-            height: "100%",
-            position: "absolute",
-            opacity: 0.8,
-            transform: `scale(${1 - index / 10})`,
-          }}
-        >
-          <svg
-            style={{ position: "absolute" }}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 100 100"
-          >
-            <circle
-              r={47}
-              cx={50}
-              cy={50}
-              fill="none"
-              stroke={colors[status]}
-              strokeWidth={4}
-            />
-          </svg>
-        </Box>
+          width={width}
+          height={height}
+          stroke={colors[status]}
+          strokeWidth={width / 20 / tokenState.size}
+          scaleX={1 - index / 10 / tokenState.size}
+          scaleY={1 - index / 10 / tokenState.size}
+          opacity={0.8}
+        />
       ))}
-    </Box>
+    </Group>
   );
 }
 

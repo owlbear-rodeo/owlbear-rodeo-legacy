@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Modal from "react-modal";
-
 import { useThemeUI } from "theme-ui";
+
+import MapInteractionContext from "../../contexts/MapInteractionContext";
+
+import usePrevious from "../../helpers/usePrevious";
 
 function MapMenu({
   isOpen,
@@ -20,6 +23,17 @@ function MapMenu({
   // are removed if the open state changed not from the onRequestClose
   // callback
   const [modalContentNode, setModalContentNode] = useState(null);
+
+  // Toggle map interaction when menu is opened
+  const wasOpen = usePrevious(isOpen);
+  const { setPreventMapInteraction } = useContext(MapInteractionContext);
+  useEffect(() => {
+    if (isOpen && !wasOpen) {
+      setPreventMapInteraction(true);
+    } else if (wasOpen && !isOpen) {
+      setPreventMapInteraction(false);
+    }
+  }, [isOpen, setPreventMapInteraction, wasOpen]);
 
   useEffect(() => {
     // Close modal if interacting with any other element
@@ -45,6 +59,7 @@ function MapMenu({
         { once: true }
       );
     }
+
     return () => {
       if (modalContentNode) {
         document.body.removeEventListener("pointerdown", handlePointerDown);

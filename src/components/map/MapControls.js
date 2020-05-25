@@ -22,6 +22,7 @@ function MapContols({
   onMapChange,
   onMapStateChange,
   currentMap,
+  currentMapState,
   selectedToolId,
   onSelectedToolChange,
   toolSettings,
@@ -73,6 +74,7 @@ function MapContols({
           onMapChange={onMapChange}
           onMapStateChange={onMapStateChange}
           currentMap={currentMap}
+          currentMapState={currentMapState}
         />
       ),
     },

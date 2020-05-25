@@ -1,51 +1,49 @@
-import React from "react";
-import { Image, Box, Text } from "theme-ui";
+import React, { useRef, useEffect, useState } from "react";
+import { Rect, Text, Group } from "react-konva";
 
-import tokenLabel from "../../images/TokenLabel.png";
+function TokenLabel({ tokenState, width, height }) {
+  const fontSize = height / 6 / tokenState.size;
+  const paddingY = height / 16 / tokenState.size;
+  const paddingX = height / 8 / tokenState.size;
 
-function TokenLabel({ label }) {
+  const [rectWidth, setRectWidth] = useState(0);
+  useEffect(() => {
+    const text = textRef.current;
+    if (text && tokenState.label) {
+      setRectWidth(text.getTextWidth() + paddingX);
+    } else {
+      setRectWidth(0);
+    }
+  }, [tokenState.label, paddingX]);
+
+  const textRef = useRef();
+
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        transform: "scale(0.3) translate(0, 20%)",
-        transformOrigin: "bottom center",
-        pointerEvents: "none",
-        width: "100%",
-        display: "flex", // Set display to flex to fix height being calculated wrong
-        flexDirection: "column",
-      }}
-    >
-      <Image sx={{ width: "100%" }} src={tokenLabel} />
-      <svg
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <foreignObject width="100%" height="100%">
-          <Text
-            as="p"
-            variant="heading"
-            sx={{
-              // This value is actually 66%
-              fontSize: "66px",
-              width: "100px",
-              height: "100px",
-              textAlign: "center",
-              verticalAlign: "middle",
-              lineHeight: 1.4,
-            }}
-            color="hsl(210, 50%, 96%)"
-          >
-            {label}
-          </Text>
-        </foreignObject>
-      </svg>
-    </Box>
+    <Group y={height - (fontSize + paddingY) / 2}>
+      <Rect
+        y={-paddingY / 2}
+        width={rectWidth}
+        offsetX={width / 2}
+        x={width - rectWidth / 2}
+        height={fontSize + paddingY}
+        fill="hsla(230, 25%, 18%, 0.8)"
+        cornerRadius={(fontSize + paddingY) / 2}
+      />
+      <Text
+        ref={textRef}
+        width={width}
+        text={tokenState.label}
+        fontSize={fontSize}
+        lineHeight={1}
+        align="center"
+        verticalAlign="bottom"
+        fill="white"
+        paddingX={paddingX}
+        paddingY={paddingY}
+        wrap="none"
+        ellipsis={true}
+      />
+    </Group>
   );
 }
 

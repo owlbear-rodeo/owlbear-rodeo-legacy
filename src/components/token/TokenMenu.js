@@ -1,119 +1,78 @@
-import React, { useEffect, useState, useRef } from "react";
-import interact from "interactjs";
-import { Box, Input } from "theme-ui";
+import React, { useEffect, useState } from "react";
+import { Box, Input, Slider, Flex, Text } from "theme-ui";
 
 import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
-/**
- * @callback onTokenChange
- * @param {Object} token the token that was changed
- */
+import usePrevious from "../../helpers/usePrevious";
 
-/**
- *
- * @param {string} tokenClassName The class name to attach the interactjs handler to
- * @param {onProxyDragEnd} onTokenChange Called when the the token data is changed
- * @param {Object} tokens An mapping of tokens to use as a base when calling onTokenChange
- * @param {Object} disabledTokens An optional mapping of tokens that shouldn't allow interaction
- */
-function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
-  const [isOpen, setIsOpen] = useState(false);
+const defaultTokenMaxSize = 6;
+function TokenMenu({
+  isOpen,
+  onRequestClose,
+  tokenState,
+  tokenImage,
+  onTokenStateChange,
+}) {
+  const wasOpen = usePrevious(isOpen);
 
-  function handleRequestClose() {
-    setIsOpen(false);
-  }
-
-  // Store the tokens in a ref and access in the interactjs loop
-  // This is needed to stop interactjs from creating multiple listeners
-  const tokensRef = useRef(tokens);
-  const disabledTokensRef = useRef(disabledTokens);
-  useEffect(() => {
-    tokensRef.current = tokens;
-    disabledTokensRef.current = disabledTokens;
-  }, [tokens, disabledTokens]);
-
-  const [currentToken, setCurrentToken] = useState({});
+  const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
   const [menuLeft, setMenuLeft] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
+  useEffect(() => {
+    if (isOpen && !wasOpen && tokenState) {
+      setTokenMaxSize(Math.max(tokenState.size, defaultTokenMaxSize));
+      // Update menu position
+      if (tokenImage) {
+        const imageRect = tokenImage.getClientRect();
+        const map = document.querySelector(".map");
+        const mapRect = map.getBoundingClientRect();
+
+        // Center X for the menu which is 156px wide
+        setMenuLeft(mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2);
+        // Y 12px from the bottom
+        setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
+      }
+    }
+  }, [isOpen, tokenState, wasOpen, tokenImage]);
 
   function handleLabelChange(event) {
-    // Slice to remove Label: text
-    const label = event.target.value.slice(7);
-    if (label.length <= 1) {
-      setCurrentToken((prevToken) => ({
-        ...prevToken,
-        label: label,
-      }));
-
-      onTokenChange({ ...currentToken, label: label });
-    }
+    const label = event.target.value;
+    onTokenStateChange({ [tokenState.id]: { ...tokenState, label: label } });
   }
 
   function handleStatusChange(status) {
-    const statuses = currentToken.statuses;
+    const statuses = tokenState.statuses;
     let newStatuses = [];
     if (statuses.includes(status)) {
       newStatuses = statuses.filter((s) => s !== status);
     } else {
       newStatuses = [...statuses, status];
     }
-    setCurrentToken((prevToken) => ({
-      ...prevToken,
-      statuses: newStatuses,
-    }));
-    onTokenChange({ ...currentToken, statuses: newStatuses });
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, statuses: newStatuses },
+    });
   }
 
-  useEffect(() => {
-    function handleTokenMenuOpen(event) {
-      const target = event.target;
-      const id = target.getAttribute("data-id");
-      if (id in disabledTokensRef.current) {
-        return;
-      }
-      const token = tokensRef.current[id] || {};
-      setCurrentToken(token);
+  function handleSizeChange(event) {
+    const newSize = parseInt(event.target.value);
+    onTokenStateChange({ [tokenState.id]: { ...tokenState, size: newSize } });
+  }
 
-      const targetRect = target.getBoundingClientRect();
-      setMenuLeft(targetRect.left);
-      setMenuTop(targetRect.bottom);
-
-      setIsOpen(true);
-    }
-
-    // Add listener for tap gesture
-    const tokenInteract = interact(`.${tokenClassName}`).on(
-      "tap",
-      handleTokenMenuOpen
-    );
-
-    function handleMapContextMenu(event) {
-      event.preventDefault();
-      if (event.target.classList.contains(tokenClassName)) {
-        handleTokenMenuOpen(event);
-      }
-    }
-
-    // Handle context menu on the map level as handling
-    // on the token level lead to the default menu still
-    // being displayed
-    const map = document.querySelector(".map");
-    map.addEventListener("contextmenu", handleMapContextMenu);
-
-    return () => {
-      map.removeEventListener("contextmenu", handleMapContextMenu);
-      tokenInteract.unset();
-    };
-  }, [tokenClassName]);
+  function handleRotationChange(event) {
+    const newRotation = parseInt(event.target.value);
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, rotation: newRotation },
+    });
+  }
 
   function handleModalContent(node) {
     if (node) {
       // Focus input
       const tokenLabelInput = node.querySelector("#changeTokenLabel");
       tokenLabelInput.focus();
-      tokenLabelInput.setSelectionRange(7, 8);
+      tokenLabelInput.select();
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
@@ -134,23 +93,32 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
   return (
     <MapMenu
       isOpen={isOpen}
-      onRequestClose={handleRequestClose}
+      onRequestClose={onRequestClose}
       top={`${menuTop}px`}
       left={`${menuLeft}px`}
       onModalContent={handleModalContent}
     >
-      <Box sx={{ width: "104px" }} p={1}>
-        <Box
+      <Box sx={{ width: "156px" }} p={1}>
+        <Flex
           as="form"
           onSubmit={(e) => {
             e.preventDefault();
-            handleRequestClose();
+            onRequestClose();
           }}
+          sx={{ alignItems: "center" }}
         >
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "45%", fontSize: "16px" }}
+            p={1}
+          >
+            Label:
+          </Text>
           <Input
             id="changeTokenLabel"
             onChange={handleLabelChange}
-            value={`Label: ${currentToken.label}`}
+            value={(tokenState && tokenState.label) || ""}
             sx={{
               padding: "4px",
               border: "none",
@@ -160,7 +128,7 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             }}
             autoComplete="off"
           />
-        </Box>
+        </Flex>
         <Box
           sx={{
             display: "flex",
@@ -172,8 +140,8 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
             <Box
               key={color}
               sx={{
-                width: "25%",
-                paddingTop: "25%",
+                width: "16.66%",
+                paddingTop: "16.66%",
                 borderRadius: "50%",
                 transform: "scale(0.75)",
                 backgroundColor: colors[color],
@@ -182,21 +150,59 @@ function TokenMenu({ tokenClassName, onTokenChange, tokens, disabledTokens }) {
               onClick={() => handleStatusChange(color)}
               aria-label={`Token label Color ${color}`}
             >
-              {currentToken.statuses && currentToken.statuses.includes(color) && (
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    border: "2px solid white",
-                    position: "absolute",
-                    top: 0,
-                    borderRadius: "50%",
-                  }}
-                />
-              )}
+              {tokenState &&
+                tokenState.statuses &&
+                tokenState.statuses.includes(color) && (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      border: "2px solid white",
+                      position: "absolute",
+                      top: 0,
+                      borderRadius: "50%",
+                    }}
+                  />
+                )}
             </Box>
           ))}
         </Box>
+        <Flex sx={{ alignItems: "center" }}>
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "40%", fontSize: "16px" }}
+            p={1}
+          >
+            Size:
+          </Text>
+          <Slider
+            value={(tokenState && tokenState.size) || 1}
+            onChange={handleSizeChange}
+            step={1}
+            min={1}
+            max={tokenMaxSize}
+            mr={1}
+          />
+        </Flex>
+        <Flex sx={{ alignItems: "center" }}>
+          <Text
+            as="label"
+            variant="body2"
+            sx={{ width: "95%", fontSize: "16px" }}
+            p={1}
+          >
+            Rotation:
+          </Text>
+          <Slider
+            value={(tokenState && tokenState.rotation) || 0}
+            onChange={handleRotationChange}
+            step={45}
+            min={0}
+            max={360}
+            mr={1}
+          />
+        </Flex>
       </Box>
     </MapMenu>
   );
