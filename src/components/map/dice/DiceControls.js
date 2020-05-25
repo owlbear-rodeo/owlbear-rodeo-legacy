@@ -102,8 +102,7 @@ function DiceControls({
         style={{
           position: "absolute",
           top: "24px",
-          left: "50%",
-          transform: "translateX(-50%)",
+          width: "100%",
         }}
       >
         <DiceButtons

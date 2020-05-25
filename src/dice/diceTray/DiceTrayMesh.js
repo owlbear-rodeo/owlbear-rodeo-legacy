@@ -6,7 +6,7 @@ import albedo from "./albedo.jpg";
 import metalRoughness from "./metalRoughness.jpg";
 import normal from "./normal.jpg";
 
-export const diceTraySize = { width: 8, height: 16 };
+export const diceTraySize = { width: 10, height: 20 };
 
 export default async function createDiceTray(scene, shadowGenerator) {
   let mesh = (

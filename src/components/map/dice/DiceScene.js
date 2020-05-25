@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import * as BABYLON from "babylonjs";
 import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
+import ReactResizeDetector from "react-resize-detector";
 
 function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   const sceneRef = useRef();
@@ -25,7 +26,7 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
 
     let camera = new BABYLON.TargetCamera(
       "camera",
-      new BABYLON.Vector3(0, 27, 0),
+      new BABYLON.Vector3(0, 34, 0),
       scene
     );
     camera.fov = 0.65;
@@ -54,20 +55,6 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
         selectedMeshDeltaPositionRef.current = delta;
       }
     });
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      engine.resize();
-      for (let entry of entries) {
-        canvasRef.current.width = entry.contentRect.width;
-        canvasRef.current.height = entry.contentRect.height;
-      }
-    });
-
-    resizeObserver.observe(containerRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
   }, [onSceneMount]);
 
   const selectedMeshRef = useRef();
@@ -110,16 +97,30 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
     onPointerUp();
   }
 
+  function handleResize(width, height) {
+    const engine = engineRef.current;
+    engine.resize();
+    canvasRef.current.width = width;
+    canvasRef.current.height = height;
+  }
+
   return (
     <div
-      style={{ width: "100%", height: "100%", overflow: "hidden" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        overflow: "hidden",
+      }}
       ref={containerRef}
     >
-      <canvas
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        ref={canvasRef}
-      />
+      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+        <canvas
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          ref={canvasRef}
+        />
+      </ReactResizeDetector>
     </div>
   );
 }

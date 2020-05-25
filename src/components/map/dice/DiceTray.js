@@ -218,8 +218,9 @@ function DiceTray({ isOpen }) {
   return (
     <Box
       sx={{
-        width: "300px",
-        height: "600px",
+        width: "500px",
+        maxWidth: "calc(50vh - 48px)",
+        paddingBottom: "200%",
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",

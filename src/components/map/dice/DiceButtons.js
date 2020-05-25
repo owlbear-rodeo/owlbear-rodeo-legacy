@@ -24,7 +24,7 @@ function DiceButtons({ diceRolls, onDiceAdd }) {
   }
 
   return (
-    <Flex>
+    <Flex sx={{ justifyContent: "center", flexWrap: "wrap", width: "100%" }}>
       <DiceButton
         title="Add D20"
         count={diceCounts.d20}
