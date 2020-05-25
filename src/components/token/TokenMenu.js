@@ -18,32 +18,29 @@ function TokenMenu({
   const wasOpen = usePrevious(isOpen);
 
   const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
+  const [menuLeft, setMenuLeft] = useState(0);
+  const [menuTop, setMenuTop] = useState(0);
   useEffect(() => {
     if (isOpen && !wasOpen && tokenState) {
       setTokenMaxSize(Math.max(tokenState.size, defaultTokenMaxSize));
+      // Update menu position
+      if (tokenImage) {
+        const imageRect = tokenImage.getClientRect();
+        const map = document.querySelector(".map");
+        const mapRect = map.getBoundingClientRect();
+
+        // Center X for the menu which is 156px wide
+        setMenuLeft(mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2);
+        // Y 12px from the bottom
+        setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
+      }
     }
-  }, [isOpen, tokenState, wasOpen]);
+  }, [isOpen, tokenState, wasOpen, tokenImage]);
 
   function handleLabelChange(event) {
     const label = event.target.value;
     onTokenStateChange({ [tokenState.id]: { ...tokenState, label: label } });
   }
-
-  const [menuLeft, setMenuLeft] = useState(0);
-  const [menuTop, setMenuTop] = useState(0);
-
-  useEffect(() => {
-    if (tokenImage) {
-      const imageRect = tokenImage.getClientRect();
-      const map = document.querySelector(".map");
-      const mapRect = map.getBoundingClientRect();
-
-      // Center X for the menu which is 156px wide
-      setMenuLeft(mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2);
-      // Y 12px from the bottom
-      setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
-    }
-  }, [tokenImage]);
 
   function handleStatusChange(status) {
     const statuses = tokenState.statuses;
