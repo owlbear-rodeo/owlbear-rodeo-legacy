@@ -75,6 +75,9 @@ class Dice {
   }
 
   static roll(instance) {
+    instance.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
+    instance.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
+
     const trayOffsetHeight = diceTraySize.height / 2 - 0.5;
     const position = new BABYLON.Vector3(
       ((Math.random() * 2 - 1) * diceTraySize.width) / 2,

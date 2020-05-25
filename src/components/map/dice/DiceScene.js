@@ -65,10 +65,10 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
       const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
       if (pickInfo.hit && pickInfo.pickedMesh.id !== "tray") {
         pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(
-          new BABYLON.Vector3(0, 0, 0)
+          BABYLON.Vector3.Zero()
         );
         pickInfo.pickedMesh.physicsImpostor.setAngularVelocity(
-          new BABYLON.Vector3(0, 0, 0)
+          BABYLON.Vector3.Zero()
         );
         selectedMeshRef.current = pickInfo.pickedMesh;
       }
