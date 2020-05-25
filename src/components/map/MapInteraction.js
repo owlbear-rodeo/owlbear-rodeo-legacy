@@ -15,7 +15,7 @@ import MapStageContext from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
 const wheelZoomSpeed = 0.001;
-const touchZoomSpeed = 0.01;
+const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
 
@@ -70,6 +70,9 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     }
   }
 
+  const pinchPreviousDistanceRef = useRef();
+  const pinchPreviousOriginRef = useRef();
+
   const bind = useGesture({
     onWheel: ({ delta }) => {
       const newScale = Math.min(
@@ -78,16 +81,41 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       );
       setStageScale(newScale);
     },
-    onPinch: ({ offset }) => {
-      const [d] = offset;
+    onPinch: ({ da, origin, first }) => {
+      const [distance] = da;
+      const [originX, originY] = origin;
+      if (first) {
+        pinchPreviousDistanceRef.current = distance;
+        pinchPreviousOriginRef.current = { x: originX, y: originY };
+      }
+
+      // Apply scale
+      const distanceDelta = distance - pinchPreviousDistanceRef.current;
+      const originXDelta = originX - pinchPreviousOriginRef.current.x;
+      const originYDelta = originY - pinchPreviousOriginRef.current.y;
       const newScale = Math.min(
-        Math.max(1 + d * touchZoomSpeed, minZoom),
+        Math.max(stageScale + distanceDelta * touchZoomSpeed, minZoom),
         maxZoom
       );
       setStageScale(newScale);
+
+      // Apply translate
+      const stageTranslate = stageTranslateRef.current;
+      const layer = mapLayerRef.current;
+      const newTranslate = {
+        x: stageTranslate.x + originXDelta / newScale,
+        y: stageTranslate.y + originYDelta / newScale,
+      };
+      layer.x(newTranslate.x);
+      layer.y(newTranslate.y);
+      layer.draw();
+      stageTranslateRef.current = newTranslate;
+
+      pinchPreviousDistanceRef.current = distance;
+      pinchPreviousOriginRef.current = { x: originX, y: originY };
     },
-    onDrag: ({ delta, xy, first, last }) => {
-      if (preventMapInteraction) {
+    onDrag: ({ delta, xy, first, last, pinching }) => {
+      if (preventMapInteraction || pinching) {
         return;
       }
 
