@@ -114,7 +114,6 @@ function MapToken({
   }
 
   function handleClick(event) {
-    event.evt.preventDefault();
     if (draggable) {
       const tokenImage = event.target;
       onTokenMenuOpen(tokenState.id, tokenImage);
@@ -196,7 +195,6 @@ function MapToken({
       onTouchEnd={handlePointerUp}
       onClick={handleClick}
       onTap={handleClick}
-      onContextMenu={handleClick}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       opacity={tokenOpacity}
