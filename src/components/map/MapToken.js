@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
-import Konva from "konva";
+import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 
 import useDataSource from "../../helpers/useDataSource";
@@ -169,32 +169,21 @@ function MapToken({
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
 
   // Animate to new token positions if edited by others
-  const containerRef = useRef();
   const tokenX = tokenState.x * mapWidth;
   const tokenY = tokenState.y * mapHeight;
-
   const previousWidth = usePrevious(mapWidth);
   const previousHeight = usePrevious(mapHeight);
   const resized = mapWidth !== previousWidth || mapHeight !== previousHeight;
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      if (tokenState.lastEditedBy === userId || resized) {
-        container.x(tokenX);
-        container.y(tokenY);
-      } else {
-        container.to({
-          x: tokenX,
-          y: tokenY,
-          duration: 0.3,
-          easing: Konva.Easings.EaseInOut,
-        });
-      }
-    }
-  }, [tokenX, tokenY, tokenState.lastEditedBy, userId, resized]);
+  const skipAnimation = tokenState.lastEditedBy === userId || resized;
+  const props = useSpring({
+    x: tokenX,
+    y: tokenY,
+    immediate: skipAnimation,
+  });
 
   return (
-    <Group
+    <animated.Group
+      {...props}
       width={tokenWidth}
       height={tokenHeight}
       draggable={draggable}
@@ -211,7 +200,6 @@ function MapToken({
       opacity={tokenOpacity}
       name={token && token.isVehicle ? "vehicle" : "token"}
       id={tokenState.id}
-      ref={containerRef}
     >
       <KonvaImage
         ref={imageRef}
@@ -236,7 +224,7 @@ function MapToken({
           height={tokenHeight}
         />
       </Group>
-    </Group>
+    </animated.Group>
   );
 }
 
