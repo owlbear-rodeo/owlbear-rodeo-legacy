@@ -25,6 +25,7 @@ import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 import TokenDataContext from "../contexts/TokenDataContext";
 import MapDataContext from "../contexts/MapDataContext";
+import MapLoadingContext from "../contexts/MapLoadingContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
 
 function Game() {
@@ -32,6 +33,7 @@ function Game() {
   const { authenticationStatus, userId, nickname, setNickname } = useContext(
     AuthContext
   );
+  const { assetLoadStart, assetLoadFinish } = useContext(MapLoadingContext);
 
   const { peers, socket } = useSession(
     gameId,
@@ -52,7 +54,6 @@ function Game() {
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useState(null);
-  const [mapLoading, setMapLoading] = useState(false);
 
   const canEditMapDrawing =
     currentMap !== null &&
@@ -321,7 +322,7 @@ function Game() {
         if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
           setCurrentMap(cachedMap);
         } else {
-          setMapLoading(true);
+          assetLoadStart();
           peer.connection.send({ id: "mapRequest", data: newMap.id });
         }
       } else {
@@ -335,7 +336,7 @@ function Game() {
     }
     // A new map response with a file attached
     if (data.id === "mapResponse") {
-      setMapLoading(false);
+      assetLoadFinish();
       if (data.data && data.data.type === "file") {
         const newMap = { ...data.data, file: data.data.file };
         putMap(newMap).then(() => {
@@ -356,7 +357,7 @@ function Game() {
           !cachedToken ||
           cachedToken.lastModified !== newToken.lastModified
         ) {
-          setMapLoading(true);
+          assetLoadStart();
           peer.connection.send({
             id: "tokenRequest",
             data: newToken.id,
@@ -369,7 +370,7 @@ function Game() {
       peer.connection.send({ id: "tokenResponse", data: token });
     }
     if (data.id === "tokenResponse") {
-      setMapLoading(false);
+      assetLoadFinish();
       const newToken = data.data;
       if (newToken && newToken.type === "file") {
         putToken(newToken);
@@ -532,7 +533,6 @@ function Game() {
           <Map
             map={currentMap}
             mapState={currentMapState}
-            loading={mapLoading}
             onMapTokenStateChange={handleMapTokenStateChange}
             onMapTokenStateRemove={handleMapTokenStateRemove}
             onMapChange={handleMapChange}

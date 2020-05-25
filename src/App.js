@@ -13,6 +13,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
 import { MapDataProvider } from "./contexts/MapDataContext";
 import { TokenDataProvider } from "./contexts/TokenDataContext";
+import { MapLoadingProvider } from "./contexts/MapLoadingContext";
 
 function App() {
   return (
@@ -31,11 +32,13 @@ function App() {
                 <FAQ />
               </Route>
               <Route path="/game/:id">
-                <MapDataProvider>
-                  <TokenDataProvider>
-                    <Game />
-                  </TokenDataProvider>
-                </MapDataProvider>
+                <MapLoadingProvider>
+                  <MapDataProvider>
+                    <TokenDataProvider>
+                      <Game />
+                    </TokenDataProvider>
+                  </MapDataProvider>
+                </MapLoadingProvider>
               </Route>
               <Route path="/">
                 <Home />

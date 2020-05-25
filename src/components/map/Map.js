@@ -8,6 +8,8 @@ import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
+import MapLoadingContext from "../../contexts/MapLoadingContext";
+
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
 import LoadingOverlay from "../LoadingOverlay";
@@ -30,9 +32,9 @@ function Map({
   allowMapDrawing,
   allowFogDrawing,
   disabledTokens,
-  loading,
 }) {
   const { tokensById } = useContext(TokenDataContext);
+  const { isLoading } = useContext(MapLoadingContext);
 
   const gridX = map && map.gridX;
   const gridY = map && map.gridY;
@@ -300,7 +302,7 @@ function Map({
           {mapControls}
           {tokenMenu}
           {tokenDragOverlay}
-          {loading && <LoadingOverlay />}
+          {isLoading && <LoadingOverlay />}
         </>
       }
       selectedToolId={selectedToolId}
