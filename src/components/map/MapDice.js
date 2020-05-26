@@ -24,14 +24,13 @@ function MapDice() {
         title={isExpanded ? "Hide Dice Tray" : "Show Dice Tray"}
         onClick={() => setIsExpanded(!isExpanded)}
         sx={{
-          transform: `rotate(${isExpanded ? "0" : "180deg"})`,
           display: "block",
           backgroundColor: "overlay",
           borderRadius: "50%",
         }}
         m={2}
       >
-        <ExpandMoreDiceIcon />
+        <ExpandMoreDiceIcon isExpanded={isExpanded} />
       </IconButton>
       <DiceTray isOpen={isExpanded} />
     </Flex>
