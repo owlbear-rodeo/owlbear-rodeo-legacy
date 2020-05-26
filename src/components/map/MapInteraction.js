@@ -78,6 +78,9 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   const bind = useGesture({
     onWheel: ({ delta }) => {
+      if (preventMapInteraction) {
+        return;
+      }
       const newScale = Math.min(
         Math.max(stageScale + delta[1] * wheelZoomSpeed, minZoom),
         maxZoom
