@@ -4,6 +4,8 @@ import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 import ReactResizeDetector from "react-resize-detector";
 
+const diceThrowSpeed = 20;
+
 function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   const sceneRef = useRef();
   const engineRef = useRef();
@@ -52,13 +54,22 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
         newPosition.y = currentPosition.y;
         const delta = newPosition.subtract(currentPosition);
         selectedMesh.setAbsolutePosition(newPosition);
-        selectedMeshDeltaPositionRef.current = delta;
+        const velocity = delta.scale(1000 / scene.deltaTime);
+        selectedMeshVelocityWindowRef.current = selectedMeshVelocityWindowRef.current.slice(
+          Math.max(
+            selectedMeshVelocityWindowRef.current.length -
+              selectedMeshVelocityWindowSize,
+            0
+          )
+        );
+        selectedMeshVelocityWindowRef.current.push(velocity);
       }
     });
   }, [onSceneMount]);
 
   const selectedMeshRef = useRef();
-  const selectedMeshDeltaPositionRef = useRef();
+  const selectedMeshVelocityWindowRef = useRef([]);
+  const selectedMeshVelocityWindowSize = 4;
   function handlePointerDown() {
     const scene = sceneRef.current;
     if (scene) {
@@ -78,21 +89,24 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
 
   function handlePointerUp() {
     const selectedMesh = selectedMeshRef.current;
-    const deltaPosition = selectedMeshDeltaPositionRef.current;
+    const velocityWindow = selectedMeshVelocityWindowRef.current;
+    // Average velocity window
+    let velocity = BABYLON.Vector3.Zero();
+    for (let v of velocityWindow) {
+      velocity.addInPlace(v);
+    }
+    if (velocityWindow.length > 0) {
+      velocity.scaleInPlace(1 / velocityWindow.length);
+    }
     const scene = sceneRef.current;
-    if (selectedMesh && scene && deltaPosition) {
-      let impulse = deltaPosition.scale(1000 / scene.deltaTime);
-      impulse.scale(5);
-      impulse.y = Math.max(impulse.length() * 0.1, 0.5);
+    if (selectedMesh && scene) {
       selectedMesh.physicsImpostor.applyImpulse(
-        impulse,
-        selectedMesh
-          .getAbsolutePosition()
-          .add(new BABYLON.Vector3(0, Math.random() * 0.5 + 0.5, 0))
+        velocity.scale(diceThrowSpeed),
+        selectedMesh.physicsImpostor.getObjectCenter()
       );
     }
     selectedMeshRef.current = null;
-    selectedMeshDeltaPositionRef.current = null;
+    selectedMeshVelocityWindowRef.current = [];
 
     onPointerUp();
   }

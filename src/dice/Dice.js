@@ -10,6 +10,11 @@ import d100Source from "./meshes/d100.glb";
 
 import { diceTraySize } from "./diceTray/DiceTrayMesh";
 
+import { lerp } from "../helpers/shared";
+
+const minDiceRollSpeed = 400;
+const maxDiceRollSpeed = 800;
+
 class Dice {
   static instanceCount = 0;
 
@@ -67,7 +72,7 @@ class Dice {
     instance.physicsImpostor = new BABYLON.PhysicsImpostor(
       instance,
       BABYLON.PhysicsImpostor.ConvexHullImpostor,
-      { mass: 1, friction: 50 },
+      { mass: 10, friction: 4 },
       scene
     );
 
@@ -91,12 +96,15 @@ class Dice {
       Math.random() * Math.PI * 2
     );
 
-    const impulse = BABYLON.Vector3.Zero()
+    const impulse = new BABYLON.Vector3(0, 0, 0)
       .subtract(position)
       .normalizeToNew()
-      .scale(10);
+      .scale(lerp(minDiceRollSpeed, maxDiceRollSpeed, Math.random()));
 
-    instance.physicsImpostor.applyImpulse(impulse, position);
+    instance.physicsImpostor.applyImpulse(
+      impulse,
+      instance.physicsImpostor.getObjectCenter()
+    );
   }
 
   static async createInstance(mesh, scene) {

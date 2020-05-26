@@ -66,7 +66,7 @@ function DiceTray({ isOpen }) {
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(
       ground,
       BABYLON.PhysicsImpostor.BoxImpostor,
-      { mass: 0, friction: 100.0 },
+      { mass: 0, friction: 20.0 },
       scene
     );
     ground.isVisible = false;
@@ -88,7 +88,7 @@ function DiceTray({ isOpen }) {
       wall.physicsImpostor = new BABYLON.PhysicsImpostor(
         wall,
         BABYLON.PhysicsImpostor.BoxImpostor,
-        { mass: 0, friction: 1.0 },
+        { mass: 0, friction: 10.0 },
         scene
       );
       wall.isVisible = false;
@@ -105,7 +105,7 @@ function DiceTray({ isOpen }) {
     roof.physicsImpostor = new BABYLON.PhysicsImpostor(
       roof,
       BABYLON.PhysicsImpostor.BoxImpostor,
-      { mass: 0, friction: 1.0 },
+      { mass: 0, friction: 100.0 },
       scene
     );
     roof.position.y = 10;

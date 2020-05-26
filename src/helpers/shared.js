@@ -35,3 +35,7 @@ export function toRadians(angle) {
 export function toDegrees(angle) {
   return angle * (180 / Math.PI);
 }
+
+export function lerp(a, b, alpha) {
+  return a * (1 - alpha) + b * alpha;
+}
