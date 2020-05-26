@@ -133,6 +133,7 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           ref={canvasRef}
+          style={{ outline: "none" }}
         />
       </ReactResizeDetector>
     </div>
