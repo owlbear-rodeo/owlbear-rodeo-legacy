@@ -1,12 +1,12 @@
 import React from "react";
 import { Divider } from "theme-ui";
 
-function StyledDivider({ vertical }) {
+function StyledDivider({ vertical, color }) {
   return (
     <Divider
       my={vertical ? 0 : 2}
       mx={vertical ? 2 : 0}
-      bg="text"
+      bg={color}
       sx={{
         height: vertical ? "24px" : "2px",
         width: vertical ? "2px" : "24px",
@@ -19,6 +19,7 @@ function StyledDivider({ vertical }) {
 
 StyledDivider.defaultProps = {
   vertical: false,
+  color: "text",
 };
 
 export default StyledDivider;

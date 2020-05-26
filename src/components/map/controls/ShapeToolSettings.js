@@ -12,7 +12,7 @@ import ShapeTriangleIcon from "../../../icons/ShapeTriangleIcon";
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
 
-import Divider from "./Divider";
+import Divider from "../../Divider";
 
 function ShapeToolSettings({
   settings,
