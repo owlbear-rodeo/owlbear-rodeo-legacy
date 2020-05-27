@@ -43,6 +43,7 @@ function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
         title="Clear Dice"
         aria-label="Clear Dice"
         onClick={onDiceClear}
+        sx={{ pointerEvents: "all" }}
       >
         <ClearDiceIcon />
       </IconButton>
@@ -56,7 +57,7 @@ function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
         <Text
           variant="heading"
           as="h1"
-          sx={{ fontSize: 5 }}
+          sx={{ fontSize: 5, userSelect: "none" }}
           mb={diceRolls.length === 1 ? "24px" : 0}
         >
           {diceRolls.reduce((accumulator, dice) => accumulator + dice.roll, 0)}
@@ -67,7 +68,7 @@ function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
             title={"Show Dice Details"}
             onClick={() => setIsExpanded(!isExpanded)}
             variant="secondary"
-            sx={{ display: "flex", height: "24px" }}
+            sx={{ display: "flex", height: "24px", pointerEvents: "all" }}
           >
             {isExpanded ? rolls : rolls.slice(0, maxDiceRollsShown)}
             {!isExpanded && (
@@ -85,6 +86,7 @@ function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
         title="Reroll Dice"
         aria-label="Reroll Dice"
         onClick={onDiceReroll}
+        sx={{ pointerEvents: "all" }}
       >
         <RerollDiceIcon />
       </IconButton>

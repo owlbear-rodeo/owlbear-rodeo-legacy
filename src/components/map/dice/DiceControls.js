@@ -90,6 +90,7 @@ function DiceControls({
           right: 0,
           display: "flex",
           color: "white",
+          pointerEvents: "none",
         }}
       >
         <DiceResults
