@@ -75,6 +75,7 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
+  const isDraggingCanvas = useRef(false);
 
   const bind = useGesture({
     onWheel: ({ delta }) => {
@@ -120,8 +121,12 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       pinchPreviousDistanceRef.current = distance;
       pinchPreviousOriginRef.current = { x: originX, y: originY };
     },
+    onDragStart: ({ event }) => {
+      isDraggingCanvas.current =
+        event.target === mapLayerRef.current.getCanvas()._canvas;
+    },
     onDrag: ({ delta, xy, first, last, pinching }) => {
-      if (preventMapInteraction || pinching) {
+      if (preventMapInteraction || pinching || !isDraggingCanvas.current) {
         return;
       }
 

@@ -5,7 +5,6 @@ import SelectMapModal from "../../modals/SelectMapModal";
 import SelectMapIcon from "../../icons/SelectMapIcon";
 
 import MapDataContext from "../../contexts/MapDataContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 function SelectMapButton({
   onMapChange,
@@ -15,16 +14,13 @@ function SelectMapButton({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { setPreventMapInteraction } = useContext(MapInteractionContext);
   const { updateMapState } = useContext(MapDataContext);
   function openModal() {
     currentMapState && updateMapState(currentMapState.mapId, currentMapState);
     setIsModalOpen(true);
-    setPreventMapInteraction(true);
   }
   function closeModal() {
     setIsModalOpen(false);
-    setPreventMapInteraction(false);
   }
 
   function handleDone() {

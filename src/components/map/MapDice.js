@@ -18,6 +18,7 @@ function MapDice() {
         bottom: 0,
         flexDirection: "column",
         alignItems: "flex-start",
+        pointerEvents: "none",
       }}
       ml={1}
     >
@@ -29,6 +30,7 @@ function MapDice() {
           display: "block",
           backgroundColor: "overlay",
           borderRadius: "50%",
+          pointerEvents: "all",
         }}
         m={2}
       >

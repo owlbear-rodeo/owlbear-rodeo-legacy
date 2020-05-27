@@ -1,22 +1,17 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
 import SelectDiceIcon from "../../../icons/SelectDiceIcon";
 import SelectDiceModal from "../../../modals/SelectDiceModal";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
-
 function SelectDiceButton({ onDiceChange, currentDice }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setPreventMapInteraction } = useContext(MapInteractionContext);
 
   function openModal() {
     setIsModalOpen(true);
-    setPreventMapInteraction(true);
   }
   function closeModal() {
     setIsModalOpen(false);
-    setPreventMapInteraction(false);
   }
 
   function handleDone(dice) {

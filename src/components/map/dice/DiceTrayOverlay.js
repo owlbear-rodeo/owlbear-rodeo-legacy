@@ -17,7 +17,6 @@ import LoadingOverlay from "../../LoadingOverlay";
 
 import DiceTray from "../../../dice/diceTray/DiceTray";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
 import DiceLoadingContext from "../../../contexts/DiceLoadingContext";
 
 function DiceTrayOverlay({ isOpen }) {
@@ -212,8 +211,6 @@ function DiceTrayOverlay({ isOpen }) {
     assetLoadFinish();
   }
 
-  const { setPreventMapInteraction } = useContext(MapInteractionContext);
-
   return (
     <Box
       sx={{
@@ -227,6 +224,7 @@ function DiceTrayOverlay({ isOpen }) {
         display: isOpen ? "block" : "none",
         position: "relative",
         overflow: "hidden",
+        pointerEvents: "all",
       }}
       bg="background"
     >
@@ -234,11 +232,9 @@ function DiceTrayOverlay({ isOpen }) {
         onSceneMount={handleSceneMount}
         onPointerDown={() => {
           sceneInteractionRef.current = true;
-          setPreventMapInteraction(true);
         }}
         onPointerUp={() => {
           sceneInteractionRef.current = false;
-          setPreventMapInteraction(false);
         }}
       />
       <DiceControls
