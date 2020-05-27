@@ -10,7 +10,7 @@ import d100Source from "./meshes/d100.glb";
 
 import { lerp } from "../helpers/shared";
 
-const minDiceRollSpeed = 400;
+const minDiceRollSpeed = 600;
 const maxDiceRollSpeed = 800;
 
 class Dice {
@@ -90,11 +90,9 @@ class Dice {
     const trayBounds = visibleDiceTray.getBoundingInfo().boundingBox;
 
     const position = new BABYLON.Vector3(
-      lerp(trayBounds.minimumWorld.x, trayBounds.maximumWorld.x, Math.random()),
-      5,
-      Math.random() > 0.5
-        ? trayBounds.maximumWorld.z
-        : trayBounds.minimumWorld.z
+      trayBounds.center.x + (Math.random() * 2 - 1),
+      8,
+      trayBounds.center.z + (Math.random() * 2 - 1)
     );
     instance.position = position;
     instance.addRotation(
@@ -103,8 +101,14 @@ class Dice {
       Math.random() * Math.PI * 2
     );
 
+    const throwTarget = new BABYLON.Vector3(
+      lerp(trayBounds.minimumWorld.x, trayBounds.maximumWorld.x, Math.random()),
+      5,
+      lerp(trayBounds.minimumWorld.z, trayBounds.maximumWorld.z, Math.random())
+    );
+
     const impulse = new BABYLON.Vector3(0, 0, 0)
-      .subtract(position)
+      .subtract(throwTarget)
       .normalizeToNew()
       .scale(lerp(minDiceRollSpeed, maxDiceRollSpeed, Math.random()));
 
