@@ -1,4 +1,10 @@
-import React, { useRef, useCallback, useEffect, useContext } from "react";
+import React, {
+  useRef,
+  useCallback,
+  useEffect,
+  useContext,
+  useState,
+} from "react";
 import * as BABYLON from "babylonjs";
 import { Box } from "theme-ui";
 
@@ -8,13 +14,11 @@ import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
 import Dice from "../../../dice/Dice";
 
-import createDiceTray, {
-  diceTraySize,
-} from "../../../dice/diceTray/DiceTrayMesh";
+import DiceTray from "../../../dice/diceTray/DiceTray";
 
 import MapInteractionContext from "../../../contexts/MapInteractionContext";
 
-function DiceTray({ isOpen }) {
+function DiceTrayOverlay({ isOpen }) {
   const sceneRef = useRef();
   const shadowGeneratorRef = useRef();
   const diceRefs = useRef([]);
@@ -22,6 +26,26 @@ function DiceTray({ isOpen }) {
   const sceneInteractionRef = useRef(false);
   // Set to true to ignore scene sleep and visible values
   const forceSceneRenderRef = useRef(false);
+  const diceTrayRef = useRef();
+
+  const [diceTraySize, setDiceTraySize] = useState("single");
+  useEffect(() => {
+    const diceTray = diceTrayRef.current;
+    let resizeTimout;
+    if (diceTray) {
+      diceTray.size = diceTraySize;
+      // Force rerender
+      forceSceneRenderRef.current = true;
+      resizeTimout = setTimeout(() => {
+        forceSceneRenderRef.current = false;
+      }, 1000);
+    }
+    return () => {
+      if (resizeTimout) {
+        clearTimeout(resizeTimout);
+      }
+    };
+  }, [diceTraySize]);
 
   useEffect(() => {
     let openTimeout;
@@ -49,7 +73,7 @@ function DiceTray({ isOpen }) {
   }, []);
 
   async function initializeScene(scene) {
-    var light = new BABYLON.DirectionalLight(
+    let light = new BABYLON.DirectionalLight(
       "DirectionalLight",
       new BABYLON.Vector3(-0.5, -1, -0.5),
       scene
@@ -62,7 +86,7 @@ function DiceTray({ isOpen }) {
     shadowGenerator.darkness = 0.7;
     shadowGeneratorRef.current = shadowGenerator;
 
-    var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, scene);
+    let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, scene);
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(
       ground,
       BABYLON.PhysicsImpostor.BoxImpostor,
@@ -72,36 +96,7 @@ function DiceTray({ isOpen }) {
     ground.isVisible = false;
     ground.position.y = 0.2;
 
-    const wallSize = 50;
-
-    function createWall(name, x, z, yaw) {
-      let wall = BABYLON.Mesh.CreateBox(
-        name,
-        wallSize,
-        scene,
-        true,
-        BABYLON.Mesh.DOUBLESIDE
-      );
-      wall.rotation = new BABYLON.Vector3(0, yaw, 0);
-      wall.position.z = z;
-      wall.position.x = x;
-      wall.physicsImpostor = new BABYLON.PhysicsImpostor(
-        wall,
-        BABYLON.PhysicsImpostor.BoxImpostor,
-        { mass: 0, friction: 10.0 },
-        scene
-      );
-      wall.isVisible = false;
-    }
-
-    const wallOffsetWidth = wallSize / 2 + diceTraySize.width / 2 - 0.5;
-    const wallOffsetHeight = wallSize / 2 + diceTraySize.height / 2 - 0.5;
-    createWall("wallTop", 0, -wallOffsetHeight, 0);
-    createWall("wallRight", -wallOffsetWidth, 0, Math.PI / 2);
-    createWall("wallBottom", 0, wallOffsetHeight, Math.PI);
-    createWall("wallLeft", wallOffsetWidth, 0, -Math.PI / 2);
-
-    var roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
+    let roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
     roof.physicsImpostor = new BABYLON.PhysicsImpostor(
       roof,
       BABYLON.PhysicsImpostor.BoxImpostor,
@@ -117,7 +112,9 @@ function DiceTray({ isOpen }) {
     );
     scene.environmentIntensity = 1.0;
 
-    createDiceTray(scene, shadowGenerator);
+    let diceTray = new DiceTray("single", scene, shadowGenerator);
+    await diceTray.load();
+    diceTrayRef.current = diceTray;
   }
 
   function update(scene) {
@@ -222,9 +219,12 @@ function DiceTray({ isOpen }) {
   return (
     <Box
       sx={{
-        width: "500px",
-        maxWidth: "calc(50vh - 48px)",
-        paddingBottom: "200%",
+        width: diceTraySize === "single" ? "500px" : "1000px",
+        maxWidth:
+          diceTraySize === "single"
+            ? "calc(50vh - 48px)"
+            : "calc(100vh - 48px)",
+        paddingBottom: diceTraySize === "single" ? "200%" : "100%",
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",
@@ -249,9 +249,11 @@ function DiceTray({ isOpen }) {
         onDiceAdd={handleDiceAdd}
         onDiceClear={handleDiceClear}
         onDiceReroll={handleDiceReroll}
+        diceTraySize={diceTraySize}
+        onDiceTraySizeChange={setDiceTraySize}
       />
     </Box>
   );
 }
 
-export default DiceTray;
+export default DiceTrayOverlay;

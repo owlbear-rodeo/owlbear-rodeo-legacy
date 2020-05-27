@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Flex } from "theme-ui";
+import { Flex, IconButton } from "theme-ui";
 
 import D20Icon from "../../../icons/D20Icon";
 import D12Icon from "../../../icons/D12Icon";
@@ -8,6 +8,7 @@ import D8Icon from "../../../icons/D8Icon";
 import D6Icon from "../../../icons/D6Icon";
 import D4Icon from "../../../icons/D4Icon";
 import D100Icon from "../../../icons/D100Icon";
+import ExpandMoreDiceTrayIcon from "../../../icons/ExpandMoreDiceTrayIcon";
 
 import DiceButton from "./DiceButton";
 import SelectDiceButton from "./SelectDiceButton";
@@ -16,7 +17,12 @@ import Divider from "../../Divider";
 
 import { dice } from "../../../dice";
 
-function DiceButtons({ diceRolls, onDiceAdd }) {
+function DiceButtons({
+  diceRolls,
+  onDiceAdd,
+  diceTraySize,
+  onDiceTraySizeChange,
+}) {
   const [currentDice, setCurrentDice] = useState(dice[0]);
 
   const diceCounts = {};
@@ -91,6 +97,23 @@ function DiceButtons({ diceRolls, onDiceAdd }) {
       >
         <D100Icon />
       </DiceButton>
+      <Divider vertical color="hsl(210, 50%, 96%)" />
+      <IconButton
+        aria-label={
+          diceTraySize === "single" ? "Expand Dice Tray" : "Shrink Dice Tray"
+        }
+        title={
+          diceTraySize === "single" ? "Expand Dice Tray" : "Shrink Dice Tray"
+        }
+        sx={{
+          transform: diceTraySize === "single" ? "rotate(0)" : "rotate(180deg)",
+        }}
+        onClick={() =>
+          onDiceTraySizeChange(diceTraySize === "single" ? "double" : "single")
+        }
+      >
+        <ExpandMoreDiceTrayIcon />
+      </IconButton>
     </Flex>
   );
 }

@@ -74,7 +74,7 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
     const scene = sceneRef.current;
     if (scene) {
       const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
-      if (pickInfo.hit && pickInfo.pickedMesh.id !== "tray") {
+      if (pickInfo.hit && pickInfo.pickedMesh.name !== "dice_tray") {
         pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(
           BABYLON.Vector3.Zero()
         );

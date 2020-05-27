@@ -10,6 +10,8 @@ function DiceControls({
   onDiceAdd,
   onDiceClear,
   onDiceReroll,
+  diceTraySize,
+  onDiceTraySizeChange,
 }) {
   const [diceRolls, setDiceRolls] = useState([]);
 
@@ -114,6 +116,8 @@ function DiceControls({
               { type, roll: "unknown" },
             ]);
           }}
+          onDiceTraySizeChange={onDiceTraySizeChange}
+          diceTraySize={diceTraySize}
         />
       </div>
     </>

@@ -26,7 +26,12 @@ function SelectDiceButton({ onDiceChange, currentDice }) {
 
   return (
     <>
-      <IconButton color="hsl(210, 50%, 96%)" onClick={openModal}>
+      <IconButton
+        aria-label="Select Dice Style"
+        title="Select Dice Style"
+        color="hsl(210, 50%, 96%)"
+        onClick={openModal}
+      >
         <SelectDiceIcon />
       </IconButton>
       <SelectDiceModal

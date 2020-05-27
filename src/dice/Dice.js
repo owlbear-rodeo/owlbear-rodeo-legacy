@@ -8,8 +8,6 @@ import d12Source from "./meshes/d12.glb";
 import d20Source from "./meshes/d20.glb";
 import d100Source from "./meshes/d100.glb";
 
-import { diceTraySize } from "./diceTray/DiceTrayMesh";
-
 import { lerp } from "../helpers/shared";
 
 const minDiceRollSpeed = 400;
@@ -83,11 +81,20 @@ class Dice {
     instance.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
     instance.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
 
-    const trayOffsetHeight = diceTraySize.height / 2 - 0.5;
+    const scene = instance.getScene();
+    const diceTraySingle = scene.getNodeByID("dice_tray_single");
+    const diceTrayDouble = scene.getNodeByID("dice_tray_double");
+    const visibleDiceTray = diceTraySingle.isVisible
+      ? diceTraySingle
+      : diceTrayDouble;
+    const trayBounds = visibleDiceTray.getBoundingInfo().boundingBox;
+
     const position = new BABYLON.Vector3(
-      ((Math.random() * 2 - 1) * diceTraySize.width) / 2,
+      lerp(trayBounds.minimumWorld.x, trayBounds.maximumWorld.x, Math.random()),
       5,
-      Math.random() > 0.5 ? trayOffsetHeight : -trayOffsetHeight
+      Math.random() > 0.5
+        ? trayBounds.maximumWorld.z
+        : trayBounds.minimumWorld.z
     );
     instance.position = position;
     instance.addRotation(
