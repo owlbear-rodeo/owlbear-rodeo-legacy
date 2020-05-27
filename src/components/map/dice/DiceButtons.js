@@ -38,9 +38,9 @@ function DiceButtons({
     <Flex
       sx={{
         justifyContent: "center",
-        flexWrap: "wrap",
         width: "100%",
         alignItems: "center",
+        padding: "0 15px",
       }}
     >
       <SelectDiceButton
