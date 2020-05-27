@@ -86,26 +86,6 @@ function DiceTrayOverlay({ isOpen }) {
     shadowGenerator.darkness = 0.7;
     shadowGeneratorRef.current = shadowGenerator;
 
-    let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, scene);
-    ground.physicsImpostor = new BABYLON.PhysicsImpostor(
-      ground,
-      BABYLON.PhysicsImpostor.BoxImpostor,
-      { mass: 0, friction: 20.0 },
-      scene
-    );
-    ground.isVisible = false;
-    ground.position.y = 0.2;
-
-    let roof = BABYLON.Mesh.CreateGround("roof", 100, 100, 2, scene);
-    roof.physicsImpostor = new BABYLON.PhysicsImpostor(
-      roof,
-      BABYLON.PhysicsImpostor.BoxImpostor,
-      { mass: 0, friction: 100.0 },
-      scene
-    );
-    roof.position.y = 10;
-    roof.isVisible = false;
-
     scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
       environment,
       scene

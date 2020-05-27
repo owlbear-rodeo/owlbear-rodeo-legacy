@@ -18,8 +18,8 @@ class DiceTray {
   }
   set size(newSize) {
     this._size = newSize;
-    const wallOffsetWidth = this.wallSize / 2 + this.width / 2 - 0.5;
-    const wallOffsetHeight = this.wallSize / 2 + this.height / 2 - 0.5;
+    const wallOffsetWidth = this.collisionSize / 2 + this.width / 2 - 0.5;
+    const wallOffsetHeight = this.collisionSize / 2 + this.height / 2 - 0.5;
     this.wallTop.position.z = -wallOffsetHeight;
     this.wallRight.position.x = -wallOffsetWidth;
     this.wallBottom.position.z = wallOffsetHeight;
@@ -33,7 +33,7 @@ class DiceTray {
     return this.size === "single" ? 10 : 20;
   }
   height = 20;
-  wallSize = 50;
+  collisionSize = 50;
   wallTop;
   wallRight;
   wallBottom;
@@ -52,49 +52,62 @@ class DiceTray {
     await this.loadMeshes();
   }
 
-  createWall(name, x, z, yaw) {
-    let wall = BABYLON.Mesh.CreateBox(
+  createCollision(name, x, y, z, friction) {
+    let collision = BABYLON.Mesh.CreateBox(
       name,
-      this.wallSize,
+      this.collisionSize,
       this.scene,
       true,
       BABYLON.Mesh.DOUBLESIDE
     );
-    wall.rotation = new BABYLON.Vector3(0, yaw, 0);
-    wall.position.z = z;
-    wall.position.x = x;
-    wall.physicsImpostor = new BABYLON.PhysicsImpostor(
-      wall,
+    collision.position.x = x;
+    collision.position.y = y;
+    collision.position.z = z;
+    collision.physicsImpostor = new BABYLON.PhysicsImpostor(
+      collision,
       BABYLON.PhysicsImpostor.BoxImpostor,
-      { mass: 0, friction: 10.0 },
+      { mass: 0, friction: friction },
       this.scene
     );
-    wall.isVisible = false;
+    collision.isVisible = false;
 
-    return wall;
+    return collision;
   }
 
   loadWalls() {
-    const wallOffsetWidth = this.wallSize / 2 + this.width / 2 - 0.5;
-    const wallOffsetHeight = this.wallSize / 2 + this.height / 2 - 0.5;
-    this.wallTop = this.createWall("wallTop", 0, -wallOffsetHeight, 0);
-    this.wallRight = this.createWall(
+    const wallOffsetWidth = this.collisionSize / 2 + this.width / 2 - 0.5;
+    const wallOffsetHeight = this.collisionSize / 2 + this.height / 2 - 0.5;
+    this.wallTop = this.createCollision("wallTop", 0, 0, -wallOffsetHeight, 10);
+    this.wallRight = this.createCollision(
       "wallRight",
       -wallOffsetWidth,
       0,
-      Math.PI / 2
+      0,
+      10
     );
-    this.wallBottom = this.createWall(
+    this.wallBottom = this.createCollision(
       "wallBottom",
       0,
-      wallOffsetHeight,
-      Math.PI
-    );
-    this.wallLeft = this.createWall(
-      "wallLeft",
-      wallOffsetWidth,
       0,
-      -Math.PI / 2
+      wallOffsetHeight,
+      10
+    );
+    this.wallLeft = this.createCollision("wallLeft", wallOffsetWidth, 0, 0, 10);
+    const diceTrayGroundOffset = 0.32;
+    this.createCollision(
+      "ground",
+      0,
+      -this.collisionSize / 2 + diceTrayGroundOffset,
+      0,
+      20
+    );
+    const diceTrayRoofOffset = 10;
+    this.createCollision(
+      "roof",
+      0,
+      this.collisionSize / 2 + diceTrayRoofOffset,
+      0,
+      100
     );
   }
 
