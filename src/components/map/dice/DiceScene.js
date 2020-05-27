@@ -28,7 +28,7 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
 
     let camera = new BABYLON.TargetCamera(
       "camera",
-      new BABYLON.Vector3(0, 34, 0),
+      new BABYLON.Vector3(0, 33.5, 0),
       scene
     );
     camera.fov = 0.65;
