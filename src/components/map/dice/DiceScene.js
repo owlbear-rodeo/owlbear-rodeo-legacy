@@ -4,6 +4,8 @@ import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 import ReactResizeDetector from "react-resize-detector";
 
+import usePreventTouch from "../../../helpers/usePreventTouch";
+
 const diceThrowSpeed = 2;
 
 function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
@@ -117,6 +119,8 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
     canvasRef.current.width = width;
     canvasRef.current.height = height;
   }
+
+  usePreventTouch(containerRef);
 
   return (
     <div
