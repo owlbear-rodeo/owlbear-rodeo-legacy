@@ -8,7 +8,7 @@ class GalaxyDice extends Dice {
   static meshes;
   static material;
 
-  static async createInstance(diceType, scene) {
+  static async load(scene) {
     if (!this.material) {
       this.material = this.loadMaterial(
         "galaxy_pbr",
@@ -18,6 +18,12 @@ class GalaxyDice extends Dice {
     }
     if (!this.meshes) {
       this.meshes = await this.loadMeshes(this.material, scene);
+    }
+  }
+
+  static async createInstance(diceType, scene) {
+    if (!this.material || !this.meshes) {
+      throw Error("Dice not loaded, call load before creating an instance");
     }
 
     return Dice.createInstance(

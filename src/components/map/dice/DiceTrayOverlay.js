@@ -13,10 +13,12 @@ import environment from "../../../dice/environment.dds";
 import Scene from "./DiceScene";
 import DiceControls from "./DiceControls";
 import Dice from "../../../dice/Dice";
+import LoadingOverlay from "../../LoadingOverlay";
 
 import DiceTray from "../../../dice/diceTray/DiceTray";
 
 import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import DiceLoadingContext from "../../../contexts/DiceLoadingContext";
 
 function DiceTrayOverlay({ isOpen }) {
   const sceneRef = useRef();
@@ -29,6 +31,10 @@ function DiceTrayOverlay({ isOpen }) {
   const diceTrayRef = useRef();
 
   const [diceTraySize, setDiceTraySize] = useState("single");
+  const { assetLoadStart, assetLoadFinish, isLoading } = useContext(
+    DiceLoadingContext
+  );
+
   useEffect(() => {
     const diceTray = diceTrayRef.current;
     let resizeTimout;
@@ -70,9 +76,11 @@ function DiceTrayOverlay({ isOpen }) {
     sceneRef.current = scene;
     initializeScene(scene);
     engine.runRenderLoop(() => update(scene));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function initializeScene(scene) {
+    assetLoadStart();
     let light = new BABYLON.DirectionalLight(
       "DirectionalLight",
       new BABYLON.Vector3(-0.5, -1, -0.5),
@@ -95,6 +103,7 @@ function DiceTrayOverlay({ isOpen }) {
     let diceTray = new DiceTray("single", scene, shadowGenerator);
     await diceTray.load();
     diceTrayRef.current = diceTray;
+    assetLoadFinish();
   }
 
   function update(scene) {
@@ -194,6 +203,15 @@ function DiceTrayOverlay({ isOpen }) {
     }
   }
 
+  async function handleDiceLoad(dice) {
+    assetLoadStart();
+    const scene = sceneRef.current;
+    if (scene) {
+      await dice.class.load(scene);
+    }
+    assetLoadFinish();
+  }
+
   const { setPreventMapInteraction } = useContext(MapInteractionContext);
 
   return (
@@ -229,9 +247,11 @@ function DiceTrayOverlay({ isOpen }) {
         onDiceAdd={handleDiceAdd}
         onDiceClear={handleDiceClear}
         onDiceReroll={handleDiceReroll}
+        onDiceLoad={handleDiceLoad}
         diceTraySize={diceTraySize}
         onDiceTraySizeChange={setDiceTraySize}
       />
+      {isLoading && <LoadingOverlay />}
     </Box>
   );
 }

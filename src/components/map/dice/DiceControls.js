@@ -10,6 +10,7 @@ function DiceControls({
   onDiceAdd,
   onDiceClear,
   onDiceReroll,
+  onDiceLoad,
   diceTraySize,
   onDiceTraySizeChange,
 }) {
@@ -116,6 +117,7 @@ function DiceControls({
               { type, roll: "unknown" },
             ]);
           }}
+          onDiceLoad={onDiceLoad}
           onDiceTraySizeChange={onDiceTraySizeChange}
           diceTraySize={diceTraySize}
         />

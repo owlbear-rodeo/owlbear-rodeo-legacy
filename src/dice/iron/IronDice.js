@@ -13,7 +13,7 @@ class IronDice extends Dice {
     return { mass: properties.mass * 2, friction: properties.friction };
   }
 
-  static async createInstance(diceType, scene) {
+  static async load(scene) {
     if (!this.material) {
       this.material = this.loadMaterial(
         "iron_pbr",
@@ -23,6 +23,12 @@ class IronDice extends Dice {
     }
     if (!this.meshes) {
       this.meshes = await this.loadMeshes(this.material, scene);
+    }
+  }
+
+  static async createInstance(diceType, scene) {
+    if (!this.material || !this.meshes) {
+      throw Error("Dice not loaded, call load before creating an instance");
     }
 
     return Dice.createInstance(

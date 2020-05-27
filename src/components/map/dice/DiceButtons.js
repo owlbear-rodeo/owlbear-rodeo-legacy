@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 
 import D20Icon from "../../../icons/D20Icon";
@@ -20,10 +20,18 @@ import { dice } from "../../../dice";
 function DiceButtons({
   diceRolls,
   onDiceAdd,
+  onDiceLoad,
   diceTraySize,
   onDiceTraySizeChange,
 }) {
-  const [currentDice, setCurrentDice] = useState(dice[0]);
+  const [currentDice, setCurrentDice] = useState();
+
+  useEffect(() => {
+    const initialDice = dice[0];
+    onDiceLoad(initialDice);
+    setCurrentDice(initialDice);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const diceCounts = {};
   for (let dice of diceRolls) {
@@ -32,6 +40,11 @@ function DiceButtons({
     } else {
       diceCounts[dice.type] = 1;
     }
+  }
+
+  async function handleDiceChange(dice) {
+    await onDiceLoad(dice);
+    setCurrentDice(dice);
   }
 
   return (
@@ -44,7 +57,7 @@ function DiceButtons({
       }}
     >
       <SelectDiceButton
-        onDiceChange={setCurrentDice}
+        onDiceChange={handleDiceChange}
         currentDice={currentDice}
       />
       <Divider vertical color="hsl(210, 50%, 96%)" />

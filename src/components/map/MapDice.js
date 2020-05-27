@@ -4,6 +4,8 @@ import { Flex, IconButton } from "theme-ui";
 import ExpandMoreDiceIcon from "../../icons/ExpandMoreDiceIcon";
 import DiceTrayOverlay from "./dice/DiceTrayOverlay";
 
+import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
+
 function MapDice() {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -32,7 +34,9 @@ function MapDice() {
       >
         <ExpandMoreDiceIcon isExpanded={isExpanded} />
       </IconButton>
-      <DiceTrayOverlay isOpen={isExpanded} />
+      <DiceLoadingProvider>
+        <DiceTrayOverlay isOpen={isExpanded} />
+      </DiceLoadingProvider>
     </Flex>
   );
 }
