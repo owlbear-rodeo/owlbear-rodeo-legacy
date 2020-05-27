@@ -4,7 +4,7 @@ import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 import ReactResizeDetector from "react-resize-detector";
 
-const diceThrowSpeed = 20;
+const diceThrowSpeed = 2;
 
 function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   const sceneRef = useRef();
@@ -101,7 +101,7 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
     const scene = sceneRef.current;
     if (selectedMesh && scene) {
       selectedMesh.physicsImpostor.applyImpulse(
-        velocity.scale(diceThrowSpeed),
+        velocity.scale(diceThrowSpeed * selectedMesh.physicsImpostor.mass),
         selectedMesh.physicsImpostor.getObjectCenter()
       );
     }

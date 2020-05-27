@@ -57,7 +57,7 @@ class Dice {
     return pbr;
   }
 
-  static createInstanceFromMesh(mesh, name, scene) {
+  static createInstanceFromMesh(mesh, name, physicalProperties, scene) {
     let instance = mesh.createInstance(name);
     instance.position = mesh.position;
     for (let child of mesh.getChildTransformNodes()) {
@@ -70,11 +70,31 @@ class Dice {
     instance.physicsImpostor = new BABYLON.PhysicsImpostor(
       instance,
       BABYLON.PhysicsImpostor.ConvexHullImpostor,
-      { mass: 10, friction: 4 },
+      physicalProperties,
       scene
     );
 
     return instance;
+  }
+
+  static getDicePhysicalProperties(diceType) {
+    switch (diceType) {
+      case "d4":
+        return { mass: 4, friction: 4 };
+      case "d6":
+        return { mass: 6, friction: 4 };
+      case "d8":
+        return { mass: 6.2, friction: 4 };
+      case "d10":
+      case "d100":
+        return { mass: 7, friction: 4 };
+      case "d12":
+        return { mass: 8, friction: 4 };
+      case "20":
+        return { mass: 10, friction: 4 };
+      default:
+        return { mass: 10, friction: 4 };
+    }
   }
 
   static roll(instance) {
@@ -118,12 +138,13 @@ class Dice {
     );
   }
 
-  static async createInstance(mesh, scene) {
+  static async createInstance(mesh, physicalProperties, scene) {
     this.instanceCount++;
 
     return this.createInstanceFromMesh(
       mesh,
       `dice_instance_${this.instanceCount}`,
+      physicalProperties,
       scene
     );
   }

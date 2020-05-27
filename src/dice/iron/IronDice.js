@@ -8,6 +8,11 @@ class IronDice extends Dice {
   static meshes;
   static material;
 
+  static getDicePhysicalProperties(diceType) {
+    let properties = super.getDicePhysicalProperties(diceType);
+    return { mass: properties.mass * 2, friction: properties.friction };
+  }
+
   static async createInstance(diceType, scene) {
     if (!this.material) {
       this.material = this.loadMaterial(
@@ -20,7 +25,11 @@ class IronDice extends Dice {
       this.meshes = await this.loadMeshes(this.material, scene);
     }
 
-    return Dice.createInstance(this.meshes[diceType], scene);
+    return Dice.createInstance(
+      this.meshes[diceType],
+      this.getDicePhysicalProperties(diceType),
+      scene
+    );
   }
 }
 

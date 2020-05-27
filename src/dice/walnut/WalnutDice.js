@@ -20,7 +20,11 @@ class WalnutDice extends Dice {
       this.meshes = await this.loadMeshes(this.material, scene);
     }
 
-    return Dice.createInstance(this.meshes[diceType], scene);
+    return Dice.createInstance(
+      this.meshes[diceType],
+      this.getDicePhysicalProperties(diceType),
+      scene
+    );
   }
 }
 
