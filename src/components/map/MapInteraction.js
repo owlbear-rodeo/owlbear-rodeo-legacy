@@ -75,11 +75,15 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
-  const isDraggingCanvas = useRef(false);
+  const isInteractingCanvas = useRef(false);
 
   const bind = useGesture({
+    onWheelStart: ({ event }) => {
+      isInteractingCanvas.current =
+        event.target === mapLayerRef.current.getCanvas()._canvas;
+    },
     onWheel: ({ delta }) => {
-      if (preventMapInteraction) {
+      if (preventMapInteraction || !isInteractingCanvas.current) {
         return;
       }
       const newScale = Math.min(
@@ -122,11 +126,11 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       pinchPreviousOriginRef.current = { x: originX, y: originY };
     },
     onDragStart: ({ event }) => {
-      isDraggingCanvas.current =
+      isInteractingCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
     onDrag: ({ delta, xy, first, last, pinching }) => {
-      if (preventMapInteraction || pinching || !isDraggingCanvas.current) {
+      if (preventMapInteraction || pinching || !isInteractingCanvas.current) {
         return;
       }
 
