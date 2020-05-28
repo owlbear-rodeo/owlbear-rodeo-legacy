@@ -1,7 +1,7 @@
 import * as BABYLON from "babylonjs";
 
-import singleMeshSource from "../meshes/diceTraySingle.glb";
-import doubleMeshSource from "../meshes/diceTrayDouble.glb";
+import singleMeshSource from "./single.glb";
+import doubleMeshSource from "./double.glb";
 
 import singleAlbedo from "./singleAlbedo.jpg";
 import singleMetalRoughness from "./singleMetalRoughness.jpg";

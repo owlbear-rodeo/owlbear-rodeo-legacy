@@ -1,12 +1,12 @@
 import * as BABYLON from "babylonjs";
 
-import d4Source from "./meshes/d4.glb";
-import d6Source from "./meshes/d6.glb";
-import d8Source from "./meshes/d8.glb";
-import d10Source from "./meshes/d10.glb";
-import d12Source from "./meshes/d12.glb";
-import d20Source from "./meshes/d20.glb";
-import d100Source from "./meshes/d100.glb";
+import d4Source from "./shared/d4.glb";
+import d6Source from "./shared/d6.glb";
+import d8Source from "./shared/d8.glb";
+import d10Source from "./shared/d10.glb";
+import d12Source from "./shared/d12.glb";
+import d20Source from "./shared/d20.glb";
+import d100Source from "./shared/d100.glb";
 
 import { lerp } from "../helpers/shared";
 
