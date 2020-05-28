@@ -71,9 +71,9 @@ function DiceTrayOverlay({ isOpen }) {
     };
   }, [isOpen]);
 
-  const handleSceneMount = useCallback(({ scene, engine }) => {
+  const handleSceneMount = useCallback(async ({ scene, engine }) => {
     sceneRef.current = scene;
-    initializeScene(scene);
+    await initializeScene(scene);
     engine.runRenderLoop(() => update(scene));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
