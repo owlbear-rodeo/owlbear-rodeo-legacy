@@ -10,7 +10,7 @@ import { Box } from "theme-ui";
 
 import environment from "../../../dice/environment.dds";
 
-import Scene from "./DiceScene";
+import DiceInteraction from "./DiceInteraction";
 import DiceControls from "./DiceControls";
 import Dice from "../../../dice/Dice";
 import LoadingOverlay from "../../LoadingOverlay";
@@ -228,7 +228,7 @@ function DiceTrayOverlay({ isOpen }) {
       }}
       bg="background"
     >
-      <Scene
+      <DiceInteraction
         onSceneMount={handleSceneMount}
         onPointerDown={() => {
           sceneInteractionRef.current = true;

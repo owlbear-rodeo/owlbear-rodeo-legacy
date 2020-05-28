@@ -8,7 +8,7 @@ import usePreventTouch from "../../../helpers/usePreventTouch";
 
 const diceThrowSpeed = 2;
 
-function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
+function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
   const sceneRef = useRef();
   const engineRef = useRef();
   const canvasRef = useRef();
@@ -92,16 +92,17 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   function handlePointerUp() {
     const selectedMesh = selectedMeshRef.current;
     const velocityWindow = selectedMeshVelocityWindowRef.current;
-    // Average velocity window
-    let velocity = BABYLON.Vector3.Zero();
-    for (let v of velocityWindow) {
-      velocity.addInPlace(v);
-    }
-    if (velocityWindow.length > 0) {
-      velocity.scaleInPlace(1 / velocityWindow.length);
-    }
     const scene = sceneRef.current;
     if (selectedMesh && scene) {
+      // Average velocity window
+      let velocity = BABYLON.Vector3.Zero();
+      for (let v of velocityWindow) {
+        velocity.addInPlace(v);
+      }
+      if (velocityWindow.length > 0) {
+        velocity.scaleInPlace(1 / velocityWindow.length);
+      }
+
       selectedMesh.physicsImpostor.applyImpulse(
         velocity.scale(diceThrowSpeed * selectedMesh.physicsImpostor.mass),
         selectedMesh.physicsImpostor.getObjectCenter()
@@ -136,6 +137,8 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
         <canvas
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerUp}
           ref={canvasRef}
           style={{ outline: "none" }}
         />
@@ -144,9 +147,9 @@ function DiceScene({ onSceneMount, onPointerDown, onPointerUp }) {
   );
 }
 
-DiceScene.defaultProps = {
+DiceInteraction.defaultProps = {
   onPointerDown() {},
   onPointerUp() {},
 };
 
-export default DiceScene;
+export default DiceInteraction;
