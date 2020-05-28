@@ -239,7 +239,7 @@ function DiceTrayOverlay({ isOpen }) {
         maxWidth:
           diceTraySize === "single"
             ? "calc(50vh - 48px)"
-            : "calc(100vh - 48px)",
+            : "calc(100vh - 64px)",
         paddingBottom: diceTraySize === "single" ? "200%" : "100%",
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
