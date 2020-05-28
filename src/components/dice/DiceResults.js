@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Flex, Text, Button, IconButton } from "theme-ui";
 
-import ClearDiceIcon from "../../../icons/ClearDiceIcon";
-import RerollDiceIcon from "../../../icons/RerollDiceIcon";
+import ClearDiceIcon from "../../icons/ClearDiceIcon";
+import RerollDiceIcon from "../../icons/RerollDiceIcon";
 
 const maxDiceRollsShown = 6;
 

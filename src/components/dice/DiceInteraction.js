@@ -4,7 +4,7 @@ import * as AMMO from "ammo.js";
 import "babylonjs-loaders";
 import ReactResizeDetector from "react-resize-detector";
 
-import usePreventTouch from "../../../helpers/usePreventTouch";
+import usePreventTouch from "../../helpers/usePreventTouch";
 
 const diceThrowSpeed = 2;
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 
 import Modal from "../components/Modal";
-import DiceTiles from "../components/map/dice/DiceTiles";
+import DiceTiles from "../components/dice/DiceTiles";
 
 import { dice } from "../dice";
 

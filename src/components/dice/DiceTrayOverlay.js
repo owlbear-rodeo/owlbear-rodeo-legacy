@@ -8,16 +8,16 @@ import React, {
 import * as BABYLON from "babylonjs";
 import { Box } from "theme-ui";
 
-import environment from "../../../dice/environment.dds";
+import environment from "../../dice/environment.dds";
 
 import DiceInteraction from "./DiceInteraction";
 import DiceControls from "./DiceControls";
-import Dice from "../../../dice/Dice";
-import LoadingOverlay from "../../LoadingOverlay";
+import Dice from "../../dice/Dice";
+import LoadingOverlay from "../LoadingOverlay";
 
-import DiceTray from "../../../dice/diceTray/DiceTray";
+import DiceTray from "../../dice/diceTray/DiceTray";
 
-import DiceLoadingContext from "../../../contexts/DiceLoadingContext";
+import DiceLoadingContext from "../../contexts/DiceLoadingContext";
 
 function DiceTrayOverlay({ isOpen }) {
   const sceneRef = useRef();

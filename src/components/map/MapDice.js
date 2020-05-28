@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Flex, IconButton } from "theme-ui";
 
 import ExpandMoreDiceIcon from "../../icons/ExpandMoreDiceIcon";
-import DiceTrayOverlay from "./dice/DiceTrayOverlay";
+import DiceTrayOverlay from "../dice/DiceTrayOverlay";
 
 import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
 

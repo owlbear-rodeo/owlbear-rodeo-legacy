@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 
-import D20Icon from "../../../icons/D20Icon";
-import D12Icon from "../../../icons/D12Icon";
-import D10Icon from "../../../icons/D10Icon";
-import D8Icon from "../../../icons/D8Icon";
-import D6Icon from "../../../icons/D6Icon";
-import D4Icon from "../../../icons/D4Icon";
-import D100Icon from "../../../icons/D100Icon";
-import ExpandMoreDiceTrayIcon from "../../../icons/ExpandMoreDiceTrayIcon";
+import D20Icon from "../../icons/D20Icon";
+import D12Icon from "../../icons/D12Icon";
+import D10Icon from "../../icons/D10Icon";
+import D8Icon from "../../icons/D8Icon";
+import D6Icon from "../../icons/D6Icon";
+import D4Icon from "../../icons/D4Icon";
+import D100Icon from "../../icons/D100Icon";
+import ExpandMoreDiceTrayIcon from "../../icons/ExpandMoreDiceTrayIcon";
 
 import DiceButton from "./DiceButton";
 import SelectDiceButton from "./SelectDiceButton";
 
-import Divider from "../../Divider";
+import Divider from "../Divider";
 
-import { dice } from "../../../dice";
+import { dice } from "../../dice";
 
 function DiceButtons({
   diceRolls,

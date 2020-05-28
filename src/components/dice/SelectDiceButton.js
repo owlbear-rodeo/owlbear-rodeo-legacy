@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
-import SelectDiceIcon from "../../../icons/SelectDiceIcon";
-import SelectDiceModal from "../../../modals/SelectDiceModal";
+import SelectDiceIcon from "../../icons/SelectDiceIcon";
+import SelectDiceModal from "../../modals/SelectDiceModal";
 
 function SelectDiceButton({ onDiceChange, currentDice }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
