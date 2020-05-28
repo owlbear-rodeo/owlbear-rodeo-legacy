@@ -24,7 +24,7 @@ function DiceButtons({
   diceTraySize,
   onDiceTraySizeChange,
 }) {
-  const [currentDice, setCurrentDice] = useState();
+  const [currentDice, setCurrentDice] = useState(dice[0]);
 
   useEffect(() => {
     const initialDice = dice[0];
