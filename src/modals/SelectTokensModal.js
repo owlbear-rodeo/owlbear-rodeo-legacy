@@ -65,6 +65,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           owner: userId,
           defaultSize: 1,
           isVehicle: false,
+          hideInSidebar: false,
         });
         setImageLoading(false);
       };

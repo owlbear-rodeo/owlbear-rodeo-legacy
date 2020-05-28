@@ -49,7 +49,7 @@ function Tokens({ onMapTokenStateCreate }) {
       >
         <SimpleBar style={{ height: "calc(100% - 48px)", overflowX: "hidden" }}>
           {ownedTokens
-            .filter((token) => token.owner === userId)
+            .filter((token) => !token.hideInSidebar)
             .map((token) => (
               <ListToken
                 key={token.id}

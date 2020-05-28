@@ -39,18 +39,32 @@ function TokenSettings({
               my={1}
             />
           </Box>
-          <Box my={2}>
-            <Label>
-              <Checkbox
-                checked={token && token.isVehicle}
-                disabled={!token || token.type === "default"}
-                onChange={(e) =>
-                  onSettingsChange("isVehicle", e.target.checked)
-                }
-              />
-              Vehicle / Mount
-            </Label>
-          </Box>
+          <Flex my={2}>
+            <Box sx={{ flexGrow: 1 }}>
+              <Label>
+                <Checkbox
+                  checked={token && token.isVehicle}
+                  disabled={!token || token.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("isVehicle", e.target.checked)
+                  }
+                />
+                Vehicle / Mount
+              </Label>
+            </Box>
+            <Box sx={{ flexGrow: 1 }}>
+              <Label>
+                <Checkbox
+                  checked={token && token.hideInSidebar}
+                  disabled={!token || token.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("hideInSidebar", e.target.checked)
+                  }
+                />
+                Hide in Sidebar
+              </Label>
+            </Box>
+          </Flex>
         </>
       )}
       <IconButton
