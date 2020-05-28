@@ -14,7 +14,7 @@ import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
-const wheelZoomSpeed = 0.001;
+const wheelZoomSpeed = -0.001;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
