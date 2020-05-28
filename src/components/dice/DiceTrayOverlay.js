@@ -34,6 +34,19 @@ function DiceTrayOverlay({ isOpen }) {
     DiceLoadingContext
   );
 
+  // Force render when loading assets
+  useEffect(() => {
+    if (isLoading) {
+      forceSceneRenderRef.current = true;
+    }
+    return () => {
+      if (isLoading) {
+        forceSceneRenderRef.current = false;
+      }
+    };
+  }, [isLoading]);
+
+  // Force render when changing dice tray size
   useEffect(() => {
     const diceTray = diceTrayRef.current;
     let resizeTimout;
@@ -53,22 +66,11 @@ function DiceTrayOverlay({ isOpen }) {
   }, [diceTraySize]);
 
   useEffect(() => {
-    let openTimeout;
     if (isOpen) {
       sceneVisibleRef.current = true;
-      // Force scene rendering on open for 1s to ensure dice tray is rendered
-      forceSceneRenderRef.current = true;
-      openTimeout = setTimeout(() => {
-        forceSceneRenderRef.current = false;
-      }, 1000);
     } else {
       sceneVisibleRef.current = false;
     }
-    return () => {
-      if (openTimeout) {
-        clearTimeout(openTimeout);
-      }
-    };
   }, [isOpen]);
 
   const handleSceneMount = useCallback(async ({ scene, engine }) => {
@@ -102,13 +104,6 @@ function DiceTrayOverlay({ isOpen }) {
     let diceTray = new DiceTray("single", scene, shadowGenerator);
     await diceTray.load();
     diceTrayRef.current = diceTray;
-
-    // Force rerender on initialize
-    forceSceneRenderRef.current = true;
-    setTimeout(() => {
-      forceSceneRenderRef.current = false;
-    }, 1000);
-
     assetLoadFinish();
   }
 
