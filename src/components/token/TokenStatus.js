@@ -16,6 +16,7 @@ function TokenStatus({ tokenState, width, height }) {
           scaleX={1 - index / 10 / tokenState.size}
           scaleY={1 - index / 10 / tokenState.size}
           opacity={0.8}
+          fillEnabled={false}
         />
       ))}
     </Group>

@@ -42,6 +42,7 @@ function TokenLabel({ tokenState, width, height }) {
         paddingY={paddingY}
         wrap="none"
         ellipsis={true}
+        hitFunc={() => {}}
       />
     </Group>
   );
