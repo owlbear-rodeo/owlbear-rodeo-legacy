@@ -138,7 +138,7 @@ class Dice {
     );
   }
 
-  static async createInstance(mesh, physicalProperties, scene) {
+  static createInstance(mesh, physicalProperties, scene) {
     this.instanceCount++;
 
     return this.createInstanceFromMesh(

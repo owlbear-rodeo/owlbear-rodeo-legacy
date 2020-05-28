@@ -154,17 +154,17 @@ function DiceTrayOverlay({ isOpen }) {
     }
   }
 
-  async function handleDiceAdd(style, type) {
+  function handleDiceAdd(style, type) {
     const scene = sceneRef.current;
     const shadowGenerator = shadowGeneratorRef.current;
     if (scene && shadowGenerator) {
-      const instance = await style.createInstance(type, scene);
+      const instance = style.createInstance(type, scene);
       shadowGenerator.addShadowCaster(instance);
       Dice.roll(instance);
       let dice = { type, instance, asleep: false };
       // If we have a d100 add a d10 as well
       if (type === "d100") {
-        const d10Instance = await style.createInstance("d10", scene);
+        const d10Instance = style.createInstance("d10", scene);
         shadowGenerator.addShadowCaster(d10Instance);
         Dice.roll(d10Instance);
         dice.d10Instance = d10Instance;

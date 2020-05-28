@@ -21,7 +21,7 @@ class SunsetDice extends Dice {
     }
   }
 
-  static async createInstance(diceType, scene) {
+  static createInstance(diceType, scene) {
     if (!this.material || !this.meshes) {
       throw Error("Dice not loaded, call load before creating an instance");
     }
