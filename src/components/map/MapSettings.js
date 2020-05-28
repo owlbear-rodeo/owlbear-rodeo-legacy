@@ -34,7 +34,7 @@ function MapSettings({
             onChange={(e) =>
               onSettingsChange("gridX", parseInt(e.target.value))
             }
-            disabled={map === null || map.type === "default"}
+            disabled={!map || map.type === "default"}
             min={1}
             my={1}
           />
@@ -48,7 +48,7 @@ function MapSettings({
             onChange={(e) =>
               onSettingsChange("gridY", parseInt(e.target.value))
             }
-            disabled={map === null || map.type === "default"}
+            disabled={!map || map.type === "default"}
             min={1}
             my={1}
           />
@@ -61,19 +61,15 @@ function MapSettings({
             <Flex my={1}>
               <Label>
                 <Checkbox
-                  checked={
-                    mapState !== null && mapState.editFlags.includes("fog")
-                  }
-                  disabled={mapState === null}
+                  checked={mapState && mapState.editFlags.includes("fog")}
+                  disabled={!mapState}
                   onChange={(e) => handleFlagChange(e, "fog")}
                 />
                 Fog
               </Label>
               <Label>
                 <Checkbox
-                  checked={
-                    mapState !== null && mapState.editFlags.includes("drawing")
-                  }
+                  checked={mapState && mapState.editFlags.includes("drawing")}
                   disabled={mapState === null}
                   onChange={(e) => handleFlagChange(e, "drawing")}
                 />
@@ -81,10 +77,8 @@ function MapSettings({
               </Label>
               <Label>
                 <Checkbox
-                  checked={
-                    mapState !== null && mapState.editFlags.includes("tokens")
-                  }
-                  disabled={mapState === null}
+                  checked={mapState && mapState.editFlags.includes("tokens")}
+                  disabled={!mapState}
                   onChange={(e) => handleFlagChange(e, "tokens")}
                 />
                 Tokens
@@ -97,7 +91,7 @@ function MapSettings({
               name="name"
               value={(map && map.name) || ""}
               onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={map === null || map.type === "default"}
+              disabled={!map || map.type === "default"}
               my={1}
             />
           </Box>
@@ -115,7 +109,7 @@ function MapSettings({
         }}
         aria-label={showMore ? "Show Less" : "Show More"}
         title={showMore ? "Show Less" : "Show More"}
-        disabled={map === null}
+        disabled={!map}
       >
         <ExpandMoreIcon />
       </IconButton>

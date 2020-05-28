@@ -1,8 +1,8 @@
-import React, { useState, Fragment, useEffect, useRef } from "react";
+import React, { useState, Fragment } from "react";
 import { IconButton, Flex, Box } from "theme-ui";
 
 import RadioIconButton from "./controls/RadioIconButton";
-import Divider from "./controls/Divider";
+import Divider from "../Divider";
 
 import SelectMapButton from "./SelectMapButton";
 
@@ -22,6 +22,7 @@ function MapContols({
   onMapChange,
   onMapStateChange,
   currentMap,
+  currentMapState,
   selectedToolId,
   onSelectedToolChange,
   toolSettings,
@@ -73,6 +74,7 @@ function MapContols({
           onMapChange={onMapChange}
           onMapStateChange={onMapStateChange}
           currentMap={currentMap}
+          currentMapState={currentMapState}
         />
       ),
     },
@@ -144,9 +146,6 @@ function MapContols({
     );
   }
 
-  const controlsRef = useRef();
-  const settingsRef = useRef();
-
   function getToolSettings() {
     const Settings = toolsById[selectedToolId].SettingsComponent;
     if (Settings) {
@@ -161,7 +160,6 @@ function MapContols({
             borderRadius: "4px",
           }}
           p={1}
-          ref={settingsRef}
         >
           <Settings
             settings={toolSettings[selectedToolId]}
@@ -178,35 +176,6 @@ function MapContols({
     }
   }
 
-  // Stop map drawing from happening when selecting controls
-  // Not using react events as they seem to trigger after dom events
-  useEffect(() => {
-    function stopPropagation(e) {
-      e.stopPropagation();
-    }
-    const controls = controlsRef.current;
-    if (controls) {
-      controls.addEventListener("mousedown", stopPropagation);
-      controls.addEventListener("touchstart", stopPropagation);
-    }
-    const settings = settingsRef.current;
-    if (settings) {
-      settings.addEventListener("mousedown", stopPropagation);
-      settings.addEventListener("touchstart", stopPropagation);
-    }
-
-    return () => {
-      if (controls) {
-        controls.removeEventListener("mousedown", stopPropagation);
-        controls.removeEventListener("touchstart", stopPropagation);
-      }
-      if (settings) {
-        settings.removeEventListener("mousedown", stopPropagation);
-        settings.removeEventListener("touchstart", stopPropagation);
-      }
-    };
-  });
-
   return (
     <>
       <Flex
@@ -218,7 +187,6 @@ function MapContols({
           alignItems: "center",
         }}
         mx={1}
-        ref={controlsRef}
       >
         {controls}
       </Flex>

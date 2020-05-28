@@ -17,7 +17,7 @@ function MapTiles({
   onMapAdd,
   onMapRemove,
   onMapReset,
-  onSubmit,
+  onDone,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   return (
@@ -69,7 +69,7 @@ function MapTiles({
               onMapSelect={onMapSelect}
               onMapRemove={onMapRemove}
               onMapReset={onMapReset}
-              onSubmit={onSubmit}
+              onDone={onDone}
             />
           ))}
         </Flex>

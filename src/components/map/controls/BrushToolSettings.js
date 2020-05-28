@@ -11,7 +11,7 @@ import BrushFillIcon from "../../../icons/BrushFillIcon";
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
 
-import Divider from "./Divider";
+import Divider from "../../Divider";
 
 function BrushToolSettings({
   settings,

@@ -18,7 +18,26 @@ function SettingsModal({ isOpen, onRequestClose }) {
 
   async function handleClearCache() {
     await database.table("maps").where("owner").notEqual(userId).delete();
-    // TODO: With custom tokens look up all tokens that aren't being used in a state
+    // Find all other peoples tokens who aren't benig used in a map state and delete them
+    const tokens = await database
+      .table("tokens")
+      .where("owner")
+      .notEqual(userId)
+      .toArray();
+    const states = await database.table("states").toArray();
+    for (let token of tokens) {
+      let inUse = false;
+      for (let state of states) {
+        for (let tokenState of Object.values(state.tokens)) {
+          if (token.id === tokenState.tokenId) {
+            inUse = true;
+          }
+        }
+      }
+      if (!inUse) {
+        database.table("tokens").delete(token.id);
+      }
+    }
     window.location.reload();
   }
 

@@ -136,7 +136,7 @@ function useSession(
     function addPeer(id, initiator, sync) {
       const connection = new Peer({
         initiator,
-        trickle: false,
+        trickle: true,
         config: { iceServers },
       });
 

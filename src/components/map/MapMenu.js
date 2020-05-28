@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
-
 import { useThemeUI } from "theme-ui";
 
 function MapMenu({
@@ -45,6 +44,7 @@ function MapMenu({
         { once: true }
       );
     }
+
     return () => {
       if (modalContentNode) {
         document.body.removeEventListener("pointerdown", handlePointerDown);

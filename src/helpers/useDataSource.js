@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 
 // Helper function to load either file or default data
 // into a URL and ensure that it is revoked if needed
-function useDataSource(data, defaultSources) {
+function useDataSource(data, defaultSources, unknownSource) {
   const [dataSource, setDataSource] = useState(null);
   useEffect(() => {
     if (!data) {
-      setDataSource(null);
+      setDataSource(unknownSource);
       return;
     }
-    let url = null;
+    let url = unknownSource;
     if (data.type === "file") {
       url = URL.createObjectURL(new Blob([data.file]));
     } else if (data.type === "default") {
@@ -22,7 +22,7 @@ function useDataSource(data, defaultSources) {
         URL.revokeObjectURL(url);
       }
     };
-  }, [data, defaultSources]);
+  }, [data, defaultSources, unknownSource]);
 
   return dataSource;
 }
