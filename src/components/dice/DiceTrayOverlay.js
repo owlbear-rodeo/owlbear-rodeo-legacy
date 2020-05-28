@@ -25,8 +25,8 @@ function DiceTrayOverlay({ isOpen }) {
   const diceRefs = useRef([]);
   const sceneVisibleRef = useRef(false);
   const sceneInteractionRef = useRef(false);
-  // Set to true to ignore scene sleep and visible values
-  const forceSceneRenderRef = useRef(false);
+  // Add to the counter to ingore sleep values
+  const sceneKeepAwakeRef = useRef(0);
   const diceTrayRef = useRef();
 
   const [diceTraySize, setDiceTraySize] = useState("single");
@@ -34,43 +34,68 @@ function DiceTrayOverlay({ isOpen }) {
     DiceLoadingContext
   );
 
+  function handleAssetLoadStart() {
+    assetLoadStart();
+    sceneKeepAwakeRef.current++;
+  }
+
+  function handleAssetLoadFinish() {
+    assetLoadFinish();
+    sceneKeepAwakeRef.current--;
+  }
+
   // Force render when loading assets
   useEffect(() => {
     if (isLoading) {
-      forceSceneRenderRef.current = true;
+      sceneKeepAwakeRef.current++;
     }
     return () => {
       if (isLoading) {
-        forceSceneRenderRef.current = false;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        sceneKeepAwakeRef.current--;
       }
     };
   }, [isLoading]);
 
+  // Forces rendering for 1 second
+  function forceRender() {
+    // Force rerender
+    sceneKeepAwakeRef.current++;
+    let triggered = false;
+    let timeout = setTimeout(() => {
+      sceneKeepAwakeRef.current--;
+      triggered = true;
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeout);
+      if (!triggered) {
+        sceneKeepAwakeRef.current--;
+      }
+    };
+  }
+
   // Force render when changing dice tray size
   useEffect(() => {
     const diceTray = diceTrayRef.current;
-    let resizeTimout;
+    let cleanup;
     if (diceTray) {
       diceTray.size = diceTraySize;
-      // Force rerender
-      forceSceneRenderRef.current = true;
-      resizeTimout = setTimeout(() => {
-        forceSceneRenderRef.current = false;
-      }, 1000);
+      cleanup = forceRender();
     }
-    return () => {
-      if (resizeTimout) {
-        clearTimeout(resizeTimout);
-      }
-    };
+    return cleanup;
   }, [diceTraySize]);
 
   useEffect(() => {
+    let cleanup;
     if (isOpen) {
       sceneVisibleRef.current = true;
+      cleanup = forceRender();
     } else {
       sceneVisibleRef.current = false;
     }
+
+    return cleanup;
   }, [isOpen]);
 
   const handleSceneMount = useCallback(async ({ scene, engine }) => {
@@ -81,7 +106,7 @@ function DiceTrayOverlay({ isOpen }) {
   }, []);
 
   async function initializeScene(scene) {
-    assetLoadStart();
+    handleAssetLoadStart();
     let light = new BABYLON.DirectionalLight(
       "DirectionalLight",
       new BABYLON.Vector3(-0.5, -1, -0.5),
@@ -104,7 +129,7 @@ function DiceTrayOverlay({ isOpen }) {
     let diceTray = new DiceTray("single", scene, shadowGenerator);
     await diceTray.load();
     diceTrayRef.current = diceTray;
-    assetLoadFinish();
+    handleAssetLoadFinish();
   }
 
   function update(scene) {
@@ -128,8 +153,8 @@ function DiceTrayOverlay({ isOpen }) {
     if (!sceneVisible) {
       return;
     }
+    const forceSceneRender = sceneKeepAwakeRef.current > 0;
     const sceneInteraction = sceneInteractionRef.current;
-    const forceSceneRender = forceSceneRenderRef.current;
     const diceAwake = die.map((dice) => dice.asleep).includes(false);
     // Return early if scene doesn't need to be re-rendered
     if (!forceSceneRender && !sceneInteraction && !diceAwake) {
@@ -184,13 +209,7 @@ function DiceTrayOverlay({ isOpen }) {
       }
     }
     diceRefs.current = [];
-    // Force scene rendering to show cleared dice
-    forceSceneRenderRef.current = true;
-    setTimeout(() => {
-      if (forceSceneRenderRef) {
-        forceSceneRenderRef.current = false;
-      }
-    }, 100);
+    forceRender();
   }
 
   function handleDiceReroll() {
@@ -205,12 +224,12 @@ function DiceTrayOverlay({ isOpen }) {
   }
 
   async function handleDiceLoad(dice) {
-    assetLoadStart();
+    handleAssetLoadStart();
     const scene = sceneRef.current;
     if (scene) {
       await dice.class.load(scene);
     }
-    assetLoadFinish();
+    handleAssetLoadFinish();
   }
 
   return (
