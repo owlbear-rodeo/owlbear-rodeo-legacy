@@ -102,6 +102,13 @@ function DiceTrayOverlay({ isOpen }) {
     let diceTray = new DiceTray("single", scene, shadowGenerator);
     await diceTray.load();
     diceTrayRef.current = diceTray;
+
+    // Force rerender on initialize
+    forceSceneRenderRef.current = true;
+    setTimeout(() => {
+      forceSceneRenderRef.current = false;
+    }, 1000);
+
     assetLoadFinish();
   }
 
