@@ -10,7 +10,7 @@ class SunsetDice extends Dice {
 
   static async load(scene) {
     if (!this.material) {
-      this.material = this.loadMaterial(
+      this.material = await this.loadMaterial(
         "sunset_pbr",
         { albedo, metalRoughness, normal },
         scene

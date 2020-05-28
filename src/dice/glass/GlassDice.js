@@ -6,6 +6,8 @@ import albedo from "./albedo.jpg";
 import mask from "./mask.png";
 import normal from "./normal.jpg";
 
+import { importTextureAsync } from "../../helpers/babylon";
+
 class GlassDice extends Dice {
   static meshes;
   static material;
@@ -15,10 +17,10 @@ class GlassDice extends Dice {
     return { mass: properties.mass * 1.5, friction: properties.friction };
   }
 
-  static loadMaterial(materialName, textures, scene) {
+  static async loadMaterial(materialName, textures, scene) {
     let pbr = new BABYLON.PBRMaterial(materialName, scene);
-    pbr.albedoTexture = new BABYLON.Texture(textures.albedo);
-    pbr.normalTexture = new BABYLON.Texture(textures.normal);
+    pbr.albedoTexture = await importTextureAsync(textures.albedo);
+    pbr.normalTexture = await importTextureAsync(textures.normal);
     pbr.roughness = 0.25;
     pbr.metallic = 0;
     pbr.subSurface.isRefractionEnabled = true;
@@ -29,7 +31,7 @@ class GlassDice extends Dice {
     pbr.subSurface.minimumThickness = 10;
     pbr.subSurface.maximumThickness = 10;
     pbr.subSurface.tintColor = new BABYLON.Color3(43 / 255, 1, 115 / 255);
-    pbr.subSurface.thicknessTexture = new BABYLON.Texture(textures.mask);
+    pbr.subSurface.thicknessTexture = await importTextureAsync(textures.mask);
     pbr.subSurface.useMaskFromThicknessTexture = true;
 
     return pbr;
@@ -37,7 +39,7 @@ class GlassDice extends Dice {
 
   static async load(scene) {
     if (!this.material) {
-      this.material = this.loadMaterial(
+      this.material = await this.loadMaterial(
         "glass_pbr",
         { albedo, mask, normal },
         scene

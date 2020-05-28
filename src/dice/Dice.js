@@ -9,6 +9,7 @@ import d20Source from "./shared/d20.glb";
 import d100Source from "./shared/d100.glb";
 
 import { lerp } from "../helpers/shared";
+import { importTextureAsync } from "../helpers/babylon";
 
 const minDiceRollSpeed = 600;
 const maxDiceRollSpeed = 800;
@@ -46,11 +47,11 @@ class Dice {
     return mesh;
   }
 
-  static loadMaterial(materialName, textures, scene) {
+  static async loadMaterial(materialName, textures, scene) {
     let pbr = new BABYLON.PBRMaterial(materialName, scene);
-    pbr.albedoTexture = new BABYLON.Texture(textures.albedo);
-    pbr.normalTexture = new BABYLON.Texture(textures.normal);
-    pbr.metallicTexture = new BABYLON.Texture(textures.metalRoughness);
+    pbr.albedoTexture = await importTextureAsync(textures.albedo);
+    pbr.normalTexture = await importTextureAsync(textures.normal);
+    pbr.metallicTexture = await importTextureAsync(textures.metalRoughness);
     pbr.useRoughnessFromMetallicTextureAlpha = false;
     pbr.useRoughnessFromMetallicTextureGreen = true;
     pbr.useMetallnessFromMetallicTextureBlue = true;

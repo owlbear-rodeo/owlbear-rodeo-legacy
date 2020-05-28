@@ -36,26 +36,12 @@ function DiceTrayOverlay({ isOpen }) {
 
   function handleAssetLoadStart() {
     assetLoadStart();
-    sceneKeepAwakeRef.current++;
   }
 
   function handleAssetLoadFinish() {
     assetLoadFinish();
-    sceneKeepAwakeRef.current--;
+    forceRender();
   }
-
-  // Force render when loading assets
-  useEffect(() => {
-    if (isLoading) {
-      sceneKeepAwakeRef.current++;
-    }
-    return () => {
-      if (isLoading) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        sceneKeepAwakeRef.current--;
-      }
-    };
-  }, [isLoading]);
 
   // Forces rendering for 1 second
   function forceRender() {

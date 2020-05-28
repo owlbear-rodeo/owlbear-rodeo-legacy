@@ -15,7 +15,7 @@ class IronDice extends Dice {
 
   static async load(scene) {
     if (!this.material) {
-      this.material = this.loadMaterial(
+      this.material = await this.loadMaterial(
         "iron_pbr",
         { albedo, metalRoughness, normal },
         scene

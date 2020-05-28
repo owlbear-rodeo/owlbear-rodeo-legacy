@@ -11,6 +11,8 @@ import doubleAlbedo from "./doubleAlbedo.jpg";
 import doubleMetalRoughness from "./doubleMetalRoughness.jpg";
 import doubleNormal from "./doubleNormal.jpg";
 
+import { importTextureAsync } from "../../helpers/babylon";
+
 class DiceTray {
   _size;
   get size() {
@@ -126,9 +128,11 @@ class DiceTray {
       "dice_tray_mat_single",
       this.scene
     );
-    singleMaterial.albedoTexture = new BABYLON.Texture(singleAlbedo);
-    singleMaterial.normalTexture = new BABYLON.Texture(singleNormal);
-    singleMaterial.metallicTexture = new BABYLON.Texture(singleMetalRoughness);
+    singleMaterial.albedoTexture = await importTextureAsync(singleAlbedo);
+    singleMaterial.normalTexture = await importTextureAsync(singleNormal);
+    singleMaterial.metallicTexture = await importTextureAsync(
+      singleMetalRoughness
+    );
     singleMaterial.useRoughnessFromMetallicTextureAlpha = false;
     singleMaterial.useRoughnessFromMetallicTextureGreen = true;
     singleMaterial.useMetallnessFromMetallicTextureBlue = true;
@@ -152,9 +156,11 @@ class DiceTray {
       "dice_tray_mat_double",
       this.scene
     );
-    doubleMaterial.albedoTexture = new BABYLON.Texture(doubleAlbedo);
-    doubleMaterial.normalTexture = new BABYLON.Texture(doubleNormal);
-    doubleMaterial.metallicTexture = new BABYLON.Texture(doubleMetalRoughness);
+    doubleMaterial.albedoTexture = await importTextureAsync(doubleAlbedo);
+    doubleMaterial.normalTexture = await importTextureAsync(doubleNormal);
+    doubleMaterial.metallicTexture = await importTextureAsync(
+      doubleMetalRoughness
+    );
     doubleMaterial.useRoughnessFromMetallicTextureAlpha = false;
     doubleMaterial.useRoughnessFromMetallicTextureGreen = true;
     doubleMaterial.useMetallnessFromMetallicTextureBlue = true;

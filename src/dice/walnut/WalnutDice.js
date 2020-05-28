@@ -33,7 +33,7 @@ class WalnutDice extends Dice {
 
   static async load(scene) {
     if (!this.material) {
-      this.material = this.loadMaterial(
+      this.material = await this.loadMaterial(
         "walnut_pbr",
         { albedo, metalRoughness, normal },
         scene

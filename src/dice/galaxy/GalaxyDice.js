@@ -10,7 +10,7 @@ class GalaxyDice extends Dice {
 
   static async load(scene) {
     if (!this.material) {
-      this.material = this.loadMaterial(
+      this.material = await this.loadMaterial(
         "galaxy_pbr",
         { albedo, metalRoughness, normal },
         scene
