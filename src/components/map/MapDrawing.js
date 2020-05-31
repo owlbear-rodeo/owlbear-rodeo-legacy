@@ -19,19 +19,29 @@ import useMapBrush from "../../helpers/useMapBrush";
 function MapDrawing({
   shapes,
   onShapeAdd,
-  onShapeRemove,
+  onShapesRemove,
   selectedToolId,
   selectedToolSettings,
   gridSize,
 }) {
   const { stageScale, mapWidth, mapHeight } = useContext(MapInteractionContext);
   const [drawingShape, setDrawingShape] = useState(null);
+  const [isBrushDown, setIsBrushDown] = useState(false);
+  const [erasingShapes, setErasingShapes] = useState([]);
 
   const shouldHover = selectedToolId === "erase";
   const isEditing =
     selectedToolId === "brush" ||
     selectedToolId === "shape" ||
     selectedToolId === "erase";
+
+  const handleBrushUp = useCallback(() => {
+    setIsBrushDown(false);
+    if (erasingShapes.length > 0) {
+      onShapesRemove(erasingShapes.map((shape) => shape.id));
+      setErasingShapes([]);
+    }
+  }, [erasingShapes, onShapesRemove]);
 
   const handleShapeDraw = useCallback(
     (brushState, mapBrushPosition) => {
@@ -65,6 +75,7 @@ function MapDrawing({
             ...commonShapeData,
           });
         }
+        setIsBrushDown(true);
       }
 
       function continueShape() {
@@ -119,6 +130,7 @@ function MapDrawing({
           onShapeAdd(drawingShape);
         }
         setDrawingShape(null);
+        handleBrushUp();
       }
 
       switch (brushState) {
@@ -143,48 +155,27 @@ function MapDrawing({
       onShapeAdd,
       shapes,
       drawingShape,
+      handleBrushUp,
     ]
   );
 
   useMapBrush(isEditing, handleShapeDraw);
 
-  function handleShapeClick(_, shape) {
-    if (selectedToolId === "erase") {
-      onShapeRemove(shape.id);
-    }
-  }
-
-  function handleShapeMouseOver(event, shape) {
-    if (shouldHover) {
-      const path = event.target;
-      const hoverColor = "#BB99FF";
-      path.fill(hoverColor);
-      if (shape.type === "path") {
-        path.stroke(hoverColor);
+  function handleShapeOver(shape, isDown) {
+    if (shouldHover && isDown) {
+      if (erasingShapes.findIndex((s) => s.id === shape.id) === -1) {
+        setErasingShapes((prevShapes) => [...prevShapes, shape]);
       }
-      path.getLayer().draw();
-    }
-  }
-
-  function handleShapeMouseOut(event, shape) {
-    if (shouldHover) {
-      const path = event.target;
-      const color = colors[shape.color] || shape.color;
-      path.fill(color);
-      if (shape.type === "path") {
-        path.stroke(color);
-      }
-      path.getLayer().draw();
     }
   }
 
   function renderShape(shape) {
     const defaultProps = {
       key: shape.id,
-      onMouseOver: (e) => handleShapeMouseOver(e, shape),
-      onMouseOut: (e) => handleShapeMouseOut(e, shape),
-      onClick: (e) => handleShapeClick(e, shape),
-      onTap: (e) => handleShapeClick(e, shape),
+      onMouseMove: () => handleShapeOver(shape, isBrushDown),
+      onTouchOver: () => handleShapeOver(shape, isBrushDown),
+      onMouseDown: () => handleShapeOver(shape, true),
+      onTouchStart: () => handleShapeOver(shape, true),
       fill: colors[shape.color] || shape.color,
       opacity: shape.blend ? 0.5 : 1,
     };
@@ -245,10 +236,19 @@ function MapDrawing({
     }
   }
 
+  function renderErasingShape(shape) {
+    const eraseShape = {
+      ...shape,
+      color: "#BB99FF",
+    };
+    return renderShape(eraseShape);
+  }
+
   return (
     <Group>
       {shapes.map(renderShape)}
       {drawingShape && renderShape(drawingShape)}
+      {erasingShapes.length > 0 && erasingShapes.map(renderErasingShape)}
     </Group>
   );
 }

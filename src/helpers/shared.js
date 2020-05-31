@@ -39,3 +39,14 @@ export function toDegrees(angle) {
 export function lerp(a, b, alpha) {
   return a * (1 - alpha) + b * alpha;
 }
+
+// Console log an image
+export function logImage(url, width, height) {
+  const style = [
+    "font-size: 1px;",
+    `padding: ${height}px ${width}px;`,
+    `background: url(${url}) no-repeat;`,
+    "background-size: contain;",
+  ].join(" ");
+  console.log("%c ", style);
+}

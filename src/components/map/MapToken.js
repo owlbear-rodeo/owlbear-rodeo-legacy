@@ -48,7 +48,7 @@ function MapToken({
     const tokenImage = event.target;
     const tokenImageRect = tokenImage.getClientRect();
 
-    if (token.isVehicle) {
+    if (token && token.isVehicle) {
       // Find all other tokens on the map
       const layer = tokenImage.getLayer();
       const tokens = layer.find(".token");
@@ -83,7 +83,7 @@ function MapToken({
     const tokenImage = event.target;
 
     const mountChanges = {};
-    if (token.isVehicle) {
+    if (token && token.isVehicle) {
       const layer = tokenImage.getLayer();
       const mountedTokens = tokenImage.find(".token");
       for (let mountedToken of mountedTokens) {

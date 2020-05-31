@@ -36,7 +36,15 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     addToken(token);
   }
 
-  function handleImageUpload(file) {
+  async function handleImagesUpload(files) {
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    // Set file input to null to allow adding the same image 2 times in a row
+    fileInputRef.current.value = null;
+  }
+
+  async function handleImageUpload(file) {
     let name = "Unknown Map";
     if (file.name) {
       // Remove file extension
@@ -49,11 +57,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     }
     let image = new Image();
     setImageLoading(true);
-    blobToBuffer(file).then((buffer) => {
-      // Copy file to avoid permissions issues
-      const blob = new Blob([buffer]);
-      // Create and load the image temporarily to get its dimensions
-      const url = URL.createObjectURL(blob);
+    const buffer = await blobToBuffer(file);
+
+    // Copy file to avoid permissions issues
+    const blob = new Blob([buffer]);
+    // Create and load the image temporarily to get its dimensions
+    const url = URL.createObjectURL(blob);
+
+    return new Promise((resolve, reject) => {
       image.onload = function () {
         handleTokenAdd({
           file: buffer,
@@ -68,11 +79,10 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           hideInSidebar: false,
         });
         setImageLoading(false);
+        resolve();
       };
+      image.onerror = reject;
       image.src = url;
-
-      // Set file input to null to allow adding the same image 2 times in a row
-      fileInputRef.current.value = null;
     });
   }
 
@@ -96,13 +106,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
-      <ImageDrop onDrop={handleImageUpload} dropText="Drop token to upload">
+      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
-          onChange={(event) => handleImageUpload(event.target.files[0])}
+          onChange={(event) => handleImagesUpload(event.target.files)}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
           ref={fileInputRef}
+          multiple
         />
         <Flex
           sx={{

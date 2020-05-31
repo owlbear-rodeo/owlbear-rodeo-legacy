@@ -12,6 +12,7 @@ function Footer() {
         width: "100%",
         alignItems: "center",
         justifyContent: "center",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <Link m={2} to="/about" variant="footer">

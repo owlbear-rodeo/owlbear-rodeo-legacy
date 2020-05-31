@@ -6,6 +6,7 @@ import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapDice from "./MapDice";
+import MapGrid from "./MapGrid";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import MapLoadingContext from "../../contexts/MapLoadingContext";
@@ -97,8 +98,8 @@ function Map({
     onMapDraw({ type: "add", shapes: [shape] });
   }
 
-  function handleMapShapeRemove(shapeId) {
-    onMapDraw({ type: "remove", shapeIds: [shapeId] });
+  function handleMapShapesRemove(shapeIds) {
+    onMapDraw({ type: "remove", shapeIds });
   }
 
   const [fogShapes, setFogShapes] = useState([]);
@@ -107,12 +108,12 @@ function Map({
     onFogDraw({ type: "add", shapes: [shape] });
   }
 
-  function handleFogShapeRemove(shapeId) {
-    onFogDraw({ type: "remove", shapeIds: [shapeId] });
+  function handleFogShapesRemove(shapeIds) {
+    onFogDraw({ type: "remove", shapeIds });
   }
 
-  function handleFogShapeEdit(shape) {
-    onFogDraw({ type: "edit", shapes: [shape] });
+  function handleFogShapesEdit(shapes) {
+    onFogDraw({ type: "edit", shapes });
   }
 
   // Replay the draw actions and convert them to shapes for the map drawing
@@ -174,7 +175,7 @@ function Map({
     disabledSettings.shape.push("redo");
     disabledSettings.erase.push("redo");
   }
-  if (fogShapes.length === 0) {
+  if (!mapState || mapState.fogDrawActionIndex < 0) {
     disabledSettings.fog.push("undo");
   }
   if (
@@ -275,7 +276,7 @@ function Map({
     <MapDrawing
       shapes={mapShapes}
       onShapeAdd={handleMapShapeAdd}
-      onShapeRemove={handleMapShapeRemove}
+      onShapesRemove={handleMapShapesRemove}
       selectedToolId={selectedToolId}
       selectedToolSettings={toolSettings[selectedToolId]}
       gridSize={gridSizeNormalized}
@@ -286,12 +287,16 @@ function Map({
     <MapFog
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
-      onShapeRemove={handleFogShapeRemove}
-      onShapeEdit={handleFogShapeEdit}
+      onShapesRemove={handleFogShapesRemove}
+      onShapesEdit={handleFogShapesEdit}
       selectedToolId={selectedToolId}
       selectedToolSettings={toolSettings[selectedToolId]}
       gridSize={gridSizeNormalized}
     />
+  );
+
+  const mapGrid = map && map.showGrid && (
+    <MapGrid map={map} gridSize={gridSizeNormalized} />
   );
 
   return (
@@ -308,6 +313,7 @@ function Map({
       }
       selectedToolId={selectedToolId}
     >
+      {mapGrid}
       {mapDrawing}
       {mapTokens}
       {mapFog}

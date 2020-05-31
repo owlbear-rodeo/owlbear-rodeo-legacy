@@ -89,6 +89,17 @@ function loadVersions(db) {
           }
         });
     });
+  // v1.3.1 - Added show grid option
+  db.version(4)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.showGrid = false;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext
