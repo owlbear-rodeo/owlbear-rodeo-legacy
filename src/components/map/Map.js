@@ -174,7 +174,7 @@ function Map({
     disabledSettings.shape.push("redo");
     disabledSettings.erase.push("redo");
   }
-  if (fogShapes.length === 0) {
+  if (!mapState || mapState.fogDrawActionIndex < 0) {
     disabledSettings.fog.push("undo");
   }
   if (
