@@ -18,10 +18,14 @@ function ImageDrop({ onDrop, dropText, children }) {
   function handleImageDrop(event) {
     event.preventDefault();
     event.stopPropagation();
-    const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith("image")) {
-      onDrop(file);
+    const files = event.dataTransfer.files;
+    let imageFiles = [];
+    for (let file of files) {
+      if (file.type.startsWith("image")) {
+        imageFiles.push(file);
+      }
     }
+    onDrop(imageFiles);
     setDragging(false);
   }
 

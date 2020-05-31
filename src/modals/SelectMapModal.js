@@ -51,9 +51,17 @@ function SelectMapModal({
 
   const fileInputRef = useRef();
 
-  function handleImageUpload(file) {
+  async function handleImagesUpload(files) {
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    // Set file input to null to allow adding the same image 2 times in a row
+    fileInputRef.current.value = null;
+  }
+
+  async function handleImageUpload(file) {
     if (!file) {
-      return;
+      return Promise.reject();
     }
     let fileGridX = defaultMapSize;
     let fileGridY = defaultMapSize;
@@ -86,11 +94,13 @@ function SelectMapModal({
     let image = new Image();
     setImageLoading(true);
 
-    blobToBuffer(file).then((buffer) => {
-      // Copy file to avoid permissions issues
-      const blob = new Blob([buffer]);
-      // Create and load the image temporarily to get its dimensions
-      const url = URL.createObjectURL(blob);
+    const buffer = await blobToBuffer(file);
+    // Copy file to avoid permissions issues
+    const blob = new Blob([buffer]);
+    // Create and load the image temporarily to get its dimensions
+    const url = URL.createObjectURL(blob);
+
+    return new Promise((resolve, reject) => {
       image.onload = function () {
         handleMapAdd({
           // Save as a buffer to send with msgpack
@@ -109,11 +119,10 @@ function SelectMapModal({
         });
         setImageLoading(false);
         URL.revokeObjectURL(url);
+        resolve();
       };
+      image.onerror = reject;
       image.src = url;
-
-      // Set file input to null to allow adding the same image 2 times in a row
-      fileInputRef.current.value = null;
     });
   }
 
@@ -172,12 +181,13 @@ function SelectMapModal({
 
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
-      <ImageDrop onDrop={handleImageUpload} dropText="Drop map to upload">
+      <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
-          onChange={(event) => handleImageUpload(event.target.files[0])}
+          onChange={(event) => handleImagesUpload(event.target.files)}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
+          multiple
           ref={fileInputRef}
         />
         <Flex
