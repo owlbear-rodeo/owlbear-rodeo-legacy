@@ -9,3 +9,7 @@ html {
 .simplebar-scrollbar:before {
   background: #fff;
 }
+
+input[type="checkbox"]:disabled ~ svg {
+  opacity: 0.1;
+}
