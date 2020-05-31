@@ -97,8 +97,8 @@ function Map({
     onMapDraw({ type: "add", shapes: [shape] });
   }
 
-  function handleMapShapeRemove(shapeId) {
-    onMapDraw({ type: "remove", shapeIds: [shapeId] });
+  function handleMapShapesRemove(shapeIds) {
+    onMapDraw({ type: "remove", shapeIds });
   }
 
   const [fogShapes, setFogShapes] = useState([]);
@@ -107,12 +107,12 @@ function Map({
     onFogDraw({ type: "add", shapes: [shape] });
   }
 
-  function handleFogShapeRemove(shapeId) {
-    onFogDraw({ type: "remove", shapeIds: [shapeId] });
+  function handleFogShapesRemove(shapeIds) {
+    onFogDraw({ type: "remove", shapeIds });
   }
 
-  function handleFogShapeEdit(shape) {
-    onFogDraw({ type: "edit", shapes: [shape] });
+  function handleFogShapesEdit(shapes) {
+    onFogDraw({ type: "edit", shapes });
   }
 
   // Replay the draw actions and convert them to shapes for the map drawing
@@ -275,7 +275,7 @@ function Map({
     <MapDrawing
       shapes={mapShapes}
       onShapeAdd={handleMapShapeAdd}
-      onShapeRemove={handleMapShapeRemove}
+      onShapesRemove={handleMapShapesRemove}
       selectedToolId={selectedToolId}
       selectedToolSettings={toolSettings[selectedToolId]}
       gridSize={gridSizeNormalized}
@@ -286,8 +286,8 @@ function Map({
     <MapFog
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
-      onShapeRemove={handleFogShapeRemove}
-      onShapeEdit={handleFogShapeEdit}
+      onShapesRemove={handleFogShapesRemove}
+      onShapesEdit={handleFogShapesEdit}
       selectedToolId={selectedToolId}
       selectedToolSettings={toolSettings[selectedToolId]}
       gridSize={gridSizeNormalized}

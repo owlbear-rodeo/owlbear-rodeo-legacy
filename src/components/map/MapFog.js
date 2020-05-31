@@ -20,14 +20,16 @@ import useMapBrush from "../../helpers/useMapBrush";
 function MapFog({
   shapes,
   onShapeAdd,
-  onShapeRemove,
-  onShapeEdit,
+  onShapesRemove,
+  onShapesEdit,
   selectedToolId,
   selectedToolSettings,
   gridSize,
 }) {
   const { stageScale, mapWidth, mapHeight } = useContext(MapInteractionContext);
   const [drawingShape, setDrawingShape] = useState(null);
+  const [isBrushDown, setIsBrushDown] = useState(false);
+  const [editingShapes, setEditingShapes] = useState([]);
 
   const isEditing = selectedToolId === "fog";
   const shouldHover =
@@ -36,6 +38,20 @@ function MapFog({
       selectedToolSettings.type === "remove");
 
   const [patternImage] = useImage(diagonalPattern);
+
+  const handleBrushUp = useCallback(() => {
+    setIsBrushDown(false);
+    if (editingShapes.length > 0) {
+      if (selectedToolSettings.type === "remove") {
+        onShapesRemove(editingShapes.map((shape) => shape.id));
+      } else if (selectedToolSettings.type === "toggle") {
+        onShapesEdit(
+          editingShapes.map((shape) => ({ ...shape, visible: !shape.visible }))
+        );
+      }
+      setEditingShapes([]);
+    }
+  }, [editingShapes, onShapesRemove, onShapesEdit, selectedToolSettings]);
 
   const handleShapeDraw = useCallback(
     (brushState, mapBrushPosition) => {
@@ -58,6 +74,7 @@ function MapFog({
             visible: true,
           });
         }
+        setIsBrushDown(true);
       }
 
       function continueShape() {
@@ -106,6 +123,7 @@ function MapFog({
           }
         }
         setDrawingShape(null);
+        handleBrushUp();
       }
 
       switch (brushState) {
@@ -130,46 +148,17 @@ function MapFog({
       onShapeAdd,
       shapes,
       drawingShape,
+      handleBrushUp,
     ]
   );
 
   useMapBrush(isEditing, handleShapeDraw);
 
-  function handleShapeClick(_, shape) {
-    if (!isEditing) {
-      return;
-    }
-
-    if (selectedToolSettings.type === "remove") {
-      onShapeRemove(shape.id);
-    } else if (selectedToolSettings.type === "toggle") {
-      onShapeEdit({ ...shape, visible: !shape.visible });
-    }
-  }
-
-  function handleShapeMouseOver(event, shape) {
-    if (shouldHover) {
-      const path = event.target;
-      if (shape.visible) {
-        const hoverColor = "#BB99FF";
-        path.fill(hoverColor);
-      } else {
-        path.opacity(1);
+  function handleShapeOver(shape, isDown) {
+    if (shouldHover && isDown) {
+      if (editingShapes.findIndex((s) => s.id === shape.id) === -1) {
+        setEditingShapes((prevShapes) => [...prevShapes, shape]);
       }
-      path.getLayer().draw();
-    }
-  }
-
-  function handleShapeMouseOut(event, shape) {
-    if (shouldHover) {
-      const path = event.target;
-      if (shape.visible) {
-        const color = colors[shape.color] || shape.color;
-        path.fill(color);
-      } else {
-        path.opacity(0.5);
-      }
-      path.getLayer().draw();
     }
   }
 
@@ -177,10 +166,10 @@ function MapFog({
     return (
       <Line
         key={shape.id}
-        onMouseOver={(e) => handleShapeMouseOver(e, shape)}
-        onMouseOut={(e) => handleShapeMouseOut(e, shape)}
-        onClick={(e) => handleShapeClick(e, shape)}
-        onTap={(e) => handleShapeClick(e, shape)}
+        onMouseMove={() => handleShapeOver(shape, isBrushDown)}
+        onTouchOver={() => handleShapeOver(shape, isBrushDown)}
+        onMouseDown={() => handleShapeOver(shape, true)}
+        onTouchStart={() => handleShapeOver(shape, true)}
         points={shape.data.points.reduce(
           (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
           []
@@ -203,10 +192,19 @@ function MapFog({
     );
   }
 
+  function renderEditingShape(shape) {
+    const editingShape = {
+      ...shape,
+      color: "#BB99FF",
+    };
+    return renderShape(editingShape);
+  }
+
   return (
     <Group>
       {shapes.map(renderShape)}
       {drawingShape && renderShape(drawingShape)}
+      {editingShapes.length > 0 && editingShapes.map(renderEditingShape)}
     </Group>
   );
 }
