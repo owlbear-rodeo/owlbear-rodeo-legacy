@@ -66,7 +66,7 @@ function TokenDragOverlay({
     function handleTokenDragEnd() {
       if (isRemoveHovered) {
         // Handle other tokens when a vehicle gets deleted
-        if (token.isVehicle) {
+        if (token && token.isVehicle) {
           const layer = tokenImage.getLayer();
           const mountedTokens = tokenImage.find(".token");
           for (let mountedToken of mountedTokens) {
