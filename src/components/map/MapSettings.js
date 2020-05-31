@@ -3,6 +3,8 @@ import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
+import Divider from "../Divider";
+
 function MapSettings({
   map,
   mapState,
@@ -57,6 +59,27 @@ function MapSettings({
       {showMore && (
         <>
           <Box mt={2} sx={{ flexGrow: 1 }}>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              name="name"
+              value={(map && map.name) || ""}
+              onChange={(e) => onSettingsChange("name", e.target.value)}
+              disabled={!map || map.type === "default"}
+              my={1}
+            />
+          </Box>
+          <Box my={2}>
+            <Label>
+              <Checkbox
+                checked={map && map.showGrid}
+                disabled={!map || map.type === "default"}
+                onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
+              />
+              Show Grid
+            </Label>
+          </Box>
+          <Divider fill />
+          <Box my={2} sx={{ flexGrow: 1 }}>
             <Label>Allow others to edit</Label>
             <Flex my={1}>
               <Label>
@@ -84,16 +107,6 @@ function MapSettings({
                 Tokens
               </Label>
             </Flex>
-          </Box>
-          <Box my={2} sx={{ flexGrow: 1 }}>
-            <Label htmlFor="name">Name</Label>
-            <Input
-              name="name"
-              value={(map && map.name) || ""}
-              onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={!map || map.type === "default"}
-              my={1}
-            />
           </Box>
         </>
       )}

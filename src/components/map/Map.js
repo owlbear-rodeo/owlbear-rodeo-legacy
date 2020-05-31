@@ -6,6 +6,7 @@ import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapDice from "./MapDice";
+import MapGrid from "./MapGrid";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import MapLoadingContext from "../../contexts/MapLoadingContext";
@@ -294,6 +295,10 @@ function Map({
     />
   );
 
+  const mapGrid = map && map.showGrid && (
+    <MapGrid map={map} gridSize={gridSizeNormalized} />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -308,6 +313,7 @@ function Map({
       }
       selectedToolId={selectedToolId}
     >
+      {mapGrid}
       {mapDrawing}
       {mapTokens}
       {mapFog}

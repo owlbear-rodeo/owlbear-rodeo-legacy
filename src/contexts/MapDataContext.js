@@ -43,6 +43,7 @@ export function MapDataProvider({ children }) {
           created: Date.now() + i,
           lastModified: Date.now() + i,
           gridType: "grid",
+          showGrid: false,
         });
         // Add a state for the map if there isn't one already
         const state = await database.table("states").get(id);

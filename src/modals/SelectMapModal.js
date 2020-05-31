@@ -17,6 +17,7 @@ const defaultMapProps = {
   // Grid type
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
+  showGrid: false,
 };
 
 function SelectMapModal({
