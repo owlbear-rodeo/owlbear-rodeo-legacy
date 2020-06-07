@@ -57,7 +57,7 @@ export function MapDataProvider({ children }) {
     async function loadMaps() {
       let storedMaps = [];
       // Use a cursor instead of toArray to prevent IPC max size error
-      database.table("maps").each((map) => storedMaps.push(map));
+      await database.table("maps").each((map) => storedMaps.push(map));
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];
