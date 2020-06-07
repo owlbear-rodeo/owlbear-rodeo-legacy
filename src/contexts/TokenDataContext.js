@@ -30,7 +30,9 @@ export function TokenDataProvider({ children }) {
     }
 
     async function loadTokens() {
-      let storedTokens = await database.table("tokens").toArray();
+      let storedTokens = [];
+      // Use a cursor instead of toArray to prevent IPC max size error
+      await database.table("tokens").each((token) => storedTokens.push(token));
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
       const defaultTokensWithIds = getDefaultTokes();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];
