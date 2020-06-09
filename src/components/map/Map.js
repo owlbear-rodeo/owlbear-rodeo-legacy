@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
+import polygonClipping from "polygon-clipping";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
@@ -108,6 +109,10 @@ function Map({
     onFogDraw({ type: "add", shapes: [shape] });
   }
 
+  function handleFogShapeSubtract(shape) {
+    onFogDraw({ type: "subtract", shapes: [shape] });
+  }
+
   function handleFogShapesRemove(shapeIds) {
     onFogDraw({ type: "remove", shapeIds });
   }
@@ -132,6 +137,32 @@ function Map({
         }
         if (action.type === "remove") {
           shapesById = omit(shapesById, action.shapeIds);
+        }
+        if (action.type === "subtract") {
+          const actionGeom = action.shapes.map((actionShape) => [
+            actionShape.data.points.map(({ x, y }) => [x, y]),
+          ]);
+          let subtractedShapes = {};
+          for (let shape of Object.values(shapesById)) {
+            let shapeGeom = [[shape.data.points.map(({ x, y }) => [x, y])]];
+            const difference = polygonClipping.difference(
+              shapeGeom,
+              actionGeom
+            );
+            for (let i = 0; i < difference.length; i++) {
+              for (let j = 0; j < difference[i].length; j++) {
+                let newId = `${shape.id}-${i}_${j}`;
+                subtractedShapes[newId] = {
+                  ...shape,
+                  id: newId,
+                  data: {
+                    points: difference[i][j].map(([x, y]) => ({ x, y })),
+                  },
+                };
+              }
+            }
+          }
+          shapesById = subtractedShapes;
         }
       }
       return Object.values(shapesById);
@@ -287,6 +318,7 @@ function Map({
     <MapFog
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
+      onShapeSubtract={handleFogShapeSubtract}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
       selectedToolId={selectedToolId}

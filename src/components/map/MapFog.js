@@ -20,6 +20,7 @@ import useMapBrush from "../../helpers/useMapBrush";
 function MapFog({
   shapes,
   onShapeAdd,
+  onShapeSubtract,
   onShapesRemove,
   onShapesEdit,
   selectedToolId,
@@ -63,12 +64,15 @@ function MapFog({
           gridSize,
           shapes
         );
-        if (selectedToolSettings.type === "add") {
+        if (
+          selectedToolSettings.type === "add" ||
+          selectedToolSettings.type === "subtract"
+        ) {
           setDrawingShape({
             type: "fog",
             data: { points: [brushPosition] },
             strokeWidth: 0.5,
-            color: "black",
+            color: selectedToolSettings.type === "add" ? "black" : "red",
             blend: false,
             id: shortid.generate(),
             visible: true,
@@ -85,7 +89,10 @@ function MapFog({
           gridSize,
           shapes
         );
-        if (selectedToolSettings.type === "add") {
+        if (
+          selectedToolSettings.type === "add" ||
+          selectedToolSettings.type === "subtract"
+        ) {
           setDrawingShape((prevShape) => {
             const prevPoints = prevShape.data.points;
             if (
@@ -122,6 +129,23 @@ function MapFog({
             onShapeAdd(shape);
           }
         }
+        if (selectedToolSettings.type === "subtract" && drawingShape) {
+          if (drawingShape.data.points.length > 1) {
+            const shape = {
+              data: {
+                points: simplifyPoints(
+                  drawingShape.data.points,
+                  gridSize,
+                  // Downscale fog as smoothing doesn't currently work with edge snapping
+                  stageScale / 2
+                ),
+              },
+              id: drawingShape.id,
+              type: drawingShape.type,
+            };
+            onShapeSubtract(shape);
+          }
+        }
         setDrawingShape(null);
         handleBrushUp();
       }
@@ -146,6 +170,7 @@ function MapFog({
       gridSize,
       stageScale,
       onShapeAdd,
+      onShapeSubtract,
       shapes,
       drawingShape,
       handleBrushUp,

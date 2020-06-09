@@ -6,6 +6,7 @@ import RadioIconButton from "./RadioIconButton";
 import GridSnappingToggle from "./GridSnappingToggle";
 
 import FogAddIcon from "../../../icons/FogAddIcon";
+import FogSubtractIcon from "../../../icons/FogSubtractIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
 
@@ -28,6 +29,13 @@ function BrushToolSettings({
         isSelected={settings.type === "add"}
       >
         <FogAddIcon />
+      </RadioIconButton>
+      <RadioIconButton
+        title="Subtract Fog"
+        onClick={() => onSettingChange({ type: "subtract" })}
+        isSelected={settings.type === "subtract"}
+      >
+        <FogSubtractIcon />
       </RadioIconButton>
       <RadioIconButton
         title="Remove Fog"
