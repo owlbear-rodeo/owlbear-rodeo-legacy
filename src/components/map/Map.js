@@ -144,22 +144,33 @@ function Map({
           ]);
           let subtractedShapes = {};
           for (let shape of Object.values(shapesById)) {
-            let shapeGeom = [[shape.data.points.map(({ x, y }) => [x, y])]];
+            const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+            const shapeHoles = shape.data.holes.map((hole) =>
+              hole.map(({ x, y }) => [x, y])
+            );
+            let shapeGeom = [[shapePoints, ...shapeHoles]];
             const difference = polygonClipping.difference(
               shapeGeom,
               actionGeom
             );
             for (let i = 0; i < difference.length; i++) {
-              for (let j = 0; j < difference[i].length; j++) {
-                let newId = `${shape.id}-${i}_${j}`;
-                subtractedShapes[newId] = {
-                  ...shape,
-                  id: newId,
-                  data: {
-                    points: difference[i][j].map(([x, y]) => ({ x, y })),
-                  },
-                };
+              let newId = difference.length > 1 ? `${shape.id}-${i}` : shape.id;
+              // Holes detected
+              let holes = [];
+              if (difference[i].length > 1) {
+                for (let j = 1; j < difference[i].length; j++) {
+                  holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
+                }
               }
+
+              subtractedShapes[newId] = {
+                ...shape,
+                id: newId,
+                data: {
+                  points: difference[i][0].map(([x, y]) => ({ x, y })),
+                  holes,
+                },
+              };
             }
           }
           shapesById = subtractedShapes;

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useCallback } from "react";
 import shortid from "shortid";
-import { Group, Line } from "react-konva";
+import { Group } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -13,9 +13,9 @@ import {
   simplifyPoints,
   getStrokeWidth,
 } from "../../helpers/drawing";
-
 import colors from "../../helpers/colors";
 import useMapBrush from "../../helpers/useMapBrush";
+import { HoleyLine } from "../../helpers/konva";
 
 function MapFog({
   shapes,
@@ -70,7 +70,7 @@ function MapFog({
         ) {
           setDrawingShape({
             type: "fog",
-            data: { points: [brushPosition] },
+            data: { points: [brushPosition], holes: [] },
             strokeWidth: 0.5,
             color: selectedToolSettings.type === "add" ? "black" : "red",
             blend: false,
@@ -106,7 +106,10 @@ function MapFog({
             }
             return {
               ...prevShape,
-              data: { points: [...prevPoints, brushPosition] },
+              data: {
+                ...prevShape.data,
+                points: [...prevPoints, brushPosition],
+              },
             };
           });
         }
@@ -118,6 +121,7 @@ function MapFog({
             const shape = {
               ...drawingShape,
               data: {
+                ...drawingShape.data,
                 points: simplifyPoints(
                   drawingShape.data.points,
                   gridSize,
@@ -133,6 +137,7 @@ function MapFog({
           if (drawingShape.data.points.length > 1) {
             const shape = {
               data: {
+                ...drawingShape.data,
                 points: simplifyPoints(
                   drawingShape.data.points,
                   gridSize,
@@ -187,18 +192,23 @@ function MapFog({
     }
   }
 
+  function reducePoints(acc, point) {
+    return [...acc, point.x * mapWidth, point.y * mapHeight];
+  }
+
   function renderShape(shape) {
+    const points = shape.data.points.reduce(reducePoints, []);
+    const holes =
+      shape.data.holes &&
+      shape.data.holes.map((hole) => hole.reduce(reducePoints, []));
     return (
-      <Line
+      <HoleyLine
         key={shape.id}
         onMouseMove={() => handleShapeOver(shape, isBrushDown)}
         onTouchOver={() => handleShapeOver(shape, isBrushDown)}
         onMouseDown={() => handleShapeOver(shape, true)}
         onTouchStart={() => handleShapeOver(shape, true)}
-        points={shape.data.points.reduce(
-          (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
-          []
-        )}
+        points={points}
         stroke={colors[shape.color] || shape.color}
         fill={colors[shape.color] || shape.color}
         closed
@@ -213,6 +223,7 @@ function MapFog({
         opacity={isEditing ? 0.5 : 1}
         fillPatternImage={patternImage}
         fillPriority={isEditing && !shape.visible ? "pattern" : "color"}
+        holes={holes}
       />
     );
   }
