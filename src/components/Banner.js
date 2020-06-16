@@ -2,7 +2,7 @@ import React from "react";
 import Modal from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 
-function Banner({ isOpen, onRequestClose, children }) {
+function Banner({ isOpen, onRequestClose, children, allowClose }) {
   const { theme } = useThemeUI();
 
   return (
@@ -15,7 +15,7 @@ function Banner({ isOpen, onRequestClose, children }) {
           backgroundColor: theme.colors.highlight,
           top: "initial",
           left: "50%",
-          right: 0,
+          right: "initial",
           // Offset for iOS safe zone
           bottom: "env(safe-area-inset-bottom)",
           border: "none",
@@ -28,13 +28,19 @@ function Banner({ isOpen, onRequestClose, children }) {
       }}
     >
       {children}
-      <Close
-        m={0}
-        sx={{ position: "absolute", top: "4px", right: 0 }}
-        onClick={onRequestClose}
-      />
+      {allowClose && (
+        <Close
+          m={0}
+          sx={{ position: "absolute", top: "4px", right: 0 }}
+          onClick={onRequestClose}
+        />
+      )}
     </Modal>
   );
 }
+
+Banner.defaultProps = {
+  allowClose: true,
+};
 
 export default Banner;
