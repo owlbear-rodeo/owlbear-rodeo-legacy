@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import io from "socket.io-client";
 
 import { omit } from "../helpers/shared";
@@ -19,16 +19,23 @@ function useSession(
 ) {
   const { password, setAuthenticationStatus } = useContext(AuthContext);
   const [iceServers, setIceServers] = useState([]);
+  const [connected, setConnected] = useState(false);
 
-  useEffect(() => {
-    async function joinParty() {
+  const joinParty = useCallback(async () => {
+    try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
       const data = await response.json();
       setIceServers(data.iceServers);
       socket.emit("join party", partyId, password);
+    } catch (e) {
+      console.error("Unable to join party:", e.message);
+      setConnected(false);
     }
-    joinParty();
   }, [partyId, password]);
+
+  useEffect(() => {
+    joinParty();
+  }, [partyId, password, joinParty]);
 
   const [peers, setPeers] = useState({});
 
@@ -78,6 +85,8 @@ function useSession(
 
       function handleClose() {
         onPeerDisconnected && onPeerDisconnected(peer);
+        peer.connection.destroy();
+        setPeers((prevPeers) => omit(prevPeers, [peer.id]));
       }
 
       function handleError(error) {
@@ -153,8 +162,8 @@ function useSession(
     function handlePartyMemberLeft(id) {
       if (id in peers) {
         peers[id].connection.destroy();
+        setPeers((prevPeers) => omit(prevPeers, [id]));
       }
-      setPeers((prevPeers) => omit(prevPeers, [id]));
     }
 
     function handleJoinedParty(otherIds) {
@@ -164,6 +173,7 @@ function useSession(
         addPeer(id, true, sync);
       }
       setAuthenticationStatus("authenticated");
+      setConnected(true);
     }
 
     function handleSignal(data) {
@@ -177,21 +187,36 @@ function useSession(
       setAuthenticationStatus("unauthenticated");
     }
 
+    function handleSocketDisconnect() {
+      setConnected(false);
+    }
+
+    function handleSocketReconnect() {
+      setConnected(true);
+      joinParty();
+    }
+
+    socket.on("disconnect", handleSocketDisconnect);
+    socket.on("reconnect", handleSocketReconnect);
+
     socket.on("party member joined", handlePartyMemberJoined);
     socket.on("party member left", handlePartyMemberLeft);
     socket.on("joined party", handleJoinedParty);
     socket.on("signal", handleSignal);
     socket.on("auth error", handleAuthError);
     return () => {
-      socket.removeListener("party member joined", handlePartyMemberJoined);
-      socket.removeListener("party member left", handlePartyMemberLeft);
-      socket.removeListener("joined party", handleJoinedParty);
-      socket.removeListener("signal", handleSignal);
-      socket.removeListener("auth error", handleAuthError);
-    };
-  }, [peers, setAuthenticationStatus, iceServers]);
+      socket.off("disconnect", handleSocketDisconnect);
+      socket.off("reconnect", handleSocketReconnect);
 
-  return { peers, socket };
+      socket.off("party member joined", handlePartyMemberJoined);
+      socket.off("party member left", handlePartyMemberLeft);
+      socket.off("joined party", handleJoinedParty);
+      socket.off("signal", handleSignal);
+      socket.off("auth error", handleAuthError);
+    };
+  }, [peers, setAuthenticationStatus, iceServers, joinParty]);
+
+  return { peers, socket, connected };
 }
 
 export default useSession;
