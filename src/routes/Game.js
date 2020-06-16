@@ -35,7 +35,7 @@ function Game() {
   );
   const { assetLoadStart, assetLoadFinish } = useContext(MapLoadingContext);
 
-  const { peers, socket } = useSession(
+  const { peers, socket, connected } = useSession(
     gameId,
     handlePeerConnected,
     handlePeerDisconnected,
@@ -421,18 +421,6 @@ function Game() {
   const [peerError, setPeerError] = useState(null);
   function handlePeerError({ error, peer }) {
     console.error(error.code);
-    if (
-      error.code === "ERR_ICE_CONNECTION_FAILURE" ||
-      error.code === "ERR_CONNECTION_FAILURE"
-    ) {
-      setPeerError(
-        `${
-          peer.id === socket.id
-            ? ""
-            : `(${partyNicknames[peer.id] || "Unknown"})`
-        } Connection failure`
-      );
-    }
     if (error.code === "ERR_WEBRTC_SUPPORT") {
       setPeerError("WebRTC not supported");
     }
@@ -555,6 +543,17 @@ function Game() {
           <Text as="p" variant="body2">
             {peerError} See <Link to="/faq#connection">FAQ</Link> for more
             information.
+          </Text>
+        </Box>
+      </Banner>
+      <Banner
+        isOpen={!connected && authenticationStatus === "authenticated"}
+        onRequestClose={() => {}}
+        allowClose={false}
+      >
+        <Box p={1}>
+          <Text as="p" variant="body2">
+            Disconnected. Attempting to reconnect...
           </Text>
         </Box>
       </Banner>
