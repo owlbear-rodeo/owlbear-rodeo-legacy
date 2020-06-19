@@ -11,7 +11,9 @@ import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import MapStageContext, {
+  MapStageProvider,
+} from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
 const wheelZoomSpeed = -0.001;
@@ -201,6 +203,14 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     mapDragPositionRef,
   };
 
+  // Enable keyboard interaction for map stage container
+  useEffect(() => {
+    const container = mapStageRef.current.container();
+    container.tabIndex = 1;
+    container.style.outline = "none";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Box
       sx={{
@@ -234,7 +244,9 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
               <MapInteractionProvider value={mapInteraction}>
-                {children}
+                <MapStageProvider value={mapStageRef}>
+                  {children}
+                </MapStageProvider>
               </MapInteractionProvider>
             </AuthContext.Provider>
           </Layer>

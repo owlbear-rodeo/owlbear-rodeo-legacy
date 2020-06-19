@@ -3,10 +3,10 @@ import { Flex } from "theme-ui";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
-import GridSnappingToggle from "./GridSnappingToggle";
+import FogSubtractToggle from "./FogSubtractToggle";
 
-import FogAddIcon from "../../../icons/FogAddIcon";
-import FogSubtractIcon from "../../../icons/FogSubtractIcon";
+import FogBrushIcon from "../../../icons/FogBrushIcon";
+import FogPolygonIcon from "../../../icons/FogPolygonIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
 
@@ -24,18 +24,40 @@ function BrushToolSettings({
   return (
     <Flex sx={{ alignItems: "center" }}>
       <RadioIconButton
-        title="Add Fog"
-        onClick={() => onSettingChange({ type: "add" })}
-        isSelected={settings.type === "add"}
+        title="Fog Polygon"
+        onClick={() => onSettingChange({ type: "polygon" })}
+        isSelected={settings.type === "polygon"}
       >
-        <FogAddIcon />
+        <FogPolygonIcon />
       </RadioIconButton>
       <RadioIconButton
-        title="Subtract Fog"
-        onClick={() => onSettingChange({ type: "subtract" })}
-        isSelected={settings.type === "subtract"}
+        title="Fog Brush"
+        onClick={() => onSettingChange({ type: "brush" })}
+        isSelected={settings.type === "brush"}
       >
-        <FogSubtractIcon />
+        <FogBrushIcon />
+      </RadioIconButton>
+      <Divider vertical />
+      <FogSubtractToggle
+        useFogSubtract={settings.useFogSubtract}
+        onFogSubtractChange={(useFogSubtract) =>
+          onSettingChange({ useFogSubtract })
+        }
+      />
+      {/* TODO: Re-enable edge snapping when holes are fixed */}
+      {/* <EdgeSnappingToggle
+        useEdgeSnapping={settings.useEdgeSnapping}
+        onEdgeSnappingChange={(useEdgeSnapping) =>
+          onSettingChange({ useEdgeSnapping })
+        }
+      /> */}
+      <Divider vertical />
+      <RadioIconButton
+        title="Toggle Fog"
+        onClick={() => onSettingChange({ type: "toggle" })}
+        isSelected={settings.type === "toggle"}
+      >
+        <FogToggleIcon />
       </RadioIconButton>
       <RadioIconButton
         title="Remove Fog"
@@ -44,26 +66,6 @@ function BrushToolSettings({
       >
         <FogRemoveIcon />
       </RadioIconButton>
-      <RadioIconButton
-        title="Toggle Fog"
-        onClick={() => onSettingChange({ type: "toggle" })}
-        isSelected={settings.type === "toggle"}
-      >
-        <FogToggleIcon />
-      </RadioIconButton>
-      <Divider vertical />
-      <EdgeSnappingToggle
-        useEdgeSnapping={settings.useEdgeSnapping}
-        onEdgeSnappingChange={(useEdgeSnapping) =>
-          onSettingChange({ useEdgeSnapping })
-        }
-      />
-      <GridSnappingToggle
-        useGridSnapping={settings.useGridSnapping}
-        onGridSnappingChange={(useGridSnapping) =>
-          onSettingChange({ useGridSnapping })
-        }
-      />
       <Divider vertical />
       <UndoButton
         onClick={() => onToolAction("fogUndo")}

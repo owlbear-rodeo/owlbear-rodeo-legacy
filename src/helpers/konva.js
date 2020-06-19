@@ -105,3 +105,18 @@ export function HoleyLine({ holes, ...props }) {
 
   return <Line sceneFunc={sceneFunc} {...props} />;
 }
+
+export function getRelativePointerPosition(node) {
+  let transform = node.getAbsoluteTransform().copy();
+  transform.invert();
+  let posision = node.getStage().getPointerPosition();
+  return transform.point(posision);
+}
+
+export function getRelativePointerPositionNormalized(node) {
+  const relativePosition = getRelativePointerPosition(node);
+  return {
+    x: relativePosition.x / node.width(),
+    y: relativePosition.y / node.height(),
+  };
+}

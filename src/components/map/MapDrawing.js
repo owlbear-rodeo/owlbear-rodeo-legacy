@@ -159,6 +159,7 @@ function MapDrawing({
     ]
   );
 
+  // Move away from this as it is too slow to respond
   useMapBrush(isEditing, handleShapeDraw);
 
   function handleShapeOver(shape, isDown) {
