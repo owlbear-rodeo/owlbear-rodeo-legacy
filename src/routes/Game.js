@@ -145,7 +145,7 @@ function Game() {
     });
   }
 
-  function updateDrawActionIndex(change, indexKey, actionsKey, peerId) {
+  function updateDrawActionIndex(change, indexKey, actionsKey) {
     const newIndex = Math.min(
       Math.max(currentMapState[indexKey] + change, -1),
       currentMapState[actionsKey].length - 1
@@ -201,7 +201,7 @@ function Game() {
       "fogDrawActions"
     );
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "fogDrawIndex", data: index });
+      peer.connection.send({ id: "mapFogIndex", data: index });
     }
   }
 
@@ -212,7 +212,7 @@ function Game() {
       "fogDrawActions"
     );
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "fogDrawIndex", data: index });
+      peer.connection.send({ id: "mapFogIndex", data: index });
     }
   }
 
