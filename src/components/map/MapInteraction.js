@@ -21,7 +21,13 @@ const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
 
-function MapInteraction({ map, children, controls, selectedToolId }) {
+function MapInteraction({
+  map,
+  children,
+  controls,
+  selectedToolId,
+  onSelectedToolChange,
+}) {
   const mapSource = useDataSource(map, defaultMapSources);
   const [mapSourceImage] = useImage(mapSource);
 
@@ -77,15 +83,16 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
-  const isInteractingCanvas = useRef(false);
+  const isInteractingWithCanvas = useRef(false);
+  const previousSelectedToolRef = useRef(selectedToolId);
 
   const bind = useGesture({
     onWheelStart: ({ event }) => {
-      isInteractingCanvas.current =
+      isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
     onWheel: ({ delta }) => {
-      if (preventMapInteraction || !isInteractingCanvas.current) {
+      if (preventMapInteraction || !isInteractingWithCanvas.current) {
         return;
       }
       const newScale = Math.min(
@@ -93,6 +100,11 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         maxZoom
       );
       setStageScale(newScale);
+    },
+    onPinchStart: () => {
+      // Change to pan tool when pinching and zooming
+      previousSelectedToolRef.current = selectedToolId;
+      onSelectedToolChange("pan");
     },
     onPinch: ({ da, origin, first }) => {
       const [distance] = da;
@@ -127,12 +139,19 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       pinchPreviousDistanceRef.current = distance;
       pinchPreviousOriginRef.current = { x: originX, y: originY };
     },
+    onPinchEnd: () => {
+      onSelectedToolChange(previousSelectedToolRef.current);
+    },
     onDragStart: ({ event }) => {
-      isInteractingCanvas.current =
+      isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
     onDrag: ({ delta, xy, first, last, pinching }) => {
-      if (preventMapInteraction || pinching || !isInteractingCanvas.current) {
+      if (
+        preventMapInteraction ||
+        pinching ||
+        !isInteractingWithCanvas.current
+      ) {
         return;
       }
 

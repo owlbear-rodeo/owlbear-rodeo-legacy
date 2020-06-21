@@ -344,6 +344,7 @@ function Map({
         </>
       }
       selectedToolId={selectedToolId}
+      onSelectedToolChange={setSelectedToolId}
     >
       {mapGrid}
       {mapDrawing}
