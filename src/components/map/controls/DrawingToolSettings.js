@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 
 import ColorControl from "./ColorControl";
@@ -24,6 +24,13 @@ function DrawingToolSettings({
   onToolAction,
   disabledActions,
 }) {
+  // Change to brush if on erase and it gets disabled
+  useEffect(() => {
+    if (settings.type === "erase" && disabledActions.includes("erase")) {
+      onSettingChange({ type: "brush" });
+    }
+  }, [disabledActions, settings, onSettingChange]);
+
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ColorControl
