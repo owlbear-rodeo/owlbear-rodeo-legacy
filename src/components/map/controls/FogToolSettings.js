@@ -3,12 +3,13 @@ import { Flex } from "theme-ui";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
-import FogSubtractToggle from "./FogSubtractToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";
 import FogPolygonIcon from "../../../icons/FogPolygonIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
+import FogAddIcon from "../../../icons/FogAddIcon";
+import FogSubtractIcon from "../../../icons/FogSubtractIcon";
 
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
@@ -38,12 +39,20 @@ function BrushToolSettings({
         <FogBrushIcon />
       </RadioIconButton>
       <Divider vertical />
-      <FogSubtractToggle
-        useFogSubtract={settings.useFogSubtract}
-        onFogSubtractChange={(useFogSubtract) =>
-          onSettingChange({ useFogSubtract })
-        }
-      />
+      <RadioIconButton
+        title="Add Fog"
+        onClick={() => onSettingChange({ useFogSubtract: false })}
+        isSelected={!settings.useFogSubtract}
+      >
+        <FogAddIcon />
+      </RadioIconButton>
+      <RadioIconButton
+        title="Subtract Fog"
+        onClick={() => onSettingChange({ useFogSubtract: true })}
+        isSelected={settings.useFogSubtract}
+      >
+        <FogSubtractIcon />
+      </RadioIconButton>
       {/* TODO: Re-enable edge snapping when holes are fixed */}
       {/* <EdgeSnappingToggle
         useEdgeSnapping={settings.useEdgeSnapping}
