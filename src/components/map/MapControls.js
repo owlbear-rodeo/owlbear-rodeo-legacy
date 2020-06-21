@@ -42,9 +42,9 @@ function MapContols({
       SettingsComponent: FogToolSettings,
     },
     drawing: {
-      id: "brush",
+      id: "drawing",
       icon: <BrushToolIcon />,
-      title: "Brush Tool",
+      title: "Drawing Tool",
       SettingsComponent: DrawingToolSettings,
     },
   };
