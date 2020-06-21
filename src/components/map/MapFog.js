@@ -340,6 +340,7 @@ function MapFog({
       {shapes.map(renderShape)}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
+        selectedToolSettings &&
         selectedToolSettings.type === "polygon" &&
         renderPolygonAcceptTick(drawingShape)}
       {editingShapes.length > 0 && editingShapes.map(renderEditingShape)}
