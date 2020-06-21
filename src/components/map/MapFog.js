@@ -192,14 +192,14 @@ function MapFog({
       setIsBrushDown(false);
     }
 
-    mapStage.on("mousedown", handleBrushDown);
-    mapStage.on("mousemove", handleBrushMove);
-    mapStage.on("mouseup", handleBrushUp);
+    mapStage.on("mousedown touchstart", handleBrushDown);
+    mapStage.on("mousemove touchmove", handleBrushMove);
+    mapStage.on("mouseup touchend", handleBrushUp);
 
     return () => {
-      mapStage.off("mousedown", handleBrushDown);
-      mapStage.off("mousemove", handleBrushMove);
-      mapStage.off("mouseup", handleBrushUp);
+      mapStage.off("mousedown touchstart", handleBrushDown);
+      mapStage.off("mousemove touchmove", handleBrushMove);
+      mapStage.off("mouseup touchend", handleBrushUp);
     };
   }, [
     mapStageRef,

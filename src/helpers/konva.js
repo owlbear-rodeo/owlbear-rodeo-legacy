@@ -124,6 +124,7 @@ export function Tick({ x, y, scale, onClick, cross }) {
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
       onClick={onClick}
+      onTap={onClick}
     >
       <Circle radius={12} fill="hsla(230, 25%, 18%, 0.8)" />
       <Path
