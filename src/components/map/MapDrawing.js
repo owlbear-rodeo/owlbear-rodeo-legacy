@@ -29,11 +29,18 @@ function MapDrawing({
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [erasingShapes, setErasingShapes] = useState([]);
 
-  const shouldHover = selectedToolId === "erase";
-  const isEditing =
-    selectedToolId === "brush" ||
-    selectedToolId === "shape" ||
-    selectedToolId === "erase";
+  const shouldHover =
+    selectedToolSettings && selectedToolSettings.type === "erase";
+  const isEditing = selectedToolId === "drawing";
+  const isBrush =
+    selectedToolSettings &&
+    (selectedToolSettings.type === "brush" ||
+      selectedToolSettings.type === "paint");
+  const isShape =
+    selectedToolSettings &&
+    (selectedToolSettings.type === "rectangle" ||
+      selectedToolSettings.type === "circle" ||
+      selectedToolSettings.type === "triangle");
 
   const handleBrushUp = useCallback(() => {
     setIsBrushDown(false);
@@ -58,15 +65,15 @@ function MapDrawing({
           blend: selectedToolSettings && selectedToolSettings.useBlending,
           id: shortid.generate(),
         };
-        if (selectedToolId === "brush") {
+        if (isBrush) {
           setDrawingShape({
             type: "path",
-            pathType: selectedToolSettings.type,
+            pathType: selectedToolSettings.type === "brush" ? "stroke" : "fill",
             data: { points: [brushPosition] },
-            strokeWidth: selectedToolSettings.type === "stroke" ? 1 : 0,
+            strokeWidth: selectedToolSettings.type === "brush" ? 1 : 0,
             ...commonShapeData,
           });
-        } else if (selectedToolId === "shape") {
+        } else if (isShape) {
           setDrawingShape({
             type: "shape",
             shapeType: selectedToolSettings.type,
@@ -86,7 +93,7 @@ function MapDrawing({
           gridSize,
           shapes
         );
-        if (selectedToolId === "brush") {
+        if (isBrush) {
           setDrawingShape((prevShape) => {
             const prevPoints = prevShape.data.points;
             if (
@@ -108,7 +115,7 @@ function MapDrawing({
               data: { points: simplified },
             };
           });
-        } else if (selectedToolId === "shape") {
+        } else if (isShape) {
           setDrawingShape((prevShape) => ({
             ...prevShape,
             data: getUpdatedShapeData(
@@ -122,11 +129,11 @@ function MapDrawing({
       }
 
       function endShape() {
-        if (selectedToolId === "brush" && drawingShape) {
+        if (isBrush && drawingShape) {
           if (drawingShape.data.points.length > 1) {
             onShapeAdd(drawingShape);
           }
-        } else if (selectedToolId === "shape" && drawingShape) {
+        } else if (isShape && drawingShape) {
           onShapeAdd(drawingShape);
         }
         setDrawingShape(null);
@@ -156,6 +163,8 @@ function MapDrawing({
       shapes,
       drawingShape,
       handleBrushUp,
+      isBrush,
+      isShape,
     ]
   );
 

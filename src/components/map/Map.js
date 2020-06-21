@@ -49,14 +49,9 @@ function Map({
   const [selectedToolId, setSelectedToolId] = useState("pan");
   const [toolSettings, setToolSettings] = useState({
     fog: { type: "polygon", useEdgeSnapping: false, useFogCut: false },
-    brush: {
-      color: "darkGray",
-      type: "stroke",
-      useBlending: false,
-    },
-    shape: {
+    drawing: {
       color: "red",
-      type: "rectangle",
+      type: "brush",
       useBlending: true,
     },
   });
@@ -189,33 +184,27 @@ function Map({
 
   const disabledControls = [];
   if (!allowMapDrawing) {
-    disabledControls.push("brush");
-    disabledControls.push("shape");
-    disabledControls.push("erase");
+    disabledControls.push("drawing");
   }
   if (!map) {
     disabledControls.push("pan");
-  }
-  if (mapShapes.length === 0) {
-    disabledControls.push("erase");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
   }
 
-  const disabledSettings = { fog: [], brush: [], shape: [], erase: [] };
+  const disabledSettings = { fog: [], drawing: [] };
+  if (mapShapes.length === 0) {
+    disabledSettings.drawing.push("erase");
+  }
   if (!mapState || mapState.mapDrawActionIndex < 0) {
-    disabledSettings.brush.push("undo");
-    disabledSettings.shape.push("undo");
-    disabledSettings.erase.push("undo");
+    disabledSettings.drawing.push("undo");
   }
   if (
     !mapState ||
     mapState.mapDrawActionIndex === mapState.mapDrawActions.length - 1
   ) {
-    disabledSettings.brush.push("redo");
-    disabledSettings.shape.push("redo");
-    disabledSettings.erase.push("redo");
+    disabledSettings.drawing.push("redo");
   }
   if (!mapState || mapState.fogDrawActionIndex < 0) {
     disabledSettings.fog.push("undo");

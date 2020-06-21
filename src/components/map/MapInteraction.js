@@ -172,8 +172,7 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       case "pan":
         return "move";
       case "fog":
-      case "brush":
-      case "shape":
+      case "drawing":
         return "crosshair";
       default:
         return "default";

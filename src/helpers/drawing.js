@@ -12,7 +12,12 @@ export function getBrushPositionForTool(
   shapes
 ) {
   let position = brushPosition;
-  if (tool === "shape") {
+  if (
+    tool === "drawing" &&
+    (toolSettings.type === "rectangle" ||
+      toolSettings.type === "circle" ||
+      toolSettings.type === "triangle")
+  ) {
     const snapped = Vector2.roundTo(position, gridSize);
     const minGrid = Vector2.min(gridSize);
     const distance = Vector2.length(Vector2.subtract(snapped, position));
