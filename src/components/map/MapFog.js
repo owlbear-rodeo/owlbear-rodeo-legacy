@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
 import useImage from "use-image";
@@ -18,6 +18,7 @@ import colors from "../../helpers/colors";
 import {
   HoleyLine,
   getRelativePointerPositionNormalized,
+  Tick,
 } from "../../helpers/konva";
 
 function MapFog({
@@ -191,45 +192,14 @@ function MapFog({
       setIsBrushDown(false);
     }
 
-    function handleKeyDown(event) {
-      if (
-        event.key === "Enter" &&
-        selectedToolSettings.type === "polygon" &&
-        drawingShape
-      ) {
-        const subtract = selectedToolSettings.useFogSubtract;
-        const data = {
-          ...drawingShape.data,
-          // Remove the last point as it hasn't been placed yet
-          points: drawingShape.data.points.slice(0, -1),
-        };
-        if (subtract) {
-          onShapeSubtract({
-            id: drawingShape.id,
-            type: drawingShape.type,
-            data: data,
-          });
-        } else {
-          onShapeAdd({ ...drawingShape, data: data });
-        }
-
-        setDrawingShape(null);
-      }
-      if (event.key === "Escape" && drawingShape) {
-        setDrawingShape(null);
-      }
-    }
-
     mapStage.on("mousedown", handleBrushDown);
     mapStage.on("mousemove", handleBrushMove);
     mapStage.on("mouseup", handleBrushUp);
-    mapStage.container().addEventListener("keydown", handleKeyDown);
 
     return () => {
       mapStage.off("mousedown", handleBrushDown);
       mapStage.off("mousemove", handleBrushMove);
       mapStage.off("mouseup", handleBrushUp);
-      mapStage.container().removeEventListener("keydown", handleKeyDown);
     };
   }, [
     mapStageRef,
@@ -247,6 +217,49 @@ function MapFog({
     shapes,
     stageScale,
   ]);
+
+  const finishDrawingPolygon = useCallback(() => {
+    const subtract = selectedToolSettings.useFogSubtract;
+    const data = {
+      ...drawingShape.data,
+      // Remove the last point as it hasn't been placed yet
+      points: drawingShape.data.points.slice(0, -1),
+    };
+    if (subtract) {
+      onShapeSubtract({
+        id: drawingShape.id,
+        type: drawingShape.type,
+        data: data,
+      });
+    } else {
+      onShapeAdd({ ...drawingShape, data: data });
+    }
+
+    setDrawingShape(null);
+  }, [selectedToolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
+
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const mapStage = mapStageRef.current;
+
+    function handleKeyDown(event) {
+      if (
+        event.key === "Enter" &&
+        selectedToolSettings.type === "polygon" &&
+        drawingShape
+      ) {
+        finishDrawingPolygon();
+      }
+      if (event.key === "Escape" && drawingShape) {
+        setDrawingShape(null);
+      }
+    }
+
+    mapStage.container().addEventListener("keydown", handleKeyDown);
+    return () => {
+      mapStage.container().removeEventListener("keydown", handleKeyDown);
+    };
+  }, [finishDrawingPolygon, mapStageRef, drawingShape, selectedToolSettings]);
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {
@@ -300,10 +313,35 @@ function MapFog({
     return renderShape(editingShape);
   }
 
+  function renderPolygonAcceptTick(shape) {
+    if (shape.data.points.length === 0) {
+      return;
+    }
+    return (
+      <Tick
+        x={shape.data.points[0].x * mapWidth}
+        y={shape.data.points[0].y * mapHeight}
+        scale={1 / stageScale}
+        cross={shape.data.points.length < 4}
+        onClick={() => {
+          // Check that there is enough points after clicking
+          if (shape.data.points.length < 5) {
+            setDrawingShape(null);
+          } else {
+            finishDrawingPolygon();
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <Group>
       {shapes.map(renderShape)}
       {drawingShape && renderShape(drawingShape)}
+      {drawingShape &&
+        selectedToolSettings.type === "polygon" &&
+        renderPolygonAcceptTick(drawingShape)}
       {editingShapes.length > 0 && editingShapes.map(renderEditingShape)}
     </Group>
   );
