@@ -12,32 +12,57 @@ export function getBrushPositionForTool(
   shapes
 ) {
   let position = brushPosition;
-  if (
-    tool === "drawing" &&
-    (toolSettings.type === "rectangle" ||
-      toolSettings.type === "circle" ||
-      toolSettings.type === "triangle")
-  ) {
-    const snapped = Vector2.roundTo(position, gridSize);
+  const useGridSnappning =
+    (tool === "drawing" &&
+      (toolSettings.type === "rectangle" ||
+        toolSettings.type === "circle" ||
+        toolSettings.type === "triangle")) ||
+    (tool === "fog" && toolSettings.type === "polygon");
+
+  if (useGridSnappning) {
+    // Snap to corners of grid
+    const gridSnap = Vector2.roundTo(position, gridSize);
+    const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
+
+    // Snap to center of grid
+    const centerSnap = Vector2.add(
+      Vector2.roundTo(position, gridSize),
+      Vector2.multiply(gridSize, 0.5)
+    );
+    const centerDistance = Vector2.length(
+      Vector2.subtract(centerSnap, position)
+    );
     const minGrid = Vector2.min(gridSize);
-    const distance = Vector2.length(Vector2.subtract(snapped, position));
-    if (distance < minGrid * snappingThreshold) {
-      position = snapped;
+    if (gridDistance < minGrid * snappingThreshold) {
+      position = gridSnap;
+    } else if (centerDistance < minGrid * snappingThreshold) {
+      position = centerSnap;
     }
   }
-  if (tool === "fog" && toolSettings.type === "add") {
-    if (toolSettings.useGridSnapping) {
-      position = Vector2.roundTo(position, gridSize);
-    }
-    if (toolSettings.useEdgeSnapping) {
-      const minGrid = Vector2.min(gridSize);
-      let closestDistance = Number.MAX_VALUE;
-      let closestPosition = position;
-      // Find the closest point on all fog shapes
-      for (let shape of shapes) {
-        if (shape.type === "fog") {
-          const points = shape.data.points;
-          const isInShape = Vector2.pointInPolygon(position, points);
+
+  const useEdgeSnapping = tool === "fog" && toolSettings.useEdgeSnapping;
+
+  if (useEdgeSnapping) {
+    const minGrid = Vector2.min(gridSize);
+    let closestDistance = Number.MAX_VALUE;
+    let closestPosition = position;
+    // Find the closest point on all fog shapes
+    for (let shape of shapes) {
+      if (shape.type === "fog") {
+        // Include shape points and holes
+        let pointArray = [shape.data.points, ...shape.data.holes];
+
+        // Check whether the position is in the shape but not any holes
+        let isInShape = Vector2.pointInPolygon(position, shape.data.points);
+        if (shape.data.holes.length > 0) {
+          for (let hole of shape.data.holes) {
+            if (Vector2.pointInPolygon(position, hole)) {
+              isInShape = false;
+            }
+          }
+        }
+
+        for (let points of pointArray) {
           // Find the closest point to each line of the shape
           for (let i = 0; i < points.length; i++) {
             const a = points[i];
@@ -59,8 +84,8 @@ export function getBrushPositionForTool(
           }
         }
       }
-      position = closestPosition;
     }
+    position = closestPosition;
   }
 
   return position;

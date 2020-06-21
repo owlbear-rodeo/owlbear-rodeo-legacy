@@ -40,28 +40,6 @@ function BrushToolSettings({
       </RadioIconButton>
       <Divider vertical />
       <RadioIconButton
-        title="Add Fog"
-        onClick={() => onSettingChange({ useFogSubtract: false })}
-        isSelected={!settings.useFogSubtract}
-      >
-        <FogAddIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Subtract Fog"
-        onClick={() => onSettingChange({ useFogSubtract: true })}
-        isSelected={settings.useFogSubtract}
-      >
-        <FogSubtractIcon />
-      </RadioIconButton>
-      {/* TODO: Re-enable edge snapping when holes are fixed */}
-      {/* <EdgeSnappingToggle
-        useEdgeSnapping={settings.useEdgeSnapping}
-        onEdgeSnappingChange={(useEdgeSnapping) =>
-          onSettingChange({ useEdgeSnapping })
-        }
-      /> */}
-      <Divider vertical />
-      <RadioIconButton
         title="Toggle Fog"
         onClick={() => onSettingChange({ type: "toggle" })}
         isSelected={settings.type === "toggle"}
@@ -75,6 +53,28 @@ function BrushToolSettings({
       >
         <FogRemoveIcon />
       </RadioIconButton>
+      <Divider vertical />
+      <RadioIconButton
+        title="Add Fog"
+        onClick={() => onSettingChange({ useFogSubtract: false })}
+        isSelected={!settings.useFogSubtract}
+      >
+        <FogAddIcon />
+      </RadioIconButton>
+      <RadioIconButton
+        title="Subtract Fog"
+        onClick={() => onSettingChange({ useFogSubtract: true })}
+        isSelected={settings.useFogSubtract}
+      >
+        <FogSubtractIcon />
+      </RadioIconButton>
+      <Divider vertical />
+      <EdgeSnappingToggle
+        useEdgeSnapping={settings.useEdgeSnapping}
+        onEdgeSnappingChange={(useEdgeSnapping) =>
+          onSettingChange({ useEdgeSnapping })
+        }
+      />
       <Divider vertical />
       <UndoButton
         onClick={() => onToolAction("fogUndo")}
