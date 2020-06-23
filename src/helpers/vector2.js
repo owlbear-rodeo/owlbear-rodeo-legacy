@@ -10,6 +10,9 @@ export function length(p) {
 
 export function normalize(p) {
   const l = length(p);
+  if (l === 0) {
+    return { x: 0, y: 0 };
+  }
   return divide(p, l);
 }
 

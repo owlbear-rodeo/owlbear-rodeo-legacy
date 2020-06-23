@@ -150,7 +150,7 @@ export function getUpdatedShapeData(type, data, brushPosition, gridSize) {
     const length = Vector2.length(scaled);
     const direction = Vector2.normalize(scaled);
     // Get the angle for a triangle who's width is the same as it's length
-    const angle = Math.atan(length / 2 / length);
+    const angle = Math.atan(length / 2 / (length === 0 ? 1 : length));
     const sideLength = length / Math.cos(angle);
 
     const leftDir = Vector2.rotateDirection(direction, toDegrees(angle));
