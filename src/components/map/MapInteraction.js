@@ -4,6 +4,7 @@ import { useGesture } from "react-use-gesture";
 import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
 import { Stage, Layer, Image } from "react-konva";
+import { EventEmitter } from "events";
 
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useDataSource from "../../helpers/useDataSource";
@@ -34,15 +35,12 @@ function MapInteraction({
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
-  // "none" | "first" | "dragging" | "last"
-  const [stageDragState, setStageDragState] = useState("none");
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
   const stageWidthRef = useRef(stageWidth);
   const stageHeightRef = useRef(stageHeight);
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapDragPositionRef = useRef({ x: 0, y: 0 });
 
   // Reset transform when map changes
   useEffect(() => {
@@ -62,29 +60,12 @@ function MapInteraction({
     }
   }, [map]);
 
-  // Convert a client space XY to be normalized to the map image
-  function getMapDragPosition(xy) {
-    const [x, y] = xy;
-    const container = containerRef.current;
-    const mapImage = mapImageRef.current;
-    if (container && mapImage) {
-      const containerRect = container.getBoundingClientRect();
-      const mapRect = mapImage.getClientRect();
-
-      const offsetX = x - containerRect.left - mapRect.x;
-      const offsetY = y - containerRect.top - mapRect.y;
-
-      const normalizedX = offsetX / mapRect.width;
-      const normalizedY = offsetY / mapRect.height;
-
-      return { x: normalizedX, y: normalizedY };
-    }
-  }
-
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
   const isInteractingWithCanvas = useRef(false);
   const previousSelectedToolRef = useRef(selectedToolId);
+
+  const [interactionEmitter] = useState(new EventEmitter());
 
   const bind = useGesture({
     onWheelStart: ({ event }) => {
@@ -168,14 +149,13 @@ function MapInteraction({
         layer.draw();
         stageTranslateRef.current = newTranslate;
       }
-      mapDragPositionRef.current = getMapDragPosition(xy);
-      const newDragState = first ? "first" : last ? "last" : "dragging";
-      if (stageDragState !== newDragState) {
-        setStageDragState(newDragState);
+      if (first) {
+        interactionEmitter.emit("dragStart");
+      } else if (last) {
+        interactionEmitter.emit("dragEnd");
+      } else {
+        interactionEmitter.emit("drag");
       }
-    },
-    onDragEnd: () => {
-      setStageDragState("none");
     },
   });
 
@@ -214,11 +194,10 @@ function MapInteraction({
     stageScale,
     stageWidth,
     stageHeight,
-    stageDragState,
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
-    mapDragPositionRef,
+    interactionEmitter,
   };
 
   // Enable keyboard interaction for map stage container

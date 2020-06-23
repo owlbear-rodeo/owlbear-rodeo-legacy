@@ -25,7 +25,9 @@ function MapDrawing({
   selectedToolSettings,
   gridSize,
 }) {
-  const { stageScale, mapWidth, mapHeight } = useContext(MapInteractionContext);
+  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
+    MapInteractionContext
+  );
   const mapStageRef = useContext(MapStageContext);
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
@@ -145,14 +147,14 @@ function MapDrawing({
       setIsBrushDown(false);
     }
 
-    mapStage.on("mousedown touchstart", handleBrushDown);
-    mapStage.on("mousemove touchmove", handleBrushMove);
-    mapStage.on("mouseup touchend", handleBrushUp);
+    interactionEmitter.on("dragStart", handleBrushDown);
+    interactionEmitter.on("drag", handleBrushMove);
+    interactionEmitter.on("dragEnd", handleBrushUp);
 
     return () => {
-      mapStage.off("mousedown touchstart", handleBrushDown);
-      mapStage.off("mousemove touchmove", handleBrushMove);
-      mapStage.off("mouseup touchend", handleBrushUp);
+      interactionEmitter.off("dragStart", handleBrushDown);
+      interactionEmitter.off("drag", handleBrushMove);
+      interactionEmitter.off("dragEnd", handleBrushUp);
     };
   }, [
     drawingShape,
@@ -169,6 +171,7 @@ function MapDrawing({
     selectedToolSettings,
     shapes,
     stageScale,
+    interactionEmitter,
   ]);
 
   function handleShapeOver(shape, isDown) {
@@ -188,6 +191,7 @@ function MapDrawing({
       onTouchStart: () => handleShapeOver(shape, true),
       fill: colors[shape.color] || shape.color,
       opacity: shape.blend ? 0.5 : 1,
+      id: shape.id,
     };
     if (shape.type === "path") {
       return (

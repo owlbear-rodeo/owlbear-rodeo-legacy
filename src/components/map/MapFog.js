@@ -31,7 +31,9 @@ function MapFog({
   selectedToolSettings,
   gridSize,
 }) {
-  const { stageScale, mapWidth, mapHeight } = useContext(MapInteractionContext);
+  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
+    MapInteractionContext
+  );
   const mapStageRef = useContext(MapStageContext);
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
@@ -109,18 +111,6 @@ function MapFog({
           };
         });
       }
-      if (selectedToolSettings.type === "polygon" && drawingShape) {
-        const brushPosition = getBrushPosition();
-        setDrawingShape((prevShape) => {
-          return {
-            ...prevShape,
-            data: {
-              ...prevShape.data,
-              points: [...prevShape.data.points.slice(0, -1), brushPosition],
-            },
-          };
-        });
-      }
     }
 
     function handleBrushUp() {
@@ -152,29 +142,10 @@ function MapFog({
             onShapeAdd(shape);
           }
         }
-
         setDrawingShape(null);
       }
 
-      if (selectedToolSettings.type === "polygon") {
-        const brushPosition = getBrushPosition();
-        setDrawingShape({
-          type: "fog",
-          data: {
-            points: [
-              ...(drawingShape ? drawingShape.data.points : [brushPosition]),
-              brushPosition,
-            ],
-            holes: [],
-          },
-          strokeWidth: 0.5,
-          color: selectedToolSettings.useFogSubtract ? "red" : "black",
-          blend: false,
-          id: shortid.generate(),
-          visible: true,
-        });
-      }
-
+      // Erase
       if (editingShapes.length > 0) {
         if (selectedToolSettings.type === "remove") {
           onShapesRemove(editingShapes.map((shape) => shape.id));
@@ -192,14 +163,69 @@ function MapFog({
       setIsBrushDown(false);
     }
 
-    mapStage.on("mousedown touchstart", handleBrushDown);
-    mapStage.on("mousemove touchmove", handleBrushMove);
-    mapStage.on("mouseup touchend", handleBrushUp);
+    function handlePolygonClick() {
+      if (selectedToolSettings.type === "polygon") {
+        const brushPosition = getBrushPosition();
+        setDrawingShape((prevDrawingShape) => {
+          if (prevDrawingShape) {
+            return {
+              ...prevDrawingShape,
+              data: {
+                ...prevDrawingShape.data,
+                points: [...prevDrawingShape.data.points, brushPosition],
+              },
+            };
+          } else {
+            return {
+              type: "fog",
+              data: {
+                points: [brushPosition, brushPosition],
+                holes: [],
+              },
+              strokeWidth: 0.5,
+              color: selectedToolSettings.useFogSubtract ? "red" : "black",
+              blend: false,
+              id: shortid.generate(),
+              visible: true,
+            };
+          }
+        });
+      }
+    }
+
+    function handlePolygonMove() {
+      if (selectedToolSettings.type === "polygon" && drawingShape) {
+        const brushPosition = getBrushPosition();
+        setDrawingShape((prevShape) => {
+          if (!prevShape) {
+            return;
+          }
+          return {
+            ...prevShape,
+            data: {
+              ...prevShape.data,
+              points: [...prevShape.data.points.slice(0, -1), brushPosition],
+            },
+          };
+        });
+      }
+    }
+
+    interactionEmitter.on("dragStart", handleBrushDown);
+    interactionEmitter.on("drag", handleBrushMove);
+    interactionEmitter.on("dragEnd", handleBrushUp);
+    // Use mouse events for polygon and erase to allow for single clicks
+    mapStage.on("mousedown touchstart", handlePolygonMove);
+    mapStage.on("mousemove touchmove", handlePolygonMove);
+    mapStage.on("click tap", handlePolygonClick);
 
     return () => {
-      mapStage.off("mousedown touchstart", handleBrushDown);
-      mapStage.off("mousemove touchmove", handleBrushMove);
-      mapStage.off("mouseup touchend", handleBrushUp);
+      interactionEmitter.off("dragStart", handleBrushDown);
+      interactionEmitter.off("drag", handleBrushMove);
+      interactionEmitter.off("dragEnd", handleBrushUp);
+      mapStage.off("mousedown touchstart", handlePolygonMove);
+      mapStage.off("mousemove touchmove", handlePolygonMove);
+      mapStage.off("click tap", handlePolygonClick);
     };
   }, [
     mapStageRef,
@@ -216,6 +242,7 @@ function MapFog({
     selectedToolSettings,
     shapes,
     stageScale,
+    interactionEmitter,
   ]);
 
   const finishDrawingPolygon = useCallback(() => {
@@ -317,15 +344,16 @@ function MapFog({
     if (shape.data.points.length === 0) {
       return;
     }
+    const isCross = shape.data.points.length < 4;
     return (
       <Tick
         x={shape.data.points[0].x * mapWidth}
         y={shape.data.points[0].y * mapHeight}
         scale={1 / stageScale}
-        cross={shape.data.points.length < 4}
-        onClick={() => {
-          // Check that there is enough points after clicking
-          if (shape.data.points.length < 5) {
+        cross={isCross}
+        onClick={(e) => {
+          e.cancelBubble = true;
+          if (isCross) {
             setDrawingShape(null);
           } else {
             finishDrawingPolygon();
