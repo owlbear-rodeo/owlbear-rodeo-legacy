@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Flex } from "theme-ui";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
@@ -16,12 +16,62 @@ import RedoButton from "./RedoButton";
 
 import Divider from "../../Divider";
 
+import MapInteractionContext from "../../../contexts/MapInteractionContext";
+
 function BrushToolSettings({
   settings,
   onSettingChange,
   onToolAction,
   disabledActions,
 }) {
+  const { interactionEmitter } = useContext(MapInteractionContext);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
+      if (key === "Alt") {
+        onSettingChange({ useFogSubtract: !settings.useFogSubtract });
+      } else if (key === "p") {
+        onSettingChange({ type: "polygon" });
+      } else if (key === "b") {
+        onSettingChange({ type: "brush" });
+      } else if (key === "t") {
+        onSettingChange({ type: "toggle" });
+      } else if (key === "r") {
+        onSettingChange({ type: "remove" });
+      } else if (key === "s") {
+        onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+      } else if (
+        key === "z" &&
+        (ctrlKey || metaKey) &&
+        shiftKey &&
+        !disabledActions.includes("redo")
+      ) {
+        onToolAction("fogRedo");
+      } else if (
+        key === "z" &&
+        (ctrlKey || metaKey) &&
+        !shiftKey &&
+        !disabledActions.includes("undo")
+      ) {
+        onToolAction("fogUndo");
+      }
+    }
+
+    function handleKeyUp({ key }) {
+      if (key === "Alt") {
+        onSettingChange({ useFogSubtract: !settings.useFogSubtract });
+      }
+    }
+
+    interactionEmitter.on("keyDown", handleKeyDown);
+    interactionEmitter.on("keyUp", handleKeyUp);
+    return () => {
+      interactionEmitter.off("keyDown", handleKeyDown);
+      interactionEmitter.off("keyUp", handleKeyUp);
+    };
+  });
+
   return (
     <Flex sx={{ alignItems: "center" }}>
       <RadioIconButton

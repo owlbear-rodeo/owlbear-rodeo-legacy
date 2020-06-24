@@ -122,7 +122,7 @@ function MapFog({
           if (subtract) {
             shapeData = { id: drawingShape.id, type: drawingShape.type };
           } else {
-            shapeData = drawingShape;
+            shapeData = { ...drawingShape, color: "black" };
           }
           const shape = {
             ...shapeData,
@@ -259,7 +259,7 @@ function MapFog({
         data: data,
       });
     } else {
-      onShapeAdd({ ...drawingShape, data: data });
+      onShapeAdd({ ...drawingShape, data: data, color: "black" });
     }
 
     setDrawingShape(null);
@@ -267,26 +267,52 @@ function MapFog({
 
   // Add keyboard shortcuts
   useEffect(() => {
-    const mapStage = mapStageRef.current;
-
-    function handleKeyDown(event) {
+    function handleKeyDown({ key }) {
       if (
-        event.key === "Enter" &&
+        key === "Enter" &&
         selectedToolSettings.type === "polygon" &&
         drawingShape
       ) {
         finishDrawingPolygon();
       }
-      if (event.key === "Escape" && drawingShape) {
+      if (key === "Escape" && drawingShape) {
         setDrawingShape(null);
+      }
+      if (key === "Alt" && drawingShape) {
+        updateShapeColor();
       }
     }
 
-    mapStage.container().addEventListener("keydown", handleKeyDown);
+    function handleKeyUp({ key }) {
+      if (key === "Alt" && drawingShape) {
+        updateShapeColor();
+      }
+    }
+
+    function updateShapeColor() {
+      setDrawingShape((prevShape) => {
+        if (!prevShape) {
+          return;
+        }
+        return {
+          ...prevShape,
+          color: selectedToolSettings.useFogSubtract ? "black" : "red",
+        };
+      });
+    }
+
+    interactionEmitter.on("keyDown", handleKeyDown);
+    interactionEmitter.on("keyUp", handleKeyUp);
     return () => {
-      mapStage.container().removeEventListener("keydown", handleKeyDown);
+      interactionEmitter.off("keyDown", handleKeyDown);
+      interactionEmitter.off("keyUp", handleKeyUp);
     };
-  }, [finishDrawingPolygon, mapStageRef, drawingShape, selectedToolSettings]);
+  }, [
+    finishDrawingPolygon,
+    interactionEmitter,
+    drawingShape,
+    selectedToolSettings,
+  ]);
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {

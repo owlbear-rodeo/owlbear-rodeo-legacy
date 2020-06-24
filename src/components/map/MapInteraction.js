@@ -127,7 +127,7 @@ function MapInteraction({
       isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
-    onDrag: ({ delta, xy, first, last, pinching }) => {
+    onDrag: ({ delta, first, last, pinching }) => {
       if (
         preventMapInteraction ||
         pinching ||
@@ -166,6 +166,27 @@ function MapInteraction({
     stageHeightRef.current = height;
   }
 
+  function handleKeyDown(event) {
+    // Change to pan tool when pressing space
+    if (event.key === " " && selectedToolId === "pan") {
+      // Stop active state on pan icon from being selected
+      event.preventDefault();
+    }
+    if (event.key === " " && selectedToolId !== "pan") {
+      event.preventDefault();
+      previousSelectedToolRef.current = selectedToolId;
+      onSelectedToolChange("pan");
+    }
+    interactionEmitter.emit("keyDown", event);
+  }
+
+  function handleKeyUp(event) {
+    if (event.key === " " && selectedToolId === "pan") {
+      onSelectedToolChange(previousSelectedToolRef.current);
+    }
+    interactionEmitter.emit("keyUp", event);
+  }
+
   function getCursorForTool(tool) {
     switch (tool) {
       case "pan":
@@ -200,14 +221,6 @@ function MapInteraction({
     interactionEmitter,
   };
 
-  // Enable keyboard interaction for map stage container
-  useEffect(() => {
-    const container = mapStageRef.current.container();
-    container.tabIndex = 1;
-    container.style.outline = "none";
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <Box
       sx={{
@@ -215,10 +228,14 @@ function MapInteraction({
         position: "relative",
         cursor: getCursorForTool(selectedToolId),
         touchAction: "none",
+        outline: "none",
       }}
       ref={containerRef}
       {...bind()}
       className="map"
+      tabIndex={1}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage

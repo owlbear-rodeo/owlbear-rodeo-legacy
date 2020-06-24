@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { Flex, IconButton } from "theme-ui";
 
 import ColorControl from "./ColorControl";
@@ -18,12 +18,56 @@ import RedoButton from "./RedoButton";
 
 import Divider from "../../Divider";
 
+import MapInteractionContext from "../../../contexts/MapInteractionContext";
+
 function DrawingToolSettings({
   settings,
   onSettingChange,
   onToolAction,
   disabledActions,
 }) {
+  const { interactionEmitter } = useContext(MapInteractionContext);
+
+  // Keyboard shotcuts
+  useEffect(() => {
+    function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
+      if (key === "b") {
+        onSettingChange({ type: "brush" });
+      } else if (key === "p") {
+        onSettingChange({ type: "paint" });
+      } else if (key === "r") {
+        onSettingChange({ type: "rectangle" });
+      } else if (key === "c") {
+        onSettingChange({ type: "circle" });
+      } else if (key === "t") {
+        onSettingChange({ type: "triangle" });
+      } else if (key === "e") {
+        onSettingChange({ type: "erase" });
+      } else if (key === "o") {
+        onSettingChange({ useBlending: !settings.useBlending });
+      } else if (
+        key === "z" &&
+        (ctrlKey || metaKey) &&
+        shiftKey &&
+        !disabledActions.includes("redo")
+      ) {
+        onToolAction("mapRedo");
+      } else if (
+        key === "z" &&
+        (ctrlKey || metaKey) &&
+        !shiftKey &&
+        !disabledActions.includes("undo")
+      ) {
+        onToolAction("mapUndo");
+      }
+    }
+
+    interactionEmitter.on("keyDown", handleKeyDown);
+    return () => {
+      interactionEmitter.off("keyDown", handleKeyDown);
+    };
+  });
+
   // Change to brush if on erase and it gets disabled
   useEffect(() => {
     if (settings.type === "erase" && disabledActions.includes("erase")) {
