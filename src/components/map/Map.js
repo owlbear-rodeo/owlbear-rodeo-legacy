@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-import polygonClipping from "polygon-clipping";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
@@ -16,7 +15,7 @@ import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
 import LoadingOverlay from "../LoadingOverlay";
 
-import { omit } from "../../helpers/shared";
+import { drawActionsToShapes } from "../../helpers/drawing";
 
 function Map({
   map,
@@ -121,64 +120,11 @@ function Map({
     if (!mapState) {
       return;
     }
-    function actionsToShapes(actions, actionIndex) {
-      let shapesById = {};
-      for (let i = 0; i <= actionIndex; i++) {
-        const action = actions[i];
-        if (action.type === "add" || action.type === "edit") {
-          for (let shape of action.shapes) {
-            shapesById[shape.id] = shape;
-          }
-        }
-        if (action.type === "remove") {
-          shapesById = omit(shapesById, action.shapeIds);
-        }
-        if (action.type === "subtract") {
-          const actionGeom = action.shapes.map((actionShape) => [
-            actionShape.data.points.map(({ x, y }) => [x, y]),
-          ]);
-          let subtractedShapes = {};
-          for (let shape of Object.values(shapesById)) {
-            const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
-            const shapeHoles = shape.data.holes.map((hole) =>
-              hole.map(({ x, y }) => [x, y])
-            );
-            let shapeGeom = [[shapePoints, ...shapeHoles]];
-            const difference = polygonClipping.difference(
-              shapeGeom,
-              actionGeom
-            );
-            for (let i = 0; i < difference.length; i++) {
-              let newId = difference.length > 1 ? `${shape.id}-${i}` : shape.id;
-              // Holes detected
-              let holes = [];
-              if (difference[i].length > 1) {
-                for (let j = 1; j < difference[i].length; j++) {
-                  holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
-                }
-              }
-
-              subtractedShapes[newId] = {
-                ...shape,
-                id: newId,
-                data: {
-                  points: difference[i][0].map(([x, y]) => ({ x, y })),
-                  holes,
-                },
-              };
-            }
-          }
-          shapesById = subtractedShapes;
-        }
-      }
-      return Object.values(shapesById);
-    }
-
     setMapShapes(
-      actionsToShapes(mapState.mapDrawActions, mapState.mapDrawActionIndex)
+      drawActionsToShapes(mapState.mapDrawActions, mapState.mapDrawActionIndex)
     );
     setFogShapes(
-      actionsToShapes(mapState.fogDrawActions, mapState.fogDrawActionIndex)
+      drawActionsToShapes(mapState.fogDrawActions, mapState.fogDrawActionIndex)
     );
   }, [mapState]);
 

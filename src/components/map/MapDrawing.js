@@ -42,7 +42,8 @@ function MapDrawing({
       selectedToolSettings.type === "paint");
   const isShape =
     selectedToolSettings &&
-    (selectedToolSettings.type === "rectangle" ||
+    (selectedToolSettings.type === "line" ||
+      selectedToolSettings.type === "rectangle" ||
       selectedToolSettings.type === "circle" ||
       selectedToolSettings.type === "triangle");
 
@@ -83,7 +84,7 @@ function MapDrawing({
           type: "shape",
           shapeType: selectedToolSettings.type,
           data: getDefaultShapeData(selectedToolSettings.type, brushPosition),
-          strokeWidth: 0,
+          strokeWidth: selectedToolSettings.type === "line" ? 1 : 0,
           ...commonShapeData,
         });
       }
@@ -243,6 +244,24 @@ function MapDrawing({
               []
             )}
             closed={true}
+            {...defaultProps}
+          />
+        );
+      } else if (shape.shapeType === "line") {
+        return (
+          <Line
+            points={shape.data.points.reduce(
+              (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+              []
+            )}
+            strokeWidth={getStrokeWidth(
+              shape.strokeWidth,
+              gridSize,
+              mapWidth,
+              mapHeight
+            )}
+            stroke={colors[shape.color] || shape.color}
+            lineCap="round"
             {...defaultProps}
           />
         );

@@ -1,7 +1,8 @@
 import simplify from "simplify-js";
+import polygonClipping from "polygon-clipping";
 
 import * as Vector2 from "./vector2";
-import { toDegrees } from "./shared";
+import { toDegrees, omit } from "./shared";
 
 const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
@@ -14,7 +15,8 @@ export function getBrushPositionForTool(
   let position = brushPosition;
   const useGridSnappning =
     (tool === "drawing" &&
-      (toolSettings.type === "rectangle" ||
+      (toolSettings.type === "line" ||
+        toolSettings.type === "rectangle" ||
         toolSettings.type === "circle" ||
         toolSettings.type === "triangle")) ||
     (tool === "fog" && toolSettings.type === "polygon");
@@ -92,7 +94,14 @@ export function getBrushPositionForTool(
 }
 
 export function getDefaultShapeData(type, brushPosition) {
-  if (type === "circle") {
+  if (type === "line") {
+    return {
+      points: [
+        { x: brushPosition.x, y: brushPosition.y },
+        { x: brushPosition.x, y: brushPosition.y },
+      ],
+    };
+  } else if (type === "circle") {
     return { x: brushPosition.x, y: brushPosition.y, radius: 0 };
   } else if (type === "rectangle") {
     return {
@@ -124,7 +133,11 @@ export function getGridScale(gridSize) {
 
 export function getUpdatedShapeData(type, data, brushPosition, gridSize) {
   const gridScale = getGridScale(gridSize);
-  if (type === "circle") {
+  if (type === "line") {
+    return {
+      points: [data.points[0], { x: brushPosition.x, y: brushPosition.y }],
+    };
+  } else if (type === "circle") {
     const dif = Vector2.subtract(brushPosition, {
       x: data.x,
       y: data.y,
@@ -184,4 +197,54 @@ export function simplifyPoints(points, gridSize, scale) {
     points,
     (Vector2.min(gridSize) * defaultSimplifySize) / scale
   );
+}
+
+export function drawActionsToShapes(actions, actionIndex) {
+  let shapesById = {};
+  for (let i = 0; i <= actionIndex; i++) {
+    const action = actions[i];
+    if (action.type === "add" || action.type === "edit") {
+      for (let shape of action.shapes) {
+        shapesById[shape.id] = shape;
+      }
+    }
+    if (action.type === "remove") {
+      shapesById = omit(shapesById, action.shapeIds);
+    }
+    if (action.type === "subtract") {
+      const actionGeom = action.shapes.map((actionShape) => [
+        actionShape.data.points.map(({ x, y }) => [x, y]),
+      ]);
+      let subtractedShapes = {};
+      for (let shape of Object.values(shapesById)) {
+        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+        const shapeHoles = shape.data.holes.map((hole) =>
+          hole.map(({ x, y }) => [x, y])
+        );
+        let shapeGeom = [[shapePoints, ...shapeHoles]];
+        const difference = polygonClipping.difference(shapeGeom, actionGeom);
+        for (let i = 0; i < difference.length; i++) {
+          let newId = difference.length > 1 ? `${shape.id}-${i}` : shape.id;
+          // Holes detected
+          let holes = [];
+          if (difference[i].length > 1) {
+            for (let j = 1; j < difference[i].length; j++) {
+              holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
+            }
+          }
+
+          subtractedShapes[newId] = {
+            ...shape,
+            id: newId,
+            data: {
+              points: difference[i][0].map(([x, y]) => ({ x, y })),
+              holes,
+            },
+          };
+        }
+      }
+      shapesById = subtractedShapes;
+    }
+  }
+  return Object.values(shapesById);
 }

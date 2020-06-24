@@ -1,6 +1,6 @@
 import React from "react";
 
-function BrushFillIcon() {
+function BrushPaintIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function BrushFillIcon() {
   );
 }
 
-export default BrushFillIcon;
+export default BrushPaintIcon;

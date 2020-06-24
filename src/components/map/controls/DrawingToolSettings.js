@@ -6,7 +6,8 @@ import AlphaBlendToggle from "./AlphaBlendToggle";
 import RadioIconButton from "./RadioIconButton";
 
 import BrushIcon from "../../../icons/BrushToolIcon";
-import BrushFillIcon from "../../../icons/BrushPaintIcon";
+import BrushPaintIcon from "../../../icons/BrushPaintIcon";
+import BrushLineIcon from "../../../icons/BrushLineIcon";
 import BrushRectangleIcon from "../../../icons/BrushRectangleIcon";
 import BrushCircleIcon from "../../../icons/BrushCircleIcon";
 import BrushTriangleIcon from "../../../icons/BrushTriangleIcon";
@@ -35,6 +36,8 @@ function DrawingToolSettings({
         onSettingChange({ type: "brush" });
       } else if (key === "p") {
         onSettingChange({ type: "paint" });
+      } else if (key === "l") {
+        onSettingChange({ type: "line" });
       } else if (key === "r") {
         onSettingChange({ type: "rectangle" });
       } else if (key === "c") {
@@ -94,7 +97,14 @@ function DrawingToolSettings({
         onClick={() => onSettingChange({ type: "paint" })}
         isSelected={settings.type === "paint"}
       >
-        <BrushFillIcon />
+        <BrushPaintIcon />
+      </RadioIconButton>
+      <RadioIconButton
+        title="Line"
+        onClick={() => onSettingChange({ type: "line" })}
+        isSelected={settings.type === "line"}
+      >
+        <BrushLineIcon />
       </RadioIconButton>
       <RadioIconButton
         title="Rectangle"
