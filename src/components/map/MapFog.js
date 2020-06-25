@@ -368,7 +368,7 @@ function MapFog({
 
   function renderPolygonAcceptTick(shape) {
     if (shape.data.points.length === 0) {
-      return;
+      return null;
     }
     const isCross = shape.data.points.length < 4;
     return (
