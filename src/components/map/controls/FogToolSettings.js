@@ -1,5 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Flex } from "theme-ui";
+import { useMedia } from "react-media";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
@@ -17,6 +18,7 @@ import RedoButton from "./RedoButton";
 import Divider from "../../Divider";
 
 import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import ToolSection from "./ToolSection";
 
 function BrushToolSettings({
   settings,
@@ -72,22 +74,44 @@ function BrushToolSettings({
     };
   });
 
+  const isSmallScreen = useMedia({ query: "(max-width: 799px)" });
+  const drawTools = [
+    {
+      id: "polygon",
+      title: "Fog Polygon",
+      isSelected: settings.type === "polygon",
+      icon: <FogPolygonIcon />,
+    },
+    {
+      id: "brush",
+      title: "Fog Brush",
+      isSelected: settings.type === "brush",
+      icon: <FogBrushIcon />,
+    },
+  ];
+
+  const modeTools = [
+    {
+      id: "add",
+      title: "Add Fog",
+      isSelected: !settings.useFogSubtract,
+      icon: <FogAddIcon />,
+    },
+    {
+      id: "subtract",
+      title: "Subtracy Fog",
+      isSelected: settings.useFogSubtract,
+      icon: <FogSubtractIcon />,
+    },
+  ];
+
   return (
     <Flex sx={{ alignItems: "center" }}>
-      <RadioIconButton
-        title="Fog Polygon"
-        onClick={() => onSettingChange({ type: "polygon" })}
-        isSelected={settings.type === "polygon"}
-      >
-        <FogPolygonIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Fog Brush"
-        onClick={() => onSettingChange({ type: "brush" })}
-        isSelected={settings.type === "brush"}
-      >
-        <FogBrushIcon />
-      </RadioIconButton>
+      <ToolSection
+        tools={drawTools}
+        onToolClick={(tool) => onSettingChange({ type: tool.id })}
+        collapse={isSmallScreen}
+      />
       <Divider vertical />
       <RadioIconButton
         title="Toggle Fog"
@@ -104,20 +128,13 @@ function BrushToolSettings({
         <FogRemoveIcon />
       </RadioIconButton>
       <Divider vertical />
-      <RadioIconButton
-        title="Add Fog"
-        onClick={() => onSettingChange({ useFogSubtract: false })}
-        isSelected={!settings.useFogSubtract}
-      >
-        <FogAddIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Subtract Fog"
-        onClick={() => onSettingChange({ useFogSubtract: true })}
-        isSelected={settings.useFogSubtract}
-      >
-        <FogSubtractIcon />
-      </RadioIconButton>
+      <ToolSection
+        tools={modeTools}
+        onToolClick={(tool) =>
+          onSettingChange({ useFogSubtract: tool.id === "subtract" })
+        }
+        collapse={isSmallScreen}
+      />
       <Divider vertical />
       <EdgeSnappingToggle
         useEdgeSnapping={settings.useEdgeSnapping}

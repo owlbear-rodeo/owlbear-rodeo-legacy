@@ -1,9 +1,11 @@
 import React, { useEffect, useContext } from "react";
 import { Flex, IconButton } from "theme-ui";
+import { useMedia } from "react-media";
 
 import ColorControl from "./ColorControl";
 import AlphaBlendToggle from "./AlphaBlendToggle";
 import RadioIconButton from "./RadioIconButton";
+import ToolSection from "./ToolSection";
 
 import BrushIcon from "../../../icons/BrushToolIcon";
 import BrushPaintIcon from "../../../icons/BrushPaintIcon";
@@ -78,6 +80,47 @@ function DrawingToolSettings({
     }
   }, [disabledActions, settings, onSettingChange]);
 
+  const isSmallScreen = useMedia({ query: "(max-width: 799px)" });
+
+  const tools = [
+    {
+      id: "brush",
+      title: "Brush",
+      isSelected: settings.type === "brush",
+      icon: <BrushIcon />,
+    },
+    {
+      id: "paint",
+      title: "Paint",
+      isSelected: settings.type === "paint",
+      icon: <BrushPaintIcon />,
+    },
+    {
+      id: "line",
+      title: "Line",
+      isSelected: settings.type === "line",
+      icon: <BrushLineIcon />,
+    },
+    {
+      id: "rectangle",
+      title: "Rectangle",
+      isSelected: settings.type === "rectangle",
+      icon: <BrushRectangleIcon />,
+    },
+    {
+      id: "circle",
+      title: "Circle",
+      isSelected: settings.type === "circle",
+      icon: <BrushCircleIcon />,
+    },
+    {
+      id: "triangle",
+      title: "Triangle",
+      isSelected: settings.type === "triangle",
+      icon: <BrushTriangleIcon />,
+    },
+  ];
+
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ColorControl
@@ -85,48 +128,11 @@ function DrawingToolSettings({
         onColorChange={(color) => onSettingChange({ color })}
       />
       <Divider vertical />
-      <RadioIconButton
-        title="Brush"
-        onClick={() => onSettingChange({ type: "brush" })}
-        isSelected={settings.type === "brush"}
-      >
-        <BrushIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Paint"
-        onClick={() => onSettingChange({ type: "paint" })}
-        isSelected={settings.type === "paint"}
-      >
-        <BrushPaintIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Line"
-        onClick={() => onSettingChange({ type: "line" })}
-        isSelected={settings.type === "line"}
-      >
-        <BrushLineIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Rectangle"
-        onClick={() => onSettingChange({ type: "rectangle" })}
-        isSelected={settings.type === "rectangle"}
-      >
-        <BrushRectangleIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Circle"
-        onClick={() => onSettingChange({ type: "circle" })}
-        isSelected={settings.type === "circle"}
-      >
-        <BrushCircleIcon />
-      </RadioIconButton>
-      <RadioIconButton
-        title="Triangle"
-        onClick={() => onSettingChange({ type: "triangle" })}
-        isSelected={settings.type === "triangle"}
-      >
-        <BrushTriangleIcon />
-      </RadioIconButton>
+      <ToolSection
+        tools={tools}
+        onToolClick={(tool) => onSettingChange({ type: tool.id })}
+        collapse={isSmallScreen}
+      />
       <Divider vertical />
       <RadioIconButton
         title="Erase"
