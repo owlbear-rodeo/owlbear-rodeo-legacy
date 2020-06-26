@@ -213,6 +213,7 @@ function MapInteraction({
         return "move";
       case "fog":
       case "drawing":
+      case "measure":
         return "crosshair";
       default:
         return "default";
