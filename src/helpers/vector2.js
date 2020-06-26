@@ -219,3 +219,22 @@ export function pointInPolygon(p, points) {
 export function compare(a, b, threshold) {
   return lengthSquared(subtract(a, b)) < threshold * threshold;
 }
+
+/**
+ * Returns the distance between two vectors
+ * @param {Vector2} a
+ * @param {Vector2} b
+ * @param {string} type - "chebyshev" | "euclidean" | "manhattan"
+ */
+export function distance(a, b, type) {
+  switch (type) {
+    case "chebyshev":
+      return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+    case "euclidean":
+      return length(subtract(a, b));
+    case "manhattan":
+      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    default:
+      return length(subtract(a, b));
+  }
+}

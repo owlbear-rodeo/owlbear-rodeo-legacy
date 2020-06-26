@@ -96,4 +96,8 @@ function ToolSection({ collapse, tools, onToolClick }) {
   }
 }
 
+ToolSection.defaultProps = {
+  collapse: false,
+};
+
 export default ToolSection;

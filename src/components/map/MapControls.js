@@ -8,10 +8,12 @@ import SelectMapButton from "./SelectMapButton";
 
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
+import MeasureToolSettings from "./controls/MeasureToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
+import MeasureToolIcon from "../../icons/MeasureToolIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 function MapContols({
@@ -47,8 +49,14 @@ function MapContols({
       title: "Drawing Tool",
       SettingsComponent: DrawingToolSettings,
     },
+    measure: {
+      id: "measure",
+      icon: <MeasureToolIcon />,
+      title: "Measure Tool",
+      SettingsComponent: MeasureToolSettings,
+    },
   };
-  const tools = ["pan", "fog", "drawing"];
+  const tools = ["pan", "fog", "drawing", "measure"];
 
   const sections = [
     {
@@ -63,7 +71,7 @@ function MapContols({
       ),
     },
     {
-      id: "drawing",
+      id: "tools",
       component: tools.map((tool) => (
         <RadioIconButton
           key={tool}

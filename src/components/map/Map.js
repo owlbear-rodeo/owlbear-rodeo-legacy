@@ -7,6 +7,7 @@ import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapDice from "./MapDice";
 import MapGrid from "./MapGrid";
+import MapMeasure from "./MapMeasure";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import MapLoadingContext from "../../contexts/MapLoadingContext";
@@ -52,6 +53,9 @@ function Map({
       color: "red",
       type: "brush",
       useBlending: true,
+    },
+    measure: {
+      type: "chebyshev",
     },
   });
 
@@ -134,6 +138,7 @@ function Map({
   }
   if (!map) {
     disabledControls.push("pan");
+    disabledControls.push("measure");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
@@ -277,6 +282,14 @@ function Map({
     <MapGrid map={map} gridSize={gridSizeNormalized} />
   );
 
+  const mapMeasure = (
+    <MapMeasure
+      active={selectedToolId === "measure"}
+      gridSize={gridSizeNormalized}
+      selectedToolSettings={toolSettings[selectedToolId]}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -296,6 +309,7 @@ function Map({
       {mapDrawing}
       {mapTokens}
       {mapFog}
+      {mapMeasure}
     </MapInteraction>
   );
 }
