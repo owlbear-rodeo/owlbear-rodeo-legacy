@@ -28,6 +28,7 @@ function MapInteraction({
   controls,
   selectedToolId,
   onSelectedToolChange,
+  disabledControls,
 }) {
   const mapSource = useDataSource(map, defaultMapSources);
   const [mapSourceImage] = useImage(mapSource);
@@ -172,11 +173,30 @@ function MapInteraction({
       // Stop active state on pan icon from being selected
       event.preventDefault();
     }
-    if (event.key === " " && selectedToolId !== "pan") {
+    if (
+      event.key === " " &&
+      selectedToolId !== "pan" &&
+      !disabledControls.includes("pan")
+    ) {
       event.preventDefault();
       previousSelectedToolRef.current = selectedToolId;
       onSelectedToolChange("pan");
     }
+
+    // Basic keyboard shortcuts
+    if (event.key === "w" && !disabledControls.includes("pan")) {
+      onSelectedToolChange("pan");
+    }
+    if (event.key === "d" && !disabledControls.includes("drawing")) {
+      onSelectedToolChange("drawing");
+    }
+    if (event.key === "f" && !disabledControls.includes("fog")) {
+      onSelectedToolChange("fog");
+    }
+    if (event.key === "m" && !disabledControls.includes("measure")) {
+      onSelectedToolChange("measure");
+    }
+
     interactionEmitter.emit("keyDown", event);
   }
 

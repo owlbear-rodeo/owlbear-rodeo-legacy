@@ -304,6 +304,7 @@ function Map({
       }
       selectedToolId={selectedToolId}
       onSelectedToolChange={setSelectedToolId}
+      disabledControls={disabledControls}
     >
       {mapGrid}
       {mapDrawing}
