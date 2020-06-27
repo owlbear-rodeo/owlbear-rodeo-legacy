@@ -58,20 +58,23 @@ function MapTiles({
           >
             <AddIcon large />
           </Flex>
-          {maps.map((map) => (
-            <MapTile
-              key={map.id}
-              map={map}
-              mapState={
-                selectedMap && map.id === selectedMap.id && selectedMapState
-              }
-              isSelected={selectedMap && map.id === selectedMap.id}
-              onMapSelect={onMapSelect}
-              onMapRemove={onMapRemove}
-              onMapReset={onMapReset}
-              onDone={onDone}
-            />
-          ))}
+          {maps.map((map) => {
+            const isSelected = selectedMap && map.id === selectedMap.id;
+            return (
+              <MapTile
+                key={map.id}
+                // TODO: Move to selected map here and fix url error
+                // when done is clicked
+                map={map}
+                mapState={isSelected && selectedMapState}
+                isSelected={isSelected}
+                onMapSelect={onMapSelect}
+                onMapRemove={onMapRemove}
+                onMapReset={onMapReset}
+                onDone={onDone}
+              />
+            );
+          })}
         </Flex>
       </SimpleBar>
       {databaseStatus === "disabled" && (

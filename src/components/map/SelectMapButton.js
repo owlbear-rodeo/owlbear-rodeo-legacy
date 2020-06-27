@@ -19,12 +19,9 @@ function SelectMapButton({
     currentMapState && updateMapState(currentMapState.mapId, currentMapState);
     setIsModalOpen(true);
   }
-  function closeModal() {
-    setIsModalOpen(false);
-  }
 
   function handleDone() {
-    closeModal();
+    setIsModalOpen(false);
   }
 
   return (
@@ -38,7 +35,6 @@ function SelectMapButton({
       </IconButton>
       <SelectMapModal
         isOpen={isModalOpen}
-        onRequestClose={closeModal}
         onDone={handleDone}
         onMapChange={onMapChange}
         onMapStateChange={onMapStateChange}
