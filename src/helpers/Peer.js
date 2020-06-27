@@ -46,16 +46,19 @@ class Peer extends SimplePeer {
   }
 
   send(data) {
-    const packedData = encode(data);
-
-    if (packedData.byteLength > MAX_BUFFER_SIZE) {
-      const chunks = this.chunk(packedData);
-      for (let chunk of chunks) {
-        super.send(encode(chunk));
+    try {
+      const packedData = encode(data);
+      if (packedData.byteLength > MAX_BUFFER_SIZE) {
+        const chunks = this.chunk(packedData);
+        for (let chunk of chunks) {
+          super.send(encode(chunk));
+        }
+        return;
+      } else {
+        super.send(packedData);
       }
-      return;
-    } else {
-      super.send(packedData);
+    } catch (error) {
+      console.error(error);
     }
   }
 

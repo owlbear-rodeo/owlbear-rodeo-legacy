@@ -143,16 +143,19 @@ function useSession(
   // Setup event listeners for the socket
   useEffect(() => {
     function addPeer(id, initiator, sync) {
-      const connection = new Peer({
-        initiator,
-        trickle: true,
-        config: { iceServers },
-      });
-
-      setPeers((prevPeers) => ({
-        ...prevPeers,
-        [id]: { id, connection, initiator, sync },
-      }));
+      try {
+        const connection = new Peer({
+          initiator,
+          trickle: true,
+          config: { iceServers },
+        });
+        setPeers((prevPeers) => ({
+          ...prevPeers,
+          [id]: { id, connection, initiator, sync },
+        }));
+      } catch (error) {
+        onPeerError && onPeerError({ error });
+      }
     }
 
     function handlePartyMemberJoined(id) {
@@ -214,7 +217,7 @@ function useSession(
       socket.off("signal", handleSignal);
       socket.off("auth error", handleAuthError);
     };
-  }, [peers, setAuthenticationStatus, iceServers, joinParty]);
+  }, [peers, setAuthenticationStatus, iceServers, joinParty, onPeerError]);
 
   return { peers, socket, connected };
 }
