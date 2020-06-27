@@ -50,3 +50,7 @@ export function logImage(url, width, height) {
   ].join(" ");
   console.log("%c ", style);
 }
+
+export function isEmpty(obj) {
+  return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
