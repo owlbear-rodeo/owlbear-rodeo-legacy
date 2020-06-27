@@ -140,7 +140,7 @@ function MapToken({
   }
 
   function handlePointerOut() {
-    if (!draggable) {
+    if (tokenOpacity !== 1.0) {
       setTokenOpacity(1.0);
     }
   }
