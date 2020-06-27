@@ -127,8 +127,6 @@ function TokenMenu({
               },
             }}
             autoComplete="off"
-            onKeyDown={(e) => e.stopPropagation()}
-            onKeyUp={(e) => e.stopPropagation()}
           />
         </Flex>
         <Box

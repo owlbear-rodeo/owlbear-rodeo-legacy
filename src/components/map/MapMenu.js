@@ -79,7 +79,12 @@ function MapMenu({
       }}
       contentRef={handleModalContent}
     >
-      {children}
+      <div
+        onKeyDown={(e) => e.stopPropagation()}
+        onKeyUp={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
     </Modal>
   );
 }

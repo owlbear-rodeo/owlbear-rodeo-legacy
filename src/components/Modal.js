@@ -30,14 +30,20 @@ function StyledModal({
       }}
       {...props}
     >
-      {children}
-      {allowClose && (
-        <Close
-          m={0}
-          sx={{ position: "absolute", top: 0, right: 0 }}
-          onClick={onRequestClose}
-        />
-      )}
+      {/* Stop keyboard events when modal is open to prevent shortcuts from triggering */}
+      <div
+        onKeyDown={(e) => e.stopPropagation()}
+        onKeyUp={(e) => e.stopPropagation()}
+      >
+        {children}
+        {allowClose && (
+          <Close
+            m={0}
+            sx={{ position: "absolute", top: 0, right: 0 }}
+            onClick={onRequestClose}
+          />
+        )}
+      </div>
     </Modal>
   );
 }
