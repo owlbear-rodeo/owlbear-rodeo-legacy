@@ -15,6 +15,7 @@ function LoadingOverlay() {
         alignItems: "center",
         top: 0,
         left: 0,
+        flexDirection: "column",
       }}
       bg="muted"
     >

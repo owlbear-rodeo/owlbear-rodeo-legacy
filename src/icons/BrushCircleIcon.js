@@ -1,6 +1,6 @@
 import React from "react";
 
-function ShapeCircleIcon() {
+function BrushCircleIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function ShapeCircleIcon() {
   );
 }
 
-export default ShapeCircleIcon;
+export default BrushCircleIcon;

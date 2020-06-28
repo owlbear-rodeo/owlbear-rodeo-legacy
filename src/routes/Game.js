@@ -33,13 +33,16 @@ function Game() {
   const { authenticationStatus, userId, nickname, setNickname } = useContext(
     AuthContext
   );
-  const { assetLoadStart, assetLoadFinish } = useContext(MapLoadingContext);
+  const { assetLoadStart, assetLoadFinish, assetProgressUpdate } = useContext(
+    MapLoadingContext
+  );
 
   const { peers, socket, connected } = useSession(
     gameId,
     handlePeerConnected,
     handlePeerDisconnected,
     handlePeerData,
+    handlePeerDataProgress,
     handlePeerTrackAdded,
     handlePeerTrackRemoved,
     handlePeerError
@@ -145,7 +148,7 @@ function Game() {
     });
   }
 
-  function updateDrawActionIndex(change, indexKey, actionsKey, peerId) {
+  function updateDrawActionIndex(change, indexKey, actionsKey) {
     const newIndex = Math.min(
       Math.max(currentMapState[indexKey] + change, -1),
       currentMapState[actionsKey].length - 1
@@ -201,7 +204,7 @@ function Game() {
       "fogDrawActions"
     );
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "fogDrawIndex", data: index });
+      peer.connection.send({ id: "mapFogIndex", data: index });
     }
   }
 
@@ -212,7 +215,7 @@ function Game() {
       "fogDrawActions"
     );
     for (let peer of Object.values(peers)) {
-      peer.connection.send({ id: "fogDrawIndex", data: index });
+      peer.connection.send({ id: "mapFogIndex", data: index });
     }
   }
 
@@ -322,7 +325,6 @@ function Game() {
         if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
           setCurrentMap(cachedMap);
         } else {
-          assetLoadStart();
           peer.connection.send({ id: "mapRequest", data: newMap.id });
         }
       } else {
@@ -336,7 +338,6 @@ function Game() {
     }
     // A new map response with a file attached
     if (data.id === "mapResponse") {
-      assetLoadFinish();
       if (data.data && data.data.type === "file") {
         const newMap = { ...data.data, file: data.data.file };
         putMap(newMap).then(() => {
@@ -357,7 +358,6 @@ function Game() {
           !cachedToken ||
           cachedToken.lastModified !== newToken.lastModified
         ) {
-          assetLoadStart();
           peer.connection.send({
             id: "tokenRequest",
             data: newToken.id,
@@ -370,7 +370,6 @@ function Game() {
       peer.connection.send({ id: "tokenResponse", data: token });
     }
     if (data.id === "tokenResponse") {
-      assetLoadFinish();
       const newToken = data.data;
       if (newToken && newToken.type === "file") {
         putToken(newToken);
@@ -414,6 +413,16 @@ function Game() {
     }
   }
 
+  function handlePeerDataProgress({ id, total, count }) {
+    if (count === 1) {
+      assetLoadStart();
+    }
+    if (total === count) {
+      assetLoadFinish();
+    }
+    assetProgressUpdate({ id, total, count });
+  }
+
   function handlePeerDisconnected(peer) {
     setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
   }
@@ -422,7 +431,9 @@ function Game() {
   function handlePeerError({ error, peer }) {
     console.error(error.code);
     if (error.code === "ERR_WEBRTC_SUPPORT") {
-      setPeerError("WebRTC not supported");
+      setPeerError("WebRTC not supported.");
+    } else if (error.code === "ERR_CREATE_OFFER") {
+      setPeerError("Unable to connect to party.");
     }
   }
 

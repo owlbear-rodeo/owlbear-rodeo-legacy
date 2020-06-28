@@ -13,6 +13,7 @@ function useSession(
   onPeerConnected,
   onPeerDisconnected,
   onPeerData,
+  onPeerDataProgress,
   onPeerTrackAdded,
   onPeerTrackRemoved,
   onPeerError
@@ -76,6 +77,10 @@ function useSession(
         onPeerData && onPeerData({ peer, data });
       }
 
+      function handleDataProgress({ id, count, total }) {
+        onPeerDataProgress && onPeerDataProgress({ id, count, total });
+      }
+
       function handleTrack(track, stream) {
         onPeerTrackAdded && onPeerTrackAdded({ peer, track, stream });
         track.addEventListener("mute", () => {
@@ -96,6 +101,7 @@ function useSession(
       peer.connection.on("signal", handleSignal);
       peer.connection.on("connect", handleConnect);
       peer.connection.on("dataComplete", handleDataComplete);
+      peer.connection.on("dataProgress", handleDataProgress);
       peer.connection.on("track", handleTrack);
       peer.connection.on("close", handleClose);
       peer.connection.on("error", handleError);
@@ -105,6 +111,7 @@ function useSession(
         handleSignal,
         handleConnect,
         handleDataComplete,
+        handleDataProgress,
         handleTrack,
         handleClose,
         handleError,
@@ -118,6 +125,7 @@ function useSession(
         handleSignal,
         handleConnect,
         handleDataComplete,
+        handleDataProgress,
         handleTrack,
         handleClose,
         handleError,
@@ -125,6 +133,7 @@ function useSession(
         peer.connection.off("signal", handleSignal);
         peer.connection.off("connect", handleConnect);
         peer.connection.off("dataComplete", handleDataComplete);
+        peer.connection.off("dataProgress", handleDataProgress);
         peer.connection.off("track", handleTrack);
         peer.connection.off("close", handleClose);
         peer.connection.off("error", handleError);
@@ -135,6 +144,7 @@ function useSession(
     onPeerConnected,
     onPeerDisconnected,
     onPeerData,
+    onPeerDataProgress,
     onPeerTrackAdded,
     onPeerTrackRemoved,
     onPeerError,
@@ -143,16 +153,19 @@ function useSession(
   // Setup event listeners for the socket
   useEffect(() => {
     function addPeer(id, initiator, sync) {
-      const connection = new Peer({
-        initiator,
-        trickle: true,
-        config: { iceServers },
-      });
-
-      setPeers((prevPeers) => ({
-        ...prevPeers,
-        [id]: { id, connection, initiator, sync },
-      }));
+      try {
+        const connection = new Peer({
+          initiator,
+          trickle: true,
+          config: { iceServers },
+        });
+        setPeers((prevPeers) => ({
+          ...prevPeers,
+          [id]: { id, connection, initiator, sync },
+        }));
+      } catch (error) {
+        onPeerError && onPeerError({ error });
+      }
     }
 
     function handlePartyMemberJoined(id) {
@@ -214,7 +227,7 @@ function useSession(
       socket.off("signal", handleSignal);
       socket.off("auth error", handleAuthError);
     };
-  }, [peers, setAuthenticationStatus, iceServers, joinParty]);
+  }, [peers, setAuthenticationStatus, iceServers, joinParty, onPeerError]);
 
   return { peers, socket, connected };
 }

@@ -29,6 +29,12 @@ class Peer extends SimplePeer {
         chunk.count++;
         this.currentChunks[unpacked.id] = chunk;
 
+        this.emit("dataProgress", {
+          id: unpacked.id,
+          count: chunk.count,
+          total: chunk.total,
+        });
+
         // All chunks have been loaded
         if (chunk.count === chunk.total) {
           // Merge chunks with a blob
@@ -46,16 +52,19 @@ class Peer extends SimplePeer {
   }
 
   send(data) {
-    const packedData = encode(data);
-
-    if (packedData.byteLength > MAX_BUFFER_SIZE) {
-      const chunks = this.chunk(packedData);
-      for (let chunk of chunks) {
-        super.send(encode(chunk));
+    try {
+      const packedData = encode(data);
+      if (packedData.byteLength > MAX_BUFFER_SIZE) {
+        const chunks = this.chunk(packedData);
+        for (let chunk of chunks) {
+          super.send(encode(chunk));
+        }
+        return;
+      } else {
+        super.send(packedData);
       }
-      return;
-    } else {
-      super.send(packedData);
+    } catch (error) {
+      console.error(error);
     }
   }
 

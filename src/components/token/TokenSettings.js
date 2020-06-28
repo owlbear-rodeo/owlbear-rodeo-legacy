@@ -2,6 +2,7 @@ import React from "react";
 import { Flex, Box, Input, IconButton, Label, Checkbox } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
+import { isEmpty } from "../../helpers/shared";
 
 function TokenSettings({
   token,
@@ -9,6 +10,7 @@ function TokenSettings({
   showMore,
   onShowMoreChange,
 }) {
+  const tokenEmpty = !token || isEmpty(token);
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <Flex>
@@ -21,7 +23,7 @@ function TokenSettings({
             onChange={(e) =>
               onSettingsChange("defaultSize", parseInt(e.target.value))
             }
-            disabled={!token || token.type === "default"}
+            disabled={tokenEmpty || token.type === "default"}
             min={1}
             my={1}
           />
@@ -35,7 +37,7 @@ function TokenSettings({
               name="name"
               value={(token && token.name) || ""}
               onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={!token || token.type === "default"}
+              disabled={tokenEmpty || token.type === "default"}
               my={1}
             />
           </Box>
@@ -44,7 +46,7 @@ function TokenSettings({
               <Label>
                 <Checkbox
                   checked={token && token.isVehicle}
-                  disabled={!token || token.type === "default"}
+                  disabled={tokenEmpty || token.type === "default"}
                   onChange={(e) =>
                     onSettingsChange("isVehicle", e.target.checked)
                   }
@@ -56,7 +58,7 @@ function TokenSettings({
               <Label>
                 <Checkbox
                   checked={token && token.hideInSidebar}
-                  disabled={!token || token.type === "default"}
+                  disabled={tokenEmpty || token.type === "default"}
                   onChange={(e) =>
                     onSettingsChange("hideInSidebar", e.target.checked)
                   }
@@ -79,7 +81,6 @@ function TokenSettings({
         }}
         aria-label={showMore ? "Show Less" : "Show More"}
         title={showMore ? "Show Less" : "Show More"}
-        disabled={!token}
       >
         <ExpandMoreIcon />
       </IconButton>

@@ -17,3 +17,7 @@ The good news is that Safari will still work if the two devices are connected to
 ### WebRTC not supported.
 
 Owlbear Rodeo uses WebRTC to communicate between players. Ensure your browser supports WebRTC. A list of supported browsers can be found [here](https://caniuse.com/#feat=rtcpeerconnection).
+
+### Unable to connect to party.
+
+This can happen when your internet connection is stable but a peer to peer connection wasn't able to be established between party members. Refreshing the page can help in fixing this.

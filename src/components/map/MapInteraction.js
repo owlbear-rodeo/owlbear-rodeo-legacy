@@ -4,6 +4,7 @@ import { useGesture } from "react-use-gesture";
 import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
 import { Stage, Layer, Image } from "react-konva";
+import { EventEmitter } from "events";
 
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useDataSource from "../../helpers/useDataSource";
@@ -11,7 +12,9 @@ import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import MapStageContext, {
+  MapStageProvider,
+} from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
 const wheelZoomSpeed = -0.001;
@@ -19,22 +22,26 @@ const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 const maxZoom = 5;
 
-function MapInteraction({ map, children, controls, selectedToolId }) {
+function MapInteraction({
+  map,
+  children,
+  controls,
+  selectedToolId,
+  onSelectedToolChange,
+  disabledControls,
+}) {
   const mapSource = useDataSource(map, defaultMapSources);
   const [mapSourceImage] = useImage(mapSource);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
-  // "none" | "first" | "dragging" | "last"
-  const [stageDragState, setStageDragState] = useState("none");
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
   const stageWidthRef = useRef(stageWidth);
   const stageHeightRef = useRef(stageHeight);
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapDragPositionRef = useRef({ x: 0, y: 0 });
 
   // Reset transform when map changes
   useEffect(() => {
@@ -54,36 +61,20 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     }
   }, [map]);
 
-  // Convert a client space XY to be normalized to the map image
-  function getMapDragPosition(xy) {
-    const [x, y] = xy;
-    const container = containerRef.current;
-    const mapImage = mapImageRef.current;
-    if (container && mapImage) {
-      const containerRect = container.getBoundingClientRect();
-      const mapRect = mapImage.getClientRect();
-
-      const offsetX = x - containerRect.left - mapRect.x;
-      const offsetY = y - containerRect.top - mapRect.y;
-
-      const normalizedX = offsetX / mapRect.width;
-      const normalizedY = offsetY / mapRect.height;
-
-      return { x: normalizedX, y: normalizedY };
-    }
-  }
-
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
-  const isInteractingCanvas = useRef(false);
+  const isInteractingWithCanvas = useRef(false);
+  const previousSelectedToolRef = useRef(selectedToolId);
+
+  const [interactionEmitter] = useState(new EventEmitter());
 
   const bind = useGesture({
     onWheelStart: ({ event }) => {
-      isInteractingCanvas.current =
+      isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
     onWheel: ({ delta }) => {
-      if (preventMapInteraction || !isInteractingCanvas.current) {
+      if (preventMapInteraction || !isInteractingWithCanvas.current) {
         return;
       }
       const newScale = Math.min(
@@ -91,6 +82,11 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         maxZoom
       );
       setStageScale(newScale);
+    },
+    onPinchStart: () => {
+      // Change to pan tool when pinching and zooming
+      previousSelectedToolRef.current = selectedToolId;
+      onSelectedToolChange("pan");
     },
     onPinch: ({ da, origin, first }) => {
       const [distance] = da;
@@ -125,12 +121,19 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
       pinchPreviousDistanceRef.current = distance;
       pinchPreviousOriginRef.current = { x: originX, y: originY };
     },
+    onPinchEnd: () => {
+      onSelectedToolChange(previousSelectedToolRef.current);
+    },
     onDragStart: ({ event }) => {
-      isInteractingCanvas.current =
+      isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
-    onDrag: ({ delta, xy, first, last, pinching }) => {
-      if (preventMapInteraction || pinching || !isInteractingCanvas.current) {
+    onDrag: ({ delta, first, last, pinching }) => {
+      if (
+        preventMapInteraction ||
+        pinching ||
+        !isInteractingWithCanvas.current
+      ) {
         return;
       }
 
@@ -147,14 +150,13 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         layer.draw();
         stageTranslateRef.current = newTranslate;
       }
-      mapDragPositionRef.current = getMapDragPosition(xy);
-      const newDragState = first ? "first" : last ? "last" : "dragging";
-      if (stageDragState !== newDragState) {
-        setStageDragState(newDragState);
+      if (first) {
+        interactionEmitter.emit("dragStart");
+      } else if (last) {
+        interactionEmitter.emit("dragEnd");
+      } else {
+        interactionEmitter.emit("drag");
       }
-    },
-    onDragEnd: () => {
-      setStageDragState("none");
     },
   });
 
@@ -165,13 +167,53 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     stageHeightRef.current = height;
   }
 
+  function handleKeyDown(event) {
+    // Change to pan tool when pressing space
+    if (event.key === " " && selectedToolId === "pan") {
+      // Stop active state on pan icon from being selected
+      event.preventDefault();
+    }
+    if (
+      event.key === " " &&
+      selectedToolId !== "pan" &&
+      !disabledControls.includes("pan")
+    ) {
+      event.preventDefault();
+      previousSelectedToolRef.current = selectedToolId;
+      onSelectedToolChange("pan");
+    }
+
+    // Basic keyboard shortcuts
+    if (event.key === "w" && !disabledControls.includes("pan")) {
+      onSelectedToolChange("pan");
+    }
+    if (event.key === "d" && !disabledControls.includes("drawing")) {
+      onSelectedToolChange("drawing");
+    }
+    if (event.key === "f" && !disabledControls.includes("fog")) {
+      onSelectedToolChange("fog");
+    }
+    if (event.key === "m" && !disabledControls.includes("measure")) {
+      onSelectedToolChange("measure");
+    }
+
+    interactionEmitter.emit("keyDown", event);
+  }
+
+  function handleKeyUp(event) {
+    if (event.key === " " && selectedToolId === "pan") {
+      onSelectedToolChange(previousSelectedToolRef.current);
+    }
+    interactionEmitter.emit("keyUp", event);
+  }
+
   function getCursorForTool(tool) {
     switch (tool) {
       case "pan":
         return "move";
       case "fog":
-      case "brush":
-      case "shape":
+      case "drawing":
+      case "measure":
         return "crosshair";
       default:
         return "default";
@@ -194,11 +236,10 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
     stageScale,
     stageWidth,
     stageHeight,
-    stageDragState,
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
-    mapDragPositionRef,
+    interactionEmitter,
   };
 
   return (
@@ -208,10 +249,14 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
         position: "relative",
         cursor: getCursorForTool(selectedToolId),
         touchAction: "none",
+        outline: "none",
       }}
       ref={containerRef}
       {...bind()}
       className="map"
+      tabIndex={1}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage
@@ -234,7 +279,9 @@ function MapInteraction({ map, children, controls, selectedToolId }) {
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
               <MapInteractionProvider value={mapInteraction}>
-                {children}
+                <MapStageProvider value={mapStageRef}>
+                  {children}
+                </MapStageProvider>
               </MapInteractionProvider>
             </AuthContext.Provider>
           </Layer>

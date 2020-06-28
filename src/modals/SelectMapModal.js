@@ -12,6 +12,8 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
+import { isEmpty } from "../helpers/shared";
+
 const defaultMapSize = 22;
 const defaultMapProps = {
   // Grid type
@@ -22,7 +24,6 @@ const defaultMapProps = {
 
 function SelectMapModal({
   isOpen,
-  onRequestClose,
   onDone,
   onMapChange,
   onMapStateChange,
@@ -147,7 +148,8 @@ function SelectMapModal({
     }
   }
 
-  function handleMapSelect(map) {
+  async function handleMapSelect(map) {
+    await applyMapChanges();
     setSelectedMapId(map.id);
   }
 
@@ -161,8 +163,8 @@ function SelectMapModal({
 
   async function handleDone() {
     if (selectedMapId) {
-      onMapChange(selectedMap, selectedMapState);
-      onDone();
+      await applyMapChanges();
+      onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
     }
     onDone();
   }
@@ -171,17 +173,43 @@ function SelectMapModal({
    * Map settings
    */
   const [showMoreSettings, setShowMoreSettings] = useState(false);
+  // Local cache of map setting changes
+  // Applied when done is clicked or map selection is changed
+  const [mapSettingChanges, setMapSettingChanges] = useState({});
+  const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
 
-  async function handleMapSettingsChange(key, value) {
-    await updateMap(selectedMapId, { [key]: value });
+  function handleMapSettingsChange(key, value) {
+    setMapSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
   }
 
-  async function handleMapStateSettingsChange(key, value) {
-    await updateMapState(selectedMapId, { [key]: value });
+  function handleMapStateSettingsChange(key, value) {
+    setMapStateSettingChanges((prevChanges) => ({
+      ...prevChanges,
+      [key]: value,
+    }));
   }
+
+  async function applyMapChanges() {
+    if (
+      selectedMapId &&
+      (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges))
+    ) {
+      await updateMap(selectedMapId, mapSettingChanges);
+      await updateMapState(selectedMapId, mapStateSettingChanges);
+
+      setMapSettingChanges({});
+      setMapStateSettingChanges({});
+    }
+  }
+
+  const selectedMapWithChanges = { ...selectedMap, ...mapSettingChanges };
+  const selectedMapStateWithChanges = {
+    ...selectedMapState,
+    ...mapStateSettingChanges,
+  };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <Modal isOpen={isOpen} onRequestClose={handleDone}>
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
@@ -203,15 +231,15 @@ function SelectMapModal({
             maps={ownedMaps}
             onMapAdd={openImageDialog}
             onMapRemove={handleMapRemove}
-            selectedMap={selectedMap}
-            selectedMapState={selectedMapState}
+            selectedMap={selectedMapWithChanges}
+            selectedMapState={selectedMapStateWithChanges}
             onMapSelect={handleMapSelect}
             onMapReset={handleMapReset}
             onDone={handleDone}
           />
           <MapSettings
-            map={selectedMap}
-            mapState={selectedMapState}
+            map={selectedMapWithChanges}
+            mapState={selectedMapStateWithChanges}
             onSettingsChange={handleMapSettingsChange}
             onStateSettingsChange={handleMapStateSettingsChange}
             showMore={showMoreSettings}

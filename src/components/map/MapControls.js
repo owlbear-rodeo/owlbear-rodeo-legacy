@@ -7,15 +7,13 @@ import Divider from "../Divider";
 import SelectMapButton from "./SelectMapButton";
 
 import FogToolSettings from "./controls/FogToolSettings";
-import BrushToolSettings from "./controls/BrushToolSettings";
-import ShapeToolSettings from "./controls/ShapeToolSettings";
-import EraseToolSettings from "./controls/EraseToolSettings";
+import DrawingToolSettings from "./controls/DrawingToolSettings";
+import MeasureToolSettings from "./controls/MeasureToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
-import ShapeToolIcon from "../../icons/ShapeToolIcon";
-import EraseToolIcon from "../../icons/EraseToolIcon";
+import MeasureToolIcon from "../../icons/MeasureToolIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 function MapContols({
@@ -45,26 +43,20 @@ function MapContols({
       title: "Fog Tool",
       SettingsComponent: FogToolSettings,
     },
-    brush: {
-      id: "brush",
+    drawing: {
+      id: "drawing",
       icon: <BrushToolIcon />,
-      title: "Brush Tool",
-      SettingsComponent: BrushToolSettings,
+      title: "Drawing Tool",
+      SettingsComponent: DrawingToolSettings,
     },
-    shape: {
-      id: "shape",
-      icon: <ShapeToolIcon />,
-      title: "Shape Tool",
-      SettingsComponent: ShapeToolSettings,
-    },
-    erase: {
-      id: "erase",
-      icon: <EraseToolIcon />,
-      title: "Erase tool",
-      SettingsComponent: EraseToolSettings,
+    measure: {
+      id: "measure",
+      icon: <MeasureToolIcon />,
+      title: "Measure Tool",
+      SettingsComponent: MeasureToolSettings,
     },
   };
-  const tools = ["pan", "fog", "brush", "shape", "erase"];
+  const tools = ["pan", "fog", "drawing", "measure"];
 
   const sections = [
     {
@@ -79,7 +71,7 @@ function MapContols({
       ),
     },
     {
-      id: "drawing",
+      id: "tools",
       component: tools.map((tool) => (
         <RadioIconButton
           key={tool}

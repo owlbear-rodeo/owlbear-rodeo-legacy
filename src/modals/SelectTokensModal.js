@@ -11,6 +11,7 @@ import blobToBuffer from "../helpers/blobToBuffer";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 import AuthContext from "../contexts/AuthContext";
+import { isEmpty } from "../helpers/shared";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
@@ -34,6 +35,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   function handleTokenAdd(token) {
     addToken(token);
+    setSelectedTokenId(token.id);
   }
 
   async function handleImagesUpload(files) {
@@ -69,8 +71,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         handleTokenAdd({
           file: buffer,
           name,
-          type: "file",
           id: shortid.generate(),
+          type: "file",
           created: Date.now(),
           lastModified: Date.now(),
           owner: userId,
@@ -86,7 +88,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     });
   }
 
-  function handleTokenSelect(token) {
+  async function handleTokenSelect(token) {
+    await applyTokenChanges();
     setSelectedTokenId(token.id);
   }
 
@@ -100,12 +103,28 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    */
   const [showMoreSettings, setShowMoreSettings] = useState(false);
 
-  async function handleTokenSettingsChange(key, value) {
-    await updateToken(selectedTokenId, { [key]: value });
+  const [tokenSettingChanges, setTokenSettingChanges] = useState({});
+
+  function handleTokenSettingsChange(key, value) {
+    setTokenSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
   }
 
+  async function applyTokenChanges() {
+    if (selectedTokenId && !isEmpty(tokenSettingChanges)) {
+      await updateToken(selectedTokenId, tokenSettingChanges);
+      setTokenSettingChanges({});
+    }
+  }
+
+  async function handleRequestClose() {
+    await applyTokenChanges();
+    onRequestClose();
+  }
+
+  const selectedTokenWithChanges = { ...selectedToken, ...tokenSettingChanges };
+
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <Modal isOpen={isOpen} onRequestClose={handleRequestClose}>
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
@@ -126,12 +145,12 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           <TokenTiles
             tokens={ownedTokens}
             onTokenAdd={openImageDialog}
-            selectedToken={selectedToken}
+            selectedToken={selectedTokenWithChanges}
             onTokenSelect={handleTokenSelect}
             onTokenRemove={handleTokenRemove}
           />
           <TokenSettings
-            token={selectedToken}
+            token={selectedTokenWithChanges}
             showMore={showMoreSettings}
             onSettingsChange={handleTokenSettingsChange}
             onShowMoreChange={setShowMoreSettings}
@@ -139,7 +158,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           <Button
             variant="primary"
             disabled={imageLoading}
-            onClick={onRequestClose}
+            onClick={handleRequestClose}
           >
             Done
           </Button>

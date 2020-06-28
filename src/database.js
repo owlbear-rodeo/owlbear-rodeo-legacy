@@ -100,6 +100,23 @@ function loadVersions(db) {
           map.showGrid = false;
         });
     });
+  // v1.4.0 - Added fog subtraction
+  db.version(5)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let fogAction of state.fogDrawActions) {
+            if (fogAction.type === "add" || fogAction.type === "edit") {
+              for (let shape of fogAction.shapes) {
+                shape.data.holes = [];
+              }
+            }
+          }
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext
