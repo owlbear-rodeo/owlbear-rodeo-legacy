@@ -44,7 +44,7 @@ function BrushToolSettings({
       } else if (key === "s") {
         onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
       } else if (
-        key === "z" &&
+        (key === "z" || key === "Z") &&
         (ctrlKey || metaKey) &&
         shiftKey &&
         !disabledActions.includes("redo")

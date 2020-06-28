@@ -51,7 +51,7 @@ function DrawingToolSettings({
       } else if (key === "o") {
         onSettingChange({ useBlending: !settings.useBlending });
       } else if (
-        key === "z" &&
+        (key === "z" || key === "Z") &&
         (ctrlKey || metaKey) &&
         shiftKey &&
         !disabledActions.includes("redo")
