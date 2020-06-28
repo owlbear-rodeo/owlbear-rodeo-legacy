@@ -18,7 +18,9 @@ function MapLoadingOverlay() {
         return;
       }
       requestRef.current = requestAnimationFrame(animate);
-      progressBarRef.current.value = loadingProgressRef.current;
+      if (progressBarRef.current) {
+        progressBarRef.current.value = loadingProgressRef.current;
+      }
     }
 
     requestRef.current = requestAnimationFrame(animate);
