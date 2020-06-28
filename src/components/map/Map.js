@@ -36,7 +36,7 @@ function Map({
   disabledTokens,
 }) {
   const { tokensById } = useContext(TokenDataContext);
-  const { isLoading } = useContext(MapLoadingContext);
+  const { isLoading, loadingProgress } = useContext(MapLoadingContext);
 
   const gridX = map && map.gridX;
   const gridY = map && map.gridY;
@@ -299,7 +299,7 @@ function Map({
           {tokenMenu}
           {tokenDragOverlay}
           <MapDice />
-          {isLoading && <LoadingOverlay />}
+          {isLoading && <LoadingOverlay progress={loadingProgress} />}
         </>
       }
       selectedToolId={selectedToolId}

@@ -29,6 +29,12 @@ class Peer extends SimplePeer {
         chunk.count++;
         this.currentChunks[unpacked.id] = chunk;
 
+        this.emit("dataProgress", {
+          id: unpacked.id,
+          count: chunk.count,
+          total: chunk.total,
+        });
+
         // All chunks have been loaded
         if (chunk.count === chunk.total) {
           // Merge chunks with a blob
