@@ -26,6 +26,9 @@ function MapSettings({
     }
   }
 
+  const mapEmpty = !map || isEmpty(map);
+  const mapStateEmpty = !mapState || isEmpty(mapState);
+
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <Flex>
@@ -38,7 +41,7 @@ function MapSettings({
             onChange={(e) =>
               onSettingsChange("gridX", parseInt(e.target.value))
             }
-            disabled={!map || map.type === "default"}
+            disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
           />
@@ -52,7 +55,7 @@ function MapSettings({
             onChange={(e) =>
               onSettingsChange("gridY", parseInt(e.target.value))
             }
-            disabled={!map || map.type === "default"}
+            disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
           />
@@ -66,7 +69,7 @@ function MapSettings({
               name="name"
               value={(map && map.name) || ""}
               onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={!map || map.type === "default"}
+              disabled={mapEmpty || map.type === "default"}
               my={1}
             />
           </Box>
@@ -74,7 +77,7 @@ function MapSettings({
             <Label>
               <Checkbox
                 checked={map && map.showGrid}
-                disabled={!map || map.type === "default"}
+                disabled={mapEmpty || map.type === "default"}
                 onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
               />
               Show Grid
@@ -86,24 +89,28 @@ function MapSettings({
             <Flex my={1}>
               <Label>
                 <Checkbox
-                  checked={mapState && mapState.editFlags.includes("fog")}
-                  disabled={!mapState}
+                  checked={!mapStateEmpty && mapState.editFlags.includes("fog")}
+                  disabled={mapStateEmpty}
                   onChange={(e) => handleFlagChange(e, "fog")}
                 />
                 Fog
               </Label>
               <Label>
                 <Checkbox
-                  checked={mapState && mapState.editFlags.includes("drawing")}
-                  disabled={mapState === null}
+                  checked={
+                    !mapStateEmpty && mapState.editFlags.includes("drawing")
+                  }
+                  disabled={mapStateEmpty}
                   onChange={(e) => handleFlagChange(e, "drawing")}
                 />
                 Drawings
               </Label>
               <Label>
                 <Checkbox
-                  checked={mapState && mapState.editFlags.includes("tokens")}
-                  disabled={!mapState}
+                  checked={
+                    !mapStateEmpty && mapState.editFlags.includes("tokens")
+                  }
+                  disabled={mapStateEmpty}
                   onChange={(e) => handleFlagChange(e, "tokens")}
                 />
                 Tokens
@@ -124,7 +131,6 @@ function MapSettings({
         }}
         aria-label={showMore ? "Show Less" : "Show More"}
         title={showMore ? "Show Less" : "Show More"}
-        disabled={!map || isEmpty(map)}
       >
         <ExpandMoreIcon />
       </IconButton>
