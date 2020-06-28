@@ -178,11 +178,11 @@ function SelectMapModal({
   const [mapSettingChanges, setMapSettingChanges] = useState({});
   const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
 
-  async function handleMapSettingsChange(key, value) {
+  function handleMapSettingsChange(key, value) {
     setMapSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
   }
 
-  async function handleMapStateSettingsChange(key, value) {
+  function handleMapStateSettingsChange(key, value) {
     setMapStateSettingChanges((prevChanges) => ({
       ...prevChanges,
       [key]: value,
