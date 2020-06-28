@@ -163,6 +163,10 @@ export default {
     img: {
       maxWidth: "100%",
     },
+    progress: {
+      color: "text",
+      backgroundColor: "overlay",
+    },
   },
   prism: {
     ".comment,.prolog,.doctype,.cdata,.punctuation,.operator,.entity,.url": {
