@@ -3,6 +3,8 @@ import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
+import { isEmpty } from "../../helpers/shared";
+
 import Divider from "../Divider";
 
 function MapSettings({
@@ -122,7 +124,7 @@ function MapSettings({
         }}
         aria-label={showMore ? "Show Less" : "Show More"}
         title={showMore ? "Show Less" : "Show More"}
-        disabled={!map}
+        disabled={!map || isEmpty(map)}
       >
         <ExpandMoreIcon />
       </IconButton>
