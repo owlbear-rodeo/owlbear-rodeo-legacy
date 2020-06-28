@@ -71,7 +71,7 @@ function MapGrid({ map, gridSize }) {
         points={[x * lineSpacingX, 0, x * lineSpacingX, mapHeight]}
         stroke={isImageLight ? "black" : "white"}
         strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
-        opacity={0.8}
+        opacity={0.5}
       />
     );
   }
@@ -82,7 +82,7 @@ function MapGrid({ map, gridSize }) {
         points={[0, y * lineSpacingY, mapWidth, y * lineSpacingY]}
         stroke={isImageLight ? "black" : "white"}
         strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
-        opacity={0.8}
+        opacity={0.5}
       />
     );
   }
