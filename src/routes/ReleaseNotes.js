@@ -12,6 +12,7 @@ const v130 = raw("../docs/releaseNotes/v1.3.0.md");
 const v131 = raw("../docs/releaseNotes/v1.3.1.md");
 const v132 = raw("../docs/releaseNotes/v1.3.2.md");
 const v133 = raw("../docs/releaseNotes/v1.3.3.md");
+const v140 = raw("../docs/releaseNotes/v1.4.0.md");
 
 function ReleaseNotes() {
   return (
@@ -34,6 +35,9 @@ function ReleaseNotes() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
+        <div id="v140">
+          <Markdown source={v140} />
+        </div>
         <div id="v133">
           <Markdown source={v133} />
         </div>
