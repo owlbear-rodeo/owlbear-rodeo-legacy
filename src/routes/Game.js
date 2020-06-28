@@ -422,9 +422,9 @@ function Game() {
   function handlePeerError({ error, peer }) {
     console.error(error.code);
     if (error.code === "ERR_WEBRTC_SUPPORT") {
-      setPeerError("WebRTC not supported");
+      setPeerError("WebRTC not supported.");
     } else if (error.code === "ERR_CREATE_OFFER") {
-      setPeerError("Unable to connect to party");
+      setPeerError("Unable to connect to party.");
     }
   }
 
