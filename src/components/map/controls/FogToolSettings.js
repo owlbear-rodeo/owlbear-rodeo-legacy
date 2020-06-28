@@ -99,7 +99,7 @@ function BrushToolSettings({
     },
     {
       id: "subtract",
-      title: "Subtracy Fog",
+      title: "Subtract Fog",
       isSelected: settings.useFogSubtract,
       icon: <FogSubtractIcon />,
     },
