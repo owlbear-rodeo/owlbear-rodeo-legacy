@@ -1,9 +1,9 @@
 import React from "react";
-import { Box, Progress } from "theme-ui";
+import { Box } from "theme-ui";
 
 import Spinner from "./Spinner";
 
-function LoadingOverlay({ progress }) {
+function LoadingOverlay() {
   return (
     <Box
       sx={{
@@ -20,9 +20,6 @@ function LoadingOverlay({ progress }) {
       bg="muted"
     >
       <Spinner />
-      {progress && (
-        <Progress max={1} value={progress} m={2} sx={{ width: "24px" }} />
-      )}
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { omit, isEmpty } from "../helpers/shared";
 
 const MapLoadingContext = React.createContext();
@@ -14,36 +14,36 @@ export function MapLoadingProvider({ children }) {
     setLoadingAssetCount((prevLoadingAssets) => prevLoadingAssets - 1);
   }
 
-  const [assetProgress, setAssetProgress] = useState({});
+  const assetProgressRef = useRef({});
+  const loadingProgressRef = useRef(null);
   function assetProgressUpdate({ id, count, total }) {
     if (count === total) {
-      setAssetProgress(omit(assetProgress, [id]));
+      assetProgressRef.current = omit(assetProgressRef.current, [id]);
     } else {
-      setAssetProgress((prevAssetProgress) => ({
-        ...prevAssetProgress,
+      assetProgressRef.current = {
+        ...assetProgressRef.current,
         [id]: { count, total },
-      }));
+      };
+    }
+    if (!isEmpty(assetProgressRef.current)) {
+      let total = 0;
+      let count = 0;
+      for (let progress of Object.values(assetProgressRef.current)) {
+        total += progress.total;
+        count += progress.count;
+      }
+      loadingProgressRef.current = count / total;
     }
   }
 
   const isLoading = loadingAssetCount > 0;
-  let loadingProgress = null;
-  if (!isEmpty(assetProgress)) {
-    let total = 0;
-    let count = 0;
-    for (let progress of Object.values(assetProgress)) {
-      total += progress.total;
-      count += progress.count;
-    }
-    loadingProgress = count / total;
-  }
 
   const value = {
     assetLoadStart,
     assetLoadFinish,
     isLoading,
     assetProgressUpdate,
-    loadingProgress,
+    loadingProgressRef,
   };
 
   return (
