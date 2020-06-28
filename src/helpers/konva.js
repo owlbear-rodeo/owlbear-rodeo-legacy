@@ -81,7 +81,6 @@ export function HoleyLine({ holes, ...props }) {
     }
 
     context.beginPath();
-    console.log();
     drawLine(points, context, shape);
 
     context.beginPath();
