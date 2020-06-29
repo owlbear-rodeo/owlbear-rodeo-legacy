@@ -4,6 +4,7 @@ import raw from "raw.macro";
 
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
+import Accordion from "../components/Accordion";
 
 const v110 = raw("../docs/releaseNotes/v1.1.0.md");
 const v120 = raw("../docs/releaseNotes/v1.2.0.md");
@@ -27,37 +28,54 @@ function ReleaseNotes() {
       <Flex
         sx={{
           flexDirection: "column",
-          maxWidth: "500px",
+          maxWidth: "564px",
           flexGrow: 1,
+          width: "100%",
         }}
-        m={4}
+        p={4}
       >
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
         <div id="v140">
-          <Markdown source={v140} />
+          <Accordion heading="v1.4.0" defaultOpen>
+            <Markdown source={v140} />
+          </Accordion>
         </div>
         <div id="v133">
-          <Markdown source={v133} />
+          <Accordion heading="v1.3.3">
+            <Markdown source={v133} />
+          </Accordion>
         </div>
         <div id="v132">
-          <Markdown source={v132} />
+          <Accordion heading="v1.3.2">
+            <Markdown source={v132} />
+          </Accordion>
         </div>
         <div id="v131">
-          <Markdown source={v131} />
+          <Accordion heading="v1.3.1">
+            <Markdown source={v131} />
+          </Accordion>
         </div>
         <div id="v130">
-          <Markdown source={v130} />
+          <Accordion heading="v1.3.0">
+            <Markdown source={v130} />
+          </Accordion>
         </div>
         <div id="v121">
-          <Markdown source={v121} />
+          <Accordion heading="v1.2.1">
+            <Markdown source={v121} />
+          </Accordion>
         </div>
         <div id="v120">
-          <Markdown source={v120} />
+          <Accordion heading="v1.2.0">
+            <Markdown source={v120} />
+          </Accordion>
         </div>
         <div id="v110">
-          <Markdown source={v110} />
+          <Accordion heading="v1.1.0">
+            <Markdown source={v110} />
+          </Accordion>
         </div>
       </Flex>
       <Footer />
