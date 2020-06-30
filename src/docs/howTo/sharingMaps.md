@@ -21,6 +21,8 @@ Once a custom map has been added you must configure the size of the map.
 
 To do this there is the Column and Row properties. Columns represents how many grid cells your map has in the horizontal direction while Rows represents the amount of cells in the vertical direction.
 
+TODO: Add bit on map size
+
 `Tip: Owlbear Rodeo can automatically fill the Column and Row properties for you if you include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows`
 
 ## Custom Maps (Advanced)
@@ -35,11 +37,9 @@ Once a custom map has been uploaded there are a few advanced settings available.
   - Drawings: Controls whether others can add drawings to the map (default true).
   - Tokens: Controls whether others can move tokens that they have not placed themselves (default true).
 
-## Reseting a Map
+## Reseting and Deleting a Map
 
-Once a map has been used you can clear away all the tokens, fog and drawings by selecting the map in the Select Map Screen and then on the selected tile click the Reset Map button.
+Once a map has been used you can clear away all the tokens, fog and drawings by selecting the map in the Select Map Screen and then on the selected tile click the Reset Map Button.
 
-## Deleting a Custom Map
-
-To delete a custom map select the map in the Map Select Screen then open the advanced settings by clicking the Show More button lastly click the Delete Button.
+To delete a custom map select the map in the Map Select Screen then on the selected tile click the Delete Map Button.
 `Warning: This operation cannot be undone`
