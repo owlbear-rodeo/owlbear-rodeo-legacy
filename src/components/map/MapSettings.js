@@ -100,7 +100,7 @@ function MapSettings({
           </Flex>
           <Divider fill />
           <Box my={2} sx={{ flexGrow: 1 }}>
-            <Label>Allow others to edit</Label>
+            <Label>Allow Others to Edit</Label>
             <Flex my={1}>
               <Label>
                 <Checkbox
