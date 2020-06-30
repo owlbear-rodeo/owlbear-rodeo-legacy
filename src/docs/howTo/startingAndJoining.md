@@ -1,5 +1,3 @@
-# Starting and Joining a Game
-
 ## Starting a game
 
 To start a game in Owlbear Rodeo head to the [home page](https://owlbear.rodeo) and click the Start Game button.

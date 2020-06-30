@@ -27,6 +27,9 @@ function Footer() {
       <Link m={2} to="/releaseNotes" variant="footer">
         Release Notes
       </Link>
+      <Link m={2} to="/howTo" variant="footer">
+        How To
+      </Link>
     </Flex>
   );
 }

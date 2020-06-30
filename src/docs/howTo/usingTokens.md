@@ -1,5 +1,3 @@
-# Using Tokens
-
 ## Default Tokens
 
 ## Custom Tokens

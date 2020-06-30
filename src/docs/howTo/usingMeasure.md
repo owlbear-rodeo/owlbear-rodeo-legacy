@@ -1,3 +1,9 @@
-# Using the Measure Tool
+The Measure Tool allows you to find how far one point on a map is from another point. To access the Measure Tool click the Measure Tool Button in the top right of the map view.
 
-## Types of Measurement
+A summary of the Measure Tool options are listed below.
+
+| Option              | Description                                                                        | Shortcut |
+| ------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Grid Distance       | This is the distance on a grid and is the metric use in D&D                        | G        |
+| Line Distance       | This is the actual distance between the two points of the measure tool             | L        |
+| City Block Distance | This is the distance when only travelling in the horizontal or vertical directions | C        |
