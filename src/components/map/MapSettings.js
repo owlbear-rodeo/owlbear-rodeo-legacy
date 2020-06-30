@@ -91,7 +91,7 @@ function MapSettings({
             </Box>
             <Label sx={{ width: "50%" }} ml={2}>
               <Checkbox
-                checked={map && map.showGrid}
+                checked={!mapEmpty && map.showGrid}
                 disabled={mapEmpty || map.type === "default"}
                 onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
               />
