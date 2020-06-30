@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Image as UIImage, Link } from "theme-ui";
+import { Text, Image as UIImage, Link, Message } from "theme-ui";
 import ReactMarkdown from "react-markdown";
 
 function Paragraph(props) {
@@ -27,6 +27,15 @@ function ListItem(props) {
   return <Text as="li" variant="body2" {...props} />;
 }
 
+function Code({ children, value }) {
+  const variant = value.startsWith("Warning:") ? "warning" : "";
+  return (
+    <Message variant={variant} my={1} as="span" sx={{ display: "block" }}>
+      {children}
+    </Message>
+  );
+}
+
 function Markdown({ source }) {
   const renderers = {
     paragraph: Paragraph,
@@ -34,6 +43,7 @@ function Markdown({ source }) {
     image: Image,
     link: Link,
     listItem: ListItem,
+    inlineCode: Code,
   };
   return <ReactMarkdown source={source} renderers={renderers} />;
 }

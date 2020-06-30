@@ -284,4 +284,10 @@ export default {
       },
     },
   },
+  messages: {
+    warning: {
+      backgroundColor: "#d65c64",
+      borderLeftColor: "#ff939b",
+    },
+  },
 };
