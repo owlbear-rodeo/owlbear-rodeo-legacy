@@ -84,9 +84,13 @@ function MapSettings({
           <Flex my={2} sx={{ alignItems: "center" }}>
             <Box sx={{ width: "50%" }}>
               <Label>Grid Type</Label>
-              <Select defaultValue="Square" my={1}>
+              <Select
+                defaultValue="Square"
+                my={1}
+                disabled={mapEmpty || map.type === "default"}
+              >
                 <option>Square</option>
-                <option disabled>Hex</option>
+                <option disabled>Hex (Coming Soon)</option>
               </Select>
             </Box>
             <Label sx={{ width: "50%" }} ml={2}>
