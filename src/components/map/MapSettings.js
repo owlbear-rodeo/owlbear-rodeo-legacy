@@ -1,5 +1,13 @@
 import React from "react";
-import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
+import {
+  Flex,
+  Box,
+  Label,
+  Input,
+  Checkbox,
+  IconButton,
+  Select,
+} from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
@@ -73,8 +81,15 @@ function MapSettings({
               my={1}
             />
           </Box>
-          <Box my={2}>
-            <Label>
+          <Flex my={2} sx={{ alignItems: "center" }}>
+            <Box sx={{ width: "50%" }}>
+              <Label>Grid Type</Label>
+              <Select defaultValue="Square" my={1}>
+                <option>Square</option>
+                <option disabled>Hex</option>
+              </Select>
+            </Box>
+            <Label sx={{ width: "50%" }} ml={2}>
               <Checkbox
                 checked={map && map.showGrid}
                 disabled={mapEmpty || map.type === "default"}
@@ -82,7 +97,7 @@ function MapSettings({
               />
               Show Grid
             </Label>
-          </Box>
+          </Flex>
           <Divider fill />
           <Box my={2} sx={{ flexGrow: 1 }}>
             <Label>Allow others to edit</Label>
