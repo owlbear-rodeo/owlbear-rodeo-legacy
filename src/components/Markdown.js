@@ -27,6 +27,20 @@ function Heading({ level, ...props }) {
 }
 
 function Image(props) {
+  if (props.src.endsWith(".mp4")) {
+    return (
+      <video
+        style={{ width: "100%", margin: "8px 0" }}
+        autoPlay
+        muted
+        playsInline
+        loop
+        controls
+        {...props}
+      />
+    );
+  }
+
   return <UIImage mt={2} sx={{ borderRadius: "4px" }} {...props} />;
 }
 
@@ -37,7 +51,7 @@ function ListItem(props) {
 function Code({ children, value }) {
   const variant = value.startsWith("Warning:") ? "warning" : "";
   return (
-    <Message variant={variant} my={1} as="span" sx={{ display: "block" }}>
+    <Message variant={variant} my={2} as="span" sx={{ display: "block" }}>
       {children}
     </Message>
   );

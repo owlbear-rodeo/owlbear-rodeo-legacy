@@ -6,6 +6,8 @@ import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
 import Accordion from "../components/Accordion";
 
+import assets from "../docs/assets";
+
 const overview = raw("../docs/howTo/overview.md");
 const startingAndJoining = raw("../docs/howTo/startingAndJoining.md");
 const sharingMaps = raw("../docs/howTo/sharingMaps.md");
@@ -40,47 +42,47 @@ function ReleaseNotes() {
         </Text>
         <div id="overview">
           <Accordion heading="Overview" defaultOpen>
-            <Markdown source={overview} />
+            <Markdown source={overview} assets={assets} />
           </Accordion>
         </div>
         <div id="startingAndJoining">
           <Accordion heading="Starting and Joining a Game">
-            <Markdown source={startingAndJoining} />
+            <Markdown source={startingAndJoining} assets={assets} />
           </Accordion>
         </div>
         <div id="sharingMaps">
-          <Accordion heading="Sharing a Map">
-            <Markdown source={sharingMaps} />
+          <Accordion heading="Sharing a Map" defaultOpen>
+            <Markdown source={sharingMaps} assets={assets} />
           </Accordion>
         </div>
         <div id="usingTokens">
           <Accordion heading="Using Tokens">
-            <Markdown source={usingTokens} />
+            <Markdown source={usingTokens} assets={assets} />
           </Accordion>
         </div>
         <div id="usingDrawing">
           <Accordion heading="Using the Drawing Tool">
-            <Markdown source={usingDrawing} />
+            <Markdown source={usingDrawing} assets={assets} />
           </Accordion>
         </div>
         <div id="usingDice">
           <Accordion heading="Using Dice">
-            <Markdown source={usingDice} />
+            <Markdown source={usingDice} assets={assets} />
           </Accordion>
         </div>
         <div id="usingFog">
           <Accordion heading="Using the Fog Tool">
-            <Markdown source={usingFog} />
+            <Markdown source={usingFog} assets={assets} />
           </Accordion>
         </div>
         <div id="usingMeasure">
           <Accordion heading="Using the Measure Tool">
-            <Markdown source={usingMeasure} />
+            <Markdown source={usingMeasure} assets={assets} />
           </Accordion>
         </div>
         <div id="sharingAudio">
           <Accordion heading="Sharing Audio (Experimental)">
-            <Markdown source={sharingAudio} />
+            <Markdown source={sharingAudio} assets={assets} />
           </Accordion>
         </div>
       </Flex>
