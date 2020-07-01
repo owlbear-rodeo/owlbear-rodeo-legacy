@@ -109,7 +109,7 @@ function Link({ href, children }) {
   }
 }
 
-function Markdown({ source }) {
+function Markdown({ source, assets }) {
   const renderers = {
     paragraph: Paragraph,
     heading: Heading,
@@ -123,7 +123,13 @@ function Markdown({ source }) {
     tableRow: TableRow,
     tableCell: TableCell,
   };
-  return <ReactMarkdown source={source} renderers={renderers} />;
+  return (
+    <ReactMarkdown
+      source={source}
+      renderers={renderers}
+      transformImageUri={(uri) => assets[uri]}
+    />
+  );
 }
 
 export default Markdown;
