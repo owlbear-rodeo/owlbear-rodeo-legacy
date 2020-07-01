@@ -11,6 +11,7 @@ function Heading({ level, ...props }) {
   return (
     <Text
       mt={2}
+      mb={1}
       as={`h${level}`}
       sx={{ fontSize }}
       variant="heading"
@@ -36,6 +37,62 @@ function Code({ children, value }) {
   );
 }
 
+function Table({ children }) {
+  return (
+    <Text
+      as="table"
+      my={4}
+      style={{ borderCollapse: "collapse", width: "100%" }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+function TableHead(props) {
+  return (
+    <Text
+      as="thead"
+      variant="heading"
+      sx={{ textAlign: "left", "& > tr": { borderBottomWidth: "2px" } }}
+      {...props}
+    />
+  );
+}
+
+function TableBody(props) {
+  return (
+    <Text
+      as="tbody"
+      variant="body2"
+      sx={{ borderBottomWidth: "1px", "& > tr": { borderBottomWidth: "1px" } }}
+      {...props}
+    />
+  );
+}
+
+function TableRow({ children }) {
+  return (
+    <Text
+      as="tr"
+      sx={{
+        borderBottomStyle: "solid",
+        borderBottomColor: "border",
+      }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+function TableCell({ children }) {
+  return (
+    <Text as="td" p={2}>
+      {children}
+    </Text>
+  );
+}
+
 function Markdown({ source }) {
   const renderers = {
     paragraph: Paragraph,
@@ -44,6 +101,11 @@ function Markdown({ source }) {
     link: Link,
     listItem: ListItem,
     inlineCode: Code,
+    table: Table,
+    tableHead: TableHead,
+    tableBody: TableBody,
+    tableRow: TableRow,
+    tableCell: TableCell,
   };
   return <ReactMarkdown source={source} renderers={renderers} />;
 }
