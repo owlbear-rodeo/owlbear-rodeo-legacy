@@ -11,6 +11,7 @@ function Accordion({ heading, children, defaultOpen }) {
       <Flex
         sx={{ justifyContent: "space-between" }}
         onClick={() => setOpen(!open)}
+        my={1}
       >
         <Text as="h1" variant="heading" sx={{ fontSize: 5 }}>
           {heading}
