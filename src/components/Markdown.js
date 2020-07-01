@@ -1,9 +1,15 @@
 import React from "react";
-import { Text, Image as UIImage, Link, Message } from "theme-ui";
+import {
+  Text,
+  Image as UIImage,
+  Link as UILink,
+  Message,
+  Embed,
+} from "theme-ui";
 import ReactMarkdown from "react-markdown";
 
 function Paragraph(props) {
-  return <Text as="p" variant="body2" {...props} />;
+  return <Text variant="body2" {...props} />;
 }
 
 function Heading({ level, ...props }) {
@@ -91,6 +97,16 @@ function TableCell({ children }) {
       {children}
     </Text>
   );
+}
+
+function Link({ href, children }) {
+  const linkText = children[0].props.value;
+  if (linkText === "embed:") {
+    return <Embed src={href} />;
+  } else {
+    console.log(href);
+    return <UILink href={href}>{children}</UILink>;
+  }
 }
 
 function Markdown({ source }) {
