@@ -8,6 +8,7 @@ import openDiceTray from "./OpenDiceTray.mp4";
 import diceRolling from "./DiceRolling.mp4";
 import diceStyles from "./DiceStyles.mp4";
 import diceTraySize from "./DiceTraySize.mp4";
+import usingFog from "./UsingFog.mp4";
 
 export default {
   audioSharingFaq,
@@ -20,4 +21,5 @@ export default {
   diceRolling,
   diceStyles,
   diceTraySize,
+  usingFog,
 };
