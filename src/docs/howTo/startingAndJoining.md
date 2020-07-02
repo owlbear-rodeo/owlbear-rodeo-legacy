@@ -2,6 +2,8 @@
 
 To start a game in Owlbear Rodeo head to the [home page](https://owlbear.rodeo) and click the Start Game button.
 
+TODO: Add video
+
 `Tip: When starting a game you can add a password to protect your session from unwanted guests`
 
 ## Joining a game

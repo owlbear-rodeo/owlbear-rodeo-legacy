@@ -2,7 +2,7 @@ The Fog Tool allows you to add hidden areas to control what the other party memb
 
 ![Using Fog](usingFog)
 
-`Tip: When using the Fog Tool the fog will be transparent, this is to make it easier to align your fog with the map below. When the Fog Tool is no longer in use the fog will be opaque. This extends to other party members meaning if others are denied fog editing permissions they can not see under the fog until you reveal what's underneath.`
+`Note: When using the Fog Tool the fog will be transparent, this is to make it easier to align your fog with the map below. When the Fog Tool is no longer in use the fog will be opaque. This extends to other party members meaning if others are denied fog editing permissions they can not see under the fog until you reveal what's underneath.`
 
 A summary of the Fog Tool options are listed below.
 

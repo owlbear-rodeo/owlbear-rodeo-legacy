@@ -58,3 +58,5 @@ A brief summary of these settings is listed below.
 ## Removing a Custom Token
 
 To remove a custom token open the Token Edit Screen, select the desired token and click the Remove Token Button on the token tile.
+
+`Warning: This operation cannot be undone`

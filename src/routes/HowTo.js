@@ -51,7 +51,7 @@ function ReleaseNotes() {
           </Accordion>
         </div>
         <div id="sharingMaps">
-          <Accordion heading="Sharing a Map" defaultOpen>
+          <Accordion heading="Sharing a Map">
             <Markdown source={sharingMaps} assets={assets} />
           </Accordion>
         </div>
