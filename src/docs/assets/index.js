@@ -10,6 +10,11 @@ import diceStyles from "./DiceStyles.mp4";
 import diceTraySize from "./DiceTraySize.mp4";
 import usingFog from "./UsingFog.mp4";
 import usingMeasure from "./UsingMeasure.mp4";
+import defaultTokens from "./DefaultTokens.mp4";
+import workingWithTokens from "./WorkingWithTokens.mp4";
+import deletingTokens from "./DeletingTokens.mp4";
+import customTokens from "./CustomTokens.mp4";
+import customTokensAdvanced from "./CustomTokensAdvanced.jpg";
 
 export default {
   audioSharingFaq,
@@ -24,4 +29,9 @@ export default {
   diceTraySize,
   usingFog,
   usingMeasure,
+  defaultTokens,
+  workingWithTokens,
+  deletingTokens,
+  customTokens,
+  customTokensAdvanced,
 };
