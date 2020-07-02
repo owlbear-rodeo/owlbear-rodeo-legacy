@@ -269,5 +269,9 @@ export default {
       backgroundColor: "#d65c64",
       borderLeftColor: "#ff939b",
     },
+    note: {
+      backgroundColor: "#cd9937",
+      borderLeftColor: "#ffe493",
+    },
   },
 };

@@ -49,7 +49,12 @@ function ListItem(props) {
 }
 
 function Code({ children, value }) {
-  const variant = value.startsWith("Warning:") ? "warning" : "";
+  let variant = "";
+  if (value.startsWith("Warning:")) {
+    variant = "warning";
+  } else if (value.startsWith("Note:")) {
+    variant = "note";
+  }
   return (
     <Message variant={variant} my={2} as="span" sx={{ display: "block" }}>
       {children}

@@ -22,7 +22,7 @@ To do this there is the Column and Row properties. Columns represents how many g
 
 `Tip: Owlbear Rodeo can automatically fill the Column and Row properties for you if you include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows`
 
-`Warning: When uploading a custom map keep the file size in mind. Maps are shared between users in Owlbear Rodeo so if a map is taking too long to load for other party members consider lowering the file size.`
+`Note: When uploading a custom map keep the file size in mind. Maps are shared between users in Owlbear Rodeo so if a map is taking too long to load for other party members consider lowering the file size.`
 
 ## Custom Maps (Advanced)
 
