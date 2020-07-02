@@ -2,7 +2,7 @@ Once you have started a game you can share a map to all other party members by c
 
 ## Default Maps
 
-Owlbear Rodeo comes with a selection of default maps that allow you to quickly get up and running by picking an environment.
+Owlbear Rodeo comes with a selection of default maps that allow you to quickly get up and running.
 
 ![Default Maps](defaultMaps)
 
@@ -27,10 +27,11 @@ To do this there is the Column and Row properties. Columns represents how many g
 ## Custom Maps (Advanced)
 
 Once a custom map has been uploaded there are a few advanced settings available.
+To get access to these settings, with the desired map selected, click the Show More button under the Rows and Columns in the Map Select Screen.
 
 ![Custom Maps Advanced](customMapsAdvanced)
 
-To get access to these settings, with the desired map selected, click the Show More button under the Rows and Columns in the Map Select Screen. A brief summary of these settings is listed below.
+A brief summary of these settings is listed below.
 
 - Name: The name of the map shown in the Map Select Screen.
 - Grid Type: Change the type of grid to use for the map. Currently only the Square type is supported however Hex will be added in a future release.
