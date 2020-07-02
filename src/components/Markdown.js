@@ -56,7 +56,13 @@ function Code({ children, value }) {
     variant = "note";
   }
   return (
-    <Message variant={variant} my={2} as="span" sx={{ display: "block" }}>
+    <Message
+      variant={variant}
+      color="hsl(210, 50%, 96%)"
+      my={2}
+      as="span"
+      sx={{ display: "block" }}
+    >
       {children}
     </Message>
   );
