@@ -270,8 +270,8 @@ export default {
       borderLeftColor: "#ff939b",
     },
     note: {
-      backgroundColor: "#cd9937",
-      borderLeftColor: "#ffe493",
+      backgroundColor: "#4e5d68",
+      borderLeftColor: "#6889a1",
     },
   },
 };
