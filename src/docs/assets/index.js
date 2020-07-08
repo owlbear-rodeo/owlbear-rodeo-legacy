@@ -17,6 +17,7 @@ import customTokens from "./CustomTokens.mp4";
 import customTokensAdvanced from "./CustomTokensAdvanced.jpg";
 import addPartyMember from "./AddPartyMember.mp4";
 import changeNickname from "./ChangeNickname.mp4";
+import sharingAudio from "./SharingAudio.mp4";
 
 export default {
   audioSharingFaq,
@@ -38,4 +39,5 @@ export default {
   customTokensAdvanced,
   addPartyMember,
   changeNickname,
+  sharingAudio,
 };
