@@ -1,6 +1,6 @@
 [embed:](https://www.youtube.com/embed/2e07DtB-Xrc)
 
-The Drawing Tool allows you to draw on top of a map. To access the Drawing Tool click the Drawing Tool Button in the top right of the map view.
+The Drawing Tool allows you to draw on top of a map. To access the Drawing Tool click the Drawing Tool button in the top right of the map view.
 
 ![Using Drawing](usingDrawing)
 

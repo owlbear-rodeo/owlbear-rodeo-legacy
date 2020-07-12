@@ -22,13 +22,13 @@ To clear the dice in your dice tray you can click the Clear Dice button in the b
 
 ## Styling Your Dice
 
-Owlbear Rodeo has a bunch of varying dice styles to choose from when you roll.
-To change your dice style click Select Dice Style Button in the top left of the dice tray.
+Owlbear Rodeo has a bunch of varying dice styles to choose from.
+To change your dice style click Select Dice Style button in the top left of the dice tray.
 
 ![Dice Styles](diceStyles)
 
 ## Expanding Your Dice Tray
 
-The dice tray comes in two different sizes to change the size click the Expand Dice Tray Button in the top right of the dice tray.
+The dice tray comes in two different sizes to change the size click the Expand Dice Tray button in the top right of the dice tray.
 
 ![Dice Tray Size](diceTraySize)

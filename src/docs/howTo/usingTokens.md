@@ -19,7 +19,7 @@ Once a token has been placed on a map there are a few settings available for the
 An overview of each setting is listed below:
 
 - Label: allows you to write text that is then displayed at the bottom of the token.
-- Status: allow you to overlay a coloured ring on top of the token, these can be useful for showing status effects.
+- Status: allows you to overlay a coloured ring on top of the token, these can be useful for showing status effects.
 - Size: controls the size of the token each notch represents how many grid cells the token takes up in the horizontal direction.
 - Rotation: the direction the token faces, restrained to 45 degree angles.
 
@@ -33,15 +33,15 @@ When you need more then the default tokens Owlbear Rodeo allows you to upload a 
 
 ![Custom Tokens](customTokens)
 
-To upload a custom map select the Edit Tokens Button at the bottom of the Token List. This will open the Edit Token Screen which allows you to upload and edit tokens.
+To upload a custom token select the Edit Tokens Button at the bottom of the Token List. This will open the Edit Token Screen which allows you to upload and edit tokens.
 
-To upload a new token either click the Add Token button or drag an image into the Edit Token Screen.
+To upload a new token either click the Add Token Button or drag an image into the Edit Token Screen.
 
 Once a token has been uploaded you can adjust the default size that is used when adding the token to the map by adjusting the Default Size Input.
 
 `Note: The size input for a non-square image represents the number of grid cells a token takes up on the horizontal axis. The number of cells in the vertical axis is determined by the aspect ratio of the uploaded image.`
 
-`Tip: Owlbear Rodeo has full transparancy support for tokens. This means that players can only interact with visible parts of a token so feel free to upload creatures that might have large protrusions and the like.`
+`Tip: Owlbear Rodeo has full transparancy support for tokens. This means that players can only interact with visible parts of a token so feel free to upload creatures that might have large extended areas like wings.`
 
 ## Custom Tokens (Advanced)
 

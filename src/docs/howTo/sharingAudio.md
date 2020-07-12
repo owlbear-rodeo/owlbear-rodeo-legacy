@@ -4,7 +4,7 @@ To accomplish this Owlbear Rodeo uses the audio portion of a browsers screen sha
 
 `Note: Even though sharing audio requires a supported browser, receiving audio works on all browsers`
 
-To use audio sharing click the Start Radio Stream Button in the bottom left to open the Radio Screen then click Start Radio. The browser will then ask to share your screen, click on the Chrome Tab option and select your tab. Insure to select the Share Audio Checkbox and finally click Share.
+To use audio sharing click the Start Radio Stream button in the bottom left to open the Radio Screen then click Start Radio. The browser will then ask to share your screen, click on the Chrome Tab option and select your tab. Insure to select the Share Audio Checkbox and finally click Share.
 
 ![Sharing Audio](sharingAudio)
 

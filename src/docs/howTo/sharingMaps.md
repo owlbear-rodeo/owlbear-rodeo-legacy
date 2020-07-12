@@ -49,7 +49,7 @@ With a map selected there are a couple of actions you can perform on them.
 
 ![Reseting and Removing Maps](resetingAndRemovingMaps)
 
-Once a map has been used you can clear away all the tokens, fog and drawings by selecting the map in the Select Map Screen and then on the selected tile click the Reset Map Button.
+Once a map has been used you can clear away all the tokens, fog and drawings by selecting the map in the Select Map Screen and then on the selected tile click the Reset Map button.
 
-To remove a custom map select the map in the Map Select Screen then on the selected tile click the Remove Map Button.
+To remove a custom map select the map in the Map Select Screen then on the selected tile click the Remove Map button.
 `Warning: This operation cannot be undone`
