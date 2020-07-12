@@ -127,7 +127,7 @@ function TableCell({ children }) {
 function Link({ href, children }) {
   const linkText = children[0].props.value;
   if (linkText === "embed:") {
-    return <Embed src={href} />;
+    return <Embed src={href} my={2} />;
   } else {
     console.log(href);
     return <UILink href={href}>{children}</UILink>;

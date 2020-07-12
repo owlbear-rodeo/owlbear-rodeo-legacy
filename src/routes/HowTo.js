@@ -41,9 +41,7 @@ function ReleaseNotes() {
           How To
         </Text>
         <div id="overview">
-          <Accordion heading="Overview" defaultOpen>
-            <Markdown source={overview} assets={assets} />
-          </Accordion>
+          <Markdown source={overview} assets={assets} />
         </div>
         <div id="startingAndJoining">
           <Accordion heading="Starting and Joining a Game">

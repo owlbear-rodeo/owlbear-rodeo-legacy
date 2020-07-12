@@ -1,3 +1,5 @@
+[embed:](https://www.youtube.com/embed/ztLDznOpmsg)
+
 Once you have started a game you can share a map to all other party members by clicking the Select Map button then selecting the desired map to share and clicking the Done button.
 
 ## Default Maps
