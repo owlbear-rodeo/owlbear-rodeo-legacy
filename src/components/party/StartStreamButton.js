@@ -22,7 +22,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
         Browser not supported for audio sharing.
         <br />
         <br />
-        See <Link to="/faq#radio">FAQ</Link> for more information.
+        See <Link to="/howTo#sharingAudio">How To</Link> for more information.
       </Text>
     </Box>
   );
@@ -35,7 +35,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
         Ensure "Share audio" is selected when sharing.
         <br />
         <br />
-        See <Link to="/faq#radio">FAQ</Link> for more information.
+        See <Link to="/howTo#sharingAudio">How To</Link> for more information.
       </Text>
     </Box>
   );

@@ -5,8 +5,9 @@ import raw from "raw.macro";
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
 
+import assets from "../docs/assets";
+
 const connection = raw("../docs/faq/connection.md");
-const radio = raw("../docs/faq/radio.md");
 const saving = raw("../docs/faq/saving.md");
 
 function FAQ() {
@@ -31,13 +32,10 @@ function FAQ() {
           Frequently Asked Questions
         </Text>
         <div id="connection">
-          <Markdown source={connection} />
-        </div>
-        <div id="radio">
-          <Markdown source={radio} />
+          <Markdown source={connection} assets={assets} />
         </div>
         <div id="saving">
-          <Markdown source={saving} />
+          <Markdown source={saving} assets={assets} />
         </div>
       </Flex>
       <Footer />

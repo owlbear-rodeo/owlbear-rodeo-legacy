@@ -61,8 +61,8 @@ function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
       {isSelected && !isDefault && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <IconButton
-            aria-label="Remove Map"
-            title="Remove Map"
+            aria-label="Remove Token"
+            title="Remove Token"
             onClick={() => {
               onTokenRemove(token.id);
             }}

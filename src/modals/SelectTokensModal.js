@@ -96,6 +96,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   async function handleTokenRemove(id) {
     await removeToken(id);
     setSelectedTokenId(null);
+    setTokenSettingChanges({});
   }
 
   /**

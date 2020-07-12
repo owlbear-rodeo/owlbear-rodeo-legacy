@@ -13,6 +13,7 @@ function Banner({ isOpen, onRequestClose, children, allowClose }) {
         overlay: { bottom: "0", top: "initial" },
         content: {
           backgroundColor: theme.colors.highlight,
+          color: "hsl(210, 50%, 96%)",
           top: "initial",
           left: "50%",
           right: "initial",

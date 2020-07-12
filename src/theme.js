@@ -9,6 +9,7 @@ export default {
     muted: "hsla(230, 20%, 0%, 20%)",
     gray: "hsl(0, 0%, 70%)",
     overlay: "hsla(230, 25%, 18%, 0.8)",
+    border: "hsla(210, 50%, 96%, 0.5)",
     modes: {
       light: {
         text: "hsl(10, 20%, 20%)",
@@ -18,6 +19,7 @@ export default {
         highlight: "hsl(260, 20%, 40%)",
         muted: "hsla(230, 20%, 60%, 20%)",
         overlay: "hsla(230, 100%, 97%, 0.8)",
+        border: "hsla(10, 20%, 20%, 0.5)",
       },
     },
   },
@@ -132,28 +134,6 @@ export default {
       fontFamily: "monospace",
       color: "secondary",
       bg: "muted",
-    },
-    table: {
-      width: "100%",
-      my: 4,
-      borderCollapse: "separate",
-      borderSpacing: 0,
-      "th,td": {
-        textAlign: "left",
-        py: "4px",
-        pr: "4px",
-        pl: 0,
-        borderColor: "muted",
-        borderBottomStyle: "solid",
-      },
-    },
-    th: {
-      verticalAlign: "bottom",
-      borderBottomWidth: "2px",
-    },
-    td: {
-      verticalAlign: "top",
-      borderBottomWidth: "1px",
     },
     hr: {
       border: 0,
@@ -282,6 +262,16 @@ export default {
       "&:active": {
         textDecorationColor: "hsl(290, 100%, 80%)",
       },
+    },
+  },
+  messages: {
+    warning: {
+      backgroundColor: "#d65c64",
+      borderLeftColor: "#ff939b",
+    },
+    note: {
+      backgroundColor: "#ca871e",
+      borderLeftColor: "#ebd2ac",
     },
   },
 };

@@ -29,7 +29,7 @@ function MapContols({
   disabledControls,
   disabledSettings,
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const toolsById = {
     pan: {
