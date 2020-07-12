@@ -18,6 +18,7 @@ import customTokensAdvanced from "./CustomTokensAdvanced.jpg";
 import addPartyMember from "./AddPartyMember.mp4";
 import changeNickname from "./ChangeNickname.mp4";
 import sharingAudio from "./SharingAudio.mp4";
+import startGame from "./StartGame.mp4";
 
 export default {
   audioSharingFaq,
@@ -40,4 +41,5 @@ export default {
   addPartyMember,
   changeNickname,
   sharingAudio,
+  startGame,
 };
