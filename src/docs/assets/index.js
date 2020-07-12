@@ -1,4 +1,3 @@
-import audioSharingFaq from "./AudioSharingFAQ.png";
 import defaultMaps from "./DefaultMaps.mp4";
 import customMaps from "./CustomMaps.mp4";
 import customMapsAdvanced from "./CustomMapsAdvanced.jpg";
@@ -21,7 +20,6 @@ import sharingAudio from "./SharingAudio.mp4";
 import startGame from "./StartGame.mp4";
 
 export default {
-  audioSharingFaq,
   defaultMaps,
   customMaps,
   customMapsAdvanced,

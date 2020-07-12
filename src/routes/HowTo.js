@@ -1,6 +1,7 @@
 import React from "react";
 import { Flex, Text } from "theme-ui";
 import raw from "raw.macro";
+import { useLocation } from "react-router-dom";
 
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
@@ -18,7 +19,8 @@ const usingFog = raw("../docs/howTo/usingFog.md");
 const usingMeasure = raw("../docs/howTo/usingMeasure.md");
 const sharingAudio = raw("../docs/howTo/sharingAudio.md");
 
-function ReleaseNotes() {
+function HowTo() {
+  const location = useLocation();
   return (
     <Flex
       sx={{
@@ -44,42 +46,66 @@ function ReleaseNotes() {
           <Markdown source={overview} assets={assets} />
         </div>
         <div id="startingAndJoining">
-          <Accordion heading="Starting and Joining a Game">
+          <Accordion
+            heading="Starting and Joining a Game"
+            defaultOpen={location.hash === "#startingAndJoining"}
+          >
             <Markdown source={startingAndJoining} assets={assets} />
           </Accordion>
         </div>
         <div id="sharingMaps">
-          <Accordion heading="Sharing a Map">
+          <Accordion
+            heading="Sharing a Map"
+            defaultOpen={location.hash === "#sharingMaps"}
+          >
             <Markdown source={sharingMaps} assets={assets} />
           </Accordion>
         </div>
         <div id="usingTokens">
-          <Accordion heading="Using Tokens">
+          <Accordion
+            heading="Using Tokens"
+            defaultOpen={location.hash === "#usingTokens"}
+          >
             <Markdown source={usingTokens} assets={assets} />
           </Accordion>
         </div>
         <div id="usingDrawing">
-          <Accordion heading="Using the Drawing Tool">
+          <Accordion
+            heading="Using the Drawing Tool"
+            defaultOpen={location.hash === "#usingDrawing"}
+          >
             <Markdown source={usingDrawing} assets={assets} />
           </Accordion>
         </div>
         <div id="usingDice">
-          <Accordion heading="Using Dice">
+          <Accordion
+            heading="Using Dice"
+            defaultOpen={location.hash === "#usingDice"}
+          >
             <Markdown source={usingDice} assets={assets} />
           </Accordion>
         </div>
         <div id="usingFog">
-          <Accordion heading="Using the Fog Tool">
+          <Accordion
+            heading="Using the Fog Tool"
+            defaultOpen={location.hash === "#usingFog"}
+          >
             <Markdown source={usingFog} assets={assets} />
           </Accordion>
         </div>
         <div id="usingMeasure">
-          <Accordion heading="Using the Measure Tool">
+          <Accordion
+            heading="Using the Measure Tool"
+            defaultOpen={location.hash === "#usingMeasure"}
+          >
             <Markdown source={usingMeasure} assets={assets} />
           </Accordion>
         </div>
         <div id="sharingAudio">
-          <Accordion heading="Sharing Audio (Experimental)">
+          <Accordion
+            heading="Sharing Audio (Experimental)"
+            defaultOpen={location.hash === "#sharingAudio"}
+          >
             <Markdown source={sharingAudio} assets={assets} />
           </Accordion>
         </div>
@@ -89,4 +115,4 @@ function ReleaseNotes() {
   );
 }
 
-export default ReleaseNotes;
+export default HowTo;
