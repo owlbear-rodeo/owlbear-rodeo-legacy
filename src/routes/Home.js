@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Flex, Button, Image, Text } from "theme-ui";
+import { Flex, Button, Image, Text, IconButton, Link } from "theme-ui";
 
 import Footer from "../components/Footer";
 
@@ -8,6 +8,10 @@ import JoinModal from "../modals/JoinModal";
 import DonateModal from "../modals/DonationModal";
 
 import AuthContext from "../contexts/AuthContext";
+
+import RedditIcon from "../icons/SocialRedditIcon";
+import TwitterIcon from "../icons/SocialTwitterIcon";
+import YouTubeIcon from "../icons/SocialYouTubeIcon";
 
 import owlington from "../images/Owlington.png";
 
@@ -60,6 +64,23 @@ function Home() {
         >
           Support Us
         </Button>
+        <Flex sx={{ justifyContent: "center" }}>
+          <Link href="https://www.reddit.com/r/OwlbearRodeo/">
+            <IconButton title="Reddit" aria-label="Reddit">
+              <RedditIcon />
+            </IconButton>
+          </Link>
+          <Link href="https://twitter.com/OwlbearRodeo">
+            <IconButton title="Twitter" aria-label="Twitter">
+              <TwitterIcon />
+            </IconButton>
+          </Link>
+          <Link href="https://www.youtube.com/channel/UCePe1wJC53_7fbBbSECG7YQ">
+            <IconButton title="YouTube" aria-label="YouTube">
+              <YouTubeIcon />
+            </IconButton>
+          </Link>
+        </Flex>
         <JoinModal
           isOpen={isJoinModalOpen}
           onRequestClose={() => setIsJoinModalOpen(false)}
