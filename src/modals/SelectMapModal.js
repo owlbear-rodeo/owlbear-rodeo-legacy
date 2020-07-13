@@ -25,8 +25,7 @@ const defaultMapProps = {
 
 const mapResolutions = [
   { size: 256, quality: 0.25 },
-  { size: 512, quality: 0.5 },
-  { size: 1024, quality: 0.75 },
+  { size: 1024, quality: 0.5 },
 ];
 
 function SelectMapModal({
