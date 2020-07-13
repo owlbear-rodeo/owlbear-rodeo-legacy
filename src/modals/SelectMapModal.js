@@ -13,6 +13,7 @@ import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
 import { isEmpty } from "../helpers/shared";
+import { resizeImage } from "../helpers/image";
 
 const defaultMapSize = 22;
 const defaultMapProps = {
@@ -21,6 +22,12 @@ const defaultMapProps = {
   gridType: "grid",
   showGrid: false,
 };
+
+const mapResolutions = [
+  { size: 256, quality: 0.25 },
+  { size: 512, quality: 0.5 },
+  { size: 1024, quality: 0.75 },
+];
 
 function SelectMapModal({
   isOpen,
@@ -103,10 +110,31 @@ function SelectMapModal({
     const url = URL.createObjectURL(blob);
 
     return new Promise((resolve, reject) => {
-      image.onload = function () {
+      image.onload = async function () {
+        // Create resolutions
+        const resolutions = [];
+        for (let resolution of mapResolutions) {
+          if (Math.max(image.width, image.height) > resolution.size) {
+            const resized = await resizeImage(
+              image,
+              resolution.size,
+              file.type,
+              resolution.quality
+            );
+            const resizedBuffer = await blobToBuffer(resized.blob);
+            resolutions.push({
+              file: resizedBuffer,
+              width: resized.width,
+              height: resized.height,
+              type: "file",
+            });
+          }
+        }
+
         handleMapAdd({
           // Save as a buffer to send with msgpack
           file: buffer,
+          resolutions,
           name,
           type: "file",
           gridX: fileGridX,

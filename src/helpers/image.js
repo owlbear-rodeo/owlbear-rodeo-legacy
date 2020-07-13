@@ -1,17 +1,18 @@
 const lightnessDetectionOffset = 0.1;
 
 /**
+ * @param {HTMLImageElement} image
  * @returns {boolean} True is the image is light
  */
 export function getImageLightness(image) {
-  const imageWidth = image.width;
-  const imageHeight = image.height;
+  const width = image.width;
+  const height = image.height;
   let canvas = document.createElement("canvas");
-  canvas.width = imageWidth;
-  canvas.height = imageHeight;
+  canvas.width = width;
+  canvas.height = height;
   let context = canvas.getContext("2d");
   context.drawImage(image, 0, 0);
-  const imageData = context.getImageData(0, 0, imageWidth, imageHeight);
+  const imageData = context.getImageData(0, 0, width, height);
 
   const data = imageData.data;
   let lightPixels = 0;
@@ -30,6 +31,38 @@ export function getImageLightness(image) {
     }
   }
 
-  const norm = (lightPixels - darkPixels) / (imageWidth * imageHeight);
+  const norm = (lightPixels - darkPixels) / (width * height);
   return norm + lightnessDetectionOffset >= 0;
+}
+
+/**
+ * @param {HTMLImageElement} image the image to resize
+ * @param {number} size the size of the longest edge of the new image
+ * @param {string} type the mime type of the image
+ * @param {number} quality if image is a jpeg or webp this is the quality setting
+ */
+export async function resizeImage(image, size, type, quality) {
+  const width = image.width;
+  const height = image.height;
+  const ratio = width / height;
+  let canvas = document.createElement("canvas");
+  if (ratio > 1) {
+    canvas.width = size;
+    canvas.height = Math.round(size / ratio);
+  } else {
+    canvas.width = Math.round(size * ratio);
+    canvas.height = size;
+  }
+  let context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        resolve({ blob, width: canvas.width, height: canvas.height });
+      },
+      type,
+      quality
+    );
+  });
 }
