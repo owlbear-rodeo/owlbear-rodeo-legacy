@@ -49,7 +49,7 @@ function Game() {
   );
 
   const { putToken, getToken } = useContext(TokenDataContext);
-  const { putMap, getMap } = useContext(MapDataContext);
+  const { putMap, getMap, updateMap } = useContext(MapDataContext);
 
   /**
    * Map state
@@ -119,8 +119,8 @@ function Game() {
     // Omit file from map change, receiver will request the file if
     // they have an outdated version
     if (mapData.type === "file") {
-      const { file, ...rest } = mapData;
-      peer.connection.send({ id: "map", data: rest });
+      const { file, resolutions, ...rest } = mapData;
+      peer.connection.send({ id: "map", data: { ...rest, resolutions: [] } });
     } else {
       peer.connection.send({ id: "map", data: mapData });
     }
@@ -325,7 +325,9 @@ function Game() {
         if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
           setCurrentMap(cachedMap);
         } else {
-          peer.connection.send({ id: "mapRequest", data: newMap.id });
+          putMap(newMap).then(() => {
+            peer.connection.send({ id: "mapRequest", data: newMap.id });
+          });
         }
       } else {
         setCurrentMap(newMap);
@@ -334,18 +336,28 @@ function Game() {
     // Send full map data including file
     if (data.id === "mapRequest") {
       const map = getMap(data.data);
-      peer.connection.send({ id: "mapResponse", data: map });
+      peer.connection.send({
+        id: "mapResponse",
+        data: { id: map.id, resolutions: map.resolutions },
+      });
+      peer.connection.send({
+        id: "mapResponse",
+        data: { id: map.id, file: map.file },
+      });
     }
     // A new map response with a file attached
     if (data.id === "mapResponse") {
-      if (data.data && data.data.type === "file") {
-        const newMap = { ...data.data, file: data.data.file };
-        putMap(newMap).then(() => {
-          setCurrentMap(newMap);
-        });
-      } else {
-        setCurrentMap(data.data);
+      let update = {};
+      if (data.data.file) {
+        update.file = data.data.file;
       }
+      if (data.data.resolutions) {
+        update.resolutions = data.data.resolutions;
+      }
+      const map = getMap(data.data.id);
+      updateMap(map.id, update).then(() => {
+        setCurrentMap({ ...map, ...update });
+      });
     }
     if (data.id === "mapState") {
       setCurrentMapState(data.data);
