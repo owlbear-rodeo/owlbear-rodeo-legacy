@@ -30,8 +30,24 @@ function MapInteraction({
   onSelectedToolChange,
   disabledControls,
 }) {
-  const mapSource = useDataSource(map, defaultMapSources);
-  const [mapSourceImage] = useImage(mapSource);
+  let mapSourceMap = map;
+  if (map && map.type === "file") {
+    // if no file loaded but we have other resolutions
+    if (map.resolutions.length > 0 && !map.file) {
+      mapSourceMap = map.resolutions[map.resolutions.length - 1];
+    }
+  }
+
+  const mapSource = useDataSource(mapSourceMap, defaultMapSources);
+  const [mapSourceImage, mapSourceImageStatus] = useImage(mapSource);
+
+  // Create a map source that only update when the image is fully loaded
+  const [loadedMapSourceImage, setLoadedMapSourceImage] = useState();
+  useEffect(() => {
+    if (mapSourceImageStatus === "loaded") {
+      setLoadedMapSourceImage(mapSourceImage);
+    }
+  }, [mapSourceImage, mapSourceImageStatus]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -270,7 +286,7 @@ function MapInteraction({
         >
           <Layer ref={mapLayerRef}>
             <Image
-              image={mapSourceImage}
+              image={loadedMapSourceImage}
               width={mapWidth}
               height={mapHeight}
               id="mapImage"
