@@ -120,7 +120,7 @@ function Game() {
     // they have an outdated version
     if (mapData.type === "file") {
       const { file, resolutions, ...rest } = mapData;
-      peer.connection.send({ id: "map", data: { ...rest, resolutions: [] } });
+      peer.connection.send({ id: "map", data: { ...rest } });
     } else {
       peer.connection.send({ id: "map", data: mapData });
     }
@@ -336,24 +336,41 @@ function Game() {
     // Send full map data including file
     if (data.id === "mapRequest") {
       const map = getMap(data.data);
-      peer.connection.send({
-        id: "mapResponse",
-        data: { id: map.id, resolutions: map.resolutions },
-      });
-      peer.connection.send({
-        id: "mapResponse",
-        data: { id: map.id, file: map.file },
-      });
+
+      function respond(file) {
+        peer.connection.send({
+          id: "mapResponse",
+          data: { id: map.id, file },
+        });
+      }
+
+      switch (map.quality) {
+        case "low":
+          respond(map.resolutions.low.file);
+          break;
+        case "medium":
+          respond(map.resolutions.low.file);
+          respond(map.resolutions.medium.file);
+          break;
+        case "high":
+          respond(map.resolutions.medium.file);
+          respond(map.resolutions.high.file);
+          break;
+        case "ultra":
+          respond(map.resolutions.medium.file);
+          respond(map.resolutions.ultra.file);
+          break;
+        case "original":
+          respond(map.resolutions.medium.file);
+          respond(map.file);
+          break;
+        default:
+          respond(map.file);
+      }
     }
     // A new map response with a file attached
     if (data.id === "mapResponse") {
-      let update = {};
-      if (data.data.file) {
-        update.file = data.data.file;
-      }
-      if (data.data.resolutions) {
-        update.resolutions = data.data.resolutions;
-      }
+      let update = { file: data.data.file };
       const map = getMap(data.data.id);
       updateMap(map.id, update).then(() => {
         setCurrentMap({ ...map, ...update });

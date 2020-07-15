@@ -32,9 +32,8 @@ function MapInteraction({
 }) {
   let mapSourceMap = map;
   if (map && map.type === "file") {
-    // if no file loaded but we have other resolutions
-    if (map.resolutions.length > 0 && !map.file) {
-      mapSourceMap = map.resolutions[map.resolutions.length - 1];
+    if (map.resolutions && map.quality !== "original") {
+      mapSourceMap = map.resolutions[map.quality];
     }
   }
 

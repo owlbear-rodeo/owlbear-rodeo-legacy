@@ -15,6 +15,14 @@ import { isEmpty } from "../../helpers/shared";
 
 import Divider from "../Divider";
 
+const qualitySettings = [
+  { id: "low", name: "Low" },
+  { id: "medium", name: "Medium" },
+  { id: "high", name: "High" },
+  { id: "ultra", name: "Ultra High" },
+  { id: "original", name: "Original" },
+];
+
 function MapSettings({
   map,
   mapState,
@@ -100,6 +108,26 @@ function MapSettings({
                 onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
               />
               Show Grid
+            </Label>
+          </Flex>
+          <Flex my={2} sx={{ alignItems: "center" }}>
+            <Box sx={{ width: "50%" }}>
+              <Label>Map Quality</Label>
+              <Select
+                my={1}
+                value={!mapEmpty && map.quality}
+                disabled={mapEmpty || map.type === "default"}
+                onChange={(e) => onSettingsChange("quality", e.target.value)}
+              >
+                {qualitySettings.map((quality) => (
+                  <option key={quality.id} value={quality.id}>
+                    {quality.name}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+            <Label sx={{ width: "50%" }} ml={2}>
+              Size: XX
             </Label>
           </Flex>
           <Divider fill />

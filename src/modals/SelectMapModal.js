@@ -21,11 +21,14 @@ const defaultMapProps = {
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
   showGrid: false,
+  quality: "original",
 };
 
 const mapResolutions = [
-  { size: 256, quality: 0.25 },
-  { size: 1024, quality: 0.5 },
+  { size: 512, quality: 0.25, id: "low" },
+  { size: 1024, quality: 0.5, id: "medium" },
+  { size: 2048, quality: 0.75, id: "high" },
+  { size: 4096, quality: 0.8, id: "ultra" },
 ];
 
 function SelectMapModal({
@@ -111,7 +114,7 @@ function SelectMapModal({
     return new Promise((resolve, reject) => {
       image.onload = async function () {
         // Create resolutions
-        const resolutions = [];
+        const resolutions = {};
         for (let resolution of mapResolutions) {
           if (Math.max(image.width, image.height) > resolution.size) {
             const resized = await resizeImage(
@@ -121,12 +124,13 @@ function SelectMapModal({
               resolution.quality
             );
             const resizedBuffer = await blobToBuffer(resized.blob);
-            resolutions.push({
+            resolutions[resolution.id] = {
               file: resizedBuffer,
               width: resized.width,
               height: resized.height,
               type: "file",
-            });
+              id: resolution.id,
+            };
           }
         }
 
