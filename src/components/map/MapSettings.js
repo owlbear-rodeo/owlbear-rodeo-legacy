@@ -120,7 +120,13 @@ function MapSettings({
                 onChange={(e) => onSettingsChange("quality", e.target.value)}
               >
                 {qualitySettings.map((quality) => (
-                  <option key={quality.id} value={quality.id}>
+                  <option
+                    key={quality.id}
+                    value={quality.id}
+                    disabled={
+                      quality.id !== "original" && !map.resolutions[quality.id]
+                    }
+                  >
                     {quality.name}
                   </option>
                 ))}

@@ -25,9 +25,9 @@ const defaultMapProps = {
 };
 
 const mapResolutions = [
-  { size: 512, quality: 0.25, id: "low" },
-  { size: 1024, quality: 0.5, id: "medium" },
-  { size: 2048, quality: 0.75, id: "high" },
+  { size: 512, quality: 0.5, id: "low" },
+  { size: 1024, quality: 0.6, id: "medium" },
+  { size: 2048, quality: 0.7, id: "high" },
   { size: 4096, quality: 0.8, id: "ultra" },
 ];
 
