@@ -15,7 +15,6 @@ class Peer extends SimplePeer {
 
     this.on("data", (packed) => {
       const unpacked = decode(packed);
-      console.log("Recieving data", unpacked);
       // If the special property __chunked is set and true
       // The data is a partial chunk of the a larger file
       // So wait until all chunks are collected and assembled
@@ -55,11 +54,9 @@ class Peer extends SimplePeer {
   send(data) {
     try {
       const packedData = encode(data);
-      console.log("Sending data", data);
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
         const chunks = this.chunk(packedData);
         for (let chunk of chunks) {
-          console.log("Sending Chunk", chunk);
           super.send(encode(chunk));
         }
         return;
