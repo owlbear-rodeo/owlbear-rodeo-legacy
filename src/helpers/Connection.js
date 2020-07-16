@@ -8,7 +8,7 @@ import blobToBuffer from "./blobToBuffer";
 // http://viblast.com/blog/2015/2/5/webrtc-data-channel-message-size/
 const MAX_BUFFER_SIZE = 16000;
 
-class Peer extends SimplePeer {
+class Connection extends SimplePeer {
   constructor(props) {
     super(props);
     this.currentChunks = {};
@@ -126,4 +126,4 @@ class Peer extends SimplePeer {
   }
 }
 
-export default Peer;
+export default Connection;
