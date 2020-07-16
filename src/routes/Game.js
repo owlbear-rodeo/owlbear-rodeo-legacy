@@ -108,7 +108,7 @@ function Game() {
     setCurrentMap(newMap);
     for (let peer of Object.values(peers)) {
       // Clear the map so the new map state isn't shown on an old map
-      peer.connection.send({ id: "map", data: null });
+      peer.connection.send({ id: "map", data: null }, "map");
       peer.connection.send({ id: "mapState", data: newMapState });
       sendMapDataToPeer(peer, newMap);
       sendTokensToPeer(peer, newMapState);
@@ -120,9 +120,9 @@ function Game() {
     // they have an outdated version
     if (mapData.type === "file") {
       const { file, resolutions, ...rest } = mapData;
-      peer.connection.send({ id: "map", data: { ...rest } });
+      peer.connection.send({ id: "map", data: { ...rest } }, "map");
     } else {
-      peer.connection.send({ id: "map", data: mapData });
+      peer.connection.send({ id: "map", data: mapData }, "map");
     }
   }
 
@@ -326,7 +326,7 @@ function Game() {
           setCurrentMap(cachedMap);
         } else {
           putMap(newMap).then(() => {
-            peer.connection.send({ id: "mapRequest", data: newMap.id });
+            peer.connection.send({ id: "mapRequest", data: newMap.id }, "map");
           });
         }
       } else {
@@ -338,10 +338,13 @@ function Game() {
       const map = getMap(data.data);
 
       function respond(file) {
-        peer.connection.send({
-          id: "mapResponse",
-          data: { id: map.id, file },
-        });
+        peer.connection.send(
+          {
+            id: "mapResponse",
+            data: { id: map.id, file },
+          },
+          "map"
+        );
       }
 
       switch (map.quality) {

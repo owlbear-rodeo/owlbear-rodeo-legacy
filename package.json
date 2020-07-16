@@ -31,7 +31,7 @@
     "react-spring": "^8.0.27",
     "react-use-gesture": "^7.0.15",
     "shortid": "^2.2.15",
-    "simple-peer": "^9.6.2",
+    "simple-peer": "feross/simple-peer#694/head",
     "simplebar-react": "^2.1.0",
     "simplify-js": "^1.2.4",
     "socket.io-client": "^2.3.0",

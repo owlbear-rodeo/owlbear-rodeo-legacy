@@ -159,6 +159,10 @@ function useSession(
           trickle: true,
           config: { iceServers },
         });
+        if (initiator) {
+          connection.createDataChannel("map", { iceServers });
+          connection.createDataChannel("token", { iceServers });
+        }
         setPeers((prevPeers) => ({
           ...prevPeers,
           [id]: { id, connection, initiator, sync },

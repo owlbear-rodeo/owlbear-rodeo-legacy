@@ -12,60 +12,87 @@ class Peer extends SimplePeer {
   constructor(props) {
     super(props);
     this.currentChunks = {};
-
-    this.on("data", (packed) => {
-      const unpacked = decode(packed);
-      // If the special property __chunked is set and true
-      // The data is a partial chunk of the a larger file
-      // So wait until all chunks are collected and assembled
-      // before emitting the dataComplete event
-      if (unpacked.__chunked) {
-        let chunk = this.currentChunks[unpacked.id] || {
-          data: [],
-          count: 0,
-          total: unpacked.total,
-        };
-        chunk.data[unpacked.index] = unpacked.data;
-        chunk.count++;
-        this.currentChunks[unpacked.id] = chunk;
-
-        this.emit("dataProgress", {
-          id: unpacked.id,
-          count: chunk.count,
-          total: chunk.total,
-        });
-
-        // All chunks have been loaded
-        if (chunk.count === chunk.total) {
-          // Merge chunks with a blob
-          // TODO: Look at a more efficient way to recombine buffer data
-          const merged = new Blob(chunk.data);
-          blobToBuffer(merged).then((buffer) => {
-            this.emit("dataComplete", decode(buffer));
-            delete this.currentChunks[unpacked.id];
-          });
-        }
-      } else {
-        this.emit("dataComplete", unpacked);
-      }
-    });
+    this.dataChannels = {};
+    this.on("data", this.handleData);
+    this.on("datachannel", this.handleDataChannel);
   }
 
-  send(data) {
+  // Intercept the data event with decoding and chunking support
+  handleData(packed) {
+    const unpacked = decode(packed);
+    // If the special property __chunked is set and true
+    // The data is a partial chunk of the a larger file
+    // So wait until all chunks are collected and assembled
+    // before emitting the dataComplete event
+    if (unpacked.__chunked) {
+      let chunk = this.currentChunks[unpacked.id] || {
+        data: [],
+        count: 0,
+        total: unpacked.total,
+      };
+      chunk.data[unpacked.index] = unpacked.data;
+      chunk.count++;
+      this.currentChunks[unpacked.id] = chunk;
+
+      this.emit("dataProgress", {
+        id: unpacked.id,
+        count: chunk.count,
+        total: chunk.total,
+      });
+
+      // All chunks have been loaded
+      if (chunk.count === chunk.total) {
+        // Merge chunks with a blob
+        // TODO: Look at a more efficient way to recombine buffer data
+        const merged = new Blob(chunk.data);
+        blobToBuffer(merged).then((buffer) => {
+          this.emit("dataComplete", decode(buffer));
+          delete this.currentChunks[unpacked.id];
+        });
+      }
+    } else {
+      this.emit("dataComplete", unpacked);
+    }
+  }
+
+  // Override the send function with encoding, chunking and data channel support
+  send(data, channel) {
     try {
       const packedData = encode(data);
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
         const chunks = this.chunk(packedData);
         for (let chunk of chunks) {
-          super.send(encode(chunk));
+          if (this.dataChannels[channel]) {
+            this.dataChannels[channel].send(encode(chunk));
+          } else {
+            super.send(encode(chunk));
+          }
         }
         return;
       } else {
-        super.send(packedData);
+        if (this.dataChannels[channel]) {
+          this.dataChannels[channel].send(packedData);
+        } else {
+          super.send(packedData);
+        }
       }
     } catch (error) {
       console.error(error);
     }
+  }
+
+  // Override the create data channel function to store our own named reference to it
+  // and to use our custom data handler
+  createDataChannel(channelName, channelConfig, opts) {
+    const channel = super.createDataChannel(channelName, channelConfig, opts);
+    this.dataChannels[channelName] = channel;
+    channel.on("data", this.handleData.bind(this));
+    return channel;
+  }
+
+  handleDataChannel(channel) {
+    this.dataChannels[channel.channelName] = channel;
+    channel.on("data", this.handleData.bind(this));
   }
 
   // Converted from https://github.com/peers/peerjs/
