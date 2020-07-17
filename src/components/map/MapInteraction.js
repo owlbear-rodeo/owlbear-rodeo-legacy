@@ -32,7 +32,11 @@ function MapInteraction({
 }) {
   let mapSourceMap = map;
   if (map && map.type === "file") {
-    if (map.resolutions && map.quality !== "original") {
+    if (
+      map.resolutions &&
+      map.quality !== "original" &&
+      map.resolutions[map.quality]
+    ) {
       mapSourceMap = map.resolutions[map.quality];
     }
   }
