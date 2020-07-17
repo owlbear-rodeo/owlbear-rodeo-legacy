@@ -100,7 +100,11 @@ function MapSettings({
               my={1}
             />
           </Box>
-          <Flex my={2} sx={{ alignItems: "center" }}>
+          <Flex
+            mt={2}
+            mb={map.type === "default" ? 2 : 0}
+            sx={{ alignItems: "center" }}
+          >
             <Box sx={{ width: "50%" }}>
               <Label>Grid Type</Label>
               <Select
