@@ -110,32 +110,35 @@ function MapSettings({
               Show Grid
             </Label>
           </Flex>
-          <Flex my={2} sx={{ alignItems: "center" }}>
-            <Box sx={{ width: "50%" }}>
-              <Label>Map Quality</Label>
-              <Select
-                my={1}
-                value={!mapEmpty && map.quality}
-                disabled={mapEmpty || map.type === "default"}
-                onChange={(e) => onSettingsChange("quality", e.target.value)}
-              >
-                {qualitySettings.map((quality) => (
-                  <option
-                    key={quality.id}
-                    value={quality.id}
-                    disabled={
-                      quality.id !== "original" && !map.resolutions[quality.id]
-                    }
-                  >
-                    {quality.name}
-                  </option>
-                ))}
-              </Select>
-            </Box>
-            <Label sx={{ width: "50%" }} ml={2}>
-              Size: XX
-            </Label>
-          </Flex>
+          {map.type !== "default" && (
+            <Flex my={2} sx={{ alignItems: "center" }}>
+              <Box sx={{ width: "50%" }}>
+                <Label>Map Quality</Label>
+                <Select
+                  my={1}
+                  value={!mapEmpty && map.quality}
+                  disabled={mapEmpty}
+                  onChange={(e) => onSettingsChange("quality", e.target.value)}
+                >
+                  {qualitySettings.map((quality) => (
+                    <option
+                      key={quality.id}
+                      value={quality.id}
+                      disabled={
+                        quality.id !== "original" &&
+                        !map.resolutions[quality.id]
+                      }
+                    >
+                      {quality.name}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Label sx={{ width: "50%" }} ml={2}>
+                Size: XX
+              </Label>
+            </Flex>
+          )}
           <Divider fill />
           <Box my={2} sx={{ flexGrow: 1 }}>
             <Label>Allow Others to Edit</Label>
