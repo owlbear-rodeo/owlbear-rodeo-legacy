@@ -269,7 +269,11 @@ function NetworkedMapAndTokens({ session }) {
             replyWithFile(map.resolutions.ultra.file);
             break;
           case "original":
-            replyWithFile(map.resolutions.medium.file);
+            if (map.resolutions.medium) {
+              replyWithFile(map.resolutions.medium.file);
+            } else if (map.resolutions.low) {
+              replyWithFile(map.resolutions.low.file);
+            }
             replyWithFile(map.file);
             break;
           default:

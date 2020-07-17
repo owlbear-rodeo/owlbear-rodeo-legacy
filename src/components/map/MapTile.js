@@ -19,9 +19,12 @@ function MapTile({
 }) {
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
-
   const mapSource = useDataSource(
-    isDefault ? map : map.resolutions.low ? map.resolutions.low : map,
+    isDefault
+      ? map
+      : map.resolutions && map.resolutions.low
+      ? map.resolutions.low
+      : map,
     defaultMapSources,
     unknownSource
   );
