@@ -16,6 +16,8 @@ import NetworkedParty from "../network/NetworkedParty";
 
 import Session from "../helpers/Session";
 
+const session = new Session();
+
 function Game() {
   const { id: gameId } = useParams();
   const {
@@ -23,7 +25,6 @@ function Game() {
     password,
     setAuthenticationStatus,
   } = useContext(AuthContext);
-  const [session] = useState(new Session());
 
   // Handle authentication status
   useEffect(() => {
@@ -40,7 +41,7 @@ function Game() {
       session.off("authenticationSuccess", handleAuthSuccess);
       session.off("authenticationError", handleAuthError);
     };
-  }, [setAuthenticationStatus, session]);
+  }, [setAuthenticationStatus]);
 
   // Handle session errors
   const [peerError, setPeerError] = useState(null);
@@ -57,7 +58,7 @@ function Game() {
     return () => {
       session.off("error", handlePeerError);
     };
-  }, [session]);
+  }, []);
 
   // Handle connection
   const [connected, setConnected] = useState(false);
@@ -77,12 +78,12 @@ function Game() {
       session.off("connected", handleConnected);
       session.off("disconnected", handleDisconnected);
     };
-  }, [session]);
+  }, []);
 
   // Join game
   useEffect(() => {
     session.joinParty(gameId, password);
-  }, [gameId, password, session]);
+  }, [gameId, password]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
