@@ -33,7 +33,7 @@ function NetworkedMapAndTokens({ session }) {
   } = useContext(MapLoadingContext);
 
   const { putToken, getToken } = useContext(TokenDataContext);
-  const { putMap, getMap, updateMap } = useContext(MapDataContext);
+  const { putMap, getMap } = useContext(MapDataContext);
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useState(null);
