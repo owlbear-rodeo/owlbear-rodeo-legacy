@@ -40,13 +40,24 @@ function MapInteraction({
   const mapSource = useDataSource(mapSourceMap, defaultMapSources);
   const [mapSourceImage, mapSourceImageStatus] = useImage(mapSource);
 
-  // Create a map source that only update when the image is fully loaded
+  // Create a map source that only updates when the image is fully loaded
   const [loadedMapSourceImage, setLoadedMapSourceImage] = useState();
   useEffect(() => {
     if (mapSourceImageStatus === "loaded") {
       setLoadedMapSourceImage(mapSourceImage);
     }
   }, [mapSourceImage, mapSourceImageStatus]);
+
+  // Map loaded taking in to account different resolutions
+  const [mapLoaded, setMapLoaded] = useState(false);
+  useEffect(() => {
+    if (map === null) {
+      setMapLoaded(false);
+    }
+    if (mapSourceImageStatus === "loaded") {
+      setMapLoaded(true);
+    }
+  }, [mapSourceImageStatus, map]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -285,7 +296,7 @@ function MapInteraction({
         >
           <Layer ref={mapLayerRef}>
             <Image
-              image={loadedMapSourceImage}
+              image={mapLoaded && loadedMapSourceImage}
               width={mapWidth}
               height={mapHeight}
               id="mapImage"
@@ -295,7 +306,7 @@ function MapInteraction({
             <AuthContext.Provider value={auth}>
               <MapInteractionProvider value={mapInteraction}>
                 <MapStageProvider value={mapStageRef}>
-                  {children}
+                  {mapLoaded && children}
                 </MapStageProvider>
               </MapInteractionProvider>
             </AuthContext.Provider>
