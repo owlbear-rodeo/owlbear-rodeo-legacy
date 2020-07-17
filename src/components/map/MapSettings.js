@@ -42,6 +42,17 @@ function MapSettings({
     }
   }
 
+  function getMapSize() {
+    let size = 0;
+    if (map.quality === "original") {
+      size = map.file.length;
+    } else {
+      size = map.resolutions[map.quality].file.length;
+    }
+    size /= 1000000; // Bytes to Megabytes
+    return `${size.toFixed(2)}MB`;
+  }
+
   const mapEmpty = !map || isEmpty(map);
   const mapStateEmpty = !mapState || isEmpty(mapState);
 
@@ -135,7 +146,7 @@ function MapSettings({
                 </Select>
               </Box>
               <Label sx={{ width: "50%" }} ml={2}>
-                Size: XX
+                Size: {getMapSize()}
               </Label>
             </Flex>
           )}
