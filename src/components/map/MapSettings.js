@@ -125,7 +125,7 @@ function MapSettings({
               Show Grid
             </Label>
           </Flex>
-          {map.type !== "default" && (
+          {!mapEmpty && map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>
               <Box sx={{ width: "50%" }}>
                 <Label>Quality</Label>
