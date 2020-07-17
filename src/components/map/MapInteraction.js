@@ -76,7 +76,7 @@ function MapInteraction({
   // Reset transform when map changes
   useEffect(() => {
     const layer = mapLayerRef.current;
-    if (map && layer) {
+    if (map && layer && !mapLoaded) {
       const mapHeight = stageWidthRef.current * (map.height / map.width);
       const newTranslate = {
         x: 0,
@@ -89,7 +89,7 @@ function MapInteraction({
 
       setStageScale(1);
     }
-  }, [map]);
+  }, [map, mapLoaded]);
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
