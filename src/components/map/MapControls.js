@@ -67,6 +67,7 @@ function MapContols({
           onMapStateChange={onMapStateChange}
           currentMap={currentMap}
           currentMapState={currentMapState}
+          disabled={disabledControls.includes("map")}
         />
       ),
     },

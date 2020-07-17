@@ -11,6 +11,7 @@ function SelectMapButton({
   onMapStateChange,
   currentMap,
   currentMapState,
+  disabled,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -30,6 +31,7 @@ function SelectMapButton({
         aria-label="Select Map"
         title="Select Map"
         onClick={openModal}
+        disabled={disabled}
       >
         <SelectMapIcon />
       </IconButton>

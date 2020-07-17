@@ -32,6 +32,7 @@ function Map({
   onFogDrawRedo,
   allowMapDrawing,
   allowFogDrawing,
+  allowMapChange,
   disabledTokens,
 }) {
   const { tokensById } = useContext(TokenDataContext);
@@ -140,6 +141,9 @@ function Map({
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
+  }
+  if (!allowMapChange) {
+    disabledControls.push("map");
   }
 
   const disabledSettings = { fog: [], drawing: [] };

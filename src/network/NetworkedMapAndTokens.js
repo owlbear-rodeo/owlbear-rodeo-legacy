@@ -25,9 +25,12 @@ import Tokens from "../components/token/Tokens";
  */
 function NetworkedMapAndTokens({ session }) {
   const { userId } = useContext(AuthContext);
-  const { assetLoadStart, assetLoadFinish, assetProgressUpdate } = useContext(
-    MapLoadingContext
-  );
+  const {
+    assetLoadStart,
+    assetLoadFinish,
+    assetProgressUpdate,
+    isLoading,
+  } = useContext(MapLoadingContext);
 
   const { putToken, getToken } = useContext(TokenDataContext);
   const { putMap, getMap, updateMap } = useContext(MapDataContext);
@@ -363,6 +366,8 @@ function NetworkedMapAndTokens({ session }) {
     };
   });
 
+  const canChangeMap = !isLoading;
+
   const canEditMapDrawing =
     currentMap !== null &&
     currentMapState !== null &&
@@ -407,6 +412,7 @@ function NetworkedMapAndTokens({ session }) {
         onFogDrawRedo={handleFogDrawRedo}
         allowMapDrawing={canEditMapDrawing}
         allowFogDrawing={canEditFogDrawing}
+        allowMapChange={canChangeMap}
         disabledTokens={disabledMapTokens}
       />
       <Tokens onMapTokenStateCreate={handleMapTokenStateCreate} />
