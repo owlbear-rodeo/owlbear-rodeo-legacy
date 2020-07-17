@@ -252,7 +252,7 @@ function NetworkedMapAndTokens({ session }) {
       if (id === "mapRequest") {
         const map = getMap(data);
         function replyWithFile(file) {
-          reply("mapResponse", { id: map.id, file }, "map");
+          reply("mapResponse", { ...map, file, resolutions: [] }, "map");
         }
 
         switch (map.quality) {
@@ -284,11 +284,8 @@ function NetworkedMapAndTokens({ session }) {
         }
       }
       if (id === "mapResponse") {
-        let update = { file: data.file };
-        const map = getMap(data.id);
-        updateMap(map.id, update).then(() => {
-          setCurrentMap({ ...map, ...update });
-        });
+        await putMap(data);
+        setCurrentMap(data);
       }
       if (id === "mapState") {
         setCurrentMapState(data);
