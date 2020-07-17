@@ -181,7 +181,7 @@ function NetworkedMapAndTokens({ session }) {
           sentTokens[tokenState.tokenId] = true;
           // Omit file from token peer will request file if needed
           const { file, ...rest } = token;
-          tokens.add(rest);
+          tokens.push(rest);
         }
       }
       return tokens;
