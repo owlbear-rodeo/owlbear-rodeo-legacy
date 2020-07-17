@@ -124,7 +124,7 @@ function MapSettings({
           {map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>
               <Box sx={{ width: "50%" }}>
-                <Label>Map Quality</Label>
+                <Label>Quality</Label>
                 <Select
                   my={1}
                   value={!mapEmpty && map.quality}
