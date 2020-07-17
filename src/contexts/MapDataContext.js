@@ -105,13 +105,12 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
-    const change = { ...update, lastModified: Date.now() };
-    await database.table("maps").update(id, change);
+    await database.table("maps").update(id, update);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === id);
       if (i > -1) {
-        newMaps[i] = { ...newMaps[i], ...change };
+        newMaps[i] = { ...newMaps[i], ...update };
       }
       return newMaps;
     });

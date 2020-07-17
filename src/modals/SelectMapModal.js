@@ -216,7 +216,11 @@ function SelectMapModal({
   const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
 
   function handleMapSettingsChange(key, value) {
-    setMapSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
+    setMapSettingChanges((prevChanges) => ({
+      ...prevChanges,
+      [key]: value,
+      lastModified: Date.now(),
+    }));
   }
 
   function handleMapStateSettingsChange(key, value) {
