@@ -119,8 +119,8 @@ class Session extends EventEmitter {
       }
       const peer = { id, connection, initiator, sync };
 
-      function sendPeer(id, data) {
-        peer.connection.send({ id, data });
+      function sendPeer(id, data, channel) {
+        peer.connection.send({ id, data }, channel);
       }
 
       function handleSignal(signal) {

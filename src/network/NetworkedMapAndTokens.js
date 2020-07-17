@@ -61,11 +61,11 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMapState(newMapState);
     setCurrentMap(newMap);
     session.send("map", null, "map");
-    session.send("mapState", newMapState, "map");
+    session.send("mapState", newMapState);
     session.send("map", getMapDataToSend(newMap), "map");
     const tokensToSend = getMapTokensToSend(newMapState);
     for (let token of tokensToSend) {
-      session.send("token", token);
+      session.send("token", token, "token");
     }
   }
 
@@ -225,11 +225,11 @@ function NetworkedMapAndTokens({ session }) {
           reply("mapState", currentMapState);
           const tokensToSend = getMapTokensToSend(currentMapState);
           for (let token of tokensToSend) {
-            reply("token", token);
+            reply("token", token, "token");
           }
         }
         if (currentMap) {
-          reply("map", getMapDataToSend(currentMap));
+          reply("map", getMapDataToSend(currentMap), "map");
         }
       }
       if (id === "map") {
@@ -298,13 +298,13 @@ function NetworkedMapAndTokens({ session }) {
             !cachedToken ||
             cachedToken.lastModified !== newToken.lastModified
           ) {
-            reply("tokenRequest", newToken.id);
+            reply("tokenRequest", newToken.id, "token");
           }
         }
       }
       if (id === "tokenRequest") {
         const token = getToken(data);
-        reply("tokenResponse", token);
+        reply("tokenResponse", token, "token");
       }
       if (id === "tokenResponse") {
         const newToken = data;
