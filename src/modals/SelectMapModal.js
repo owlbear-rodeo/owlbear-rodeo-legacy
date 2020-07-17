@@ -6,6 +6,7 @@ import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
 import MapSettings from "../components/map/MapSettings";
 import ImageDrop from "../components/ImageDrop";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 
@@ -195,6 +196,9 @@ function SelectMapModal({
   }
 
   async function handleDone() {
+    if (imageLoading) {
+      return;
+    }
     if (selectedMapId) {
       await applyMapChanges();
       onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
@@ -287,6 +291,7 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
+      {imageLoading && <LoadingOverlay bg="overlay" />}
     </Modal>
   );
 }
