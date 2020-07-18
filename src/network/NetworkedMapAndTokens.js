@@ -64,6 +64,11 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMapState(newMapState);
     setCurrentMap(newMap);
     session.send("map", null, "map");
+
+    if (!newMap || !newMapState) {
+      return;
+    }
+
     session.send("mapState", newMapState);
     session.send("map", getMapDataToSend(newMap), "map");
     const tokensToSend = getMapTokensToSend(newMapState);
@@ -252,7 +257,7 @@ function NetworkedMapAndTokens({ session }) {
       if (id === "mapRequest") {
         const map = getMap(data);
         function replyWithFile(file) {
-          reply("mapResponse", { ...map, file, resolutions: [] }, "map");
+          reply("mapResponse", { ...map, file, resolutions: {} }, "map");
         }
 
         switch (map.quality) {
