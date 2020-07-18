@@ -55,16 +55,36 @@ function Stream({ stream, nickname }) {
       let audioContext = new AudioContext();
       let source = audioContext.createMediaStreamSource(stream);
       let gainNode = audioContext.createGain();
-      gainNode.gain.volume = 1;
+      gainNode.gain.value = 0;
       source.connect(gainNode);
       gainNode.connect(audioContext.destination);
       audioGainRef.current = gainNode;
     }
   }, [stream]);
 
+  // Platforms like iOS don't allow you to control audio volume
+  // Detect this by trying to change the audio volume
+  const [isVolumeControlAvailable, setIsVolumeControlAvailable] = useState(
+    true
+  );
   useEffect(() => {
-    if (audioGainRef.current) {
-      audioGainRef.current.gain.value = streamVolume;
+    if (audioRef.current) {
+      const prevVolume = audioRef.current.volume;
+      audioRef.current.volume = 0.5;
+      setIsVolumeControlAvailable(audioRef.current.volume !== 0.5);
+      audioRef.current.volume = prevVolume;
+    }
+  }, [stream]);
+
+  useEffect(() => {
+    if (audioGainRef.current && audioRef.current) {
+      if (streamVolume <= 1) {
+        audioGainRef.current.gain.value = 0;
+        audioRef.current.volume = streamVolume;
+      } else {
+        audioRef.current.volume = 1;
+        audioGainRef.current.gain.value = (streamVolume - 1) * 2;
+      }
     }
   }, [streamVolume]);
 
@@ -82,13 +102,15 @@ function Stream({ stream, nickname }) {
         >
           <StreamMuteIcon muted={streamMuted} />
         </IconButton>
-        <Slider
-          value={streamVolume}
-          min={0}
-          max={2}
-          step={0.1}
-          onChange={handleVolumeChange}
-        />
+        {isVolumeControlAvailable && (
+          <Slider
+            value={streamVolume}
+            min={0}
+            max={2}
+            step={0.1}
+            onChange={handleVolumeChange}
+          />
+        )}
         {stream && <audio ref={audioRef} playsInline muted={streamMuted} />}
       </Flex>
       <Banner
