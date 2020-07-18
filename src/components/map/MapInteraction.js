@@ -197,45 +197,85 @@ function MapInteraction({
     stageHeightRef.current = height;
   }
 
-  function handleKeyDown(event) {
-    // Change to pan tool when pressing space
-    if (event.key === " " && selectedToolId === "pan") {
-      // Stop active state on pan icon from being selected
-      event.preventDefault();
-    }
-    if (
-      event.key === " " &&
-      selectedToolId !== "pan" &&
-      !disabledControls.includes("pan")
-    ) {
-      event.preventDefault();
-      previousSelectedToolRef.current = selectedToolId;
-      onSelectedToolChange("pan");
+  // Added key events to interaction emitter
+  useEffect(() => {
+    function handleKeyDown(event) {
+      // Ignore text input
+      if (event.target instanceof HTMLInputElement) {
+        return;
+      }
+      interactionEmitter.emit("keyDown", event);
     }
 
-    // Basic keyboard shortcuts
-    if (event.key === "w" && !disabledControls.includes("pan")) {
-      onSelectedToolChange("pan");
-    }
-    if (event.key === "d" && !disabledControls.includes("drawing")) {
-      onSelectedToolChange("drawing");
-    }
-    if (event.key === "f" && !disabledControls.includes("fog")) {
-      onSelectedToolChange("fog");
-    }
-    if (event.key === "m" && !disabledControls.includes("measure")) {
-      onSelectedToolChange("measure");
+    function handleKeyUp(event) {
+      // Ignore text input
+      if (event.target instanceof HTMLInputElement) {
+        return;
+      }
+      interactionEmitter.emit("keyUp", event);
     }
 
-    interactionEmitter.emit("keyDown", event);
-  }
+    document.body.addEventListener("keydown", handleKeyDown);
+    document.body.addEventListener("keyup", handleKeyUp);
+    document.body.tabIndex = 1;
+    return () => {
+      document.body.removeEventListener("keydown", handleKeyDown);
+      document.body.removeEventListener("keyup", handleKeyUp);
+      document.body.tabIndex = 0;
+    };
+  }, [interactionEmitter]);
 
-  function handleKeyUp(event) {
-    if (event.key === " " && selectedToolId === "pan") {
-      onSelectedToolChange(previousSelectedToolRef.current);
+  // Create default keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(event) {
+      // Change to pan tool when pressing space
+      if (event.key === " " && selectedToolId === "pan") {
+        // Stop active state on pan icon from being selected
+        event.preventDefault();
+      }
+      if (
+        event.key === " " &&
+        selectedToolId !== "pan" &&
+        !disabledControls.includes("pan")
+      ) {
+        event.preventDefault();
+        previousSelectedToolRef.current = selectedToolId;
+        onSelectedToolChange("pan");
+      }
+
+      // Basic keyboard shortcuts
+      if (event.key === "w" && !disabledControls.includes("pan")) {
+        onSelectedToolChange("pan");
+      }
+      if (event.key === "d" && !disabledControls.includes("drawing")) {
+        onSelectedToolChange("drawing");
+      }
+      if (event.key === "f" && !disabledControls.includes("fog")) {
+        onSelectedToolChange("fog");
+      }
+      if (event.key === "m" && !disabledControls.includes("measure")) {
+        onSelectedToolChange("measure");
+      }
     }
-    interactionEmitter.emit("keyUp", event);
-  }
+
+    function handleKeyUp(event) {
+      if (event.key === " " && selectedToolId === "pan") {
+        onSelectedToolChange(previousSelectedToolRef.current);
+      }
+    }
+
+    interactionEmitter.on("keyDown", handleKeyDown);
+    interactionEmitter.on("keyUp", handleKeyUp);
+    return () => {
+      interactionEmitter.off("keyDown", handleKeyDown);
+      interactionEmitter.off("keyUp", handleKeyUp);
+    };
+  }, [
+    interactionEmitter,
+    onSelectedToolChange,
+    disabledControls,
+    selectedToolId,
+  ]);
 
   function getCursorForTool(tool) {
     switch (tool) {
@@ -284,9 +324,6 @@ function MapInteraction({
       ref={containerRef}
       {...bind()}
       className="map"
-      tabIndex={1}
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage

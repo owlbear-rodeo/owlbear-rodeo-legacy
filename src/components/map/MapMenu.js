@@ -79,13 +79,7 @@ function MapMenu({
       }}
       contentRef={handleModalContent}
     >
-      {/* Stop keyboard events when modal is open to prevent shortcuts from triggering */}
-      <div
-        onKeyDown={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
+      {children}
     </Modal>
   );
 }
