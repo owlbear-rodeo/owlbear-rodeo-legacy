@@ -1,21 +1,23 @@
 import React from "react";
-import { Text } from "theme-ui";
+import { Text, Flex } from "theme-ui";
 
 import Stream from "./Stream";
 
 function Nickname({ nickname, stream }) {
   return (
-    <Text
-      as="p"
-      my={1}
-      variant="body2"
-      sx={{
-        position: "relative",
-      }}
-    >
-      {nickname}
+    <Flex sx={{ flexDirection: "column" }}>
+      <Text
+        as="p"
+        my={1}
+        variant="body2"
+        sx={{
+          position: "relative",
+        }}
+      >
+        {nickname}
+      </Text>
       {stream && <Stream stream={stream} nickname={nickname} />}
-    </Text>
+    </Flex>
   );
 }
 
