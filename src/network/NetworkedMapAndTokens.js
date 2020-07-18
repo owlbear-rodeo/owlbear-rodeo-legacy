@@ -256,36 +256,47 @@ function NetworkedMapAndTokens({ session }) {
       }
       if (id === "mapRequest") {
         const map = getMap(data);
-        function replyWithFile(file) {
-          reply("mapResponse", { ...map, file, resolutions: {} }, "map");
+
+        function replyWithFile(file, preview) {
+          reply(
+            "mapResponse",
+            {
+              ...map,
+              file,
+              resolutions: {},
+              // If preview don't send the last modified so that it will not be cached
+              lastModified: preview ? 0 : map.lastModified,
+            },
+            "map"
+          );
         }
 
         switch (map.quality) {
           case "low":
-            replyWithFile(map.resolutions.low.file);
+            replyWithFile(map.resolutions.low.file, false);
             break;
           case "medium":
-            replyWithFile(map.resolutions.low.file);
-            replyWithFile(map.resolutions.medium.file);
+            replyWithFile(map.resolutions.low.file, true);
+            replyWithFile(map.resolutions.medium.file, false);
             break;
           case "high":
-            replyWithFile(map.resolutions.medium.file);
-            replyWithFile(map.resolutions.high.file);
+            replyWithFile(map.resolutions.medium.file, true);
+            replyWithFile(map.resolutions.high.file, false);
             break;
           case "ultra":
-            replyWithFile(map.resolutions.medium.file);
-            replyWithFile(map.resolutions.ultra.file);
+            replyWithFile(map.resolutions.medium.file, true);
+            replyWithFile(map.resolutions.ultra.file, false);
             break;
           case "original":
             if (map.resolutions.medium) {
-              replyWithFile(map.resolutions.medium.file);
+              replyWithFile(map.resolutions.medium.file, true);
             } else if (map.resolutions.low) {
-              replyWithFile(map.resolutions.low.file);
+              replyWithFile(map.resolutions.low.file, true);
             }
-            replyWithFile(map.file);
+            replyWithFile(map.file, false);
             break;
           default:
-            replyWithFile(map.file);
+            replyWithFile(map.file, false);
         }
       }
       if (id === "mapResponse") {
