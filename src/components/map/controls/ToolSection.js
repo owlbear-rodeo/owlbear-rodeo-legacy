@@ -13,8 +13,9 @@ function ToolSection({ collapse, tools, onToolClick }) {
     if (selectedTool) {
       setCollapsedTool(selectedTool);
     } else {
-      setCollapsedTool(
-        (prevTool) => prevTool && { ...prevTool, isSelected: false }
+      // No selected tool, deselect if we have a tool or get the first tool if not
+      setCollapsedTool((prevTool) =>
+        prevTool ? { ...prevTool, isSelected: false } : tools[0]
       );
     }
   }, [tools]);
