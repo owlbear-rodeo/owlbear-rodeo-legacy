@@ -24,7 +24,7 @@ To do this there is the Column and Row properties. Columns represents how many g
 
 `Tip: Owlbear Rodeo can automatically fill the Column and Row properties for you if you include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows`
 
-`Note: When uploading a custom map keep the file size in mind. Maps are shared between users in Owlbear Rodeo so if a map is taking too long to load for other party members consider lowering the file size.`
+`Note: When uploading a custom map keep the file size in mind. Maps are shared between users in Owlbear Rodeo so if a map is taking too long to load for other party members consider changing the Quality option in the advanced map settings.`
 
 ## Custom Maps (Advanced)
 
@@ -38,6 +38,7 @@ A brief summary of these settings is listed below.
 - Name: The name of the map shown in the Map Select Screen.
 - Grid Type: Change the type of grid to use for the map. Currently only the Square type is supported however Hex will be added in a future release.
 - Show Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded does't include a grid.
+- Quality: When uploading a map Owlbear Rodeo will automatically generate various quality options, selecting a lower quality may help speed up map sending in resource constrained environments.
 - Allow others to edit: These properties control what other party members can edit when viewing your map.
   - Fog: Controls whether others can edit the maps fog (default disabled).
   - Drawings: Controls whether others can add drawings to the map (default enabled).
