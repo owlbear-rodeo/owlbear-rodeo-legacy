@@ -8,8 +8,7 @@ import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
 
 import { getStrokeWidth } from "../../helpers/drawing";
-
-const lightnessDetectionOffset = 0.1;
+import { getImageLightness } from "../../helpers/image";
 
 function MapGrid({ map, gridSize }) {
   const mapSource = useDataSource(map, defaultMapSources);
@@ -28,38 +27,7 @@ function MapGrid({ map, gridSize }) {
   // When the map changes find the average lightness of its pixels
   useEffect(() => {
     if (mapLoadingStatus === "loaded") {
-      const imageWidth = mapImage.width;
-      const imageHeight = mapImage.height;
-      let canvas = document.createElement("canvas");
-      canvas.width = imageWidth;
-      canvas.height = imageHeight;
-      let context = canvas.getContext("2d");
-      context.drawImage(mapImage, 0, 0);
-      const imageData = context.getImageData(0, 0, imageWidth, imageHeight);
-
-      const data = imageData.data;
-      let lightPixels = 0;
-      let darkPixels = 0;
-      // Loop over every pixels rgba values
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        const max = Math.max(Math.max(r, g), b);
-        if (max < 128) {
-          darkPixels++;
-        } else {
-          lightPixels++;
-        }
-      }
-
-      const norm = (lightPixels - darkPixels) / (imageWidth * imageHeight);
-      if (norm + lightnessDetectionOffset < 0) {
-        setIsImageLight(false);
-      } else {
-        setIsImageLight(true);
-      }
+      setIsImageLight(getImageLightness(mapImage));
     }
   }, [mapImage, mapLoadingStatus]);
 

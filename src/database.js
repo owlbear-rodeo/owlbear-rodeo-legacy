@@ -117,6 +117,18 @@ function loadVersions(db) {
           }
         });
     });
+  // v1.4.2 - Added map resolutions
+  db.version(6)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.resolutions = {};
+          map.quality = "original";
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

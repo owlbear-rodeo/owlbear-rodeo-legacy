@@ -45,15 +45,15 @@ function MapToken({
   }, [tokenSourceImage]);
 
   function handleDragStart(event) {
-    const tokenImage = event.target;
-    const tokenImageRect = tokenImage.getClientRect();
+    const tokenGroup = event.target;
+    const tokenImage = imageRef.current;
 
     if (token && token.isVehicle) {
       // Find all other tokens on the map
-      const layer = tokenImage.getLayer();
+      const layer = tokenGroup.getLayer();
       const tokens = layer.find(".token");
       for (let other of tokens) {
-        if (other === tokenImage) {
+        if (other === tokenGroup) {
           continue;
         }
         const otherRect = other.getClientRect();
@@ -61,16 +61,10 @@ function MapToken({
           x: otherRect.x + otherRect.width / 2,
           y: otherRect.y + otherRect.height / 2,
         };
-        // Check the other tokens center overlaps this tokens bounding box
-        if (
-          otherCenter.x > tokenImageRect.x &&
-          otherCenter.x < tokenImageRect.x + tokenImageRect.width &&
-          otherCenter.y > tokenImageRect.y &&
-          otherCenter.y < tokenImageRect.y + tokenImageRect.height
-        ) {
+        if (tokenImage.intersects(otherCenter)) {
           // Save and restore token position after moving layer
           const position = other.absolutePosition();
-          other.moveTo(tokenImage);
+          other.moveTo(tokenGroup);
           other.absolutePosition(position);
         }
       }
@@ -80,16 +74,16 @@ function MapToken({
   }
 
   function handleDragEnd(event) {
-    const tokenImage = event.target;
+    const tokenGroup = event.target;
 
     const mountChanges = {};
     if (token && token.isVehicle) {
-      const layer = tokenImage.getLayer();
-      const mountedTokens = tokenImage.find(".token");
+      const parent = tokenGroup.getParent();
+      const mountedTokens = tokenGroup.find(".token");
       for (let mountedToken of mountedTokens) {
         // Save and restore token position after moving layer
         const position = mountedToken.absolutePosition();
-        mountedToken.moveTo(layer);
+        mountedToken.moveTo(parent);
         mountedToken.absolutePosition(position);
         mountChanges[mountedToken.id()] = {
           ...mapState.tokens[mountedToken.id()],
@@ -105,8 +99,8 @@ function MapToken({
       ...mountChanges,
       [tokenState.id]: {
         ...tokenState,
-        x: tokenImage.x() / mapWidth,
-        y: tokenImage.y() / mapHeight,
+        x: tokenGroup.x() / mapWidth,
+        y: tokenGroup.y() / mapHeight,
         lastEditedBy: userId,
       },
     });

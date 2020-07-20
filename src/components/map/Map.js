@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
+import { Group } from "react-konva";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
@@ -32,6 +33,7 @@ function Map({
   onFogDrawRedo,
   allowMapDrawing,
   allowFogDrawing,
+  allowMapChange,
   disabledTokens,
 }) {
   const { tokensById } = useContext(TokenDataContext);
@@ -141,6 +143,9 @@ function Map({
   if (!allowFogDrawing) {
     disabledControls.push("fog");
   }
+  if (!allowMapChange) {
+    disabledControls.push("map");
+  }
 
   const disabledSettings = { fog: [], drawing: [] };
   if (mapShapes.length === 0) {
@@ -204,29 +209,39 @@ function Map({
     }
   }
 
-  const mapTokens =
-    mapState &&
-    Object.values(mapState.tokens)
-      .sort(sortMapTokenStates)
-      .map((tokenState) => (
-        <MapToken
-          key={tokenState.id}
-          token={tokensById[tokenState.tokenId]}
-          tokenState={tokenState}
-          tokenSizePercent={tokenSizePercent}
-          onTokenStateChange={onMapTokenStateChange}
-          onTokenMenuOpen={handleTokenMenuOpen}
-          onTokenDragStart={(e) =>
-            setDraggingTokenOptions({ tokenState, tokenImage: e.target })
-          }
-          onTokenDragEnd={() => setDraggingTokenOptions(null)}
-          draggable={
-            (selectedToolId === "pan" || selectedToolId === "erase") &&
-            !(tokenState.id in disabledTokens)
-          }
-          mapState={mapState}
-        />
-      ));
+  const mapTokens = mapState && (
+    <Group>
+      {Object.values(mapState.tokens)
+        .sort(sortMapTokenStates)
+        .map((tokenState) => (
+          <MapToken
+            key={tokenState.id}
+            token={tokensById[tokenState.tokenId]}
+            tokenState={tokenState}
+            tokenSizePercent={tokenSizePercent}
+            onTokenStateChange={onMapTokenStateChange}
+            onTokenMenuOpen={handleTokenMenuOpen}
+            onTokenDragStart={(e) =>
+              setDraggingTokenOptions({
+                dragging: true,
+                tokenState,
+                tokenGroup: e.target,
+              })
+            }
+            onTokenDragEnd={() =>
+              setDraggingTokenOptions({
+                ...draggingTokenOptions,
+                dragging: false,
+              })
+            }
+            draggable={
+              selectedToolId === "pan" && !(tokenState.id in disabledTokens)
+            }
+            mapState={mapState}
+          />
+        ))}
+    </Group>
+  );
 
   const tokenMenu = (
     <TokenMenu
@@ -246,7 +261,8 @@ function Map({
       }}
       onTokenStateChange={onMapTokenStateChange}
       tokenState={draggingTokenOptions && draggingTokenOptions.tokenState}
-      tokenImage={draggingTokenOptions && draggingTokenOptions.tokenImage}
+      tokenGroup={draggingTokenOptions && draggingTokenOptions.tokenGroup}
+      dragging={draggingTokenOptions && draggingTokenOptions.dragging}
       token={tokensById[draggingTokenOptions.tokenState.tokenId]}
       mapState={mapState}
     />

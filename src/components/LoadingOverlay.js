@@ -3,7 +3,7 @@ import { Box } from "theme-ui";
 
 import Spinner from "./Spinner";
 
-function LoadingOverlay() {
+function LoadingOverlay(bg) {
   return (
     <Box
       sx={{
@@ -17,11 +17,15 @@ function LoadingOverlay() {
         left: 0,
         flexDirection: "column",
       }}
-      bg="muted"
+      bg={bg}
     >
       <Spinner />
     </Box>
   );
 }
+
+LoadingOverlay.defaultProps = {
+  bg: "muted",
+};
 
 export default LoadingOverlay;

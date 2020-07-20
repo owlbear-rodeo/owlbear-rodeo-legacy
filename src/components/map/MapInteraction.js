@@ -30,8 +30,38 @@ function MapInteraction({
   onSelectedToolChange,
   disabledControls,
 }) {
-  const mapSource = useDataSource(map, defaultMapSources);
-  const [mapSourceImage] = useImage(mapSource);
+  let mapSourceMap = map;
+  if (map && map.type === "file") {
+    if (
+      map.resolutions &&
+      map.quality !== "original" &&
+      map.resolutions[map.quality]
+    ) {
+      mapSourceMap = map.resolutions[map.quality];
+    }
+  }
+
+  const mapSource = useDataSource(mapSourceMap, defaultMapSources);
+  const [mapSourceImage, mapSourceImageStatus] = useImage(mapSource);
+
+  // Create a map source that only updates when the image is fully loaded
+  const [loadedMapSourceImage, setLoadedMapSourceImage] = useState();
+  useEffect(() => {
+    if (mapSourceImageStatus === "loaded") {
+      setLoadedMapSourceImage(mapSourceImage);
+    }
+  }, [mapSourceImage, mapSourceImageStatus]);
+
+  // Map loaded taking in to account different resolutions
+  const [mapLoaded, setMapLoaded] = useState(false);
+  useEffect(() => {
+    if (map === null) {
+      setMapLoaded(false);
+    }
+    if (mapSourceImageStatus === "loaded") {
+      setMapLoaded(true);
+    }
+  }, [mapSourceImageStatus, map]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -46,7 +76,7 @@ function MapInteraction({
   // Reset transform when map changes
   useEffect(() => {
     const layer = mapLayerRef.current;
-    if (map && layer) {
+    if (map && layer && !mapLoaded) {
       const mapHeight = stageWidthRef.current * (map.height / map.width);
       const newTranslate = {
         x: 0,
@@ -59,7 +89,7 @@ function MapInteraction({
 
       setStageScale(1);
     }
-  }, [map]);
+  }, [map, mapLoaded]);
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
@@ -167,45 +197,85 @@ function MapInteraction({
     stageHeightRef.current = height;
   }
 
-  function handleKeyDown(event) {
-    // Change to pan tool when pressing space
-    if (event.key === " " && selectedToolId === "pan") {
-      // Stop active state on pan icon from being selected
-      event.preventDefault();
-    }
-    if (
-      event.key === " " &&
-      selectedToolId !== "pan" &&
-      !disabledControls.includes("pan")
-    ) {
-      event.preventDefault();
-      previousSelectedToolRef.current = selectedToolId;
-      onSelectedToolChange("pan");
+  // Added key events to interaction emitter
+  useEffect(() => {
+    function handleKeyDown(event) {
+      // Ignore text input
+      if (event.target instanceof HTMLInputElement) {
+        return;
+      }
+      interactionEmitter.emit("keyDown", event);
     }
 
-    // Basic keyboard shortcuts
-    if (event.key === "w" && !disabledControls.includes("pan")) {
-      onSelectedToolChange("pan");
-    }
-    if (event.key === "d" && !disabledControls.includes("drawing")) {
-      onSelectedToolChange("drawing");
-    }
-    if (event.key === "f" && !disabledControls.includes("fog")) {
-      onSelectedToolChange("fog");
-    }
-    if (event.key === "m" && !disabledControls.includes("measure")) {
-      onSelectedToolChange("measure");
+    function handleKeyUp(event) {
+      // Ignore text input
+      if (event.target instanceof HTMLInputElement) {
+        return;
+      }
+      interactionEmitter.emit("keyUp", event);
     }
 
-    interactionEmitter.emit("keyDown", event);
-  }
+    document.body.addEventListener("keydown", handleKeyDown);
+    document.body.addEventListener("keyup", handleKeyUp);
+    document.body.tabIndex = 1;
+    return () => {
+      document.body.removeEventListener("keydown", handleKeyDown);
+      document.body.removeEventListener("keyup", handleKeyUp);
+      document.body.tabIndex = 0;
+    };
+  }, [interactionEmitter]);
 
-  function handleKeyUp(event) {
-    if (event.key === " " && selectedToolId === "pan") {
-      onSelectedToolChange(previousSelectedToolRef.current);
+  // Create default keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(event) {
+      // Change to pan tool when pressing space
+      if (event.key === " " && selectedToolId === "pan") {
+        // Stop active state on pan icon from being selected
+        event.preventDefault();
+      }
+      if (
+        event.key === " " &&
+        selectedToolId !== "pan" &&
+        !disabledControls.includes("pan")
+      ) {
+        event.preventDefault();
+        previousSelectedToolRef.current = selectedToolId;
+        onSelectedToolChange("pan");
+      }
+
+      // Basic keyboard shortcuts
+      if (event.key === "w" && !disabledControls.includes("pan")) {
+        onSelectedToolChange("pan");
+      }
+      if (event.key === "d" && !disabledControls.includes("drawing")) {
+        onSelectedToolChange("drawing");
+      }
+      if (event.key === "f" && !disabledControls.includes("fog")) {
+        onSelectedToolChange("fog");
+      }
+      if (event.key === "m" && !disabledControls.includes("measure")) {
+        onSelectedToolChange("measure");
+      }
     }
-    interactionEmitter.emit("keyUp", event);
-  }
+
+    function handleKeyUp(event) {
+      if (event.key === " " && selectedToolId === "pan") {
+        onSelectedToolChange(previousSelectedToolRef.current);
+      }
+    }
+
+    interactionEmitter.on("keyDown", handleKeyDown);
+    interactionEmitter.on("keyUp", handleKeyUp);
+    return () => {
+      interactionEmitter.off("keyDown", handleKeyDown);
+      interactionEmitter.off("keyUp", handleKeyUp);
+    };
+  }, [
+    interactionEmitter,
+    onSelectedToolChange,
+    disabledControls,
+    selectedToolId,
+  ]);
 
   function getCursorForTool(tool) {
     switch (tool) {
@@ -254,9 +324,6 @@ function MapInteraction({
       ref={containerRef}
       {...bind()}
       className="map"
-      tabIndex={1}
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage
@@ -270,7 +337,7 @@ function MapInteraction({
         >
           <Layer ref={mapLayerRef}>
             <Image
-              image={mapSourceImage}
+              image={mapLoaded && loadedMapSourceImage}
               width={mapWidth}
               height={mapHeight}
               id="mapImage"
@@ -280,7 +347,7 @@ function MapInteraction({
             <AuthContext.Provider value={auth}>
               <MapInteractionProvider value={mapInteraction}>
                 <MapStageProvider value={mapStageRef}>
-                  {children}
+                  {mapLoaded && children}
                 </MapStageProvider>
               </MapInteractionProvider>
             </AuthContext.Provider>

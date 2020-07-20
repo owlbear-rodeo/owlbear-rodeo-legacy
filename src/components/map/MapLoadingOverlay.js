@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { Box, Progress } from "theme-ui";
 
-import Spinner from "../Spinner";
 import MapLoadingContext from "../../contexts/MapLoadingContext";
 
 function MapLoadingOverlay() {
@@ -36,18 +35,16 @@ function MapLoadingOverlay() {
       <Box
         sx={{
           position: "absolute",
-          width: "100%",
-          height: "100%",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          top: 0,
-          left: 0,
+          left: "8px",
+          bottom: "8px",
           flexDirection: "column",
+          borderRadius: "28px",
         }}
-        bg="muted"
+        bg="overlay"
       >
-        <Spinner />
         <Progress
           ref={progressBarRef}
           max={1}

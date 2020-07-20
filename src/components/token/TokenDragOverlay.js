@@ -11,7 +11,8 @@ function TokenDragOverlay({
   onTokenStateChange,
   token,
   tokenState,
-  tokenImage,
+  tokenGroup,
+  dragging,
   mapState,
 }) {
   const { userId } = useContext(AuthContext);
@@ -28,7 +29,7 @@ function TokenDragOverlay({
     const mapRect = map.getBoundingClientRect();
 
     function detectRemoveHover() {
-      const pointerPosition = tokenImage.getStage().getPointerPosition();
+      const pointerPosition = tokenGroup.getStage().getPointerPosition();
       const screenSpacePointerPosition = {
         x: pointerPosition.x + mapRect.left,
         y: pointerPosition.y + mapRect.top,
@@ -50,7 +51,7 @@ function TokenDragOverlay({
     }
 
     let handler;
-    if (tokenState && tokenImage) {
+    if (tokenState && tokenGroup && dragging) {
       handler = setInterval(detectRemoveHover, 100);
     }
 
@@ -59,74 +60,62 @@ function TokenDragOverlay({
         clearInterval(handler);
       }
     };
-  }, [tokenState, tokenImage, isRemoveHovered]);
+  }, [tokenState, tokenGroup, isRemoveHovered, dragging]);
 
   // Detect drag end of token image and remove it if it is over the remove icon
   useEffect(() => {
     function handleTokenDragEnd() {
-      if (isRemoveHovered) {
-        // Handle other tokens when a vehicle gets deleted
-        if (token && token.isVehicle) {
-          const layer = tokenImage.getLayer();
-          const mountedTokens = tokenImage.find(".token");
-          for (let mountedToken of mountedTokens) {
-            // Save and restore token position after moving layer
-            const position = mountedToken.absolutePosition();
-            mountedToken.moveTo(layer);
-            mountedToken.absolutePosition(position);
-            onTokenStateChange({
-              [mountedToken.id()]: {
-                ...mapState.tokens[mountedToken.id()],
-                x: mountedToken.x() / mapWidth,
-                y: mountedToken.y() / mapHeight,
-                lastEditedBy: userId,
-              },
-            });
-          }
+      // Handle other tokens when a vehicle gets deleted
+      if (token && token.isVehicle) {
+        const layer = tokenGroup.getLayer();
+        const mountedTokens = tokenGroup.find(".token");
+        for (let mountedToken of mountedTokens) {
+          // Save and restore token position after moving layer
+          const position = mountedToken.absolutePosition();
+          mountedToken.moveTo(layer);
+          mountedToken.absolutePosition(position);
+          onTokenStateChange({
+            [mountedToken.id()]: {
+              ...mapState.tokens[mountedToken.id()],
+              x: mountedToken.x() / mapWidth,
+              y: mountedToken.y() / mapHeight,
+              lastEditedBy: userId,
+            },
+          });
         }
-        onTokenStateRemove(tokenState);
-        setPreventMapInteraction(false);
       }
+      onTokenStateRemove(tokenState);
+      setPreventMapInteraction(false);
     }
-    tokenImage.on("dragend", handleTokenDragEnd);
-    return () => {
-      tokenImage.off("dragend", handleTokenDragEnd);
-    };
-  }, [
-    tokenImage,
-    token,
-    tokenState,
-    isRemoveHovered,
-    mapWidth,
-    mapHeight,
-    userId,
-    onTokenStateChange,
-    onTokenStateRemove,
-    setPreventMapInteraction,
-    mapState.tokens,
-  ]);
+
+    if (!dragging && tokenState && isRemoveHovered) {
+      handleTokenDragEnd();
+    }
+  });
 
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        bottom: "32px",
-        left: "50%",
-        borderRadius: "50%",
-        transform: isRemoveHovered
-          ? "translateX(-50%) scale(2.0)"
-          : "translateX(-50%) scale(1.5)",
-        transition: "transform 250ms ease",
-        color: isRemoveHovered ? "primary" : "text",
-        pointerEvents: "none",
-      }}
-      bg="overlay"
-      ref={removeTokenRef}
-    >
-      <IconButton>
-        <RemoveTokenIcon />
-      </IconButton>
-    </Box>
+    dragging && (
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "32px",
+          left: "50%",
+          borderRadius: "50%",
+          transform: isRemoveHovered
+            ? "translateX(-50%) scale(2.0)"
+            : "translateX(-50%) scale(1.5)",
+          transition: "transform 250ms ease",
+          color: isRemoveHovered ? "primary" : "text",
+          pointerEvents: "none",
+        }}
+        bg="overlay"
+        ref={removeTokenRef}
+      >
+        <IconButton>
+          <RemoveTokenIcon />
+        </IconButton>
+      </Box>
+    )
   );
 }
 

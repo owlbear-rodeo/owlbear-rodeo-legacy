@@ -6,6 +6,7 @@ import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
 import MapSettings from "../components/map/MapSettings";
 import ImageDrop from "../components/ImageDrop";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 
@@ -13,6 +14,7 @@ import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
 import { isEmpty } from "../helpers/shared";
+import { resizeImage } from "../helpers/image";
 
 const defaultMapSize = 22;
 const defaultMapProps = {
@@ -20,7 +22,15 @@ const defaultMapProps = {
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
   showGrid: false,
+  quality: "original",
 };
+
+const mapResolutions = [
+  { size: 512, quality: 0.5, id: "low" },
+  { size: 1024, quality: 0.6, id: "medium" },
+  { size: 2048, quality: 0.7, id: "high" },
+  { size: 4096, quality: 0.8, id: "ultra" },
+];
 
 function SelectMapModal({
   isOpen,
@@ -103,10 +113,32 @@ function SelectMapModal({
     const url = URL.createObjectURL(blob);
 
     return new Promise((resolve, reject) => {
-      image.onload = function () {
+      image.onload = async function () {
+        // Create resolutions
+        const resolutions = {};
+        for (let resolution of mapResolutions) {
+          if (Math.max(image.width, image.height) > resolution.size) {
+            const resized = await resizeImage(
+              image,
+              resolution.size,
+              file.type,
+              resolution.quality
+            );
+            const resizedBuffer = await blobToBuffer(resized.blob);
+            resolutions[resolution.id] = {
+              file: resizedBuffer,
+              width: resized.width,
+              height: resized.height,
+              type: "file",
+              id: resolution.id,
+            };
+          }
+        }
+
         handleMapAdd({
           // Save as a buffer to send with msgpack
           file: buffer,
+          resolutions,
           name,
           type: "file",
           gridX: fileGridX,
@@ -164,6 +196,9 @@ function SelectMapModal({
   }
 
   async function handleDone() {
+    if (imageLoading) {
+      return;
+    }
     if (selectedMapId) {
       await applyMapChanges();
       onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
@@ -181,7 +216,11 @@ function SelectMapModal({
   const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
 
   function handleMapSettingsChange(key, value) {
-    setMapSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
+    setMapSettingChanges((prevChanges) => ({
+      ...prevChanges,
+      [key]: value,
+      lastModified: Date.now(),
+    }));
   }
 
   function handleMapStateSettingsChange(key, value) {
@@ -256,6 +295,7 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
+      {imageLoading && <LoadingOverlay bg="overlay" />}
     </Modal>
   );
 }

@@ -15,6 +15,14 @@ import { isEmpty } from "../../helpers/shared";
 
 import Divider from "../Divider";
 
+const qualitySettings = [
+  { id: "low", name: "Low" },
+  { id: "medium", name: "Medium" },
+  { id: "high", name: "High" },
+  { id: "ultra", name: "Ultra High" },
+  { id: "original", name: "Original" },
+];
+
 function MapSettings({
   map,
   mapState,
@@ -32,6 +40,17 @@ function MapSettings({
         mapState.editFlags.filter((f) => f !== flag)
       );
     }
+  }
+
+  function getMapSize() {
+    let size = 0;
+    if (map.quality === "original") {
+      size = map.file.length;
+    } else {
+      size = map.resolutions[map.quality].file.length;
+    }
+    size /= 1000000; // Bytes to Megabytes
+    return `${size.toFixed(2)}MB`;
   }
 
   const mapEmpty = !map || isEmpty(map);
@@ -81,7 +100,11 @@ function MapSettings({
               my={1}
             />
           </Box>
-          <Flex my={2} sx={{ alignItems: "center" }}>
+          <Flex
+            mt={2}
+            mb={map.type === "default" ? 2 : 0}
+            sx={{ alignItems: "center" }}
+          >
             <Box sx={{ width: "50%" }}>
               <Label>Grid Type</Label>
               <Select
@@ -102,6 +125,35 @@ function MapSettings({
               Show Grid
             </Label>
           </Flex>
+          {!mapEmpty && map.type !== "default" && (
+            <Flex my={2} sx={{ alignItems: "center" }}>
+              <Box sx={{ width: "50%" }}>
+                <Label>Quality</Label>
+                <Select
+                  my={1}
+                  value={!mapEmpty && map.quality}
+                  disabled={mapEmpty}
+                  onChange={(e) => onSettingsChange("quality", e.target.value)}
+                >
+                  {qualitySettings.map((quality) => (
+                    <option
+                      key={quality.id}
+                      value={quality.id}
+                      disabled={
+                        quality.id !== "original" &&
+                        !map.resolutions[quality.id]
+                      }
+                    >
+                      {quality.name}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Label sx={{ width: "50%" }} ml={2}>
+                Size: {getMapSize()}
+              </Label>
+            </Flex>
+          )}
           <Divider fill />
           <Box my={2} sx={{ flexGrow: 1 }}>
             <Label>Allow Others to Edit</Label>
