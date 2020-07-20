@@ -1,10 +1,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Rect, Text, Group } from "react-konva";
 
+const maxTokenSize = 3;
+
 function TokenLabel({ tokenState, width, height }) {
-  const fontSize = height / 6 / tokenState.size;
-  const paddingY = height / 16 / tokenState.size;
-  const paddingX = height / 8 / tokenState.size;
+  const fontSize =
+    (height / 6 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
+  const paddingY =
+    (height / 16 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
+  const paddingX =
+    (height / 8 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
 
   const [rectWidth, setRectWidth] = useState(0);
   useEffect(() => {
