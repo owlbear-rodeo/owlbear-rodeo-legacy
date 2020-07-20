@@ -78,12 +78,12 @@ function MapToken({
 
     const mountChanges = {};
     if (token && token.isVehicle) {
-      const layer = tokenGroup.getLayer();
+      const parent = tokenGroup.getParent();
       const mountedTokens = tokenGroup.find(".token");
       for (let mountedToken of mountedTokens) {
         // Save and restore token position after moving layer
         const position = mountedToken.absolutePosition();
-        mountedToken.moveTo(layer);
+        mountedToken.moveTo(parent);
         mountedToken.absolutePosition(position);
         mountChanges[mountedToken.id()] = {
           ...mapState.tokens[mountedToken.id()],
