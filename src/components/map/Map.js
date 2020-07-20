@@ -221,12 +221,20 @@ function Map({
           onTokenStateChange={onMapTokenStateChange}
           onTokenMenuOpen={handleTokenMenuOpen}
           onTokenDragStart={(e) =>
-            setDraggingTokenOptions({ tokenState, tokenImage: e.target })
+            setDraggingTokenOptions({
+              dragging: true,
+              tokenState,
+              tokenGroup: e.target,
+            })
           }
-          onTokenDragEnd={() => setDraggingTokenOptions(null)}
+          onTokenDragEnd={() =>
+            setDraggingTokenOptions({
+              ...draggingTokenOptions,
+              dragging: false,
+            })
+          }
           draggable={
-            (selectedToolId === "pan" || selectedToolId === "erase") &&
-            !(tokenState.id in disabledTokens)
+            selectedToolId === "pan" && !(tokenState.id in disabledTokens)
           }
           mapState={mapState}
         />
@@ -250,7 +258,8 @@ function Map({
       }}
       onTokenStateChange={onMapTokenStateChange}
       tokenState={draggingTokenOptions && draggingTokenOptions.tokenState}
-      tokenImage={draggingTokenOptions && draggingTokenOptions.tokenImage}
+      tokenGroup={draggingTokenOptions && draggingTokenOptions.tokenGroup}
+      dragging={draggingTokenOptions && draggingTokenOptions.dragging}
       token={tokensById[draggingTokenOptions.tokenState.tokenId]}
       mapState={mapState}
     />
