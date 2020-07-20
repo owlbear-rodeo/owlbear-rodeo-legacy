@@ -3,6 +3,8 @@ import { EventEmitter } from "events";
 
 import Connection from "./Connection";
 
+import { omit } from "./shared";
+
 /**
  * @typedef {object} SessionPeer
  * @property {string} id - The socket id of the peer
@@ -93,6 +95,16 @@ class Session extends EventEmitter {
    * @param {string} password - the password of the party
    */
   async joinParty(partyId, password) {
+    if (typeof partyId !== "string" || typeof password !== "string") {
+      console.error(
+        "Unable to join party: invalid party ID or password",
+        partyId,
+        password
+      );
+      this.emit("disconnected");
+      return;
+    }
+
     this._partyId = partyId;
     this._password = password;
     try {
@@ -159,8 +171,9 @@ class Session extends EventEmitter {
       }
 
       function handleClose() {
-        peer.connection.destroy();
         this.emit("disconnect", { peer });
+        peer.connection.destroy();
+        this.peers = omit(this.peers, [peer.id]);
       }
 
       function handleError(error) {

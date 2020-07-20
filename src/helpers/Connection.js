@@ -85,14 +85,17 @@ class Connection extends SimplePeer {
   // and to use our custom data handler
   createDataChannel(channelName, channelConfig, opts) {
     const channel = super.createDataChannel(channelName, channelConfig, opts);
-    this.dataChannels[channelName] = channel;
-    channel.on("data", this.handleData.bind(this));
+    this.handleDataChannel(channel);
     return channel;
   }
 
   handleDataChannel(channel) {
-    this.dataChannels[channel.channelName] = channel;
+    const channelName = channel.channelName;
+    this.dataChannels[channelName] = channel;
     channel.on("data", this.handleData.bind(this));
+    channel.on("error", (error) => {
+      this.emit("error", error);
+    });
   }
 
   // Converted from https://github.com/peers/peerjs/
