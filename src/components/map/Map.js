@@ -10,6 +10,7 @@ import MapDice from "./MapDice";
 import MapGrid from "./MapGrid";
 import MapMeasure from "./MapMeasure";
 import MapLoadingOverlay from "./MapLoadingOverlay";
+import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 
@@ -35,6 +36,7 @@ function Map({
   allowFogDrawing,
   allowMapChange,
   disabledTokens,
+  session,
 }) {
   const { tokensById } = useContext(TokenDataContext);
 
@@ -139,6 +141,7 @@ function Map({
   if (!map) {
     disabledControls.push("pan");
     disabledControls.push("measure");
+    disabledControls.push("pointer");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
@@ -304,6 +307,14 @@ function Map({
     />
   );
 
+  const mapPointer = (
+    <NetworkedMapPointer
+      active={selectedToolId === "pointer"}
+      gridSize={gridSizeNormalized}
+      session={session}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -324,6 +335,7 @@ function Map({
       {mapDrawing}
       {mapTokens}
       {mapFog}
+      {mapPointer}
       {mapMeasure}
     </MapInteraction>
   );
