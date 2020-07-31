@@ -241,6 +241,7 @@ function Map({
               selectedToolId === "pan" && !(tokenState.id in disabledTokens)
             }
             mapState={mapState}
+            fadeOnHover={selectedToolId === "drawing"}
           />
         ))}
     </Group>

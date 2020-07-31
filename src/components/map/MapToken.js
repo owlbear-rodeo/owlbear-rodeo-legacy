@@ -25,6 +25,7 @@ function MapToken({
   onTokenDragEnd,
   draggable,
   mapState,
+  fadeOnHover,
 }) {
   const { userId } = useContext(AuthContext);
   const {
@@ -127,13 +128,13 @@ function MapToken({
     }
   }
 
-  function handlePointerOver() {
-    if (!draggable) {
+  function handlePointerEnter() {
+    if (fadeOnHover) {
       setTokenOpacity(0.5);
     }
   }
 
-  function handlePointerOut() {
+  function handlePointerLeave() {
     if (tokenOpacity !== 1.0) {
       setTokenOpacity(1.0);
     }
@@ -183,8 +184,8 @@ function MapToken({
       draggable={draggable}
       onMouseDown={handlePointerDown}
       onMouseUp={handlePointerUp}
-      onMouseOver={handlePointerOver}
-      onMouseOut={handlePointerOut}
+      onMouseEnter={handlePointerEnter}
+      onMouseLeave={handlePointerLeave}
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
       onClick={handleClick}
