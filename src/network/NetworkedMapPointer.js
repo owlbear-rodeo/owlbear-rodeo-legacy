@@ -7,8 +7,8 @@ import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
 import { lerp } from "../helpers/vector2";
 
-// Send pointer updates every 100ms
-const sendTickRate = 100;
+// Send pointer updates every 50ms
+const sendTickRate = 50;
 
 function NetworkedMapPointer({ session, active, gridSize }) {
   const { userId } = useContext(AuthContext);

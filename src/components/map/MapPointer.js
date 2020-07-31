@@ -1,11 +1,15 @@
 import React, { useContext, useEffect } from "react";
-import { Group, Circle } from "react-konva";
+import { Group } from "react-konva";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 
 import { getStrokeWidth } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
+import {
+  getRelativePointerPositionNormalized,
+  Trail,
+} from "../../helpers/konva";
+import { multiply } from "../../helpers/vector2";
 
 import colors from "../../helpers/colors";
 
@@ -63,12 +67,11 @@ function MapPointer({
   return (
     <Group>
       {visible && (
-        <Circle
-          x={position.x * mapWidth}
-          y={position.y * mapHeight}
-          fill={colors.red}
-          width={size}
-          height={size}
+        <Trail
+          position={multiply(position, { x: mapWidth, y: mapHeight })}
+          color={colors.red}
+          size={size}
+          duration={200}
         />
       )}
     </Group>

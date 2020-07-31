@@ -246,3 +246,51 @@ export function distance(a, b, type) {
 export function lerp(a, b, alpha) {
   return { x: lerpNumber(a.x, b.x, alpha), y: lerpNumber(a.y, b.y, alpha) };
 }
+
+/**
+ * Returns total length of a an array of points treated as a path
+ * @param {Array} points the array of points in the path
+ */
+export function pathLength(points) {
+  let l = 0;
+  for (let i = 1; i < points.length; i++) {
+    l += distance(points[i - 1], points[i], "euclidean");
+  }
+  return l;
+}
+
+/**
+ * Resample a path to n number of evenly distributed points
+ * based off of http://depts.washington.edu/acelab/proj/dollar/index.html
+ * @param {Array} points the points to resample
+ * @param {number} n the number of new points
+ */
+export function resample(points, n) {
+  if (points.length === 0 || n <= 0) {
+    return [];
+  }
+  let localPoints = [...points];
+  const intervalLength = pathLength(localPoints) / (n - 1);
+  let resampledPoints = [localPoints[0]];
+  let currentDistance = 0;
+  for (let i = 1; i < localPoints.length; i++) {
+    let d = distance(localPoints[i - 1], localPoints[i], "euclidean");
+    if (currentDistance + d >= intervalLength) {
+      let newPoint = lerp(
+        localPoints[i - 1],
+        localPoints[i],
+        (intervalLength - currentDistance) / d
+      );
+      resampledPoints.push(newPoint);
+      localPoints.splice(i, 0, newPoint);
+      currentDistance = 0;
+    } else {
+      currentDistance += d;
+    }
+  }
+  if (resampledPoints.length === n - 1) {
+    resampledPoints.push(localPoints[localPoints.length - 1]);
+  }
+
+  return resampledPoints;
+}
