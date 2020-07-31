@@ -284,6 +284,7 @@ function MapInteraction({
       case "fog":
       case "drawing":
       case "measure":
+      case "pointer":
         return "crosshair";
       default:
         return "default";
