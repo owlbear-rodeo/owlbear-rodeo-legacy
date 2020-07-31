@@ -1,4 +1,8 @@
-import { toRadians, roundTo as roundToNumber } from "./shared";
+import {
+  toRadians,
+  roundTo as roundToNumber,
+  lerp as lerpNumber,
+} from "./shared";
 
 export function lengthSquared(p) {
   return p.x * p.x + p.y * p.y;
@@ -237,4 +241,8 @@ export function distance(a, b, type) {
     default:
       return length(subtract(a, b));
   }
+}
+
+export function lerp(a, b, alpha) {
+  return { x: lerpNumber(a.x, b.x, alpha), y: lerpNumber(a.y, b.y, alpha) };
 }

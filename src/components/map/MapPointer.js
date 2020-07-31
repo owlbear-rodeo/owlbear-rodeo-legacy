@@ -23,9 +23,6 @@ function MapPointer({
   );
   const mapStageRef = useContext(MapStageContext);
 
-  // const [isBrushDown, setIsBrushDown] = useState(false);
-  // const [brushPosition, setBrushPosition] = useState({ x: 0, y: 0 });
-
   useEffect(() => {
     if (!active) {
       return;
@@ -47,7 +44,7 @@ function MapPointer({
     }
 
     function handleBrushUp() {
-      onPointerMove && onPointerUp({ x: 0, y: 0 });
+      onPointerMove && onPointerUp(getBrushPosition());
     }
 
     interactionEmitter.on("dragStart", handleBrushDown);
