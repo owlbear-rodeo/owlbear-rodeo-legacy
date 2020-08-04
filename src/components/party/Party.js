@@ -6,6 +6,7 @@ import Nickname from "./Nickname";
 import ChangeNicknameButton from "./ChangeNicknameButton";
 import StartStreamButton from "./StartStreamButton";
 import SettingsButton from "../SettingsButton";
+import StartTimerButton from "./StartTimerButton";
 
 function Party({
   nickname,
@@ -16,6 +17,8 @@ function Party({
   partyStreams,
   onStreamStart,
   onStreamEnd,
+  onTimerStart,
+  onTimerEnd,
 }) {
   return (
     <Flex
@@ -61,6 +64,7 @@ function Party({
           onStreamEnd={onStreamEnd}
           stream={stream}
         />
+        <StartTimerButton />
         <SettingsButton />
       </Flex>
     </Flex>

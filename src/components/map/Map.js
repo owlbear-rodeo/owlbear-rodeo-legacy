@@ -153,7 +153,6 @@ function Map({
     disabledControls.push("pan");
     disabledControls.push("measure");
     disabledControls.push("pointer");
-    disabledControls.push("timer");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");

@@ -1,6 +1,6 @@
 import React from "react";
 
-function TimerToolIcon() {
+function StartTimerIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -16,4 +16,4 @@ function TimerToolIcon() {
   );
 }
 
-export default TimerToolIcon;
+export default StartTimerIcon;
