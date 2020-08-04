@@ -3,7 +3,13 @@ import { Box, Label, Input, Button, Flex, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function StartTimerModal({ isOpen, onRequestClose }) {
+function StartTimerModal({
+  isOpen,
+  onRequestClose,
+  onTimerStart,
+  onTimerStop,
+  timer,
+}) {
   const inputRef = useRef();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
@@ -15,6 +21,11 @@ function StartTimerModal({ isOpen, onRequestClose }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    if (timer) {
+      onTimerStop();
+    } else {
+      onTimerStart({ hour, minute, second });
+    }
   }
 
   const inputStyle = {
@@ -59,9 +70,10 @@ function StartTimerModal({ isOpen, onRequestClose }) {
             </Text>
             <Input
               sx={inputStyle}
-              value={`${hour}`}
+              value={`${timer ? timer.hour : hour}`}
               onChange={(e) => setHour(parseValue(e.target.value, 24))}
               type="number"
+              disabled={timer}
               min={0}
               max={24}
             />
@@ -70,10 +82,11 @@ function StartTimerModal({ isOpen, onRequestClose }) {
             </Text>
             <Input
               sx={inputStyle}
-              value={`${minute}`}
+              value={`${timer ? timer.minute : minute}`}
               onChange={(e) => setMinute(parseValue(e.target.value, 59))}
               type="number"
               ref={inputRef}
+              disabled={timer}
               min={0}
               max={59}
             />
@@ -82,9 +95,10 @@ function StartTimerModal({ isOpen, onRequestClose }) {
             </Text>
             <Input
               sx={inputStyle}
-              value={`${second}`}
+              value={`${timer ? timer.second : second}`}
               onChange={(e) => setSecond(parseValue(e.target.value, 59))}
               type="number"
+              disabled={timer}
               min={0}
               max={59}
             />
@@ -94,7 +108,7 @@ function StartTimerModal({ isOpen, onRequestClose }) {
               sx={{ flexGrow: 1 }}
               disabled={hour === 0 && minute === 0 && second === 0}
             >
-              Start Timer
+              {timer ? "Stop Timer" : "Start Timer"}
             </Button>
           </Flex>
         </Box>

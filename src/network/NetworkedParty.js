@@ -23,10 +23,12 @@ function NetworkedParty({ gameId, session }) {
   const [partyNicknames, setPartyNicknames] = useState({});
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
+  const [timer, setTimer] = useState(null);
+  const [partyTimers, setPartyTimers] = useState({});
 
-  function handleNicknameChange(nickname) {
-    setNickname(nickname);
-    session.send("nickname", { [session.id]: nickname });
+  function handleNicknameChange(newNickname) {
+    setNickname(newNickname);
+    session.send("nickname", { [session.id]: newNickname });
   }
 
   function handleStreamStart(localStream) {
@@ -59,22 +61,69 @@ function NetworkedParty({ gameId, session }) {
     [session]
   );
 
+  function handleTimerStart(newTimer) {
+    setTimer(newTimer);
+    session.send("timer", { [session.id]: newTimer });
+  }
+
+  function handleTimerStop() {
+    setTimer(null);
+    session.send("timer", { [session.id]: null });
+  }
+
+  useEffect(() => {
+    function decreaseTimer(previousTimer) {
+      if (previousTimer.second > 0) {
+        return { ...previousTimer, second: previousTimer.second - 1 };
+      } else if (previousTimer.minute > 0) {
+        return {
+          ...previousTimer,
+          minute: previousTimer.minute - 1,
+          second: 59,
+        };
+      } else if (previousTimer.hour > 0) {
+        return { hour: previousTimer.hour - 1, minute: 59, second: 59 };
+      } else return { hour: 0, minute: 0, second: 0 };
+    }
+    function updateTimers() {
+      if (timer) {
+        const newTimer = decreaseTimer(timer);
+        setTimer(newTimer);
+        session.send("timer", { [session.id]: newTimer });
+      }
+    }
+    const interval = setInterval(updateTimers, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [timer, session]);
+
   useEffect(() => {
     function handlePeerConnect({ peer, reply }) {
       reply("nickname", { [session.id]: nickname });
       if (stream) {
         peer.connection.addStream(stream);
       }
+      if (timer) {
+        reply("timer", { [session.id]: timer });
+      }
     }
 
     function handlePeerDisconnect({ peer }) {
       setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
+      setPartyTimers((prevTimers) => omit(prevTimers, [peer.id]));
     }
 
     function handlePeerData({ id, data }) {
       if (id === "nickname") {
         setPartyNicknames((prevNicknames) => ({
           ...prevNicknames,
+          ...data,
+        }));
+      }
+      if (id === "timer") {
+        setPartyTimers((prevTimers) => ({
+          ...prevTimers,
           ...data,
         }));
       }
@@ -111,7 +160,7 @@ function NetworkedParty({ gameId, session }) {
       session.off("trackAdded", handlePeerTrackAdded);
       session.off("trackRemoved", handlePeerTrackRemoved);
     };
-  }, [session, nickname, stream]);
+  }, [session, nickname, stream, timer]);
 
   useEffect(() => {
     if (stream) {
@@ -139,6 +188,10 @@ function NetworkedParty({ gameId, session }) {
       partyNicknames={partyNicknames}
       stream={stream}
       partyStreams={partyStreams}
+      timer={timer}
+      partyTimers={partyTimers}
+      onTimerStart={handleTimerStart}
+      onTimerStop={handleTimerStop}
     />
   );
 }

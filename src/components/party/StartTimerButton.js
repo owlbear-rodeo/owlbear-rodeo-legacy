@@ -4,7 +4,7 @@ import { IconButton } from "theme-ui";
 import StartTimerModal from "../../modals/StartTimerModal";
 import StartTimerIcon from "../../icons/StartTimerIcon";
 
-function StartTimerButton() {
+function StartTimerButton({ onTimerStart, onTimerStop, timer }) {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
 
   function openModal() {
@@ -24,7 +24,13 @@ function StartTimerButton() {
       >
         <StartTimerIcon />
       </IconButton>
-      <StartTimerModal isOpen={isTimerModalOpen} onRequestClose={closeModal} />
+      <StartTimerModal
+        isOpen={isTimerModalOpen}
+        onRequestClose={closeModal}
+        onTimerStart={onTimerStart}
+        onTimerStop={onTimerStop}
+        timer={timer}
+      />
     </>
   );
 }

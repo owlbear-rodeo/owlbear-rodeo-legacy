@@ -17,8 +17,10 @@ function Party({
   partyStreams,
   onStreamStart,
   onStreamEnd,
+  timer,
+  partyTimers,
   onTimerStart,
-  onTimerEnd,
+  onTimerStop,
 }) {
   return (
     <Flex
@@ -64,7 +66,11 @@ function Party({
           onStreamEnd={onStreamEnd}
           stream={stream}
         />
-        <StartTimerButton />
+        <StartTimerButton
+          onTimerStart={onTimerStart}
+          onTimerStop={onTimerStop}
+          timer={timer}
+        />
         <SettingsButton />
       </Flex>
     </Flex>
