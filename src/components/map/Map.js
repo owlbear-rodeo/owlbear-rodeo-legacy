@@ -65,6 +65,11 @@ function Map({
       type: "chebyshev",
       scale: "5ft",
     },
+    timer: {
+      hour: 0,
+      minute: 0,
+      second: 0,
+    },
   });
 
   function handleToolSettingChange(tool, change) {
@@ -148,6 +153,7 @@ function Map({
     disabledControls.push("pan");
     disabledControls.push("measure");
     disabledControls.push("pointer");
+    disabledControls.push("timer");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");

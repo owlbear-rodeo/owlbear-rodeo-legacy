@@ -9,6 +9,7 @@ import SelectMapButton from "./SelectMapButton";
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import MeasureToolSettings from "./controls/MeasureToolSettings";
+import TimerToolSettings from "./controls/TimerToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
@@ -16,6 +17,7 @@ import BrushToolIcon from "../../icons/BrushToolIcon";
 import MeasureToolIcon from "../../icons/MeasureToolIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import PointerToolIcon from "../../icons/PointerToolIcon";
+import TimerToolIcon from "../../icons/TimerToolIcon";
 
 function MapContols({
   onMapChange,
@@ -61,8 +63,14 @@ function MapContols({
       icon: <PointerToolIcon />,
       title: "Pointer Tool",
     },
+    timer: {
+      id: "timer",
+      icon: <TimerToolIcon />,
+      title: "Timer Tool",
+      SettingsComponent: TimerToolSettings,
+    },
   };
-  const tools = ["pan", "fog", "drawing", "measure", "pointer"];
+  const tools = ["pan", "fog", "drawing", "measure", "pointer", "timer"];
 
   const sections = [
     {
