@@ -1,10 +1,12 @@
 import React, { useEffect, useContext } from "react";
-import { Flex } from "theme-ui";
+import { Flex, Input, Text } from "theme-ui";
 
 import ToolSection from "./ToolSection";
 import MeasureChebyshevIcon from "../../../icons/MeasureChebyshevIcon";
 import MeasureEuclideanIcon from "../../../icons/MeasureEuclideanIcon";
 import MeasureManhattanIcon from "../../../icons/MeasureManhattanIcon";
+
+import Divider from "../../Divider";
 
 import MapInteractionContext from "../../../contexts/MapInteractionContext";
 
@@ -50,13 +52,30 @@ function MeasureToolSettings({ settings, onSettingChange }) {
     },
   ];
 
-  // TODO Add keyboard shortcuts
-
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ToolSection
         tools={tools}
         onToolClick={(tool) => onSettingChange({ type: tool.id })}
+      />
+      <Divider vertical />
+      <Text as="label" variant="body2" sx={{ fontSize: "16px" }} p={1}>
+        Scale:
+      </Text>
+      <Input
+        p={1}
+        pl={0}
+        sx={{
+          width: "40px",
+          border: "none",
+          ":focus": {
+            outline: "none",
+          },
+          lineHeight: 1.2,
+        }}
+        value={settings.scale}
+        onChange={(e) => onSettingChange({ scale: e.target.value })}
+        autoComplete="off"
       />
     </Flex>
   );

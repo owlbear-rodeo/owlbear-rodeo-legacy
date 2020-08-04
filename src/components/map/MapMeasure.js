@@ -21,6 +21,12 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
+  const toolScale =
+    active && selectedToolSettings.scale.match(/(\d*)([a-zA-Z]*)/);
+  const toolMultiplier =
+    active && !isNaN(parseInt(toolScale[1])) ? parseInt(toolScale[1]) : 1;
+  const toolUnit = active && toolScale[2];
+
   useEffect(() => {
     if (!active) {
       return;
@@ -126,7 +132,9 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
         >
           <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
           <Text
-            text={shapeData.length.toFixed(2)}
+            text={`${(shapeData.length * toolMultiplier).toFixed(
+              2
+            )}${toolUnit}`}
             fill="white"
             fontSize={24}
             padding={4}

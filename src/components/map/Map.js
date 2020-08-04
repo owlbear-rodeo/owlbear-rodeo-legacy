@@ -58,6 +58,7 @@ function Map({
     },
     measure: {
       type: "chebyshev",
+      scale: "5ft",
     },
   });
 
