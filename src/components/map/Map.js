@@ -50,7 +50,12 @@ function Map({
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
   const [toolSettings, setToolSettings] = useState({
-    fog: { type: "polygon", useEdgeSnapping: false, useFogCut: false },
+    fog: {
+      type: "polygon",
+      useEdgeSnapping: false,
+      useFogCut: false,
+      preview: false,
+    },
     drawing: {
       color: "red",
       type: "brush",
@@ -278,8 +283,9 @@ function Map({
       shapes={mapShapes}
       onShapeAdd={handleMapShapeAdd}
       onShapesRemove={handleMapShapesRemove}
-      selectedToolId={selectedToolId}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      active={selectedToolId === "drawing"}
+      toolId="drawing"
+      toolSettings={toolSettings.drawing}
       gridSize={gridSizeNormalized}
     />
   );
@@ -291,9 +297,11 @@ function Map({
       onShapeSubtract={handleFogShapeSubtract}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
-      selectedToolId={selectedToolId}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      active={selectedToolId === "fog"}
+      toolId="fog"
+      toolSettings={toolSettings.fog}
       gridSize={gridSizeNormalized}
+      transparent={allowFogDrawing && !toolSettings.fog.preview}
     />
   );
 

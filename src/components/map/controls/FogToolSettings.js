@@ -1,9 +1,10 @@
 import React, { useContext, useEffect } from "react";
-import { Flex } from "theme-ui";
+import { Flex, Label, Checkbox } from "theme-ui";
 import { useMedia } from "react-media";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
+import FogPreviewToggle from "./FogPreviewToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";
 import FogPolygonIcon from "../../../icons/FogPolygonIcon";
@@ -141,6 +142,10 @@ function BrushToolSettings({
         onEdgeSnappingChange={(useEdgeSnapping) =>
           onSettingChange({ useEdgeSnapping })
         }
+      />
+      <FogPreviewToggle
+        useFogPreview={settings.preview}
+        onFogPreviewChange={(preview) => onSettingChange({ preview })}
       />
       <Divider vertical />
       <UndoButton
