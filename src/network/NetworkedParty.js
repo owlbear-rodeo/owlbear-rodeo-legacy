@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "../helpers/Session";
-import { isStreamStopped, omit } from "../helpers/shared";
+import { isStreamStopped, omit, fromEntries } from "../helpers/shared";
 
 import AuthContext from "../contexts/AuthContext";
 
@@ -73,23 +73,18 @@ function NetworkedParty({ gameId, session }) {
 
   useEffect(() => {
     function decreaseTimer(previousTimer) {
-      if (previousTimer.second > 0) {
-        return { ...previousTimer, second: previousTimer.second - 1 };
-      } else if (previousTimer.minute > 0) {
-        return {
-          ...previousTimer,
-          minute: previousTimer.minute - 1,
-          second: 59,
-        };
-      } else if (previousTimer.hour > 0) {
-        return { hour: previousTimer.hour - 1, minute: 59, second: 59 };
-      } else return { hour: 0, minute: 0, second: 0 };
+      return { ...previousTimer, current: previousTimer.current - 1000 };
     }
     function updateTimers() {
       if (timer) {
         const newTimer = decreaseTimer(timer);
-        setTimer(newTimer);
-        session.send("timer", { [session.id]: newTimer });
+        if (newTimer.current < 0) {
+          setTimer(null);
+          session.send("timer", { [session.id]: null });
+        } else {
+          setTimer(newTimer);
+          session.send("timer", { [session.id]: newTimer });
+        }
       }
     }
     const interval = setInterval(updateTimers, 1000);
@@ -122,10 +117,14 @@ function NetworkedParty({ gameId, session }) {
         }));
       }
       if (id === "timer") {
-        setPartyTimers((prevTimers) => ({
-          ...prevTimers,
-          ...data,
-        }));
+        setPartyTimers((prevTimers) => {
+          const newTimers = { ...prevTimers, ...data };
+          // filter out timers that are null
+          const filtered = Object.entries(newTimers).filter(
+            ([, value]) => value !== null
+          );
+          return fromEntries(filtered);
+        });
       }
     }
 

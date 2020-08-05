@@ -58,7 +58,15 @@ function Party({
             stream={partyStreams[id]}
           />
         ))}
-        <Timer timer={timer} />
+        {timer && <Timer timer={timer} index={0} />}
+        {Object.entries(partyTimers).map(([id, partyTimer], index) => (
+          <Timer
+            timer={partyTimer}
+            key={id}
+            // Put party timers above your timer if there is one
+            index={timer ? index + 1 : index}
+          />
+        ))}
       </Box>
       <Flex sx={{ flexDirection: "column" }}>
         <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />

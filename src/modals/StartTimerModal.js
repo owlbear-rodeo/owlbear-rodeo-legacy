@@ -3,6 +3,8 @@ import { Box, Label, Input, Button, Flex, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import { getHMSDuration, getDurationHMS } from "../helpers/timer";
+
 function StartTimerModal({
   isOpen,
   onRequestClose,
@@ -24,7 +26,8 @@ function StartTimerModal({
     if (timer) {
       onTimerStop();
     } else {
-      onTimerStart({ hour, minute, second });
+      const duration = getHMSDuration({ hour, minute, second });
+      onTimerStart({ current: duration, max: duration });
     }
   }
 
@@ -46,6 +49,8 @@ function StartTimerModal({
     }
     return Math.min(num, max);
   }
+
+  const timerHMS = timer && getDurationHMS(timer.current);
 
   return (
     <Modal
@@ -70,7 +75,7 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timer.hour : hour}`}
+              value={`${timer ? timerHMS.hour : hour}`}
               onChange={(e) => setHour(parseValue(e.target.value, 24))}
               type="number"
               disabled={timer}
@@ -82,7 +87,7 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timer.minute : minute}`}
+              value={`${timer ? timerHMS.minute : minute}`}
               onChange={(e) => setMinute(parseValue(e.target.value, 59))}
               type="number"
               ref={inputRef}
@@ -95,7 +100,7 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timer.second : second}`}
+              value={`${timer ? timerHMS.second : second}`}
               onChange={(e) => setSecond(parseValue(e.target.value, 59))}
               type="number"
               disabled={timer}
