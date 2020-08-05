@@ -91,14 +91,12 @@ function Party({
         />
         <SettingsButton />
       </Flex>
-      <Box sx={{ position: "absolute", top: 0, right: "0", zIndex: 1 }}>
-        <DiceTrayButton
-          shareDice={shareDice}
-          onShareDiceChage={onShareDiceChage}
-          diceRolls={diceRolls}
-          onDiceRollsChange={onDiceRollsChange}
-        />
-      </Box>
+      <DiceTrayButton
+        shareDice={shareDice}
+        onShareDiceChage={onShareDiceChage}
+        diceRolls={diceRolls}
+        onDiceRollsChange={onDiceRollsChange}
+      />
     </Flex>
   );
 }

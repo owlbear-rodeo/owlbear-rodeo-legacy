@@ -19,11 +19,12 @@ function DiceTrayButton({
       sx={{
         position: "absolute",
         top: 0,
-        left: 0,
+        left: "100%",
         bottom: 0,
         flexDirection: "column",
         alignItems: "flex-start",
         pointerEvents: "none",
+        zIndex: 1,
       }}
       ml={1}
     >
