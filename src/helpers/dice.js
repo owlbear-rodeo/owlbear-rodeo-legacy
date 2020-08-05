@@ -41,3 +41,13 @@ export function getDiceRoll(dice) {
   }
   return { type: dice.type, roll: number };
 }
+
+export function getDiceRollTotal(diceRolls) {
+  return diceRolls.reduce((accumulator, dice) => {
+    if (dice.roll === "unknown") {
+      return accumulator;
+    } else {
+      return accumulator + dice.roll;
+    }
+  }, 0);
+}

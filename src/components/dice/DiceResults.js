@@ -4,30 +4,31 @@ import { Flex, Text, Button, IconButton } from "theme-ui";
 import ClearDiceIcon from "../../icons/ClearDiceIcon";
 import RerollDiceIcon from "../../icons/RerollDiceIcon";
 
+import { getDiceRollTotal } from "../../helpers/dice";
+
 const maxDiceRollsShown = 6;
 
 function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (
-    diceRolls.map((dice) => dice.roll).includes("unknown") ||
-    diceRolls.length === 0
-  ) {
+  if (diceRolls.length === 0) {
     return null;
   }
 
   let rolls = [];
   if (diceRolls.length > 1) {
-    rolls = diceRolls.map((dice, index) => (
-      <React.Fragment key={index}>
-        <Text variant="body2" as="p" color="hsl(210, 50%, 96%)">
-          {dice.roll}
-        </Text>
-        <Text variant="body2" as="p" color="grey">
-          {index === diceRolls.length - 1 ? "" : "+"}
-        </Text>
-      </React.Fragment>
-    ));
+    rolls = diceRolls
+      .filter((dice) => dice.roll !== "unknown")
+      .map((dice, index) => (
+        <React.Fragment key={index}>
+          <Text variant="body2" as="p" color="hsl(210, 50%, 96%)">
+            {dice.roll}
+          </Text>
+          <Text variant="body2" as="p" color="grey">
+            {index === diceRolls.length - 1 ? "" : "+"}
+          </Text>
+        </React.Fragment>
+      ));
   }
 
   return (
@@ -60,7 +61,7 @@ function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
           sx={{ fontSize: 5, userSelect: "none" }}
           mb={diceRolls.length === 1 ? "24px" : 0}
         >
-          {diceRolls.reduce((accumulator, dice) => accumulator + dice.roll, 0)}
+          {getDiceRollTotal(diceRolls)}
         </Text>
         {rolls.length > maxDiceRollsShown ? (
           <Button
