@@ -1,5 +1,6 @@
 import React from "react";
 import { Flex, Box, Text } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
@@ -35,11 +36,11 @@ function Party({
       bg="background"
       sx={{
         flexDirection: "column",
-        width: "112px",
-        minWidth: "112px",
         overflow: "visible",
         alignItems: "center",
         position: "relative",
+        width: "112px",
+        minWidth: "112px",
       }}
     >
       <Box
@@ -51,10 +52,13 @@ function Party({
           Party
         </Text>
       </Box>
-      <Box
-        sx={{
+      <SimpleBar
+        style={{
           flexGrow: 1,
           width: "100%",
+          minWidth: "112px",
+          padding: "0 16px",
+          height: "calc(100% - 232px)",
         }}
       >
         <Nickname nickname={`${nickname} (you)`} />
@@ -75,7 +79,7 @@ function Party({
             index={timer ? index + 1 : index}
           />
         ))}
-      </Box>
+      </SimpleBar>
       <Flex sx={{ flexDirection: "column" }}>
         <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />
         <AddPartyMemberButton gameId={gameId} />
