@@ -25,6 +25,9 @@ function NetworkedParty({ gameId, session }) {
   const [partyStreams, setPartyStreams] = useState({});
   const [timer, setTimer] = useState(null);
   const [partyTimers, setPartyTimers] = useState({});
+  const [diceRolls, setDiceRolls] = useState([]);
+  const [shareDice, setShareDice] = useState(false);
+  const [partyDiceRolls, setPartyDiceRolls] = useState({});
 
   function handleNicknameChange(newNickname) {
     setNickname(newNickname);
@@ -92,6 +95,14 @@ function NetworkedParty({ gameId, session }) {
       clearInterval(interval);
     };
   }, [timer, session]);
+
+  function handleDiceRollsChange(newDiceRolls) {
+    setDiceRolls(newDiceRolls);
+  }
+
+  function handleShareDiceChange(newShareDice) {
+    setShareDice(newShareDice);
+  }
 
   useEffect(() => {
     function handlePeerConnect({ peer, reply }) {
@@ -191,6 +202,10 @@ function NetworkedParty({ gameId, session }) {
       partyTimers={partyTimers}
       onTimerStart={handleTimerStart}
       onTimerStop={handleTimerStop}
+      shareDice={shareDice}
+      onShareDiceChage={handleShareDiceChange}
+      diceRolls={diceRolls}
+      onDiceRollsChange={handleDiceRollsChange}
     />
   );
 }

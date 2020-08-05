@@ -8,6 +8,7 @@ import StartStreamButton from "./StartStreamButton";
 import SettingsButton from "../SettingsButton";
 import StartTimerButton from "./StartTimerButton";
 import Timer from "./Timer";
+import DiceTrayButton from "./DiceTrayButton";
 
 function Party({
   nickname,
@@ -22,6 +23,10 @@ function Party({
   partyTimers,
   onTimerStart,
   onTimerStop,
+  shareDice,
+  onShareDiceChage,
+  diceRolls,
+  onDiceRollsChange,
 }) {
   return (
     <Flex
@@ -31,8 +36,9 @@ function Party({
         flexDirection: "column",
         width: "112px",
         minWidth: "112px",
-        overflowY: "auto",
+        overflow: "visible",
         alignItems: "center",
+        position: "relative",
       }}
     >
       <Box
@@ -50,7 +56,12 @@ function Party({
           width: "100%",
         }}
       >
-        <Nickname nickname={`${nickname} (you)` || ""} />
+        <Nickname
+          nickname={`${nickname} (you) ${
+            shareDice &&
+            diceRolls.reduce((accumulator, dice) => accumulator + dice.roll, 0)
+          }`}
+        />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname
             nickname={partyNickname}
@@ -83,6 +94,14 @@ function Party({
         />
         <SettingsButton />
       </Flex>
+      <Box sx={{ position: "absolute", top: 0, right: "0", zIndex: 1 }}>
+        <DiceTrayButton
+          shareDice={shareDice}
+          onShareDiceChage={onShareDiceChage}
+          diceRolls={diceRolls}
+          onDiceRollsChange={onDiceRollsChange}
+        />
+      </Box>
     </Flex>
   );
 }

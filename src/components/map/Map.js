@@ -6,7 +6,6 @@ import MapInteraction from "./MapInteraction";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
-import MapDice from "./MapDice";
 import MapGrid from "./MapGrid";
 import MapMeasure from "./MapMeasure";
 import MapLoadingOverlay from "./MapLoadingOverlay";
@@ -338,7 +337,6 @@ function Map({
           {mapControls}
           {tokenMenu}
           {tokenDragOverlay}
-          <MapDice />
           <MapLoadingOverlay />
         </>
       }

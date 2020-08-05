@@ -19,7 +19,15 @@ import DiceTray from "../../dice/diceTray/DiceTray";
 
 import DiceLoadingContext from "../../contexts/DiceLoadingContext";
 
-function DiceTrayOverlay({ isOpen }) {
+import { getDiceRoll } from "../../helpers/dice";
+
+function DiceTrayOverlay({
+  isOpen,
+  shareDice,
+  onShareDiceChage,
+  diceRolls,
+  onDiceRollsChange,
+}) {
   const sceneRef = useRef();
   const shadowGeneratorRef = useRef();
   const diceRefs = useRef([]);
@@ -251,6 +259,34 @@ function DiceTrayOverlay({ isOpen }) {
     };
   }, [diceTraySize]);
 
+  // Update dice rolls
+  useEffect(() => {
+    function updateDiceRolls() {
+      const die = diceRefs.current;
+      const sceneVisible = sceneVisibleRef.current;
+      if (!sceneVisible) {
+        return;
+      }
+      const diceAwake = die.map((dice) => dice.asleep).includes(false);
+      if (!diceAwake) {
+        return;
+      }
+
+      let newRolls = [];
+      for (let i = 0; i < die.length; i++) {
+        const dice = die[i];
+        let roll = getDiceRoll(dice);
+        newRolls[i] = roll;
+      }
+      onDiceRollsChange(newRolls);
+    }
+
+    const updateInterval = setInterval(updateDiceRolls, 100);
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [diceRefs, sceneVisibleRef, onDiceRollsChange]);
+
   return (
     <Box
       sx={{
@@ -277,14 +313,16 @@ function DiceTrayOverlay({ isOpen }) {
         />
       </Box>
       <DiceControls
-        diceRefs={diceRefs}
-        sceneVisibleRef={sceneVisibleRef}
         onDiceAdd={handleDiceAdd}
         onDiceClear={handleDiceClear}
         onDiceReroll={handleDiceReroll}
         onDiceLoad={handleDiceLoad}
         diceTraySize={diceTraySize}
         onDiceTraySizeChange={setDiceTraySize}
+        shareDice={shareDice}
+        onShareDiceChage={onShareDiceChage}
+        diceRolls={diceRolls}
+        onDiceRollsChange={onDiceRollsChange}
       />
       {isLoading && (
         <Box

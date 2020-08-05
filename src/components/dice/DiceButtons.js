@@ -9,6 +9,8 @@ import D6Icon from "../../icons/D6Icon";
 import D4Icon from "../../icons/D4Icon";
 import D100Icon from "../../icons/D100Icon";
 import ExpandMoreDiceTrayIcon from "../../icons/ExpandMoreDiceTrayIcon";
+import ShareDiceOnIcon from "../../icons/ShareDiceOnIcon";
+import ShareDiceOffIcon from "../../icons/ShareDiceOffIcon";
 
 import DiceButton from "./DiceButton";
 import SelectDiceButton from "./SelectDiceButton";
@@ -23,6 +25,8 @@ function DiceButtons({
   onDiceLoad,
   diceTraySize,
   onDiceTraySizeChange,
+  shareDice,
+  onShareDiceChange,
 }) {
   const [currentDice, setCurrentDice] = useState(dice[0]);
 
@@ -128,6 +132,14 @@ function DiceButtons({
         }
       >
         <ExpandMoreDiceTrayIcon />
+      </IconButton>
+      <Divider />
+      <IconButton
+        aria-label={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
+        title={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
+        onClick={() => onShareDiceChange(!shareDice)}
+      >
+        {shareDice ? <ShareDiceOnIcon /> : <ShareDiceOffIcon />}
       </IconButton>
     </Flex>
   );
