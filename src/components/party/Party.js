@@ -7,6 +7,7 @@ import ChangeNicknameButton from "./ChangeNicknameButton";
 import StartStreamButton from "./StartStreamButton";
 import SettingsButton from "../SettingsButton";
 import StartTimerButton from "./StartTimerButton";
+import Timer from "./Timer";
 
 function Party({
   nickname,
@@ -57,6 +58,7 @@ function Party({
             stream={partyStreams[id]}
           />
         ))}
+        <Timer timer={timer} />
       </Box>
       <Flex sx={{ flexDirection: "column" }}>
         <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />
