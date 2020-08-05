@@ -12,7 +12,6 @@ function getTimerDuration(t) {
 }
 
 function Timer({ timer }) {
-  const [progress, setProgress] = useState(0);
   const [maxDuration, setMaxDuration] = useState(0);
 
   const previousTimerRef = useRef(timer);
@@ -24,8 +23,26 @@ function Timer({ timer }) {
   });
 
   useEffect(() => {
-    setProgress(getTimerDuration(timer));
+    progressBarRef.current.value = getTimerDuration(timer);
   }, [timer]);
+
+  const progressBarRef = useRef();
+
+  useEffect(() => {
+    let request = requestAnimationFrame(animate);
+    let previousTime = performance.now();
+    function animate(time) {
+      request = requestAnimationFrame(animate);
+      const deltaTime = time - previousTime;
+      previousTime = time;
+
+      progressBarRef.current.value -= deltaTime;
+    }
+
+    return () => {
+      cancelAnimationFrame(request);
+    };
+  }, [maxDuration]);
 
   const timerContainer = usePortal("root");
 
@@ -51,9 +68,9 @@ function Timer({ timer }) {
     >
       <Progress
         max={maxDuration}
-        value={progress}
         m={2}
         sx={{ width: "100%" }}
+        ref={progressBarRef}
       />
     </Box>,
     timerContainer
