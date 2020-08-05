@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Flex, Label, Checkbox } from "theme-ui";
+import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
