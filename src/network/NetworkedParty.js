@@ -98,10 +98,18 @@ function NetworkedParty({ gameId, session }) {
 
   function handleDiceRollsChange(newDiceRolls) {
     setDiceRolls(newDiceRolls);
+    if (shareDice) {
+      session.send("dice", { [session.id]: newDiceRolls });
+    }
   }
 
   function handleShareDiceChange(newShareDice) {
     setShareDice(newShareDice);
+    if (newShareDice) {
+      session.send("dice", { [session.id]: diceRolls });
+    } else {
+      session.send("dice", { [session.id]: null });
+    }
   }
 
   useEffect(() => {
@@ -112,6 +120,9 @@ function NetworkedParty({ gameId, session }) {
       }
       if (timer) {
         reply("timer", { [session.id]: timer });
+      }
+      if (shareDice) {
+        reply("dice", { [session.id]: diceRolls });
       }
     }
 
@@ -132,6 +143,16 @@ function NetworkedParty({ gameId, session }) {
           const newTimers = { ...prevTimers, ...data };
           // filter out timers that are null
           const filtered = Object.entries(newTimers).filter(
+            ([, value]) => value !== null
+          );
+          return fromEntries(filtered);
+        });
+      }
+      if (id === "dice") {
+        setPartyDiceRolls((prevDiceRolls) => {
+          const newRolls = { ...prevDiceRolls, ...data };
+          // filter out dice rolls that are null
+          const filtered = Object.entries(newRolls).filter(
             ([, value]) => value !== null
           );
           return fromEntries(filtered);
@@ -170,7 +191,7 @@ function NetworkedParty({ gameId, session }) {
       session.off("trackAdded", handlePeerTrackAdded);
       session.off("trackRemoved", handlePeerTrackRemoved);
     };
-  }, [session, nickname, stream, timer]);
+  }, [session, nickname, stream, timer, shareDice, diceRolls]);
 
   useEffect(() => {
     if (stream) {
@@ -206,6 +227,7 @@ function NetworkedParty({ gameId, session }) {
       onShareDiceChage={handleShareDiceChange}
       diceRolls={diceRolls}
       onDiceRollsChange={handleDiceRollsChange}
+      partyDiceRolls={partyDiceRolls}
     />
   );
 }

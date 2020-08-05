@@ -2,8 +2,9 @@ import React from "react";
 import { Text, Flex } from "theme-ui";
 
 import Stream from "./Stream";
+import DiceRolls from "./DiceRolls";
 
-function Nickname({ nickname, stream }) {
+function Nickname({ nickname, stream, diceRolls }) {
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <Text
@@ -17,6 +18,7 @@ function Nickname({ nickname, stream }) {
         {nickname}
       </Text>
       {stream && <Stream stream={stream} nickname={nickname} />}
+      {diceRolls && <DiceRolls rolls={diceRolls} />}
     </Flex>
   );
 }

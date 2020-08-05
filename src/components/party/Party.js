@@ -27,6 +27,7 @@ function Party({
   onShareDiceChage,
   diceRolls,
   onDiceRollsChange,
+  partyDiceRolls,
 }) {
   return (
     <Flex
@@ -56,17 +57,13 @@ function Party({
           width: "100%",
         }}
       >
-        <Nickname
-          nickname={`${nickname} (you) ${
-            shareDice &&
-            diceRolls.reduce((accumulator, dice) => accumulator + dice.roll, 0)
-          }`}
-        />
+        <Nickname nickname={`${nickname} (you)`} />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname
             nickname={partyNickname}
             key={id}
             stream={partyStreams[id]}
+            diceRolls={partyDiceRolls[id]}
           />
         ))}
         {timer && <Timer timer={timer} index={0} />}
