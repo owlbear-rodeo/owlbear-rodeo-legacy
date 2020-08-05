@@ -6,9 +6,9 @@ function DiceButtonCount({ children }) {
     <Box
       sx={{
         position: "absolute",
-        left: "50%",
-        bottom: "100%",
-        transform: "translateX(-50%)",
+        top: "50%",
+        right: "90%",
+        transform: "translateY(-50%)",
         height: "14px",
         display: "flex",
         alignItems: "center",
@@ -20,7 +20,7 @@ function DiceButtonCount({ children }) {
         color="text"
         sx={{ fontSize: "10px", fontWeight: "bold" }}
       >
-        {children}×
+        {children}
       </Text>
     </Box>
   );

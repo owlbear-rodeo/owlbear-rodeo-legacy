@@ -51,16 +51,18 @@ function DiceButtons({
     <Flex
       sx={{
         justifyContent: "center",
-        width: "100%",
         alignItems: "center",
-        padding: "0 15px",
+        flexDirection: "column",
+        borderRadius: "4px",
       }}
+      p={2}
+      bg="overlay"
     >
       <SelectDiceButton
         onDiceChange={handleDiceChange}
         currentDice={currentDice}
       />
-      <Divider vertical color="hsl(210, 50%, 96%)" />
+      <Divider />
       <DiceButton
         title="Add D20"
         count={diceCounts.d20}
@@ -110,7 +112,7 @@ function DiceButtons({
       >
         <D100Icon />
       </DiceButton>
-      <Divider vertical color="hsl(210, 50%, 96%)" />
+      <Divider />
       <IconButton
         aria-label={
           diceTraySize === "single" ? "Expand Dice Tray" : "Shrink Dice Tray"

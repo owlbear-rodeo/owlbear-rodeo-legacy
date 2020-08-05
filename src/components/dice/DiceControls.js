@@ -91,6 +91,7 @@ function DiceControls({
           display: "flex",
           color: "white",
           pointerEvents: "none",
+          transform: "translateX(50px)",
         }}
       >
         <DiceResults
@@ -105,8 +106,8 @@ function DiceControls({
       <div
         style={{
           position: "absolute",
-          top: "24px",
-          width: "100%",
+          top: "0",
+          left: "0",
         }}
       >
         <DiceButtons

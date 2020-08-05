@@ -9,7 +9,6 @@ function DiceButton({ title, children, count, onClick }) {
       title={title}
       aria-label={title}
       onClick={onClick}
-      color="hsl(210, 50%, 96%)"
       sx={{ position: "relative" }}
     >
       {children}

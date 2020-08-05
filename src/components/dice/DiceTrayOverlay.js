@@ -218,32 +218,64 @@ function DiceTrayOverlay({ isOpen }) {
     handleAssetLoadFinish();
   }
 
+  const [traySize, setTraySize] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      const map = document.querySelector(".map");
+      const mapRect = map.getBoundingClientRect();
+
+      const availableWidth = mapRect.width - 108; // Subtract padding
+      const availableHeight = mapRect.height - 80; // Subtract paddding and open icon
+
+      let height = Math.min(availableHeight, 1000);
+      let width = diceTraySize === "single" ? height / 2 : height;
+
+      if (width > availableWidth) {
+        width = availableWidth;
+        height = diceTraySize === "single" ? width * 2 : width;
+      }
+
+      setTraySize({ width, height });
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [diceTraySize]);
+
   return (
     <Box
       sx={{
-        width: diceTraySize === "single" ? "500px" : "1000px",
-        maxWidth:
-          diceTraySize === "single"
-            ? "calc(50vh - 48px)"
-            : "calc(100vh - 64px)",
-        paddingBottom: diceTraySize === "single" ? "200%" : "100%",
+        width: `${traySize.width}px`,
+        height: `${traySize.height}px`,
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         pointerEvents: "all",
       }}
-      bg="background"
     >
-      <DiceInteraction
-        onSceneMount={handleSceneMount}
-        onPointerDown={() => {
-          sceneInteractionRef.current = true;
-        }}
-        onPointerUp={() => {
-          sceneInteractionRef.current = false;
-        }}
-      />
+      <Box
+        sx={{ transform: "translateX(50px)", width: "100%", height: "100%" }}
+      >
+        <DiceInteraction
+          onSceneMount={handleSceneMount}
+          onPointerDown={() => {
+            sceneInteractionRef.current = true;
+          }}
+          onPointerUp={() => {
+            sceneInteractionRef.current = false;
+          }}
+        />
+      </Box>
       <DiceControls
         diceRefs={diceRefs}
         sceneVisibleRef={sceneVisibleRef}
@@ -254,7 +286,19 @@ function DiceTrayOverlay({ isOpen }) {
         diceTraySize={diceTraySize}
         onDiceTraySizeChange={setDiceTraySize}
       />
-      {isLoading && <LoadingOverlay />}
+      {isLoading && (
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: "50px",
+          }}
+        >
+          <LoadingOverlay />
+        </Box>
+      )}
     </Box>
   );
 }
