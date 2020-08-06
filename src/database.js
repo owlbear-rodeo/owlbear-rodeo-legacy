@@ -129,6 +129,21 @@ function loadVersions(db) {
           map.quality = "original";
         });
     });
+  // v1.5.0 - Fixed default token rogue spelling
+  db.version(7)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.tokens) {
+            if (state.tokens[id].tokenId === "__default-Rouge") {
+              state.tokens[id].tokenId = "__default-Rogue";
+            }
+          }
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

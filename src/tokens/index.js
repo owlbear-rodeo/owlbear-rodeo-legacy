@@ -24,7 +24,7 @@ import ooze from "./Ooze.png";
 import paladin from "./Paladin.png";
 import plant from "./Plant.png";
 import ranger from "./Ranger.png";
-import rouge from "./Rouge.png";
+import rogue from "./Rogue.png";
 import shapechanger from "./Shapechanger.png";
 import sorcerer from "./Sorcerer.png";
 import titan from "./Titan.png";
@@ -42,7 +42,7 @@ export const tokenSources = {
   monk,
   paladin,
   ranger,
-  rouge,
+  rogue,
   sorcerer,
   warlock,
   wizard,
