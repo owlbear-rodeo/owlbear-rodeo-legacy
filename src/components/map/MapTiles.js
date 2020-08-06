@@ -31,6 +31,7 @@ function MapTiles({
             width: "500px",
             borderRadius: "4px",
           }}
+          onClick={() => onMapSelect(null)}
         >
           <Flex
             onClick={onMapAdd}

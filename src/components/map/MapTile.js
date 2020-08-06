@@ -109,7 +109,8 @@ function MapTile({
       }}
       m={2}
       bg="muted"
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation();
         setIsTileMenuOpen(false);
         if (!isSelected) {
           onMapSelect(map);

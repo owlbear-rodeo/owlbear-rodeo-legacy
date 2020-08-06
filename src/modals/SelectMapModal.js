@@ -184,7 +184,11 @@ function SelectMapModal({
 
   async function handleMapSelect(map) {
     await applyMapChanges();
-    setSelectedMapId(map.id);
+    if (map) {
+      setSelectedMapId(map.id);
+    } else {
+      setSelectedMapId(null);
+    }
   }
 
   async function handleMapReset(id) {
@@ -195,6 +199,13 @@ function SelectMapModal({
     }
   }
 
+  async function handleClose() {
+    if (selectedMapId) {
+      await applyMapChanges();
+    }
+    onDone();
+  }
+
   async function handleDone() {
     if (imageLoading) {
       return;
@@ -202,6 +213,8 @@ function SelectMapModal({
     if (selectedMapId) {
       await applyMapChanges();
       onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
+    } else {
+      onMapChange(null, null);
     }
     onDone();
   }
@@ -250,7 +263,7 @@ function SelectMapModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleDone}>
+    <Modal isOpen={isOpen} onRequestClose={handleClose}>
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
