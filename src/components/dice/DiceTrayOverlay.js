@@ -11,9 +11,10 @@ import { Box } from "theme-ui";
 import environment from "../../dice/environment.dds";
 
 import DiceInteraction from "./DiceInteraction";
-import DiceControls from "./DiceControls";
 import Dice from "../../dice/Dice";
 import LoadingOverlay from "../LoadingOverlay";
+import DiceButtons from "./DiceButtons";
+import DiceResults from "./DiceResults";
 
 import DiceTray from "../../dice/diceTray/DiceTray";
 
@@ -311,18 +312,26 @@ function DiceTrayOverlay({
             sceneInteractionRef.current = false;
           }}
         />
+        <DiceResults
+          diceRolls={diceRolls}
+          onDiceClear={() => {
+            handleDiceClear();
+            onDiceRollsChange([]);
+          }}
+          onDiceReroll={handleDiceReroll}
+        />
       </Box>
-      <DiceControls
-        onDiceAdd={handleDiceAdd}
-        onDiceClear={handleDiceClear}
-        onDiceReroll={handleDiceReroll}
-        onDiceLoad={handleDiceLoad}
-        diceTraySize={diceTraySize}
-        onDiceTraySizeChange={setDiceTraySize}
-        shareDice={shareDice}
-        onShareDiceChage={onShareDiceChage}
+      <DiceButtons
         diceRolls={diceRolls}
-        onDiceRollsChange={onDiceRollsChange}
+        onDiceAdd={(style, type) => {
+          handleDiceAdd(style, type);
+          onDiceRollsChange([...diceRolls, { type, roll: "unknown" }]);
+        }}
+        onDiceLoad={handleDiceLoad}
+        onDiceTraySizeChange={setDiceTraySize}
+        diceTraySize={diceTraySize}
+        shareDice={shareDice}
+        onShareDiceChange={onShareDiceChage}
       />
       {isLoading && (
         <Box

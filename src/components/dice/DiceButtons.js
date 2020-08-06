@@ -58,6 +58,9 @@ function DiceButtons({
         alignItems: "center",
         flexDirection: "column",
         borderRadius: "4px",
+        position: "absolute",
+        top: "0",
+        left: "0",
       }}
       p={2}
       bg="overlay"
