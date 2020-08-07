@@ -7,8 +7,8 @@ import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
 import { lerp } from "../helpers/vector2";
 
-// Send pointer updates every 50ms
-const sendTickRate = 50;
+// Send pointer updates every 33ms
+const sendTickRate = 33;
 
 function NetworkedMapPointer({ session, active, gridSize }) {
   const { userId } = useContext(AuthContext);
@@ -21,21 +21,38 @@ function NetworkedMapPointer({ session, active, gridSize }) {
     }
   }, [userId, pointerState]);
 
+  const sessionRef = useRef(session);
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
+
   // Send pointer updates every sendTickRate to peers to save on bandwidth
+  // We use requestAnimationFrame as setInterval was being blocked during
+  // re-renders on chrome with windows
   const ownPointerUpdateRef = useRef();
   useEffect(() => {
-    function sendOwnPointerUpdates() {
-      if (ownPointerUpdateRef.current) {
-        session.send("pointer", ownPointerUpdateRef.current);
-        ownPointerUpdateRef.current = null;
+    let prevTime = performance.now();
+    let request = requestAnimationFrame(update);
+    let counter = 0;
+    function update(time) {
+      request = requestAnimationFrame(update);
+      const deltaTime = time - prevTime;
+      counter += deltaTime;
+      prevTime = time;
+
+      if (counter > sendTickRate) {
+        counter -= sendTickRate;
+        if (ownPointerUpdateRef.current && sessionRef.current) {
+          sessionRef.current.send("pointer", ownPointerUpdateRef.current);
+          ownPointerUpdateRef.current = null;
+        }
       }
     }
-    const sendInterval = setInterval(sendOwnPointerUpdates, sendTickRate);
 
     return () => {
-      clearInterval(sendInterval);
+      cancelAnimationFrame(request);
     };
-  }, [session]);
+  }, []);
 
   function updateOwnPointerState(position, visible) {
     setPointerState((prev) => ({

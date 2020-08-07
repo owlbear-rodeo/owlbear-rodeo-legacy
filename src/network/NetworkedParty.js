@@ -77,24 +77,35 @@ function NetworkedParty({ gameId, session }) {
   }
 
   useEffect(() => {
-    function decreaseTimer(previousTimer) {
-      return { ...previousTimer, current: previousTimer.current - 1000 };
-    }
-    function updateTimers() {
+    let prevTime = performance.now();
+    let request = requestAnimationFrame(update);
+    let counter = 0;
+    function update(time) {
+      request = requestAnimationFrame(update);
+      const deltaTime = time - prevTime;
+      prevTime = time;
+
       if (timer) {
-        const newTimer = decreaseTimer(timer);
-        if (newTimer.current < 0) {
-          setTimer(null);
-          session.send("timer", { [session.id]: null });
-        } else {
-          setTimer(newTimer);
-          session.send("timer", { [session.id]: newTimer });
+        counter += deltaTime;
+        // Update timer every second
+        if (counter > 1000) {
+          const newTimer = {
+            ...timer,
+            current: timer.current - counter,
+          };
+          if (newTimer.current < 0) {
+            setTimer(null);
+            session.send("timer", { [session.id]: null });
+          } else {
+            setTimer(newTimer);
+            session.send("timer", { [session.id]: newTimer });
+          }
+          counter = 0;
         }
       }
     }
-    const interval = setInterval(updateTimers, 1000);
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(request);
     };
   }, [timer, session]);
 
