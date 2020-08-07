@@ -259,6 +259,9 @@ function MapInteraction({
       if (event.key === "m" && !disabledControls.includes("measure")) {
         onSelectedToolChange("measure");
       }
+      if (event.key === "q" && !disabledControls.includes("pointer")) {
+        onSelectedToolChange("pointer");
+      }
     }
 
     function handleKeyUp(event) {
