@@ -252,6 +252,7 @@ function Map({
             }
             mapState={mapState}
             fadeOnHover={selectedToolId === "drawing"}
+            map={map}
           />
         ))}
     </Group>
