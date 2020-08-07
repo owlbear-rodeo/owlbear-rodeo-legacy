@@ -112,7 +112,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   async function applyTokenChanges() {
     if (selectedTokenId && !isEmpty(tokenSettingChanges)) {
-      await updateToken(selectedTokenId, tokenSettingChanges);
+      // Ensure size value is positive
+      let verifiedChanges = { ...tokenSettingChanges };
+      if ("defaultSize" in verifiedChanges) {
+        verifiedChanges.defaultSize = verifiedChanges.defaultSize || 1;
+      }
+
+      await updateToken(selectedTokenId, verifiedChanges);
       setTokenSettingChanges({});
     }
   }

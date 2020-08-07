@@ -19,7 +19,7 @@ function TokenSettings({
           <Input
             type="number"
             name="tokenSize"
-            value={(token && token.defaultSize) || 1}
+            value={`${(token && token.defaultSize) || 0}`}
             onChange={(e) =>
               onSettingsChange("defaultSize", parseInt(e.target.value))
             }

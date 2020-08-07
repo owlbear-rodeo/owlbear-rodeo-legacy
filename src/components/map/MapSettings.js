@@ -64,7 +64,7 @@ function MapSettings({
           <Input
             type="number"
             name="gridX"
-            value={(map && map.gridX) || 0}
+            value={`${(map && map.gridX) || 0}`}
             onChange={(e) =>
               onSettingsChange("gridX", parseInt(e.target.value))
             }
@@ -78,7 +78,7 @@ function MapSettings({
           <Input
             type="number"
             name="gridY"
-            value={(map && map.gridY) || 0}
+            value={`${(map && map.gridY) || 0}`}
             onChange={(e) =>
               onSettingsChange("gridY", parseInt(e.target.value))
             }

@@ -249,7 +249,15 @@ function SelectMapModal({
       selectedMapId &&
       (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges))
     ) {
-      await updateMap(selectedMapId, mapSettingChanges);
+      // Ensure grid values are positive
+      let verifiedChanges = { ...mapSettingChanges };
+      if ("gridX" in verifiedChanges) {
+        verifiedChanges.gridX = verifiedChanges.gridX || 1;
+      }
+      if ("gridY" in verifiedChanges) {
+        verifiedChanges.gridY = verifiedChanges.gridY || 1;
+      }
+      await updateMap(selectedMapId, verifiedChanges);
       await updateMapState(selectedMapId, mapStateSettingChanges);
 
       setMapSettingChanges({});
