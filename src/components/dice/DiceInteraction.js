@@ -53,7 +53,9 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
         );
         const currentPosition = selectedMesh.getAbsolutePosition();
         let newPosition = ray.origin.scale(camera.globalPosition.y);
-        newPosition.y = currentPosition.y;
+        // Manually set the y value, using currentPosition.y caused a bug with windows
+        // where the physics wasn't updated
+        newPosition.y = 1.5;
         const delta = newPosition.subtract(currentPosition);
         selectedMesh.setAbsolutePosition(newPosition);
         const velocity = delta.scale(1000 / scene.deltaTime);
