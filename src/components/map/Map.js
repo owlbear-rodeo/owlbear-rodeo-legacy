@@ -284,6 +284,7 @@ function Map({
 
   const mapDrawing = (
     <MapDrawing
+      map={map}
       shapes={mapShapes}
       onShapeAdd={handleMapShapeAdd}
       onShapesRemove={handleMapShapesRemove}
@@ -296,6 +297,7 @@ function Map({
 
   const mapFog = (
     <MapFog
+      map={map}
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
       onShapeSubtract={handleFogShapeSubtract}
@@ -315,6 +317,7 @@ function Map({
 
   const mapMeasure = (
     <MapMeasure
+      map={map}
       active={selectedToolId === "measure"}
       gridSize={gridSizeNormalized}
       selectedToolSettings={toolSettings[selectedToolId]}

@@ -22,6 +22,7 @@ import {
 } from "../../helpers/konva";
 
 function MapFog({
+  map,
   shapes,
   onShapeAdd,
   onShapeSubtract,
@@ -57,6 +58,7 @@ function MapFog({
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
         toolId,
         toolSettings,
@@ -223,23 +225,7 @@ function MapFog({
       mapStage.off("mousemove touchmove", handlePolygonMove);
       mapStage.off("click tap", handlePolygonClick);
     };
-  }, [
-    mapStageRef,
-    active,
-    drawingShape,
-    editingShapes,
-    gridSize,
-    isBrushDown,
-    onShapeAdd,
-    onShapeSubtract,
-    onShapesEdit,
-    onShapesRemove,
-    toolId,
-    toolSettings,
-    shapes,
-    stageScale,
-    interactionEmitter,
-  ]);
+  });
 
   const finishDrawingPolygon = useCallback(() => {
     const subtract = toolSettings.useFogSubtract;

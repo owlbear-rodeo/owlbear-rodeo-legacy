@@ -144,6 +144,17 @@ function loadVersions(db) {
           }
         });
     });
+  // v1.5.0 - Added map snap to grid option
+  db.version(8)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.snapToGrid = true;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

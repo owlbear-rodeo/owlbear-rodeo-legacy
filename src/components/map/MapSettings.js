@@ -103,7 +103,7 @@ function MapSettings({
           <Flex
             mt={2}
             mb={map.type === "default" ? 2 : 0}
-            sx={{ alignItems: "center" }}
+            sx={{ alignItems: "flex-end" }}
           >
             <Box sx={{ width: "50%" }}>
               <Label>Grid Type</Label>
@@ -116,14 +116,28 @@ function MapSettings({
                 <option disabled>Hex (Coming Soon)</option>
               </Select>
             </Box>
-            <Label sx={{ width: "50%" }} ml={2}>
-              <Checkbox
-                checked={!mapEmpty && map.showGrid}
-                disabled={mapEmpty || map.type === "default"}
-                onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
-              />
-              Show Grid
-            </Label>
+            <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
+              <Label>
+                <Checkbox
+                  checked={!mapEmpty && map.showGrid}
+                  disabled={mapEmpty || map.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("showGrid", e.target.checked)
+                  }
+                />
+                Show Grid
+              </Label>
+              <Label>
+                <Checkbox
+                  checked={!mapEmpty && map.snapToGrid}
+                  disabled={mapEmpty || map.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("snapToGrid", e.target.checked)
+                  }
+                />
+                Snap to Grid
+              </Label>
+            </Flex>
           </Flex>
           {!mapEmpty && map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>

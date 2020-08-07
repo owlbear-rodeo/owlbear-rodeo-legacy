@@ -22,6 +22,7 @@ const defaultMapProps = {
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
   showGrid: false,
+  snapToGrid: true,
   quality: "original",
 };
 

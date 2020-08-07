@@ -6,6 +6,7 @@ import { toDegrees, omit } from "./shared";
 
 const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
+  map,
   brushPosition,
   tool,
   toolSettings,
@@ -14,12 +15,13 @@ export function getBrushPositionForTool(
 ) {
   let position = brushPosition;
   const useGridSnappning =
-    (tool === "drawing" &&
+    map.snapToGrid &&
+    ((tool === "drawing" &&
       (toolSettings.type === "line" ||
         toolSettings.type === "rectangle" ||
         toolSettings.type === "circle" ||
         toolSettings.type === "triangle")) ||
-    (tool === "fog" && toolSettings.type === "polygon");
+      (tool === "fog" && toolSettings.type === "polygon"));
 
   if (useGridSnappning) {
     // Snap to corners of grid

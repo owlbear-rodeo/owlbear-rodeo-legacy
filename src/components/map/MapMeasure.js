@@ -13,7 +13,7 @@ import {
 import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import * as Vector2 from "../../helpers/vector2";
 
-function MapMeasure({ selectedToolSettings, active, gridSize }) {
+function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
   );
@@ -36,6 +36,7 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
         "drawing",
         { type: "line" },
@@ -87,15 +88,7 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
       interactionEmitter.off("drag", handleBrushMove);
       interactionEmitter.off("dragEnd", handleBrushUp);
     };
-  }, [
-    drawingShapeData,
-    gridSize,
-    isBrushDown,
-    mapStageRef,
-    interactionEmitter,
-    active,
-    selectedToolSettings,
-  ]);
+  });
 
   function renderShape(shapeData) {
     const linePoints = shapeData.points.reduce(

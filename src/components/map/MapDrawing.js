@@ -18,6 +18,7 @@ import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import colors from "../../helpers/colors";
 
 function MapDrawing({
+  map,
   shapes,
   onShapeAdd,
   onShapesRemove,
@@ -52,6 +53,7 @@ function MapDrawing({
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
         toolId,
         toolSettings,
@@ -153,23 +155,7 @@ function MapDrawing({
       interactionEmitter.off("drag", handleBrushMove);
       interactionEmitter.off("dragEnd", handleBrushUp);
     };
-  }, [
-    drawingShape,
-    erasingShapes,
-    gridSize,
-    isBrush,
-    isBrushDown,
-    active,
-    toolId,
-    isShape,
-    mapStageRef,
-    onShapeAdd,
-    onShapesRemove,
-    toolSettings,
-    shapes,
-    stageScale,
-    interactionEmitter,
-  ]);
+  });
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {
