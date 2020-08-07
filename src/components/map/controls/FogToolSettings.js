@@ -44,6 +44,8 @@ function BrushToolSettings({
         onSettingChange({ type: "remove" });
       } else if (key === "s") {
         onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+      } else if (key === "f") {
+        onSettingChange({ preview: !settings.preview });
       } else if (
         (key === "z" || key === "Z") &&
         (ctrlKey || metaKey) &&
