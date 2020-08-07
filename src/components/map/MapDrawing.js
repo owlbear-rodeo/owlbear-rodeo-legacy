@@ -188,6 +188,7 @@ function MapDrawing({
           closed={shape.pathType === "fill"}
           fillEnabled={shape.pathType === "fill"}
           lineCap="round"
+          lineJoin="round"
           strokeWidth={getStrokeWidth(
             shape.strokeWidth,
             gridSize,

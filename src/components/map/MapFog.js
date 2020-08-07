@@ -316,6 +316,7 @@ function MapFog({
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
+        lineJoin="round"
         strokeWidth={getStrokeWidth(
           shape.strokeWidth,
           gridSize,
