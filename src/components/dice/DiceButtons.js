@@ -19,6 +19,7 @@ import SelectDiceButton from "./SelectDiceButton";
 import Divider from "../Divider";
 
 import { dice } from "../../dice";
+import useSetting from "../../helpers/useSetting";
 
 function DiceButtons({
   diceRolls,
@@ -29,10 +30,13 @@ function DiceButtons({
   shareDice,
   onShareDiceChange,
 }) {
-  const [currentDice, setCurrentDice] = useState(dice[0]);
+  const [currentDiceStyle, setCurrentDiceStyle] = useSetting("dice.style");
+  const [currentDice, setCurrentDice] = useState(
+    dice.find((d) => d.key === currentDiceStyle)
+  );
 
   useEffect(() => {
-    const initialDice = dice[0];
+    const initialDice = dice.find((d) => d.key === currentDiceStyle);
     onDiceLoad(initialDice);
     setCurrentDice(initialDice);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,6 +54,7 @@ function DiceButtons({
   async function handleDiceChange(dice) {
     await onDiceLoad(dice);
     setCurrentDice(dice);
+    setCurrentDiceStyle(dice.key);
   }
 
   let buttons = [

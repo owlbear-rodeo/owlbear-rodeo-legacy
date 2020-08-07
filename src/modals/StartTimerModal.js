@@ -1,9 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { Box, Label, Input, Button, Flex, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
 import { getHMSDuration, getDurationHMS } from "../helpers/timer";
+
+import useSetting from "../helpers/useSetting";
 
 function StartTimerModal({
   isOpen,
@@ -17,9 +19,9 @@ function StartTimerModal({
     inputRef.current && inputRef.current.focus();
   }
 
-  const [hour, setHour] = useState(0);
-  const [minute, setMinute] = useState(0);
-  const [second, setSecond] = useState(0);
+  const [hour, setHour] = useSetting("timer.hour");
+  const [minute, setMinute] = useSetting("timer.minute");
+  const [second, setSecond] = useSetting("timer.second");
 
   function handleSubmit(event) {
     event.preventDefault();

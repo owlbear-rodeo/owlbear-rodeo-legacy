@@ -12,6 +12,7 @@ import MapLoadingOverlay from "./MapLoadingOverlay";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
+import SettingsContext from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
@@ -48,31 +49,10 @@ function Map({
   const tokenSizePercent = gridSizeNormalized.x;
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
-  const [toolSettings, setToolSettings] = useState({
-    fog: {
-      type: "polygon",
-      useEdgeSnapping: false,
-      useFogCut: false,
-      preview: false,
-    },
-    drawing: {
-      color: "red",
-      type: "brush",
-      useBlending: true,
-    },
-    measure: {
-      type: "chebyshev",
-      scale: "5ft",
-    },
-    timer: {
-      hour: 0,
-      minute: 0,
-      second: 0,
-    },
-  });
+  const { settings, setSettings } = useContext(SettingsContext);
 
   function handleToolSettingChange(tool, change) {
-    setToolSettings((prevSettings) => ({
+    setSettings((prevSettings) => ({
       ...prevSettings,
       [tool]: {
         ...prevSettings[tool],
@@ -191,7 +171,7 @@ function Map({
       currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}
       selectedToolId={selectedToolId}
-      toolSettings={toolSettings}
+      toolSettings={settings}
       onToolSettingChange={handleToolSettingChange}
       onToolAction={handleToolAction}
       disabledControls={disabledControls}
@@ -291,7 +271,7 @@ function Map({
       onShapesRemove={handleMapShapesRemove}
       active={selectedToolId === "drawing"}
       toolId="drawing"
-      toolSettings={toolSettings.drawing}
+      toolSettings={settings.drawing}
       gridSize={gridSizeNormalized}
     />
   );
@@ -306,9 +286,9 @@ function Map({
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
       toolId="fog"
-      toolSettings={toolSettings.fog}
+      toolSettings={settings.fog}
       gridSize={gridSizeNormalized}
-      transparent={allowFogDrawing && !toolSettings.fog.preview}
+      transparent={allowFogDrawing && !settings.fog.preview}
     />
   );
 
@@ -321,7 +301,7 @@ function Map({
       map={map}
       active={selectedToolId === "measure"}
       gridSize={gridSizeNormalized}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      selectedToolSettings={settings[selectedToolId]}
     />
   );
 

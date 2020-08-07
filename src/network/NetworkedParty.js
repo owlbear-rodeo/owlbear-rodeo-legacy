@@ -6,6 +6,7 @@ import Session from "../helpers/Session";
 import { isStreamStopped, omit, fromEntries } from "../helpers/shared";
 
 import AuthContext from "../contexts/AuthContext";
+import useSetting from "../helpers/useSetting";
 
 import Party from "../components/party/Party";
 
@@ -26,8 +27,9 @@ function NetworkedParty({ gameId, session }) {
   const [timer, setTimer] = useState(null);
   const [partyTimers, setPartyTimers] = useState({});
   const [diceRolls, setDiceRolls] = useState([]);
-  const [shareDice, setShareDice] = useState(false);
   const [partyDiceRolls, setPartyDiceRolls] = useState({});
+
+  const [shareDice, setShareDice] = useSetting("dice.shareDice");
 
   function handleNicknameChange(newNickname) {
     setNickname(newNickname);
