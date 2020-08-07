@@ -28,7 +28,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
 
   // Send pointer updates every sendTickRate to peers to save on bandwidth
   // We use requestAnimationFrame as setInterval was being blocked during
-  // re-renders on chrome with windows
+  // re-renders on Chrome with Windows
   const ownPointerUpdateRef = useRef();
   useEffect(() => {
     let prevTime = performance.now();
