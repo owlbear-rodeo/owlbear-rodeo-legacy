@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Flex, IconButton } from "theme-ui";
+import { Flex, IconButton, Box } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import D20Icon from "../../icons/D20Icon";
 import D12Icon from "../../icons/D12Icon";
@@ -51,100 +52,123 @@ function DiceButtons({
     setCurrentDice(dice);
   }
 
+  let buttons = [
+    {
+      key: "d20",
+      title: "Add D20",
+      count: diceCounts.d20,
+      onClick: () => onDiceAdd(currentDice.class, "d20"),
+      children: <D20Icon />,
+    },
+    {
+      key: "d12",
+      title: "Add D12",
+      count: diceCounts.d12,
+      onClick: () => onDiceAdd(currentDice.class, "d12"),
+      children: <D12Icon />,
+    },
+    {
+      key: "d10",
+      title: "Add D10",
+      count: diceCounts.d10,
+      onClick: () => onDiceAdd(currentDice.class, "d10"),
+      children: <D10Icon />,
+    },
+    {
+      key: "d8",
+      title: "Add D8",
+      count: diceCounts.d8,
+      onClick: () => onDiceAdd(currentDice.class, "d8"),
+      children: <D8Icon />,
+    },
+    {
+      key: "d6",
+      title: "Add D6",
+      count: diceCounts.d6,
+      onClick: () => onDiceAdd(currentDice.class, "d6"),
+      children: <D6Icon />,
+    },
+    {
+      key: "d4",
+      title: "Add D4",
+      count: diceCounts.d4,
+      onClick: () => onDiceAdd(currentDice.class, "d4"),
+      children: <D4Icon />,
+    },
+    {
+      key: "d100",
+      title: "Add D100",
+      count: diceCounts.d100,
+      onClick: () => onDiceAdd(currentDice.class, "d100"),
+      children: <D100Icon />,
+    },
+  ];
+
   return (
-    <Flex
+    <Box
       sx={{
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
         borderRadius: "4px",
         position: "absolute",
         top: "0",
         left: "0",
+        height: "100%",
+        maxHeight: "390px",
+        pointerEvents: "all",
       }}
-      p={2}
       bg="overlay"
     >
-      <SelectDiceButton
-        onDiceChange={handleDiceChange}
-        currentDice={currentDice}
-      />
-      <Divider />
-      <DiceButton
-        title="Add D20"
-        count={diceCounts.d20}
-        onClick={() => onDiceAdd(currentDice.class, "d20")}
-      >
-        <D20Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D12"
-        count={diceCounts.d12}
-        onClick={() => onDiceAdd(currentDice.class, "d12")}
-      >
-        <D12Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D10"
-        count={diceCounts.d10}
-        onClick={() => onDiceAdd(currentDice.class, "d10")}
-      >
-        <D10Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D8"
-        count={diceCounts.d8}
-        onClick={() => onDiceAdd(currentDice.class, "d8")}
-      >
-        <D8Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D6"
-        count={diceCounts.d6}
-        onClick={() => onDiceAdd(currentDice.class, "d6")}
-      >
-        <D6Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D4"
-        count={diceCounts.d4}
-        onClick={() => onDiceAdd(currentDice.class, "d4")}
-      >
-        <D4Icon />
-      </DiceButton>
-      <DiceButton
-        title="Add D100"
-        count={diceCounts.d100}
-        onClick={() => onDiceAdd(currentDice.class, "d100")}
-      >
-        <D100Icon />
-      </DiceButton>
-      <Divider />
-      <IconButton
-        aria-label={
-          diceTraySize === "single" ? "Expand Dice Tray" : "Shrink Dice Tray"
-        }
-        title={
-          diceTraySize === "single" ? "Expand Dice Tray" : "Shrink Dice Tray"
-        }
-        sx={{
-          transform: diceTraySize === "single" ? "rotate(0)" : "rotate(180deg)",
-        }}
-        onClick={() =>
-          onDiceTraySizeChange(diceTraySize === "single" ? "double" : "single")
-        }
-      >
-        <ExpandMoreDiceTrayIcon />
-      </IconButton>
-      <Divider />
-      <IconButton
-        aria-label={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
-        title={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
-        onClick={() => onShareDiceChange(!shareDice)}
-      >
-        {shareDice ? <ShareDiceOnIcon /> : <ShareDiceOffIcon />}
-      </IconButton>
-    </Flex>
+      <SimpleBar style={{ width: "48px", height: "100%" }}>
+        <Flex
+          sx={{
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+          }}
+          p={2}
+        >
+          <SelectDiceButton
+            onDiceChange={handleDiceChange}
+            currentDice={currentDice}
+          />
+          <Divider />
+          {buttons.map((button) => (
+            <DiceButton {...button} />
+          ))}
+          <Divider />
+          <IconButton
+            aria-label={
+              diceTraySize === "single"
+                ? "Expand Dice Tray"
+                : "Shrink Dice Tray"
+            }
+            title={
+              diceTraySize === "single"
+                ? "Expand Dice Tray"
+                : "Shrink Dice Tray"
+            }
+            sx={{
+              transform:
+                diceTraySize === "single" ? "rotate(0)" : "rotate(180deg)",
+            }}
+            onClick={() =>
+              onDiceTraySizeChange(
+                diceTraySize === "single" ? "double" : "single"
+              )
+            }
+          >
+            <ExpandMoreDiceTrayIcon />
+          </IconButton>
+          <Divider />
+          <IconButton
+            aria-label={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
+            title={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
+            onClick={() => onShareDiceChange(!shareDice)}
+          >
+            {shareDice ? <ShareDiceOnIcon /> : <ShareDiceOffIcon />}
+          </IconButton>
+        </Flex>
+      </SimpleBar>
+    </Box>
   );
 }
 

@@ -297,11 +297,15 @@ function DiceTrayOverlay({
         display: isOpen ? "block" : "none",
         position: "relative",
         overflow: "visible",
-        pointerEvents: "all",
       }}
     >
       <Box
-        sx={{ transform: "translateX(50px)", width: "100%", height: "100%" }}
+        sx={{
+          transform: "translateX(50px)",
+          width: "100%",
+          height: "100%",
+          pointerEvents: "all",
+        }}
       >
         <DiceInteraction
           onSceneMount={handleSceneMount}
