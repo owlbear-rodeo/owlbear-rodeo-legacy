@@ -16,7 +16,7 @@ import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
-const snappingThreshold = 1 / 8;
+const snappingThreshold = 1 / 7;
 
 function MapToken({
   token,
