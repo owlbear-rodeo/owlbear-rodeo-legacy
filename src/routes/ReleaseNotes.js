@@ -16,6 +16,7 @@ const v133 = raw("../docs/releaseNotes/v1.3.3.md");
 const v140 = raw("../docs/releaseNotes/v1.4.0.md");
 const v141 = raw("../docs/releaseNotes/v1.4.1.md");
 const v142 = raw("../docs/releaseNotes/v1.4.2.md");
+const v150 = raw("../docs/releaseNotes/v1.5.0.md");
 
 function ReleaseNotes() {
   return (
@@ -39,18 +40,23 @@ function ReleaseNotes() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
+        <div id="v150">
+          <Accordion heading="v1.5.0" defaultOpen>
+            <Markdown source={v150} />
+          </Accordion>
+        </div>
         <div id="v141">
-          <Accordion heading="v1.4.2" defaultOpen>
+          <Accordion heading="v1.4.2">
             <Markdown source={v142} />
           </Accordion>
         </div>
         <div id="v141">
-          <Accordion heading="v1.4.1" defaultOpen>
+          <Accordion heading="v1.4.1">
             <Markdown source={v141} />
           </Accordion>
         </div>
         <div id="v140">
-          <Accordion heading="v1.4.0" defaultOpen>
+          <Accordion heading="v1.4.0">
             <Markdown source={v140} />
           </Accordion>
         </div>
