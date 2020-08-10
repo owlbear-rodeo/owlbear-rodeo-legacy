@@ -19,6 +19,8 @@ import changeNickname from "./ChangeNickname.mp4";
 import sharingAudio from "./SharingAudio.mp4";
 import startGame from "./StartGame.mp4";
 import diceSharing from "./DiceSharing.mp4";
+import usingTimer from "./UsingTimer.mp4";
+import usingPointer from "./UsingPointer.mp4";
 
 export default {
   defaultMaps,
@@ -42,4 +44,6 @@ export default {
   sharingAudio,
   startGame,
   diceSharing,
+  usingTimer,
+  usingPointer,
 };

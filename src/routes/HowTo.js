@@ -18,6 +18,8 @@ const usingDice = raw("../docs/howTo/usingDice.md");
 const usingFog = raw("../docs/howTo/usingFog.md");
 const usingMeasure = raw("../docs/howTo/usingMeasure.md");
 const sharingAudio = raw("../docs/howTo/sharingAudio.md");
+const usingPointer = raw("../docs/howTo/usingPointer.md");
+const usingTimer = raw("../docs/howTo/usingTimer.md");
 
 function HowTo() {
   const location = useLocation();
@@ -99,6 +101,22 @@ function HowTo() {
             defaultOpen={location.hash === "#usingMeasure"}
           >
             <Markdown source={usingMeasure} assets={assets} />
+          </Accordion>
+        </div>
+        <div id="usingPointer">
+          <Accordion
+            heading="Using the Pointer Tool"
+            defaultOpen={location.hash === "#usingPointer"}
+          >
+            <Markdown source={usingPointer} assets={assets} />
+          </Accordion>
+        </div>
+        <div id="usingTimer">
+          <Accordion
+            heading="Using the Countdown Timer"
+            defaultOpen={location.hash === "#usingTimer"}
+          >
+            <Markdown source={usingTimer} assets={assets} />
           </Accordion>
         </div>
         <div id="sharingAudio">
