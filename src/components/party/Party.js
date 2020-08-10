@@ -61,7 +61,10 @@ function Party({
           height: "calc(100% - 232px)",
         }}
       >
-        <Nickname nickname={`${nickname} (you)`} />
+        <Nickname
+          nickname={`${nickname} (you)`}
+          diceRolls={shareDice && diceRolls}
+        />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname
             nickname={partyNickname}
