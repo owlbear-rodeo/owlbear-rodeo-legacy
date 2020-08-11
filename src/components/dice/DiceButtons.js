@@ -29,6 +29,7 @@ function DiceButtons({
   onDiceTraySizeChange,
   shareDice,
   onShareDiceChange,
+  loading,
 }) {
   const [currentDiceStyle, setCurrentDiceStyle] = useSetting("dice.style");
   const [currentDice, setCurrentDice] = useState(
@@ -134,10 +135,11 @@ function DiceButtons({
           <SelectDiceButton
             onDiceChange={handleDiceChange}
             currentDice={currentDice}
+            disabled={loading}
           />
           <Divider />
           {buttons.map((button) => (
-            <DiceButton {...button} />
+            <DiceButton disabled={loading} {...button} />
           ))}
           <Divider />
           <IconButton
@@ -160,6 +162,7 @@ function DiceButtons({
                 diceTraySize === "single" ? "double" : "single"
               )
             }
+            disabled={loading}
           >
             <ExpandMoreDiceTrayIcon />
           </IconButton>
@@ -168,6 +171,7 @@ function DiceButtons({
             aria-label={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
             title={shareDice ? "Hide Dice Rolls" : "Share Dice Rolls"}
             onClick={() => onShareDiceChange(!shareDice)}
+            disabled={loading}
           >
             {shareDice ? <ShareDiceOnIcon /> : <ShareDiceOffIcon />}
           </IconButton>

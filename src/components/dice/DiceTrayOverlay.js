@@ -336,6 +336,7 @@ function DiceTrayOverlay({
         diceTraySize={diceTraySize}
         shareDice={shareDice}
         onShareDiceChange={onShareDiceChage}
+        loading={isLoading}
       />
       {isLoading && (
         <Box

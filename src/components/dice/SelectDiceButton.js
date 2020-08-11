@@ -4,7 +4,7 @@ import { IconButton } from "theme-ui";
 import SelectDiceIcon from "../../icons/SelectDiceIcon";
 import SelectDiceModal from "../../modals/SelectDiceModal";
 
-function SelectDiceButton({ onDiceChange, currentDice }) {
+function SelectDiceButton({ onDiceChange, currentDice, disabled }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   function openModal() {
@@ -25,6 +25,7 @@ function SelectDiceButton({ onDiceChange, currentDice }) {
         aria-label="Select Dice Style"
         title="Select Dice Style"
         onClick={openModal}
+        disabled={disabled}
       >
         <SelectDiceIcon />
       </IconButton>
