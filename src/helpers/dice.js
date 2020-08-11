@@ -1,4 +1,4 @@
-import * as BABYLON from "babylonjs";
+import { Vector3 } from "@babylonjs/core/Maths/math";
 
 /**
  * Find the number facing up on a mesh instance of a dice
@@ -12,7 +12,7 @@ export function getDiceInstanceRoll(instance) {
       .getAbsolutePosition()
       .subtract(instance.getAbsolutePosition());
     let direction = dif.normalize();
-    const dot = BABYLON.Vector3.Dot(direction, BABYLON.Vector3.Up());
+    const dot = Vector3.Dot(direction, Vector3.Up());
     if (dot > highestDot) {
       highestDot = dot;
       highestLocator = locator;

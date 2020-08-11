@@ -5,7 +5,10 @@ import React, {
   useContext,
   useState,
 } from "react";
-import * as BABYLON from "babylonjs";
+import { Vector3 } from "@babylonjs/core/Maths/math";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import { CubeTexture } from "@babylonjs/core/Materials/Textures/cubeTexture";
 import { Box } from "theme-ui";
 
 import environment from "../../dice/environment.dds";
@@ -102,20 +105,20 @@ function DiceTrayOverlay({
 
   async function initializeScene(scene) {
     handleAssetLoadStart();
-    let light = new BABYLON.DirectionalLight(
+    let light = new DirectionalLight(
       "DirectionalLight",
-      new BABYLON.Vector3(-0.5, -1, -0.5),
+      new Vector3(-0.5, -1, -0.5),
       scene
     );
-    light.position = new BABYLON.Vector3(5, 10, 5);
+    light.position = new Vector3(5, 10, 5);
     light.shadowMinZ = 1;
     light.shadowMaxZ = 50;
-    let shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+    let shadowGenerator = new ShadowGenerator(1024, light);
     shadowGenerator.useCloseExponentialShadowMap = true;
     shadowGenerator.darkness = 0.7;
     shadowGeneratorRef.current = shadowGenerator;
 
-    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+    scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
       environment,
       scene
     );

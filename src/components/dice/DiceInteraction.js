@@ -1,7 +1,19 @@
 import React, { useRef, useEffect } from "react";
-import * as BABYLON from "babylonjs";
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { Scene } from "@babylonjs/core/scene";
+import { Vector3, Color4, Matrix } from "@babylonjs/core/Maths/math";
+import { AmmoJSPlugin } from "@babylonjs/core/Physics/Plugins/ammoJSPlugin";
+import { TargetCamera } from "@babylonjs/core/Cameras/targetCamera";
 import * as AMMO from "ammo.js";
-import "babylonjs-loaders";
+
+import "@babylonjs/core/Physics/physicsEngineComponent";
+import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
+import "@babylonjs/core/Materials/Textures/Loaders/ddsTextureLoader";
+import "@babylonjs/core/Meshes/Builders/boxBuilder";
+import "@babylonjs/core/Actions/actionManager";
+import "@babylonjs/core/Culling/ray";
+import "@babylonjs/loaders/glTF";
+
 import ReactResizeDetector from "react-resize-detector";
 
 import usePreventTouch from "../../helpers/usePreventTouch";
@@ -16,25 +28,18 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const engine = new BABYLON.Engine(canvas, true, {
+    const engine = new Engine(canvas, true, {
       preserveDrawingBuffer: true,
       stencil: true,
     });
-    const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+    const scene = new Scene(engine);
+    scene.clearColor = new Color4(0, 0, 0, 0);
     // Enable physics
-    scene.enablePhysics(
-      new BABYLON.Vector3(0, -98, 0),
-      new BABYLON.AmmoJSPlugin(true, AMMO)
-    );
+    scene.enablePhysics(new Vector3(0, -98, 0), new AmmoJSPlugin(true, AMMO));
 
-    let camera = new BABYLON.TargetCamera(
-      "camera",
-      new BABYLON.Vector3(0, 33.5, 0),
-      scene
-    );
+    let camera = new TargetCamera("camera", new Vector3(0, 33.5, 0), scene);
     camera.fov = 0.65;
-    camera.setTarget(BABYLON.Vector3.Zero());
+    camera.setTarget(Vector3.Zero());
 
     onSceneMount && onSceneMount({ scene, engine, canvas });
 
@@ -48,7 +53,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
         const ray = scene.createPickingRay(
           scene.pointerX,
           scene.pointerY,
-          BABYLON.Matrix.Identity(),
+          Matrix.Identity(),
           camera
         );
         const currentPosition = selectedMesh.getAbsolutePosition();
@@ -79,12 +84,8 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
     if (scene) {
       const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
       if (pickInfo.hit && pickInfo.pickedMesh.name !== "dice_tray") {
-        pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(
-          BABYLON.Vector3.Zero()
-        );
-        pickInfo.pickedMesh.physicsImpostor.setAngularVelocity(
-          BABYLON.Vector3.Zero()
-        );
+        pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(Vector3.Zero());
+        pickInfo.pickedMesh.physicsImpostor.setAngularVelocity(Vector3.Zero());
         selectedMeshRef.current = pickInfo.pickedMesh;
       }
     }
@@ -97,7 +98,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
     const scene = sceneRef.current;
     if (selectedMesh && scene) {
       // Average velocity window
-      let velocity = BABYLON.Vector3.Zero();
+      let velocity = Vector3.Zero();
       for (let v of velocityWindow) {
         velocity.addInPlace(v);
       }

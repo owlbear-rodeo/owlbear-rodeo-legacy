@@ -1,4 +1,7 @@
-import * as BABYLON from "babylonjs";
+import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import { PhysicsImpostor } from "@babylonjs/core/Physics/physicsImpostor";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
 
 import singleMeshSource from "./single.glb";
 import doubleMeshSource from "./double.glb";
@@ -55,19 +58,19 @@ class DiceTray {
   }
 
   createCollision(name, x, y, z, friction) {
-    let collision = BABYLON.Mesh.CreateBox(
+    let collision = Mesh.CreateBox(
       name,
       this.collisionSize,
       this.scene,
       true,
-      BABYLON.Mesh.DOUBLESIDE
+      Mesh.DOUBLESIDE
     );
     collision.position.x = x;
     collision.position.y = y;
     collision.position.z = z;
-    collision.physicsImpostor = new BABYLON.PhysicsImpostor(
+    collision.physicsImpostor = new PhysicsImpostor(
       collision,
-      BABYLON.PhysicsImpostor.BoxImpostor,
+      PhysicsImpostor.BoxImpostor,
       { mass: 0, friction: friction },
       this.scene
     );
@@ -115,19 +118,11 @@ class DiceTray {
 
   async loadMeshes() {
     this.singleMesh = (
-      await BABYLON.SceneLoader.ImportMeshAsync(
-        "",
-        singleMeshSource,
-        "",
-        this.scene
-      )
+      await SceneLoader.ImportMeshAsync("", singleMeshSource, "", this.scene)
     ).meshes[1];
     this.singleMesh.id = "dice_tray_single";
     this.singleMesh.name = "dice_tray";
-    let singleMaterial = new BABYLON.PBRMaterial(
-      "dice_tray_mat_single",
-      this.scene
-    );
+    let singleMaterial = new PBRMaterial("dice_tray_mat_single", this.scene);
     singleMaterial.albedoTexture = await importTextureAsync(singleAlbedo);
     singleMaterial.normalTexture = await importTextureAsync(singleNormal);
     singleMaterial.metallicTexture = await importTextureAsync(
@@ -143,19 +138,11 @@ class DiceTray {
     this.singleMesh.isVisible = this.size === "single";
 
     this.doubleMesh = (
-      await BABYLON.SceneLoader.ImportMeshAsync(
-        "",
-        doubleMeshSource,
-        "",
-        this.scene
-      )
+      await SceneLoader.ImportMeshAsync("", doubleMeshSource, "", this.scene)
     ).meshes[1];
     this.doubleMesh.id = "dice_tray_double";
     this.doubleMesh.name = "dice_tray";
-    let doubleMaterial = new BABYLON.PBRMaterial(
-      "dice_tray_mat_double",
-      this.scene
-    );
+    let doubleMaterial = new PBRMaterial("dice_tray_mat_double", this.scene);
     doubleMaterial.albedoTexture = await importTextureAsync(doubleAlbedo);
     doubleMaterial.normalTexture = await importTextureAsync(doubleNormal);
     doubleMaterial.metallicTexture = await importTextureAsync(

@@ -1,4 +1,5 @@
-import * as BABYLON from "babylonjs";
+import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import { Color3 } from "@babylonjs/core/Maths/math";
 
 import Dice from "../Dice";
 
@@ -18,7 +19,7 @@ class GemstoneDice extends Dice {
   }
 
   static async loadMaterial(materialName, textures, scene) {
-    let pbr = new BABYLON.PBRMaterial(materialName, scene);
+    let pbr = new PBRMaterial(materialName, scene);
     pbr.albedoTexture = await importTextureAsync(textures.albedo);
     pbr.normalTexture = await importTextureAsync(textures.normal);
     pbr.metallicTexture = await importTextureAsync(textures.metalRoughness);
@@ -30,7 +31,7 @@ class GemstoneDice extends Dice {
     pbr.subSurface.translucencyIntensity = 1.0;
     pbr.subSurface.minimumThickness = 5;
     pbr.subSurface.maximumThickness = 10;
-    pbr.subSurface.tintColor = new BABYLON.Color3(190 / 255, 0, 220 / 255);
+    pbr.subSurface.tintColor = new Color3(190 / 255, 0, 220 / 255);
 
     return pbr;
   }
