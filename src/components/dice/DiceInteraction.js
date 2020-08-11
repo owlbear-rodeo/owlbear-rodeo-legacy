@@ -58,9 +58,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
         );
         const currentPosition = selectedMesh.getAbsolutePosition();
         let newPosition = ray.origin.scale(camera.globalPosition.y);
-        // Manually set the y value, using currentPosition.y caused a bug with windows
-        // where the physics wasn't updated
-        newPosition.y = 1.5;
+        newPosition.y = currentPosition.y;
         const delta = newPosition.subtract(currentPosition);
         selectedMesh.setAbsolutePosition(newPosition);
         const velocity = delta.scale(1000 / scene.deltaTime);
@@ -79,6 +77,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
   const selectedMeshRef = useRef();
   const selectedMeshVelocityWindowRef = useRef([]);
   const selectedMeshVelocityWindowSize = 4;
+  const selectedMeshMassRef = useRef();
   function handlePointerDown() {
     const scene = sceneRef.current;
     if (scene) {
@@ -86,6 +85,11 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
       if (pickInfo.hit && pickInfo.pickedMesh.name !== "dice_tray") {
         pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(Vector3.Zero());
         pickInfo.pickedMesh.physicsImpostor.setAngularVelocity(Vector3.Zero());
+
+        // Save the meshes mass and set it to 0 so we can pick it up
+        selectedMeshMassRef.current = pickInfo.pickedMesh.physicsImpostor.mass;
+        pickInfo.pickedMesh.physicsImpostor.setMass(0);
+
         selectedMeshRef.current = pickInfo.pickedMesh;
       }
     }
@@ -106,6 +110,10 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
         velocity.scaleInPlace(1 / velocityWindow.length);
       }
 
+      // Re-apply the meshes mass
+      selectedMesh.physicsImpostor.setMass(selectedMeshMassRef.current);
+      selectedMesh.physicsImpostor.forceUpdate();
+
       selectedMesh.physicsImpostor.applyImpulse(
         velocity.scale(diceThrowSpeed * selectedMesh.physicsImpostor.mass),
         selectedMesh.physicsImpostor.getObjectCenter()
@@ -113,6 +121,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
     }
     selectedMeshRef.current = null;
     selectedMeshVelocityWindowRef.current = [];
+    selectedMeshMassRef.current = null;
 
     onPointerUp();
   }
