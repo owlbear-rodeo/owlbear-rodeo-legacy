@@ -1,6 +1,6 @@
 {
   "name": "owlbear-rodeo",
-  "version": "1.5.0 (preview)",
+  "version": "1.5.0",
   "private": true,
   "dependencies": {
     "@msgpack/msgpack": "^1.12.1",
