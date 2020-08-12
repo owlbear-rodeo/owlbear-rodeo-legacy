@@ -12,11 +12,15 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   async function handleEraseAllData() {
+    localStorage.clear();
     await database.delete();
     window.location.reload();
   }
 
   async function handleClearCache() {
+    // Clear saved settings
+    localStorage.clear();
+    // Clear map cache
     await database.table("maps").where("owner").notEqual(userId).delete();
     // Find all other peoples tokens who aren't benig used in a map state and delete them
     const tokens = await database
