@@ -6,6 +6,7 @@ A summary of the Measure Tool options are listed below.
 
 | Option              | Description                                                                        | Shortcut |
 | ------------------- | ---------------------------------------------------------------------------------- | -------- |
-| Grid Distance       | This is the distance on a grid and is the metric use in D&D                        | G        |
+| Grid Distance       | This is the distance on a grid and is the metric used in D&D                       | G        |
 | Line Distance       | This is the actual distance between the two points of the measure tool             | L        |
 | City Block Distance | This is the distance when only travelling in the horizontal or vertical directions | C        |
+| Scale               | This allows you to enter a custom scale and unit value to apply                    |          |

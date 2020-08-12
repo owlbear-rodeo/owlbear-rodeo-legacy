@@ -129,6 +129,32 @@ function loadVersions(db) {
           map.quality = "original";
         });
     });
+  // v1.5.0 - Fixed default token rogue spelling
+  db.version(7)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.tokens) {
+            if (state.tokens[id].tokenId === "__default-Rouge") {
+              state.tokens[id].tokenId = "__default-Rogue";
+            }
+          }
+        });
+    });
+  // v1.5.0 - Added map snap to grid option
+  db.version(8)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.snapToGrid = true;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

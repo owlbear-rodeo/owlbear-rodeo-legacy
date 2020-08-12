@@ -102,15 +102,14 @@ function Stream({ stream, nickname }) {
         >
           <StreamMuteIcon muted={streamMuted} />
         </IconButton>
-        {isVolumeControlAvailable && (
-          <Slider
-            value={streamVolume}
-            min={0}
-            max={2}
-            step={0.1}
-            onChange={handleVolumeChange}
-          />
-        )}
+        <Slider
+          value={streamVolume}
+          min={0}
+          max={2}
+          step={0.1}
+          onChange={handleVolumeChange}
+          disabled={!isVolumeControlAvailable}
+        />
         {stream && <audio ref={audioRef} playsInline muted={streamMuted} />}
       </Flex>
       <Banner

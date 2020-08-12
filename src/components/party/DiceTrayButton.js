@@ -6,7 +6,12 @@ import DiceTrayOverlay from "../dice/DiceTrayOverlay";
 
 import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
 
-function MapDice() {
+function DiceTrayButton({
+  shareDice,
+  onShareDiceChage,
+  diceRolls,
+  onDiceRollsChange,
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -14,11 +19,12 @@ function MapDice() {
       sx={{
         position: "absolute",
         top: 0,
-        left: 0,
+        left: "100%",
         bottom: 0,
         flexDirection: "column",
         alignItems: "flex-start",
         pointerEvents: "none",
+        zIndex: 1,
       }}
       ml={1}
     >
@@ -37,10 +43,16 @@ function MapDice() {
         <ExpandMoreDiceIcon isExpanded={isExpanded} />
       </IconButton>
       <DiceLoadingProvider>
-        <DiceTrayOverlay isOpen={isExpanded} />
+        <DiceTrayOverlay
+          isOpen={isExpanded}
+          shareDice={shareDice}
+          onShareDiceChage={onShareDiceChage}
+          diceRolls={diceRolls}
+          onDiceRollsChange={onDiceRollsChange}
+        />
       </DiceLoadingProvider>
     </Flex>
   );
 }
 
-export default MapDice;
+export default DiceTrayButton;

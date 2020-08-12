@@ -22,14 +22,17 @@ import {
 } from "../../helpers/konva";
 
 function MapFog({
+  map,
   shapes,
   onShapeAdd,
   onShapeSubtract,
   onShapesRemove,
   onShapesEdit,
-  selectedToolId,
-  selectedToolSettings,
+  active,
+  toolId,
+  toolSettings,
   gridSize,
+  transparent,
 }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
@@ -39,16 +42,14 @@ function MapFog({
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [editingShapes, setEditingShapes] = useState([]);
 
-  const isEditing = selectedToolId === "fog";
   const shouldHover =
-    isEditing &&
-    (selectedToolSettings.type === "toggle" ||
-      selectedToolSettings.type === "remove");
+    active &&
+    (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
   const [patternImage] = useImage(diagonalPattern);
 
   useEffect(() => {
-    if (!isEditing) {
+    if (!active) {
       return;
     }
 
@@ -57,9 +58,10 @@ function MapFog({
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
-        selectedToolId,
-        selectedToolSettings,
+        toolId,
+        toolSettings,
         gridSize,
         shapes
       );
@@ -67,7 +69,7 @@ function MapFog({
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
-      if (selectedToolSettings.type === "brush") {
+      if (toolSettings.type === "brush") {
         setDrawingShape({
           type: "fog",
           data: {
@@ -75,7 +77,7 @@ function MapFog({
             holes: [],
           },
           strokeWidth: 0.5,
-          color: selectedToolSettings.useFogSubtract ? "red" : "black",
+          color: toolSettings.useFogSubtract ? "red" : "black",
           blend: false,
           id: shortid.generate(),
           visible: true,
@@ -85,11 +87,7 @@ function MapFog({
     }
 
     function handleBrushMove() {
-      if (
-        selectedToolSettings.type === "brush" &&
-        isBrushDown &&
-        drawingShape
-      ) {
+      if (toolSettings.type === "brush" && isBrushDown && drawingShape) {
         const brushPosition = getBrushPosition();
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
@@ -114,8 +112,8 @@ function MapFog({
     }
 
     function handleBrushUp() {
-      if (selectedToolSettings.type === "brush" && drawingShape) {
-        const subtract = selectedToolSettings.useFogSubtract;
+      if (toolSettings.type === "brush" && drawingShape) {
+        const subtract = toolSettings.useFogSubtract;
 
         if (drawingShape.data.points.length > 1) {
           let shapeData = {};
@@ -147,9 +145,9 @@ function MapFog({
 
       // Erase
       if (editingShapes.length > 0) {
-        if (selectedToolSettings.type === "remove") {
+        if (toolSettings.type === "remove") {
           onShapesRemove(editingShapes.map((shape) => shape.id));
-        } else if (selectedToolSettings.type === "toggle") {
+        } else if (toolSettings.type === "toggle") {
           onShapesEdit(
             editingShapes.map((shape) => ({
               ...shape,
@@ -164,7 +162,7 @@ function MapFog({
     }
 
     function handlePolygonClick() {
-      if (selectedToolSettings.type === "polygon") {
+      if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
         setDrawingShape((prevDrawingShape) => {
           if (prevDrawingShape) {
@@ -183,7 +181,7 @@ function MapFog({
                 holes: [],
               },
               strokeWidth: 0.5,
-              color: selectedToolSettings.useFogSubtract ? "red" : "black",
+              color: toolSettings.useFogSubtract ? "red" : "black",
               blend: false,
               id: shortid.generate(),
               visible: true,
@@ -194,7 +192,7 @@ function MapFog({
     }
 
     function handlePolygonMove() {
-      if (selectedToolSettings.type === "polygon" && drawingShape) {
+      if (toolSettings.type === "polygon" && drawingShape) {
         const brushPosition = getBrushPosition();
         setDrawingShape((prevShape) => {
           if (!prevShape) {
@@ -227,26 +225,10 @@ function MapFog({
       mapStage.off("mousemove touchmove", handlePolygonMove);
       mapStage.off("click tap", handlePolygonClick);
     };
-  }, [
-    mapStageRef,
-    isEditing,
-    drawingShape,
-    editingShapes,
-    gridSize,
-    isBrushDown,
-    onShapeAdd,
-    onShapeSubtract,
-    onShapesEdit,
-    onShapesRemove,
-    selectedToolId,
-    selectedToolSettings,
-    shapes,
-    stageScale,
-    interactionEmitter,
-  ]);
+  });
 
   const finishDrawingPolygon = useCallback(() => {
-    const subtract = selectedToolSettings.useFogSubtract;
+    const subtract = toolSettings.useFogSubtract;
     const data = {
       ...drawingShape.data,
       // Remove the last point as it hasn't been placed yet
@@ -263,16 +245,12 @@ function MapFog({
     }
 
     setDrawingShape(null);
-  }, [selectedToolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
+  }, [toolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
 
   // Add keyboard shortcuts
   useEffect(() => {
     function handleKeyDown({ key }) {
-      if (
-        key === "Enter" &&
-        selectedToolSettings.type === "polygon" &&
-        drawingShape
-      ) {
+      if (key === "Enter" && toolSettings.type === "polygon" && drawingShape) {
         finishDrawingPolygon();
       }
       if (key === "Escape" && drawingShape) {
@@ -296,7 +274,7 @@ function MapFog({
         }
         return {
           ...prevShape,
-          color: selectedToolSettings.useFogSubtract ? "black" : "red",
+          color: toolSettings.useFogSubtract ? "black" : "red",
         };
       });
     }
@@ -307,12 +285,7 @@ function MapFog({
       interactionEmitter.off("keyDown", handleKeyDown);
       interactionEmitter.off("keyUp", handleKeyUp);
     };
-  }, [
-    finishDrawingPolygon,
-    interactionEmitter,
-    drawingShape,
-    selectedToolSettings,
-  ]);
+  }, [finishDrawingPolygon, interactionEmitter, drawingShape, toolSettings]);
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {
@@ -343,17 +316,21 @@ function MapFog({
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
+        lineJoin="round"
         strokeWidth={getStrokeWidth(
           shape.strokeWidth,
           gridSize,
           mapWidth,
           mapHeight
         )}
-        visible={isEditing || shape.visible}
-        opacity={isEditing ? 0.5 : 1}
+        visible={(active && !toolSettings.preview) || shape.visible}
+        opacity={transparent ? 0.5 : 1}
         fillPatternImage={patternImage}
-        fillPriority={isEditing && !shape.visible ? "pattern" : "color"}
+        fillPriority={active && !shape.visible ? "pattern" : "color"}
         holes={holes}
+        // Disable collision if the fog is transparent and we're not editing it
+        // This allows tokens to be moved under the fog
+        hitFunc={transparent && !active ? () => {} : undefined}
       />
     );
   }
@@ -394,8 +371,8 @@ function MapFog({
       {shapes.map(renderShape)}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
-        selectedToolSettings &&
-        selectedToolSettings.type === "polygon" &&
+        toolSettings &&
+        toolSettings.type === "polygon" &&
         renderPolygonAcceptTick(drawingShape)}
       {editingShapes.length > 0 && editingShapes.map(renderEditingShape)}
     </Group>

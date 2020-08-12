@@ -1,9 +1,9 @@
-import * as BABYLON from "babylonjs";
+import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 
 // Turn texture load into an async function so it can be awaited
 export async function importTextureAsync(url) {
   return new Promise((resolve, reject) => {
-    let texture = new BABYLON.Texture(
+    let texture = new Texture(
       url,
       null,
       undefined,

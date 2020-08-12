@@ -1,11 +1,15 @@
 import React from "react";
 import { Flex, Box, Text } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
 import ChangeNicknameButton from "./ChangeNicknameButton";
 import StartStreamButton from "./StartStreamButton";
 import SettingsButton from "../SettingsButton";
+import StartTimerButton from "./StartTimerButton";
+import Timer from "./Timer";
+import DiceTrayButton from "./DiceTrayButton";
 
 function Party({
   nickname,
@@ -16,6 +20,15 @@ function Party({
   partyStreams,
   onStreamStart,
   onStreamEnd,
+  timer,
+  partyTimers,
+  onTimerStart,
+  onTimerStop,
+  shareDice,
+  onShareDiceChage,
+  diceRolls,
+  onDiceRollsChange,
+  partyDiceRolls,
 }) {
   return (
     <Flex
@@ -23,10 +36,11 @@ function Party({
       bg="background"
       sx={{
         flexDirection: "column",
+        overflow: "visible",
+        alignItems: "center",
+        position: "relative",
         width: "112px",
         minWidth: "112px",
-        overflowY: "auto",
-        alignItems: "center",
       }}
     >
       <Box
@@ -38,21 +52,37 @@ function Party({
           Party
         </Text>
       </Box>
-      <Box
-        sx={{
+      <SimpleBar
+        style={{
           flexGrow: 1,
           width: "100%",
+          minWidth: "112px",
+          padding: "0 16px",
+          height: "calc(100% - 232px)",
         }}
       >
-        <Nickname nickname={`${nickname} (you)` || ""} />
+        <Nickname
+          nickname={`${nickname} (you)`}
+          diceRolls={shareDice && diceRolls}
+        />
         {Object.entries(partyNicknames).map(([id, partyNickname]) => (
           <Nickname
             nickname={partyNickname}
             key={id}
             stream={partyStreams[id]}
+            diceRolls={partyDiceRolls[id]}
           />
         ))}
-      </Box>
+        {timer && <Timer timer={timer} index={0} />}
+        {Object.entries(partyTimers).map(([id, partyTimer], index) => (
+          <Timer
+            timer={partyTimer}
+            key={id}
+            // Put party timers above your timer if there is one
+            index={timer ? index + 1 : index}
+          />
+        ))}
+      </SimpleBar>
       <Flex sx={{ flexDirection: "column" }}>
         <ChangeNicknameButton nickname={nickname} onChange={onNicknameChange} />
         <AddPartyMemberButton gameId={gameId} />
@@ -61,8 +91,19 @@ function Party({
           onStreamEnd={onStreamEnd}
           stream={stream}
         />
+        <StartTimerButton
+          onTimerStart={onTimerStart}
+          onTimerStop={onTimerStop}
+          timer={timer}
+        />
         <SettingsButton />
       </Flex>
+      <DiceTrayButton
+        shareDice={shareDice}
+        onShareDiceChage={onShareDiceChage}
+        diceRolls={diceRolls}
+        onDiceRollsChange={onDiceRollsChange}
+      />
     </Flex>
   );
 }

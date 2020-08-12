@@ -20,15 +20,21 @@ To reroll all your dice you can click the Reroll Dice icon in the bottom right o
 
 To clear the dice in your dice tray you can click the Clear Dice button in the bottom left of the dice tray.
 
+## Sharing Dice Rolls
+
+To share dice rolls with other party members you can click the Share Dice Rolls button when the dice tray is open. Others can then see your dice roll total as well as a breakdown of each dice rolled updated in real time.
+
+![Dice Sharing](diceSharing)
+
 ## Styling Your Dice
 
 Owlbear Rodeo has a bunch of varying dice styles to choose from.
-To change your dice style click Select Dice Style button in the top left of the dice tray.
+To change your dice style click the Select Dice Style button in the top left of the dice tray.
 
 ![Dice Styles](diceStyles)
 
 ## Expanding Your Dice Tray
 
-The dice tray comes in two different sizes to change the size click the Expand Dice Tray button in the top right of the dice tray.
+The dice tray comes in two different sizes. To change the size click the Expand Dice Tray button in the top right of the dice tray.
 
 ![Dice Tray Size](diceTraySize)

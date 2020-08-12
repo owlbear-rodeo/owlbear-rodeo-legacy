@@ -179,6 +179,11 @@ export default {
         borderColor: "text",
       },
     },
+    slider: {
+      "&:disabled": {
+        opacity: 0.5,
+      },
+    },
   },
   buttons: {
     primary: {

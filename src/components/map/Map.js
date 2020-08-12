@@ -6,12 +6,13 @@ import MapInteraction from "./MapInteraction";
 import MapToken from "./MapToken";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
-import MapDice from "./MapDice";
 import MapGrid from "./MapGrid";
 import MapMeasure from "./MapMeasure";
 import MapLoadingOverlay from "./MapLoadingOverlay";
+import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
+import SettingsContext from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
@@ -35,6 +36,7 @@ function Map({
   allowFogDrawing,
   allowMapChange,
   disabledTokens,
+  session,
 }) {
   const { tokensById } = useContext(TokenDataContext);
 
@@ -47,20 +49,10 @@ function Map({
   const tokenSizePercent = gridSizeNormalized.x;
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
-  const [toolSettings, setToolSettings] = useState({
-    fog: { type: "polygon", useEdgeSnapping: false, useFogCut: false },
-    drawing: {
-      color: "red",
-      type: "brush",
-      useBlending: true,
-    },
-    measure: {
-      type: "chebyshev",
-    },
-  });
+  const { settings, setSettings } = useContext(SettingsContext);
 
   function handleToolSettingChange(tool, change) {
-    setToolSettings((prevSettings) => ({
+    setSettings((prevSettings) => ({
       ...prevSettings,
       [tool]: {
         ...prevSettings[tool],
@@ -139,6 +131,7 @@ function Map({
   if (!map) {
     disabledControls.push("pan");
     disabledControls.push("measure");
+    disabledControls.push("pointer");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
@@ -178,7 +171,7 @@ function Map({
       currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}
       selectedToolId={selectedToolId}
-      toolSettings={toolSettings}
+      toolSettings={settings}
       onToolSettingChange={handleToolSettingChange}
       onToolAction={handleToolAction}
       disabledControls={disabledControls}
@@ -238,6 +231,8 @@ function Map({
               selectedToolId === "pan" && !(tokenState.id in disabledTokens)
             }
             mapState={mapState}
+            fadeOnHover={selectedToolId === "drawing"}
+            map={map}
           />
         ))}
     </Group>
@@ -270,25 +265,30 @@ function Map({
 
   const mapDrawing = (
     <MapDrawing
+      map={map}
       shapes={mapShapes}
       onShapeAdd={handleMapShapeAdd}
       onShapesRemove={handleMapShapesRemove}
-      selectedToolId={selectedToolId}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      active={selectedToolId === "drawing"}
+      toolId="drawing"
+      toolSettings={settings.drawing}
       gridSize={gridSizeNormalized}
     />
   );
 
   const mapFog = (
     <MapFog
+      map={map}
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
       onShapeSubtract={handleFogShapeSubtract}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
-      selectedToolId={selectedToolId}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      active={selectedToolId === "fog"}
+      toolId="fog"
+      toolSettings={settings.fog}
       gridSize={gridSizeNormalized}
+      transparent={allowFogDrawing && !settings.fog.preview}
     />
   );
 
@@ -298,9 +298,18 @@ function Map({
 
   const mapMeasure = (
     <MapMeasure
+      map={map}
       active={selectedToolId === "measure"}
       gridSize={gridSizeNormalized}
-      selectedToolSettings={toolSettings[selectedToolId]}
+      selectedToolSettings={settings[selectedToolId]}
+    />
+  );
+
+  const mapPointer = (
+    <NetworkedMapPointer
+      active={selectedToolId === "pointer"}
+      gridSize={gridSizeNormalized}
+      session={session}
     />
   );
 
@@ -312,7 +321,6 @@ function Map({
           {mapControls}
           {tokenMenu}
           {tokenDragOverlay}
-          <MapDice />
           <MapLoadingOverlay />
         </>
       }
@@ -324,6 +332,7 @@ function Map({
       {mapDrawing}
       {mapTokens}
       {mapFog}
+      {mapPointer}
       {mapMeasure}
     </MapInteraction>
   );

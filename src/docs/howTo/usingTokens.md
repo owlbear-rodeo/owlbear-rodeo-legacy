@@ -41,13 +41,13 @@ Once a token has been uploaded you can adjust the default size that is used when
 
 `Note: The size input for a non-square image represents the number of grid cells a token takes up on the horizontal axis. The number of cells in the vertical axis is determined by the aspect ratio of the uploaded image.`
 
-`Tip: Owlbear Rodeo has full transparancy support for tokens. This means that players can only interact with visible parts of a token so feel free to upload creatures that might have large extended areas like wings.`
+`Tip: Owlbear Rodeo has full transparency support for tokens. This means that players can only interact with visible parts of a token so feel free to upload creatures that might have large extended areas like wings.`
 
 ## Custom Tokens (Advanced)
 
 When uploading a custom token there are a couple of more advanced options that may come in handy.
 
-To get access to these settings select the desired token in the Edit Token Screen and click the Show More Button under the Deafult Size Input.
+To get access to these settings select the desired token in the Edit Token Screen and click the Show More Button under the Default Size Input.
 
 ![Custom Tokens Advanced](customTokensAdvanced)
 

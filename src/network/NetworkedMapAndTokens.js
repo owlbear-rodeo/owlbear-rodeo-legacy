@@ -427,6 +427,7 @@ function NetworkedMapAndTokens({ session }) {
         allowFogDrawing={canEditFogDrawing}
         allowMapChange={canChangeMap}
         disabledTokens={disabledMapTokens}
+        session={session}
       />
       <Tokens onMapTokenStateCreate={handleMapTokenStateCreate} />
     </>

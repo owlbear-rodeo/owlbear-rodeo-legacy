@@ -4,6 +4,7 @@ import { useMedia } from "react-media";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import RadioIconButton from "./RadioIconButton";
+import FogPreviewToggle from "./FogPreviewToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";
 import FogPolygonIcon from "../../../icons/FogPolygonIcon";
@@ -43,6 +44,8 @@ function BrushToolSettings({
         onSettingChange({ type: "remove" });
       } else if (key === "s") {
         onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+      } else if (key === "f") {
+        onSettingChange({ preview: !settings.preview });
       } else if (
         (key === "z" || key === "Z") &&
         (ctrlKey || metaKey) &&
@@ -141,6 +144,10 @@ function BrushToolSettings({
         onEdgeSnappingChange={(useEdgeSnapping) =>
           onSettingChange({ useEdgeSnapping })
         }
+      />
+      <FogPreviewToggle
+        useFogPreview={settings.preview}
+        onFogPreviewChange={(preview) => onSettingChange({ preview })}
       />
       <Divider vertical />
       <UndoButton

@@ -1,4 +1,7 @@
-import * as BABYLON from "babylonjs";
+import { Vector3 } from "@babylonjs/core/Maths/math";
+import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import { PhysicsImpostor } from "@babylonjs/core/Physics/physicsImpostor";
 
 import d4Source from "./shared/d4.glb";
 import d6Source from "./shared/d6.glb";
@@ -35,9 +38,8 @@ class Dice {
   }
 
   static async loadMesh(source, material, scene) {
-    let mesh = (
-      await BABYLON.SceneLoader.ImportMeshAsync("", source, "", scene)
-    ).meshes[1];
+    let mesh = (await SceneLoader.ImportMeshAsync("", source, "", scene))
+      .meshes[1];
     mesh.setParent(null);
 
     mesh.material = material;
@@ -48,7 +50,7 @@ class Dice {
   }
 
   static async loadMaterial(materialName, textures, scene) {
-    let pbr = new BABYLON.PBRMaterial(materialName, scene);
+    let pbr = new PBRMaterial(materialName, scene);
     pbr.albedoTexture = await importTextureAsync(textures.albedo);
     pbr.normalTexture = await importTextureAsync(textures.normal);
     pbr.metallicTexture = await importTextureAsync(textures.metalRoughness);
@@ -68,9 +70,9 @@ class Dice {
       instance.addChild(locator);
     }
 
-    instance.physicsImpostor = new BABYLON.PhysicsImpostor(
+    instance.physicsImpostor = new PhysicsImpostor(
       instance,
-      BABYLON.PhysicsImpostor.ConvexHullImpostor,
+      PhysicsImpostor.ConvexHullImpostor,
       physicalProperties,
       scene
     );
@@ -99,8 +101,8 @@ class Dice {
   }
 
   static roll(instance) {
-    instance.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
-    instance.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
+    instance.physicsImpostor.setLinearVelocity(Vector3.Zero());
+    instance.physicsImpostor.setAngularVelocity(Vector3.Zero());
 
     const scene = instance.getScene();
     const diceTraySingle = scene.getNodeByID("dice_tray_single");
@@ -110,7 +112,7 @@ class Dice {
       : diceTrayDouble;
     const trayBounds = visibleDiceTray.getBoundingInfo().boundingBox;
 
-    const position = new BABYLON.Vector3(
+    const position = new Vector3(
       trayBounds.center.x + (Math.random() * 2 - 1),
       8,
       trayBounds.center.z + (Math.random() * 2 - 1)
@@ -122,13 +124,13 @@ class Dice {
       Math.random() * Math.PI * 2
     );
 
-    const throwTarget = new BABYLON.Vector3(
+    const throwTarget = new Vector3(
       lerp(trayBounds.minimumWorld.x, trayBounds.maximumWorld.x, Math.random()),
       5,
       lerp(trayBounds.minimumWorld.z, trayBounds.maximumWorld.z, Math.random())
     );
 
-    const impulse = new BABYLON.Vector3(0, 0, 0)
+    const impulse = new Vector3(0, 0, 0)
       .subtract(throwTarget)
       .normalizeToNew()
       .scale(lerp(minDiceRollSpeed, maxDiceRollSpeed, Math.random()));

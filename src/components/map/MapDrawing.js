@@ -18,11 +18,13 @@ import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import colors from "../../helpers/colors";
 
 function MapDrawing({
+  map,
   shapes,
   onShapeAdd,
   onShapesRemove,
-  selectedToolId,
-  selectedToolSettings,
+  active,
+  toolId,
+  toolSettings,
   gridSize,
 }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
@@ -33,22 +35,17 @@ function MapDrawing({
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [erasingShapes, setErasingShapes] = useState([]);
 
-  const shouldHover =
-    selectedToolSettings && selectedToolSettings.type === "erase";
-  const isEditing = selectedToolId === "drawing";
+  const shouldHover = toolSettings.type === "erase";
   const isBrush =
-    selectedToolSettings &&
-    (selectedToolSettings.type === "brush" ||
-      selectedToolSettings.type === "paint");
+    toolSettings.type === "brush" || toolSettings.type === "paint";
   const isShape =
-    selectedToolSettings &&
-    (selectedToolSettings.type === "line" ||
-      selectedToolSettings.type === "rectangle" ||
-      selectedToolSettings.type === "circle" ||
-      selectedToolSettings.type === "triangle");
+    toolSettings.type === "line" ||
+    toolSettings.type === "rectangle" ||
+    toolSettings.type === "circle" ||
+    toolSettings.type === "triangle";
 
   useEffect(() => {
-    if (!isEditing) {
+    if (!active) {
       return;
     }
     const mapStage = mapStageRef.current;
@@ -56,9 +53,10 @@ function MapDrawing({
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
-        selectedToolId,
-        selectedToolSettings,
+        toolId,
+        toolSettings,
         gridSize,
         shapes
       );
@@ -67,24 +65,24 @@ function MapDrawing({
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
       const commonShapeData = {
-        color: selectedToolSettings && selectedToolSettings.color,
-        blend: selectedToolSettings && selectedToolSettings.useBlending,
+        color: toolSettings.color,
+        blend: toolSettings.useBlending,
         id: shortid.generate(),
       };
       if (isBrush) {
         setDrawingShape({
           type: "path",
-          pathType: selectedToolSettings.type === "brush" ? "stroke" : "fill",
+          pathType: toolSettings.type === "brush" ? "stroke" : "fill",
           data: { points: [brushPosition] },
-          strokeWidth: selectedToolSettings.type === "brush" ? 1 : 0,
+          strokeWidth: toolSettings.type === "brush" ? 1 : 0,
           ...commonShapeData,
         });
       } else if (isShape) {
         setDrawingShape({
           type: "shape",
-          shapeType: selectedToolSettings.type,
-          data: getDefaultShapeData(selectedToolSettings.type, brushPosition),
-          strokeWidth: selectedToolSettings.type === "line" ? 1 : 0,
+          shapeType: toolSettings.type,
+          data: getDefaultShapeData(toolSettings.type, brushPosition),
+          strokeWidth: toolSettings.type === "line" ? 1 : 0,
           ...commonShapeData,
         });
       }
@@ -157,23 +155,7 @@ function MapDrawing({
       interactionEmitter.off("drag", handleBrushMove);
       interactionEmitter.off("dragEnd", handleBrushUp);
     };
-  }, [
-    drawingShape,
-    erasingShapes,
-    gridSize,
-    isBrush,
-    isBrushDown,
-    isEditing,
-    isShape,
-    mapStageRef,
-    onShapeAdd,
-    onShapesRemove,
-    selectedToolId,
-    selectedToolSettings,
-    shapes,
-    stageScale,
-    interactionEmitter,
-  ]);
+  });
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {
@@ -206,6 +188,7 @@ function MapDrawing({
           closed={shape.pathType === "fill"}
           fillEnabled={shape.pathType === "fill"}
           lineCap="round"
+          lineJoin="round"
           strokeWidth={getStrokeWidth(
             shape.strokeWidth,
             gridSize,

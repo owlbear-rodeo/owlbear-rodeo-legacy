@@ -3,14 +3,14 @@ import { IconButton } from "theme-ui";
 
 import Count from "./DiceButtonCount";
 
-function DiceButton({ title, children, count, onClick }) {
+function DiceButton({ title, children, count, onClick, disabled }) {
   return (
     <IconButton
       title={title}
       aria-label={title}
       onClick={onClick}
-      color="hsl(210, 50%, 96%)"
       sx={{ position: "relative" }}
+      disabled={disabled}
     >
       {children}
       {count && <Count>{count}</Count>}

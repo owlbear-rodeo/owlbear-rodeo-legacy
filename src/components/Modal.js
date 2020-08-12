@@ -16,7 +16,7 @@ function StyledModal({
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{
-        overlay: { backgroundColor: "rgba(0, 0, 0, 0.73)" },
+        overlay: { backgroundColor: "rgba(0, 0, 0, 0.73)", zIndex: 100 },
         content: {
           backgroundColor: theme.colors.background,
           top: "50%",

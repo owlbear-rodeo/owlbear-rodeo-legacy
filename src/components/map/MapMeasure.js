@@ -13,13 +13,19 @@ import {
 import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import * as Vector2 from "../../helpers/vector2";
 
-function MapMeasure({ selectedToolSettings, active, gridSize }) {
+function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
   );
   const mapStageRef = useContext(MapStageContext);
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
+
+  const toolScale =
+    active && selectedToolSettings.scale.match(/(\d*)([a-zA-Z]*)/);
+  const toolMultiplier =
+    active && !isNaN(parseInt(toolScale[1])) ? parseInt(toolScale[1]) : 1;
+  const toolUnit = active && toolScale[2];
 
   useEffect(() => {
     if (!active) {
@@ -30,6 +36,7 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
       return getBrushPositionForTool(
+        map,
         getRelativePointerPositionNormalized(mapImage),
         "drawing",
         { type: "line" },
@@ -81,15 +88,7 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
       interactionEmitter.off("drag", handleBrushMove);
       interactionEmitter.off("dragEnd", handleBrushUp);
     };
-  }, [
-    drawingShapeData,
-    gridSize,
-    isBrushDown,
-    mapStageRef,
-    interactionEmitter,
-    active,
-    selectedToolSettings,
-  ]);
+  });
 
   function renderShape(shapeData) {
     const linePoints = shapeData.points.reduce(
@@ -126,7 +125,9 @@ function MapMeasure({ selectedToolSettings, active, gridSize }) {
         >
           <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
           <Text
-            text={shapeData.length.toFixed(2)}
+            text={`${(shapeData.length * toolMultiplier).toFixed(
+              2
+            )}${toolUnit}`}
             fill="white"
             fontSize={24}
             padding={4}

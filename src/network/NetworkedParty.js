@@ -3,9 +3,10 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "../helpers/Session";
-import { isStreamStopped, omit } from "../helpers/shared";
+import { isStreamStopped, omit, fromEntries } from "../helpers/shared";
 
 import AuthContext from "../contexts/AuthContext";
+import useSetting from "../helpers/useSetting";
 
 import Party from "../components/party/Party";
 
@@ -23,10 +24,16 @@ function NetworkedParty({ gameId, session }) {
   const [partyNicknames, setPartyNicknames] = useState({});
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
+  const [timer, setTimer] = useState(null);
+  const [partyTimers, setPartyTimers] = useState({});
+  const [diceRolls, setDiceRolls] = useState([]);
+  const [partyDiceRolls, setPartyDiceRolls] = useState({});
 
-  function handleNicknameChange(nickname) {
-    setNickname(nickname);
-    session.send("nickname", { [session.id]: nickname });
+  const [shareDice, setShareDice] = useSetting("dice.shareDice");
+
+  function handleNicknameChange(newNickname) {
+    setNickname(newNickname);
+    session.send("nickname", { [session.id]: newNickname });
   }
 
   function handleStreamStart(localStream) {
@@ -59,16 +66,82 @@ function NetworkedParty({ gameId, session }) {
     [session]
   );
 
+  function handleTimerStart(newTimer) {
+    setTimer(newTimer);
+    session.send("timer", { [session.id]: newTimer });
+  }
+
+  function handleTimerStop() {
+    setTimer(null);
+    session.send("timer", { [session.id]: null });
+  }
+
+  useEffect(() => {
+    let prevTime = performance.now();
+    let request = requestAnimationFrame(update);
+    let counter = 0;
+    function update(time) {
+      request = requestAnimationFrame(update);
+      const deltaTime = time - prevTime;
+      prevTime = time;
+
+      if (timer) {
+        counter += deltaTime;
+        // Update timer every second
+        if (counter > 1000) {
+          const newTimer = {
+            ...timer,
+            current: timer.current - counter,
+          };
+          if (newTimer.current < 0) {
+            setTimer(null);
+            session.send("timer", { [session.id]: null });
+          } else {
+            setTimer(newTimer);
+            session.send("timer", { [session.id]: newTimer });
+          }
+          counter = 0;
+        }
+      }
+    }
+    return () => {
+      cancelAnimationFrame(request);
+    };
+  }, [timer, session]);
+
+  function handleDiceRollsChange(newDiceRolls) {
+    setDiceRolls(newDiceRolls);
+    if (shareDice) {
+      session.send("dice", { [session.id]: newDiceRolls });
+    }
+  }
+
+  function handleShareDiceChange(newShareDice) {
+    setShareDice(newShareDice);
+    if (newShareDice) {
+      session.send("dice", { [session.id]: diceRolls });
+    } else {
+      session.send("dice", { [session.id]: null });
+    }
+  }
+
   useEffect(() => {
     function handlePeerConnect({ peer, reply }) {
       reply("nickname", { [session.id]: nickname });
       if (stream) {
         peer.connection.addStream(stream);
       }
+      if (timer) {
+        reply("timer", { [session.id]: timer });
+      }
+      if (shareDice) {
+        reply("dice", { [session.id]: diceRolls });
+      }
     }
 
     function handlePeerDisconnect({ peer }) {
       setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
+      setPartyTimers((prevTimers) => omit(prevTimers, [peer.id]));
     }
 
     function handlePeerData({ id, data }) {
@@ -77,6 +150,26 @@ function NetworkedParty({ gameId, session }) {
           ...prevNicknames,
           ...data,
         }));
+      }
+      if (id === "timer") {
+        setPartyTimers((prevTimers) => {
+          const newTimers = { ...prevTimers, ...data };
+          // filter out timers that are null
+          const filtered = Object.entries(newTimers).filter(
+            ([, value]) => value !== null
+          );
+          return fromEntries(filtered);
+        });
+      }
+      if (id === "dice") {
+        setPartyDiceRolls((prevDiceRolls) => {
+          const newRolls = { ...prevDiceRolls, ...data };
+          // filter out dice rolls that are null
+          const filtered = Object.entries(newRolls).filter(
+            ([, value]) => value !== null
+          );
+          return fromEntries(filtered);
+        });
       }
     }
 
@@ -111,7 +204,7 @@ function NetworkedParty({ gameId, session }) {
       session.off("trackAdded", handlePeerTrackAdded);
       session.off("trackRemoved", handlePeerTrackRemoved);
     };
-  }, [session, nickname, stream]);
+  }, [session, nickname, stream, timer, shareDice, diceRolls]);
 
   useEffect(() => {
     if (stream) {
@@ -139,6 +232,15 @@ function NetworkedParty({ gameId, session }) {
       partyNicknames={partyNicknames}
       stream={stream}
       partyStreams={partyStreams}
+      timer={timer}
+      partyTimers={partyTimers}
+      onTimerStart={handleTimerStart}
+      onTimerStop={handleTimerStop}
+      shareDice={shareDice}
+      onShareDiceChage={handleShareDiceChange}
+      diceRolls={diceRolls}
+      onDiceRollsChange={handleDiceRollsChange}
+      partyDiceRolls={partyDiceRolls}
     />
   );
 }

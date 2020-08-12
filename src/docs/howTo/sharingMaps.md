@@ -20,7 +20,7 @@ To do this open the Map Select Screen and then either click the Add Map button i
 
 Once a custom map has been added you must configure the size of the map.
 
-To do this there is the Column and Row properties. Columns represents how many grid cells your map has in the horizontal direction while Rows represents the amount of cells in the vertical direction.
+To do this there are the Column and Row properties. Columns represent how many grid cells your map has in the horizontal direction while Rows represents the amount of cells in the vertical direction.
 
 `Tip: Owlbear Rodeo can automatically fill the Column and Row properties for you if you include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows`
 
@@ -37,7 +37,8 @@ A brief summary of these settings is listed below.
 
 - Name: The name of the map shown in the Map Select Screen.
 - Grid Type: Change the type of grid to use for the map. Currently only the Square type is supported however Hex will be added in a future release.
-- Show Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded does't include a grid.
+- Show Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded doesn't include a grid.
+- Snap to Grid: When enabled tokens, drawing, fog and measurements will attempt to snap to the grid.
 - Quality: When uploading a map Owlbear Rodeo will automatically generate various quality options, selecting a lower quality may help speed up map sending in resource constrained environments.
 - Allow others to edit: These properties control what other party members can edit when viewing your map.
   - Fog: Controls whether others can edit the maps fog (default disabled).

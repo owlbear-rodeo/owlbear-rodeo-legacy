@@ -15,6 +15,7 @@ import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
 import MeasureToolIcon from "../../icons/MeasureToolIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
+import PointerToolIcon from "../../icons/PointerToolIcon";
 
 function MapContols({
   onMapChange,
@@ -55,8 +56,13 @@ function MapContols({
       title: "Measure Tool",
       SettingsComponent: MeasureToolSettings,
     },
+    pointer: {
+      id: "pointer",
+      icon: <PointerToolIcon />,
+      title: "Pointer Tool",
+    },
   };
-  const tools = ["pan", "fog", "drawing", "measure"];
+  const tools = ["pan", "fog", "drawing", "measure", "pointer"];
 
   const sections = [
     {

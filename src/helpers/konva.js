@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Line, Group, Path, Circle } from "react-konva";
+import { lerp } from "./shared";
+import * as Vector2 from "./vector2";
 
 // Holes should be wound in the opposite direction as the containing points array
 export function HoleyLine({ holes, ...props }) {
@@ -139,6 +141,93 @@ export function Tick({ x, y, scale, onClick, cross }) {
     </Group>
   );
 }
+
+export function Trail({ position, size, duration, segments }) {
+  const trailRef = useRef();
+  const pointsRef = useRef([]);
+  const prevPositionRef = useRef(position);
+  // Add a new point every time position is changed
+  useEffect(() => {
+    if (Vector2.compare(position, prevPositionRef.current, 0.0001)) {
+      return;
+    }
+    pointsRef.current.push({ ...position, lifetime: duration });
+    prevPositionRef.current = position;
+  }, [position, duration]);
+
+  // Advance lifetime of trail
+  useEffect(() => {
+    let prevTime = performance.now();
+    let request = requestAnimationFrame(animate);
+    function animate(time) {
+      request = requestAnimationFrame(animate);
+      const deltaTime = time - prevTime;
+      prevTime = time;
+
+      if (pointsRef.current.length === 0) {
+        return;
+      }
+
+      let expired = 0;
+      for (let point of pointsRef.current) {
+        point.lifetime -= deltaTime;
+        if (point.lifetime < 0) {
+          expired++;
+        }
+      }
+      if (expired > 0) {
+        pointsRef.current = pointsRef.current.slice(expired);
+      }
+      if (trailRef.current) {
+        trailRef.current.getLayer().draw();
+      }
+    }
+
+    return () => {
+      cancelAnimationFrame(request);
+    };
+  }, []);
+
+  // Custom scene function for drawing a trail from a line
+  function sceneFunc(context) {
+    // Resample points to ensure a smooth trail
+    const resampledPoints = Vector2.resample(pointsRef.current, segments);
+    for (let i = 1; i < resampledPoints.length; i++) {
+      const from = resampledPoints[i - 1];
+      const to = resampledPoints[i];
+      const alpha = i / resampledPoints.length;
+      context.beginPath();
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      context.lineWidth = alpha * size;
+      context.strokeStyle = `hsl(0, 63%, ${lerp(90, 50, alpha)}%)`;
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
+      context.stroke();
+      context.closePath();
+    }
+  }
+
+  return (
+    <Group>
+      <Line sceneFunc={sceneFunc} ref={trailRef} />
+      <Circle
+        x={position.x}
+        y={position.y}
+        fill="hsl(0, 63%, 50%)"
+        width={size}
+        height={size}
+      />
+    </Group>
+  );
+}
+
+Trail.defaultProps = {
+  // Duration of each point in milliseconds
+  duration: 200,
+  // Number of segments in the trail, resampled from the points
+  segments: 20,
+};
 
 export function getRelativePointerPosition(node) {
   let transform = node.getAbsoluteTransform().copy();

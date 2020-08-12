@@ -74,9 +74,11 @@ function MapInteraction({
   const stageTranslateRef = useRef({ x: 0, y: 0 });
 
   // Reset transform when map changes
+  const previousMapIdRef = useRef();
   useEffect(() => {
     const layer = mapLayerRef.current;
-    if (map && layer && !mapLoaded) {
+    const previousMapId = previousMapIdRef.current;
+    if (map && layer && previousMapId !== map.id) {
       const mapHeight = stageWidthRef.current * (map.height / map.width);
       const newTranslate = {
         x: 0,
@@ -89,7 +91,8 @@ function MapInteraction({
 
       setStageScale(1);
     }
-  }, [map, mapLoaded]);
+    previousMapIdRef.current = map && map.id;
+  }, [map]);
 
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
@@ -256,6 +259,9 @@ function MapInteraction({
       if (event.key === "m" && !disabledControls.includes("measure")) {
         onSelectedToolChange("measure");
       }
+      if (event.key === "q" && !disabledControls.includes("pointer")) {
+        onSelectedToolChange("pointer");
+      }
     }
 
     function handleKeyUp(event) {
@@ -284,6 +290,7 @@ function MapInteraction({
       case "fog":
       case "drawing":
       case "measure":
+      case "pointer":
         return "crosshair";
       default:
         return "default";

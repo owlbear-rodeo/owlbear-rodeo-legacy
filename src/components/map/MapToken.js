@@ -6,6 +6,7 @@ import useImage from "use-image";
 import useDataSource from "../../helpers/useDataSource";
 import useDebounce from "../../helpers/useDebounce";
 import usePrevious from "../../helpers/usePrevious";
+import * as Vector2 from "../../helpers/vector2";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
@@ -14,6 +15,8 @@ import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
+
+const snappingThreshold = 1 / 7;
 
 function MapToken({
   token,
@@ -25,6 +28,8 @@ function MapToken({
   onTokenDragEnd,
   draggable,
   mapState,
+  fadeOnHover,
+  map,
 }) {
   const { userId } = useContext(AuthContext);
   const {
@@ -71,6 +76,25 @@ function MapToken({
     }
 
     onTokenDragStart(event);
+  }
+
+  function handleDragMove(event) {
+    const tokenGroup = event.target;
+    // Snap to corners of grid
+    if (map.snapToGrid) {
+      const position = {
+        x: tokenGroup.x() + tokenGroup.width() / 2,
+        y: tokenGroup.y() + tokenGroup.height() / 2,
+      };
+      const gridSize = { x: mapWidth / map.gridX, y: mapHeight / map.gridY };
+      const gridSnap = Vector2.roundTo(position, gridSize);
+      const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
+      const minGrid = Vector2.min(gridSize);
+      if (gridDistance < minGrid * snappingThreshold) {
+        tokenGroup.x(gridSnap.x - tokenGroup.width() / 2);
+        tokenGroup.y(gridSnap.y - tokenGroup.height() / 2);
+      }
+    }
   }
 
   function handleDragEnd(event) {
@@ -127,13 +151,13 @@ function MapToken({
     }
   }
 
-  function handlePointerOver() {
-    if (!draggable) {
+  function handlePointerEnter() {
+    if (fadeOnHover) {
       setTokenOpacity(0.5);
     }
   }
 
-  function handlePointerOut() {
+  function handlePointerLeave() {
     if (tokenOpacity !== 1.0) {
       setTokenOpacity(1.0);
     }
@@ -183,14 +207,15 @@ function MapToken({
       draggable={draggable}
       onMouseDown={handlePointerDown}
       onMouseUp={handlePointerUp}
-      onMouseOver={handlePointerOver}
-      onMouseOut={handlePointerOut}
+      onMouseEnter={handlePointerEnter}
+      onMouseLeave={handlePointerLeave}
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
       onClick={handleClick}
       onTap={handleClick}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       opacity={tokenOpacity}
       name={token && token.isVehicle ? "vehicle" : "token"}
       id={tokenState.id}

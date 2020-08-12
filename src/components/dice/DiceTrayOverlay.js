@@ -5,21 +5,33 @@ import React, {
   useContext,
   useState,
 } from "react";
-import * as BABYLON from "babylonjs";
+import { Vector3 } from "@babylonjs/core/Maths/math";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import { CubeTexture } from "@babylonjs/core/Materials/Textures/cubeTexture";
 import { Box } from "theme-ui";
 
 import environment from "../../dice/environment.dds";
 
 import DiceInteraction from "./DiceInteraction";
-import DiceControls from "./DiceControls";
 import Dice from "../../dice/Dice";
 import LoadingOverlay from "../LoadingOverlay";
+import DiceButtons from "./DiceButtons";
+import DiceResults from "./DiceResults";
 
 import DiceTray from "../../dice/diceTray/DiceTray";
 
 import DiceLoadingContext from "../../contexts/DiceLoadingContext";
 
-function DiceTrayOverlay({ isOpen }) {
+import { getDiceRoll } from "../../helpers/dice";
+
+function DiceTrayOverlay({
+  isOpen,
+  shareDice,
+  onShareDiceChage,
+  diceRolls,
+  onDiceRollsChange,
+}) {
   const sceneRef = useRef();
   const shadowGeneratorRef = useRef();
   const diceRefs = useRef([]);
@@ -93,20 +105,20 @@ function DiceTrayOverlay({ isOpen }) {
 
   async function initializeScene(scene) {
     handleAssetLoadStart();
-    let light = new BABYLON.DirectionalLight(
+    let light = new DirectionalLight(
       "DirectionalLight",
-      new BABYLON.Vector3(-0.5, -1, -0.5),
+      new Vector3(-0.5, -1, -0.5),
       scene
     );
-    light.position = new BABYLON.Vector3(5, 10, 5);
+    light.position = new Vector3(5, 10, 5);
     light.shadowMinZ = 1;
     light.shadowMaxZ = 50;
-    let shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+    let shadowGenerator = new ShadowGenerator(1024, light);
     shadowGenerator.useCloseExponentialShadowMap = true;
     shadowGenerator.darkness = 0.7;
     shadowGeneratorRef.current = shadowGenerator;
 
-    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+    scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
       environment,
       scene
     );
@@ -218,43 +230,130 @@ function DiceTrayOverlay({ isOpen }) {
     handleAssetLoadFinish();
   }
 
+  const [traySize, setTraySize] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      const map = document.querySelector(".map");
+      const mapRect = map.getBoundingClientRect();
+
+      const availableWidth = mapRect.width - 108; // Subtract padding
+      const availableHeight = mapRect.height - 80; // Subtract paddding and open icon
+
+      let height = Math.min(availableHeight, 1000);
+      let width = diceTraySize === "single" ? height / 2 : height;
+
+      if (width > availableWidth) {
+        width = availableWidth;
+        height = diceTraySize === "single" ? width * 2 : width;
+      }
+
+      setTraySize({ width, height });
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [diceTraySize]);
+
+  // Update dice rolls
+  useEffect(() => {
+    function updateDiceRolls() {
+      const die = diceRefs.current;
+      const sceneVisible = sceneVisibleRef.current;
+      if (!sceneVisible) {
+        return;
+      }
+      const diceAwake = die.map((dice) => dice.asleep).includes(false);
+      if (!diceAwake) {
+        return;
+      }
+
+      let newRolls = [];
+      for (let i = 0; i < die.length; i++) {
+        const dice = die[i];
+        let roll = getDiceRoll(dice);
+        newRolls[i] = roll;
+      }
+      onDiceRollsChange(newRolls);
+    }
+
+    const updateInterval = setInterval(updateDiceRolls, 100);
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [diceRefs, sceneVisibleRef, onDiceRollsChange]);
+
   return (
     <Box
       sx={{
-        width: diceTraySize === "single" ? "500px" : "1000px",
-        maxWidth:
-          diceTraySize === "single"
-            ? "calc(50vh - 48px)"
-            : "calc(100vh - 64px)",
-        paddingBottom: diceTraySize === "single" ? "200%" : "100%",
+        width: `${traySize.width}px`,
+        height: `${traySize.height}px`,
         borderRadius: "4px",
         display: isOpen ? "block" : "none",
         position: "relative",
-        overflow: "hidden",
-        pointerEvents: "all",
+        overflow: "visible",
       }}
-      bg="background"
     >
-      <DiceInteraction
-        onSceneMount={handleSceneMount}
-        onPointerDown={() => {
-          sceneInteractionRef.current = true;
+      <Box
+        sx={{
+          transform: "translateX(50px)",
+          width: "100%",
+          height: "100%",
+          pointerEvents: "all",
         }}
-        onPointerUp={() => {
-          sceneInteractionRef.current = false;
+      >
+        <DiceInteraction
+          onSceneMount={handleSceneMount}
+          onPointerDown={() => {
+            sceneInteractionRef.current = true;
+          }}
+          onPointerUp={() => {
+            sceneInteractionRef.current = false;
+          }}
+        />
+        <DiceResults
+          diceRolls={diceRolls}
+          onDiceClear={() => {
+            handleDiceClear();
+            onDiceRollsChange([]);
+          }}
+          onDiceReroll={handleDiceReroll}
+        />
+      </Box>
+      <DiceButtons
+        diceRolls={diceRolls}
+        onDiceAdd={(style, type) => {
+          handleDiceAdd(style, type);
+          onDiceRollsChange([...diceRolls, { type, roll: "unknown" }]);
         }}
-      />
-      <DiceControls
-        diceRefs={diceRefs}
-        sceneVisibleRef={sceneVisibleRef}
-        onDiceAdd={handleDiceAdd}
-        onDiceClear={handleDiceClear}
-        onDiceReroll={handleDiceReroll}
         onDiceLoad={handleDiceLoad}
-        diceTraySize={diceTraySize}
         onDiceTraySizeChange={setDiceTraySize}
+        diceTraySize={diceTraySize}
+        shareDice={shareDice}
+        onShareDiceChange={onShareDiceChage}
+        loading={isLoading}
       />
-      {isLoading && <LoadingOverlay />}
+      {isLoading && (
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: "50px",
+          }}
+        >
+          <LoadingOverlay />
+        </Box>
+      )}
     </Box>
   );
 }

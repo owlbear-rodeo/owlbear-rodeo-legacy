@@ -22,6 +22,7 @@ const defaultMapProps = {
   // TODO: add support for hex horizontal and hex vertical
   gridType: "grid",
   showGrid: false,
+  snapToGrid: true,
   quality: "original",
 };
 
@@ -184,7 +185,11 @@ function SelectMapModal({
 
   async function handleMapSelect(map) {
     await applyMapChanges();
-    setSelectedMapId(map.id);
+    if (map) {
+      setSelectedMapId(map.id);
+    } else {
+      setSelectedMapId(null);
+    }
   }
 
   async function handleMapReset(id) {
@@ -195,6 +200,13 @@ function SelectMapModal({
     }
   }
 
+  async function handleClose() {
+    if (selectedMapId) {
+      await applyMapChanges();
+    }
+    onDone();
+  }
+
   async function handleDone() {
     if (imageLoading) {
       return;
@@ -202,6 +214,8 @@ function SelectMapModal({
     if (selectedMapId) {
       await applyMapChanges();
       onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
+    } else {
+      onMapChange(null, null);
     }
     onDone();
   }
@@ -235,7 +249,15 @@ function SelectMapModal({
       selectedMapId &&
       (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges))
     ) {
-      await updateMap(selectedMapId, mapSettingChanges);
+      // Ensure grid values are positive
+      let verifiedChanges = { ...mapSettingChanges };
+      if ("gridX" in verifiedChanges) {
+        verifiedChanges.gridX = verifiedChanges.gridX || 1;
+      }
+      if ("gridY" in verifiedChanges) {
+        verifiedChanges.gridY = verifiedChanges.gridY || 1;
+      }
+      await updateMap(selectedMapId, verifiedChanges);
       await updateMapState(selectedMapId, mapStateSettingChanges);
 
       setMapSettingChanges({});
@@ -250,7 +272,7 @@ function SelectMapModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleDone}>
+    <Modal isOpen={isOpen} onRequestClose={handleClose}>
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
