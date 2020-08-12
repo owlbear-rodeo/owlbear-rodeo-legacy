@@ -176,10 +176,7 @@ export function Trail({ position, size, duration, segments }) {
         }
       }
       if (expired > 0) {
-        pointsRef.current = pointsRef.current.slice(
-          expired,
-          pointsRef.current.length
-        );
+        pointsRef.current = pointsRef.current.slice(expired);
       }
       if (trailRef.current) {
         trailRef.current.getLayer().draw();
@@ -229,7 +226,7 @@ Trail.defaultProps = {
   // Duration of each point in milliseconds
   duration: 200,
   // Number of segments in the trail, resampled from the points
-  segments: 50,
+  segments: 20,
 };
 
 export function getRelativePointerPosition(node) {
