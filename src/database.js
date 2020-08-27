@@ -155,6 +155,23 @@ function loadVersions(db) {
           map.snapToGrid = true;
         });
     });
+  // v1.5.1 - Added lock, visibility and modified to tokens
+  db.version(9)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.tokens) {
+            state.tokens[id].lastModifiedBy = state.tokens[id].lastEditedBy;
+            delete state.tokens[id].lastEditedBy;
+            state.tokens[id].lastModified = Date.now();
+            state.tokens[id].locked = false;
+            state.tokens[id].visible = true;
+          }
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

@@ -228,7 +228,9 @@ function Map({
               })
             }
             draggable={
-              selectedToolId === "pan" && !(tokenState.id in disabledTokens)
+              selectedToolId === "pan" &&
+              !(tokenState.id in disabledTokens) &&
+              !tokenState.locked
             }
             mapState={mapState}
             fadeOnHover={selectedToolId === "drawing"}
@@ -245,6 +247,7 @@ function Map({
       onTokenStateChange={onMapTokenStateChange}
       tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
       tokenImage={tokenMenuOptions.tokenImage}
+      map={map}
     />
   );
 

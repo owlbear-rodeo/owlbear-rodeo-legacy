@@ -113,7 +113,8 @@ function MapToken({
           ...mapState.tokens[mountedToken.id()],
           x: mountedToken.x() / mapWidth,
           y: mountedToken.y() / mapHeight,
-          lastEditedBy: userId,
+          lastModifiedBy: userId,
+          lastModified: Date.now(),
         };
       }
     }
@@ -125,7 +126,8 @@ function MapToken({
         ...tokenState,
         x: tokenGroup.x() / mapWidth,
         y: tokenGroup.y() / mapHeight,
-        lastEditedBy: userId,
+        lastModifiedBy: userId,
+        lastModified: Date.now(),
       },
     });
     onTokenDragEnd(event);
@@ -139,15 +141,36 @@ function MapToken({
   }
 
   const [tokenOpacity, setTokenOpacity] = useState(1);
-  function handlePointerDown() {
+  // Store token pointer down position to check for a click when token is locked
+  const tokenPointerDownPositionRef = useRef();
+  function handlePointerDown(event) {
     if (draggable) {
       setPreventMapInteraction(true);
     }
+    if (tokenState.locked && map.owner === userId) {
+      const pointerPosition = { x: event.evt.clientX, y: event.evt.clientY };
+      tokenPointerDownPositionRef.current = pointerPosition;
+    }
   }
 
-  function handlePointerUp() {
+  function handlePointerUp(event) {
     if (draggable) {
       setPreventMapInteraction(false);
+    }
+    // Check token click when locked and we are the map owner
+    // We can't use onClick because that doesn't check pointer distance
+    if (tokenState.locked && map.owner === userId) {
+      // If down and up distance is small trigger a click
+      const pointerPosition = { x: event.evt.clientX, y: event.evt.clientY };
+      const distance = Vector2.distance(
+        tokenPointerDownPositionRef.current,
+        pointerPosition,
+        "euclidean"
+      );
+      if (distance < 5) {
+        const tokenImage = event.target;
+        onTokenMenuOpen(tokenState.id, tokenImage);
+      }
     }
   }
 
@@ -192,12 +215,17 @@ function MapToken({
   const previousWidth = usePrevious(mapWidth);
   const previousHeight = usePrevious(mapHeight);
   const resized = mapWidth !== previousWidth || mapHeight !== previousHeight;
-  const skipAnimation = tokenState.lastEditedBy === userId || resized;
+  const skipAnimation = tokenState.lastModifiedBy === userId || resized;
   const props = useSpring({
     x: tokenX,
     y: tokenY,
     immediate: skipAnimation,
   });
+
+  // When a token is hidden if you aren't the map owner hide it completely
+  if (map && !tokenState.visible && map.owner !== userId) {
+    return null;
+  }
 
   return (
     <animated.Group
@@ -216,7 +244,7 @@ function MapToken({
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
-      opacity={tokenOpacity}
+      opacity={tokenState.visible ? tokenOpacity : 0.5}
       name={token && token.isVehicle ? "vehicle" : "token"}
       id={tokenState.id}
     >

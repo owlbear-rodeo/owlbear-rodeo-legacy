@@ -79,7 +79,8 @@ function TokenDragOverlay({
               ...mapState.tokens[mountedToken.id()],
               x: mountedToken.x() / mapWidth,
               y: mountedToken.y() / mapHeight,
-              lastEditedBy: userId,
+              lastModifiedBy: userId,
+              lastModified: Date.now(),
             },
           });
         }
