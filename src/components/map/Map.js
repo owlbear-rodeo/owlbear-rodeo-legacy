@@ -187,14 +187,29 @@ function Map({
     setIsTokenMenuOpen(true);
   }
 
+  function getMapTokenCategoryWeight(category) {
+    switch (category) {
+      case "character":
+        return 0;
+      case "vehicle":
+        return 1;
+      case "prop":
+        return 2;
+      default:
+        return 0;
+    }
+  }
+
   // Sort so vehicles render below other tokens
   function sortMapTokenStates(a, b, draggingTokenOptions) {
     const tokenA = tokensById[a.tokenId];
     const tokenB = tokensById[b.tokenId];
     if (tokenA && tokenB) {
-      // If one token is a vehicle and one isn't sort vehicles below
-      if (tokenB.isVehicle !== tokenA.isVehicle) {
-        return tokenB.isVehicle - tokenA.isVehicle;
+      // If categories are different sort in order "prop", "vehicle", "character"
+      if (tokenB.category !== tokenA.category) {
+        const aWeight = getMapTokenCategoryWeight(tokenA.category);
+        const bWeight = getMapTokenCategoryWeight(tokenB.category);
+        return bWeight - aWeight;
       } else if (
         draggingTokenOptions &&
         draggingTokenOptions.tokenState.id === a.id
@@ -206,6 +221,7 @@ function Map({
         draggingTokenOptions.tokenState.id === b.id
       ) {
         // If dragging token b move above
+
         return -1;
       } else {
         // Else sort so last modified is on top

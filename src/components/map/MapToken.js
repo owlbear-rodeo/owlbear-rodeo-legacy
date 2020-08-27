@@ -53,10 +53,10 @@ function MapToken({
     const tokenGroup = event.target;
     const tokenImage = imageRef.current;
 
-    if (token && token.isVehicle) {
+    if (token && token.category === "vehicle") {
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
-      const tokens = layer.find(".token");
+      const tokens = layer.find(".character");
       for (let other of tokens) {
         if (other === tokenGroup) {
           continue;
@@ -101,9 +101,9 @@ function MapToken({
     const tokenGroup = event.target;
 
     const mountChanges = {};
-    if (token && token.isVehicle) {
+    if (token && token.category === "vehicle") {
       const parent = tokenGroup.getParent();
-      const mountedTokens = tokenGroup.find(".token");
+      const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
         // Save and restore token position after moving layer
         const position = mountedToken.absolutePosition();
@@ -227,10 +227,10 @@ function MapToken({
     return null;
   }
 
-  // Token name is used by on click to find whether a token is a vehicle
+  // Token name is used by on click to find whether a token is a vehicle or prop
   let tokenName = "";
   if (token) {
-    tokenName = token.isVehicle ? "vehicle" : "token";
+    tokenName = token.category;
   }
   if (tokenState && tokenState.locked) {
     tokenName = tokenName + "-locked";

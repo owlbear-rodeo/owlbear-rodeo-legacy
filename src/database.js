@@ -172,6 +172,18 @@ function loadVersions(db) {
           }
         });
     });
+  // v1.5.1 - Added token prop category and remove isVehicle bool
+  db.version(10)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.category = token.isVehicle ? "vehicle" : "character";
+          delete token.isVehicle;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

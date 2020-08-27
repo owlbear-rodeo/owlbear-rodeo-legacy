@@ -77,7 +77,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           lastModified: Date.now(),
           owner: userId,
           defaultSize: 1,
-          isVehicle: false,
+          category: "character",
           hideInSidebar: false,
         });
         setImageLoading(false);

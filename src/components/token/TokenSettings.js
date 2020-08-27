@@ -1,8 +1,22 @@
 import React from "react";
-import { Flex, Box, Input, IconButton, Label, Checkbox } from "theme-ui";
+import {
+  Flex,
+  Box,
+  Input,
+  IconButton,
+  Label,
+  Checkbox,
+  Select,
+} from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import { isEmpty } from "../../helpers/shared";
+
+const categorySettings = [
+  { id: "character", name: "Character" },
+  { id: "prop", name: "Prop" },
+  { id: "vehicle", name: "Vehicle / Mount" },
+];
 
 function TokenSettings({
   token,
@@ -43,18 +57,21 @@ function TokenSettings({
           </Box>
           <Flex my={2}>
             <Box sx={{ flexGrow: 1 }}>
-              <Label>
-                <Checkbox
-                  checked={token && token.isVehicle}
-                  disabled={tokenEmpty || token.type === "default"}
-                  onChange={(e) =>
-                    onSettingsChange("isVehicle", e.target.checked)
-                  }
-                />
-                Vehicle / Mount
-              </Label>
+              <Label>Category</Label>
+              <Select
+                my={1}
+                value={!tokenEmpty && token.category}
+                disabled={tokenEmpty || token.type === "default"}
+                onChange={(e) => onSettingsChange("category", e.target.value)}
+              >
+                {categorySettings.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </Select>
             </Box>
-            <Box sx={{ flexGrow: 1 }}>
+            <Flex sx={{ flexGrow: 1, alignItems: "center" }} ml={2}>
               <Label>
                 <Checkbox
                   checked={token && token.hideInSidebar}
@@ -65,7 +82,7 @@ function TokenSettings({
                 />
                 Hide in Sidebar
               </Label>
-            </Box>
+            </Flex>
           </Flex>
         </>
       )}
