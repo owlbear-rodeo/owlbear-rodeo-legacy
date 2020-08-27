@@ -227,6 +227,15 @@ function MapToken({
     return null;
   }
 
+  // Token name is used by on click to find whether a token is a vehicle
+  let tokenName = "";
+  if (token) {
+    tokenName = token.isVehicle ? "vehicle" : "token";
+  }
+  if (tokenState && tokenState.locked) {
+    tokenName = tokenName + "-locked";
+  }
+
   return (
     <animated.Group
       {...props}
@@ -245,7 +254,7 @@ function MapToken({
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       opacity={tokenState.visible ? tokenOpacity : 0.5}
-      name={token && token.isVehicle ? "vehicle" : "token"}
+      name={tokenName}
       id={tokenState.id}
     >
       <KonvaImage
