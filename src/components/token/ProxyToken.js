@@ -7,8 +7,6 @@ import usePortal from "../../helpers/usePortal";
 
 import MapStageContext from "../../contexts/MapStageContext";
 
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
-
 /**
  * @callback onProxyDragEnd
  * @param {boolean} isOnMap whether the token was dropped on the map
@@ -98,13 +96,24 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
             const mapStage = mapStageRef.current;
             if (onProxyDragEnd && mapStage) {
               const mapImage = mapStage.findOne("#mapImage");
-              const { x, y } = getRelativePointerPositionNormalized(mapImage);
+              const map = document.querySelector(".map");
+              const mapRect = map.getBoundingClientRect();
+              const position = {
+                x: event.clientX - mapRect.left,
+                y: event.clientY - mapRect.top,
+              };
+              const transform = mapImage.getAbsoluteTransform().copy().invert();
+              const relativePosition = transform.point(position);
+              const normalizedPosition = {
+                x: relativePosition.x / mapImage.width(),
+                y: relativePosition.y / mapImage.height(),
+              };
               // Get the token from the supplied tokens if it exists
               const token = tokensRef.current[id] || {};
               onProxyDragEnd(proxyOnMap.current, {
                 ...token,
-                x,
-                y,
+                x: normalizedPosition.x,
+                y: normalizedPosition.y,
               });
             }
 
@@ -136,7 +145,6 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
         left: 0,
         bottom: 0,
         right: 0,
-        pointerEvents: "none",
       }}
     >
       <Box
