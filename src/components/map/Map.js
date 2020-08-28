@@ -221,7 +221,6 @@ function Map({
         draggingTokenOptions.tokenState.id === b.id
       ) {
         // If dragging token b move above
-
         return -1;
       } else {
         // Else sort so last modified is on top
