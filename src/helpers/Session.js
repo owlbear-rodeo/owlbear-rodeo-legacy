@@ -238,7 +238,9 @@ class Session extends EventEmitter {
 
   _handleSocketReconnect() {
     this.emit("connected");
-    this.joinParty(this._partyId, this._password);
+    if (this._partyId) {
+      this.joinParty(this._partyId, this._password);
+    }
   }
 }
 
