@@ -212,12 +212,14 @@ function Map({
         return bWeight - aWeight;
       } else if (
         draggingTokenOptions &&
+        draggingTokenOptions.dragging &&
         draggingTokenOptions.tokenState.id === a.id
       ) {
         // If dragging token a move above
         return 1;
       } else if (
         draggingTokenOptions &&
+        draggingTokenOptions.dragging &&
         draggingTokenOptions.tokenState.id === b.id
       ) {
         // If dragging token b move above
