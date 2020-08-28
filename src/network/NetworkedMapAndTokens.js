@@ -33,7 +33,7 @@ function NetworkedMapAndTokens({ session }) {
   } = useContext(MapLoadingContext);
 
   const { putToken, getToken } = useContext(TokenDataContext);
-  const { putMap, getMap } = useContext(MapDataContext);
+  const { putMap, updateMap, getMapFromDB } = useContext(MapDataContext);
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useState(null);
@@ -243,11 +243,13 @@ function NetworkedMapAndTokens({ session }) {
       if (id === "map") {
         const newMap = data;
         if (newMap && newMap.type === "file") {
-          const cachedMap = getMap(newMap.id);
-          if (cachedMap && cachedMap.lastModified === newMap.lastModified) {
+          const cachedMap = await getMapFromDB(newMap.id);
+          if (cachedMap && cachedMap.lastModified >= newMap.lastModified) {
             setCurrentMap(cachedMap);
           } else {
-            await putMap(newMap);
+            // Save map data but remove last modified so if there is an error
+            // during the map request the cache is invalid
+            await putMap({ ...newMap, lastModified: 0 });
             reply("mapRequest", newMap.id, "map");
           }
         } else {
@@ -255,17 +257,29 @@ function NetworkedMapAndTokens({ session }) {
         }
       }
       if (id === "mapRequest") {
-        const map = getMap(data);
+        const map = await getMapFromDB(data);
 
-        function replyWithFile(file, preview) {
+        function replyWithPreview(preview) {
+          if (map.resolutions[preview]) {
+            reply(
+              "mapResponse",
+              {
+                id: map.id,
+                resolutions: { [preview]: map.resolutions[preview] },
+              },
+              "map"
+            );
+          }
+        }
+
+        function replyWithFile(file) {
           reply(
             "mapResponse",
             {
-              ...map,
+              id: map.id,
               file,
-              resolutions: {},
-              // If preview don't send the last modified so that it will not be cached
-              lastModified: preview ? 0 : map.lastModified,
+              // Add last modified back to file to set cache as valid
+              lastModified: map.lastModified,
             },
             "map"
           );
@@ -273,35 +287,36 @@ function NetworkedMapAndTokens({ session }) {
 
         switch (map.quality) {
           case "low":
-            replyWithFile(map.resolutions.low.file, false);
+            replyWithFile(map.resolutions.low.file);
             break;
           case "medium":
-            replyWithFile(map.resolutions.low.file, true);
-            replyWithFile(map.resolutions.medium.file, false);
+            replyWithPreview("low");
+            replyWithFile(map.resolutions.medium.file);
             break;
           case "high":
-            replyWithFile(map.resolutions.medium.file, true);
-            replyWithFile(map.resolutions.high.file, false);
+            replyWithPreview("medium");
+            replyWithFile(map.resolutions.high.file);
             break;
           case "ultra":
-            replyWithFile(map.resolutions.medium.file, true);
-            replyWithFile(map.resolutions.ultra.file, false);
+            replyWithPreview("medium");
+            replyWithFile(map.resolutions.ultra.file);
             break;
           case "original":
             if (map.resolutions.medium) {
-              replyWithFile(map.resolutions.medium.file, true);
+              replyWithPreview("medium");
             } else if (map.resolutions.low) {
-              replyWithFile(map.resolutions.low.file, true);
+              replyWithPreview("low");
             }
-            replyWithFile(map.file, false);
+            replyWithFile(map.file);
             break;
           default:
-            replyWithFile(map.file, false);
+            replyWithFile(map.file);
         }
       }
       if (id === "mapResponse") {
-        await putMap(data);
-        setCurrentMap(data);
+        await updateMap(data.id, data);
+        const newMap = await getMapFromDB(data.id);
+        setCurrentMap(newMap);
       }
       if (id === "mapState") {
         setCurrentMapState(data);
