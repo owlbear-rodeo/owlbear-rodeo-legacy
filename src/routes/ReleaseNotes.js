@@ -1,6 +1,7 @@
 import React from "react";
 import { Flex, Text } from "theme-ui";
 import raw from "raw.macro";
+import { useLocation } from "react-router-dom";
 
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
@@ -20,6 +21,7 @@ const v150 = raw("../docs/releaseNotes/v1.5.0.md");
 const v151 = raw("../docs/releaseNotes/v1.5.1.md");
 
 function ReleaseNotes() {
+  const location = useLocation();
   return (
     <Flex
       sx={{
@@ -52,52 +54,52 @@ function ReleaseNotes() {
           </Accordion>
         </div>
         <div id="v142">
-          <Accordion heading="v1.4.2">
+          <Accordion heading="v1.4.2" defaultOpen={location.hash === "#v142"}>
             <Markdown source={v142} />
           </Accordion>
         </div>
         <div id="v141">
-          <Accordion heading="v1.4.1">
+          <Accordion heading="v1.4.1" defaultOpen={location.hash === "#v141"}>
             <Markdown source={v141} />
           </Accordion>
         </div>
         <div id="v140">
-          <Accordion heading="v1.4.0">
+          <Accordion heading="v1.4.0" defaultOpen={location.hash === "#v140"}>
             <Markdown source={v140} />
           </Accordion>
         </div>
         <div id="v133">
-          <Accordion heading="v1.3.3">
+          <Accordion heading="v1.3.3" defaultOpen={location.hash === "#v133"}>
             <Markdown source={v133} />
           </Accordion>
         </div>
         <div id="v132">
-          <Accordion heading="v1.3.2">
+          <Accordion heading="v1.3.2" defaultOpen={location.hash === "#v132"}>
             <Markdown source={v132} />
           </Accordion>
         </div>
         <div id="v131">
-          <Accordion heading="v1.3.1">
+          <Accordion heading="v1.3.1" defaultOpen={location.hash === "#v131"}>
             <Markdown source={v131} />
           </Accordion>
         </div>
         <div id="v130">
-          <Accordion heading="v1.3.0">
+          <Accordion heading="v1.3.0" defaultOpen={location.hash === "#v130"}>
             <Markdown source={v130} />
           </Accordion>
         </div>
         <div id="v121">
-          <Accordion heading="v1.2.1">
+          <Accordion heading="v1.2.1" defaultOpen={location.hash === "#v121"}>
             <Markdown source={v121} />
           </Accordion>
         </div>
         <div id="v120">
-          <Accordion heading="v1.2.0">
+          <Accordion heading="v1.2.0" defaultOpen={location.hash === "#v120"}>
             <Markdown source={v120} />
           </Accordion>
         </div>
         <div id="v110">
-          <Accordion heading="v1.1.0">
+          <Accordion heading="v1.1.0" defaultOpen={location.hash === "#v110"}>
             <Markdown source={v110} />
           </Accordion>
         </div>
