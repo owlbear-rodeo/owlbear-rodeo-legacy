@@ -22,6 +22,8 @@ An overview of each setting is listed below:
 - Status: allows you to overlay a coloured ring on top of the token, these can be useful for showing status effects.
 - Size: controls the size of the token each notch represents how many grid cells the token takes up in the horizontal direction.
 - Rotation: the direction the token faces, restrained to 45 degree angles.
+- Hide / Show (GM Only): toggle the visibility of the token, useful for tracking invisible enemies.
+- Lock / Unlock (GM Only): when a token is locked it can't be moved until it is unlocked again.
 
 To delete a token drag in into the delete button that appears when dragging.
 
@@ -54,7 +56,10 @@ To get access to these settings select the desired token in the Edit Token Scree
 A brief summary of these settings is listed below.
 
 - Name: The name of the custom token.
-- Vehicle / Mount: When enabled all other tokens will be displayed on top of this token and when this token is moved any token on top of it will be moved as well.
+- Category:
+  - Character - when selected this token will render on top of all other tokens. Used for things like players or enemies.
+  - Prop - when selected this token will render beneath all other tokens. Used for things like items or markers.
+  - Vehicle / Mount - when selected this token will render beneath characters but above props and when moved a character on top of this token will also be moved.
 - Hide in Sidebar: When enabled the token will not show up in the Token List on the right side of the screen.
 
 ## Removing a Custom Token
