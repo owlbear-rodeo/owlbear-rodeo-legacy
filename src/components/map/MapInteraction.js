@@ -31,13 +31,15 @@ function MapInteraction({
   disabledControls,
 }) {
   let mapSourceMap = map;
-  if (map && map.type === "file") {
-    if (
-      map.resolutions &&
-      map.quality !== "original" &&
-      map.resolutions[map.quality]
-    ) {
+  if (map && map.type === "file" && map.resolutions) {
+    // Set to the quality if available
+    if (map.quality !== "original" && map.resolutions[map.quality]) {
       mapSourceMap = map.resolutions[map.quality];
+    } else if (!map.file) {
+      // If no file fallback to the highest resolution
+      for (let resolution in map.resolutions) {
+        mapSourceMap = map.resolutions[resolution];
+      }
     }
   }
 

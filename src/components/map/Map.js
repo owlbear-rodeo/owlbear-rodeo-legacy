@@ -187,12 +187,47 @@ function Map({
     setIsTokenMenuOpen(true);
   }
 
+  function getMapTokenCategoryWeight(category) {
+    switch (category) {
+      case "character":
+        return 0;
+      case "vehicle":
+        return 1;
+      case "prop":
+        return 2;
+      default:
+        return 0;
+    }
+  }
+
   // Sort so vehicles render below other tokens
-  function sortMapTokenStates(a, b) {
+  function sortMapTokenStates(a, b, draggingTokenOptions) {
     const tokenA = tokensById[a.tokenId];
     const tokenB = tokensById[b.tokenId];
     if (tokenA && tokenB) {
-      return tokenB.isVehicle - tokenA.isVehicle;
+      // If categories are different sort in order "prop", "vehicle", "character"
+      if (tokenB.category !== tokenA.category) {
+        const aWeight = getMapTokenCategoryWeight(tokenA.category);
+        const bWeight = getMapTokenCategoryWeight(tokenB.category);
+        return bWeight - aWeight;
+      } else if (
+        draggingTokenOptions &&
+        draggingTokenOptions.dragging &&
+        draggingTokenOptions.tokenState.id === a.id
+      ) {
+        // If dragging token a move above
+        return 1;
+      } else if (
+        draggingTokenOptions &&
+        draggingTokenOptions.dragging &&
+        draggingTokenOptions.tokenState.id === b.id
+      ) {
+        // If dragging token b move above
+        return -1;
+      } else {
+        // Else sort so last modified is on top
+        return a.lastModified - b.lastModified;
+      }
     } else if (tokenA) {
       return 1;
     } else if (tokenB) {
@@ -205,7 +240,7 @@ function Map({
   const mapTokens = mapState && (
     <Group>
       {Object.values(mapState.tokens)
-        .sort(sortMapTokenStates)
+        .sort((a, b) => sortMapTokenStates(a, b, draggingTokenOptions))
         .map((tokenState) => (
           <MapToken
             key={tokenState.id}
@@ -228,7 +263,9 @@ function Map({
               })
             }
             draggable={
-              selectedToolId === "pan" && !(tokenState.id in disabledTokens)
+              selectedToolId === "pan" &&
+              !(tokenState.id in disabledTokens) &&
+              !tokenState.locked
             }
             mapState={mapState}
             fadeOnHover={selectedToolId === "drawing"}
@@ -245,6 +282,7 @@ function Map({
       onTokenStateChange={onMapTokenStateChange}
       tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
       tokenImage={tokenMenuOptions.tokenImage}
+      map={map}
     />
   );
 

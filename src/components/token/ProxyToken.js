@@ -7,6 +7,8 @@ import usePortal from "../../helpers/usePortal";
 
 import MapStageContext from "../../contexts/MapStageContext";
 
+import { getRelativePointerPositionNormalized } from "../../helpers/konva";
+
 /**
  * @callback onProxyDragEnd
  * @param {boolean} isOnMap whether the token was dropped on the map
@@ -95,29 +97,10 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
           if (proxy) {
             const mapStage = mapStageRef.current;
             if (onProxyDragEnd && mapStage) {
-              const mapImageRect = mapStage
-                .findOne("#mapImage")
-                .getClientRect();
-
-              const map = document.querySelector(".map");
-              const mapRect = map.getBoundingClientRect();
-
-              let x = parseFloat(proxy.getAttribute("data-x")) || 0;
-              let y = parseFloat(proxy.getAttribute("data-y")) || 0;
-
-              // TODO: This seems to be wrong when map is zoomed
-
-              // Convert coordiantes to be relative to the map
-              x = x - mapRect.left - mapImageRect.x;
-              y = y - mapRect.top - mapImageRect.y;
-
-              // Normalize to map width
-              x = x / mapImageRect.width;
-              y = y / mapImageRect.height;
-
+              const mapImage = mapStage.findOne("#mapImage");
+              const { x, y } = getRelativePointerPositionNormalized(mapImage);
               // Get the token from the supplied tokens if it exists
               const token = tokensRef.current[id] || {};
-
               onProxyDragEnd(proxyOnMap.current, {
                 ...token,
                 x,
@@ -153,6 +136,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
         left: 0,
         bottom: 0,
         right: 0,
+        pointerEvents: "none",
       }}
     >
       <Box

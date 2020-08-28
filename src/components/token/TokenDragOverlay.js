@@ -66,7 +66,7 @@ function TokenDragOverlay({
   useEffect(() => {
     function handleTokenDragEnd() {
       // Handle other tokens when a vehicle gets deleted
-      if (token && token.isVehicle) {
+      if (token && token.category === "vehicle") {
         const layer = tokenGroup.getLayer();
         const mountedTokens = tokenGroup.find(".token");
         for (let mountedToken of mountedTokens) {
@@ -79,7 +79,8 @@ function TokenDragOverlay({
               ...mapState.tokens[mountedToken.id()],
               x: mountedToken.x() / mapWidth,
               y: mountedToken.y() / mapHeight,
-              lastEditedBy: userId,
+              lastModifiedBy: userId,
+              lastModified: Date.now(),
             },
           });
         }

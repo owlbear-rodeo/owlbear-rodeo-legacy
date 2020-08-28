@@ -147,6 +147,10 @@ export function MapDataProvider({ children }) {
     return maps.find((map) => map.id === mapId);
   }
 
+  async function getMapFromDB(mapId) {
+    return await database.table("maps").get(mapId);
+  }
+
   const ownedMaps = maps.filter((map) => map.owner === userId);
 
   const value = {
@@ -160,6 +164,7 @@ export function MapDataProvider({ children }) {
     updateMapState,
     putMap,
     getMap,
+    getMapFromDB,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>

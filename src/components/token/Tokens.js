@@ -31,8 +31,11 @@ function Tokens({ onMapTokenStateCreate }) {
         statuses: [],
         x: token.x,
         y: token.y,
-        lastEditedBy: userId,
+        lastModifiedBy: userId,
+        lastModified: Date.now(),
         rotation: 0,
+        locked: false,
+        visible: true,
       });
     }
   }

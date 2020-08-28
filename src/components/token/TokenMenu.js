@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { Box, Input, Slider, Flex, Text } from "theme-ui";
+import React, { useEffect, useState, useContext } from "react";
+import { Box, Input, Slider, Flex, Text, IconButton } from "theme-ui";
 
 import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
 import usePrevious from "../../helpers/usePrevious";
+
+import LockIcon from "../../icons/TokenLockIcon";
+import UnlockIcon from "../../icons/TokenUnlockIcon";
+import ShowIcon from "../../icons/TokenShowIcon";
+import HideIcon from "../../icons/TokenHideIcon";
+
+import AuthContext from "../../contexts/AuthContext";
 
 const defaultTokenMaxSize = 6;
 function TokenMenu({
@@ -14,7 +21,10 @@ function TokenMenu({
   tokenState,
   tokenImage,
   onTokenStateChange,
+  map,
 }) {
+  const { userId } = useContext(AuthContext);
+
   const wasOpen = usePrevious(isOpen);
 
   const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
@@ -26,8 +36,8 @@ function TokenMenu({
       // Update menu position
       if (tokenImage) {
         const imageRect = tokenImage.getClientRect();
-        const map = document.querySelector(".map");
-        const mapRect = map.getBoundingClientRect();
+        const mapElement = document.querySelector(".map");
+        const mapRect = mapElement.getBoundingClientRect();
 
         // Center X for the menu which is 156px wide
         setMenuLeft(mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2);
@@ -67,6 +77,18 @@ function TokenMenu({
     });
   }
 
+  function handleVisibleChange() {
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, visible: !tokenState.visible },
+    });
+  }
+
+  function handleLockChange() {
+    onTokenStateChange({
+      [tokenState.id]: { ...tokenState, locked: !tokenState.locked },
+    });
+  }
+
   function handleModalContent(node) {
     if (node) {
       // Focus input
@@ -76,8 +98,8 @@ function TokenMenu({
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
-      const map = document.querySelector(".map");
-      const mapRect = map.getBoundingClientRect();
+      const mapElement = document.querySelector(".map");
+      const mapRect = mapElement.getBoundingClientRect();
       setMenuLeft((prevLeft) =>
         Math.min(
           mapRect.right - nodeRect.width,
@@ -203,6 +225,33 @@ function TokenMenu({
             mr={1}
           />
         </Flex>
+        {/* Only show hide and lock token actions to map owners */}
+        {map && map.owner === userId && (
+          <Flex sx={{ alignItems: "center", justifyContent: "space-around" }}>
+            <IconButton
+              onClick={handleVisibleChange}
+              title={
+                tokenState && tokenState.visible ? "Hide Token" : "Show Token"
+              }
+              aria-label={
+                tokenState && tokenState.visible ? "Hide Token" : "Show Token"
+              }
+            >
+              {tokenState && tokenState.visible ? <ShowIcon /> : <HideIcon />}
+            </IconButton>
+            <IconButton
+              onClick={handleLockChange}
+              title={
+                tokenState && tokenState.locked ? "Unlock Token" : "Lock Token"
+              }
+              aria-label={
+                tokenState && tokenState.locked ? "Unlock Token" : "Lock Token"
+              }
+            >
+              {tokenState && tokenState.locked ? <LockIcon /> : <UnlockIcon />}
+            </IconButton>
+          </Flex>
+        )}
       </Box>
     </MapMenu>
   );

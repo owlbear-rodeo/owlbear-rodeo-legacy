@@ -53,10 +53,10 @@ function MapToken({
     const tokenGroup = event.target;
     const tokenImage = imageRef.current;
 
-    if (token && token.isVehicle) {
+    if (token && token.category === "vehicle") {
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
-      const tokens = layer.find(".token");
+      const tokens = layer.find(".character");
       for (let other of tokens) {
         if (other === tokenGroup) {
           continue;
@@ -101,9 +101,9 @@ function MapToken({
     const tokenGroup = event.target;
 
     const mountChanges = {};
-    if (token && token.isVehicle) {
+    if (token && token.category === "vehicle") {
       const parent = tokenGroup.getParent();
-      const mountedTokens = tokenGroup.find(".token");
+      const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
         // Save and restore token position after moving layer
         const position = mountedToken.absolutePosition();
@@ -113,7 +113,8 @@ function MapToken({
           ...mapState.tokens[mountedToken.id()],
           x: mountedToken.x() / mapWidth,
           y: mountedToken.y() / mapHeight,
-          lastEditedBy: userId,
+          lastModifiedBy: userId,
+          lastModified: Date.now(),
         };
       }
     }
@@ -125,7 +126,8 @@ function MapToken({
         ...tokenState,
         x: tokenGroup.x() / mapWidth,
         y: tokenGroup.y() / mapHeight,
-        lastEditedBy: userId,
+        lastModifiedBy: userId,
+        lastModified: Date.now(),
       },
     });
     onTokenDragEnd(event);
@@ -139,15 +141,30 @@ function MapToken({
   }
 
   const [tokenOpacity, setTokenOpacity] = useState(1);
-  function handlePointerDown() {
+  // Store token pointer down time to check for a click when token is locked
+  const tokenPointerDownTimeRef = useRef();
+  function handlePointerDown(event) {
     if (draggable) {
       setPreventMapInteraction(true);
     }
+    if (tokenState.locked && map.owner === userId) {
+      tokenPointerDownTimeRef.current = event.evt.timeStamp;
+    }
   }
 
-  function handlePointerUp() {
+  function handlePointerUp(event) {
     if (draggable) {
       setPreventMapInteraction(false);
+    }
+    // Check token click when locked and we are the map owner
+    // We can't use onClick because that doesn't check pointer distance
+    if (tokenState.locked && map.owner === userId) {
+      // If down and up time is small trigger a click
+      const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
+      if (delta < 300) {
+        const tokenImage = event.target;
+        onTokenMenuOpen(tokenState.id, tokenImage);
+      }
     }
   }
 
@@ -192,12 +209,26 @@ function MapToken({
   const previousWidth = usePrevious(mapWidth);
   const previousHeight = usePrevious(mapHeight);
   const resized = mapWidth !== previousWidth || mapHeight !== previousHeight;
-  const skipAnimation = tokenState.lastEditedBy === userId || resized;
+  const skipAnimation = tokenState.lastModifiedBy === userId || resized;
   const props = useSpring({
     x: tokenX,
     y: tokenY,
     immediate: skipAnimation,
   });
+
+  // When a token is hidden if you aren't the map owner hide it completely
+  if (map && !tokenState.visible && map.owner !== userId) {
+    return null;
+  }
+
+  // Token name is used by on click to find whether a token is a vehicle or prop
+  let tokenName = "";
+  if (token) {
+    tokenName = token.category;
+  }
+  if (tokenState && tokenState.locked) {
+    tokenName = tokenName + "-locked";
+  }
 
   return (
     <animated.Group
@@ -216,8 +247,8 @@ function MapToken({
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
-      opacity={tokenOpacity}
-      name={token && token.isVehicle ? "vehicle" : "token"}
+      opacity={tokenState.visible ? tokenOpacity : 0.5}
+      name={tokenName}
       id={tokenState.id}
     >
       <KonvaImage
