@@ -141,15 +141,14 @@ function MapToken({
   }
 
   const [tokenOpacity, setTokenOpacity] = useState(1);
-  // Store token pointer down position to check for a click when token is locked
-  const tokenPointerDownPositionRef = useRef();
+  // Store token pointer down time to check for a click when token is locked
+  const tokenPointerDownTimeRef = useRef();
   function handlePointerDown(event) {
     if (draggable) {
       setPreventMapInteraction(true);
     }
     if (tokenState.locked && map.owner === userId) {
-      const pointerPosition = { x: event.evt.clientX, y: event.evt.clientY };
-      tokenPointerDownPositionRef.current = pointerPosition;
+      tokenPointerDownTimeRef.current = event.evt.timeStamp;
     }
   }
 
@@ -160,14 +159,9 @@ function MapToken({
     // Check token click when locked and we are the map owner
     // We can't use onClick because that doesn't check pointer distance
     if (tokenState.locked && map.owner === userId) {
-      // If down and up distance is small trigger a click
-      const pointerPosition = { x: event.evt.clientX, y: event.evt.clientY };
-      const distance = Vector2.distance(
-        tokenPointerDownPositionRef.current,
-        pointerPosition,
-        "euclidean"
-      );
-      if (distance < 5) {
+      // If down and up time is small trigger a click
+      const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
+      if (delta < 300) {
         const tokenImage = event.target;
         onTokenMenuOpen(tokenState.id, tokenImage);
       }
