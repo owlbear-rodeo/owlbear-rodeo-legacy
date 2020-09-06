@@ -10471,6 +10471,7 @@ simple-peer@feross/simple-peer#694/head:
   resolved "https://codeload.github.com/feross/simple-peer/tar.gz/0d08d07b83ff3b8c60401688d80642d24dfeffe2"
   dependencies:
     debug "^4.0.1"
+    err-code "^2.0.3"
     get-browser-rtc "^1.0.0"
     queue-microtask "^1.1.0"
     randombytes "^2.0.3"
