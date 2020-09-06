@@ -6,6 +6,8 @@ import DiceTrayOverlay from "../dice/DiceTrayOverlay";
 
 import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
 
+import useSetting from "../../helpers/useSetting";
+
 function DiceTrayButton({
   shareDice,
   onShareDiceChage,
@@ -13,13 +15,14 @@ function DiceTrayButton({
   onDiceRollsChange,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [fullScreen] = useSetting("map.fullScreen");
 
   return (
     <Flex
       sx={{
         position: "absolute",
         top: 0,
-        left: "100%",
+        left: fullScreen ? "0" : "100%",
         bottom: 0,
         flexDirection: "column",
         alignItems: "flex-start",

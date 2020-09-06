@@ -27,6 +27,7 @@ function loadVersions(settings) {
       style: "galaxy",
     },
   }));
+  settings.version(2, (prev) => ({ ...prev, map: { fullScreen: false } }));
 }
 
 export function getSettings() {
