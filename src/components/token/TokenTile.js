@@ -9,7 +9,7 @@ import {
   unknownSource,
 } from "../../tokens";
 
-function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
+function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove, large }) {
   const tokenSource = useDataSource(token, defaultTokenSources, unknownSource);
   const isDefault = token.type === "default";
 
@@ -17,22 +17,28 @@ function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
     <Flex
       onClick={() => onTokenSelect(token)}
       sx={{
-        borderColor: "primary",
-        borderStyle: isSelected ? "solid" : "none",
-        borderWidth: "4px",
         position: "relative",
-        width: "150px",
-        height: "150px",
+        width: large ? "49%" : "32%",
+        height: "0",
+        paddingTop: large ? "49%" : "32%",
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
+        overflow: "hidden",
       }}
-      m={2}
+      my={1}
       bg="muted"
     >
       <Image
-        sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
         src={tokenSource}
       />
       <Flex
@@ -58,6 +64,20 @@ function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
           {token.name}
         </Text>
       </Flex>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          borderColor: "primary",
+          borderStyle: isSelected ? "solid" : "none",
+          borderWidth: "4px",
+          pointerEvents: "none",
+          borderRadius: "4px",
+        }}
+      />
       {isSelected && !isDefault && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <IconButton
@@ -68,7 +88,7 @@ function TokenTile({ token, isSelected, onTokenSelect, onTokenRemove }) {
             }}
             bg="overlay"
             sx={{ borderRadius: "50%" }}
-            m={1}
+            m={2}
           >
             <RemoveTokenIcon />
           </IconButton>

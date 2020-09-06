@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
+import { useMedia } from "react-media";
 
 import AddIcon from "../../icons/AddIcon";
 
@@ -20,16 +21,18 @@ function MapTiles({
   onDone,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
+  const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
+
   return (
     <Box sx={{ position: "relative" }}>
-      <SimpleBar style={{ maxHeight: "300px", width: "500px" }}>
+      <SimpleBar style={{ maxHeight: "300px" }}>
         <Flex
-          py={2}
+          p={2}
           bg="muted"
           sx={{
             flexWrap: "wrap",
-            width: "500px",
             borderRadius: "4px",
+            justifyContent: "space-between",
           }}
           onClick={() => onMapSelect(null)}
         >
@@ -45,19 +48,31 @@ function MapTiles({
               ":active": {
                 color: "secondary",
               },
-              width: "150px",
-              height: "150px",
+              width: isSmallScreen ? "49%" : "32%",
+              height: "0",
+              paddingTop: isSmallScreen ? "49%" : "32%",
               borderRadius: "4px",
-              justifyContent: "center",
-              alignItems: "center",
+              position: "relative",
               cursor: "pointer",
             }}
-            m={2}
+            my={1}
             bg="muted"
             aria-label="Add Map"
             title="Add Map"
           >
-            <AddIcon large />
+            <Flex
+              sx={{
+                width: "100%",
+                height: "100%",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <AddIcon large />
+            </Flex>
           </Flex>
           {maps.map((map) => {
             const isSelected = selectedMap && map.id === selectedMap.id;
@@ -73,6 +88,7 @@ function MapTiles({
                 onMapRemove={onMapRemove}
                 onMapReset={onMapReset}
                 onDone={onDone}
+                large={isSmallScreen}
               />
             );
           })}

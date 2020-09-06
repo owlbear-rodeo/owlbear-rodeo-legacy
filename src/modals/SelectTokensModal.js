@@ -131,7 +131,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const selectedTokenWithChanges = { ...selectedToken, ...tokenSettingChanges };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleRequestClose}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={handleRequestClose}
+      style={{ maxWidth: "542px", width: "100%" }}
+    >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
