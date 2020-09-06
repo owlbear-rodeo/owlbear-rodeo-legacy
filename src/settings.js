@@ -27,6 +27,7 @@ function loadVersions(settings) {
       style: "galaxy",
     },
   }));
+  // v1.5.2 - Added full screen support for map
   settings.version(2, (prev) => ({ ...prev, map: { fullScreen: false } }));
 }
 
