@@ -5,6 +5,7 @@ import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
 import { Stage, Layer, Image } from "react-konva";
 import { EventEmitter } from "events";
+import normalizeWheel from "normalize-wheel";
 
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useDataSource from "../../helpers/useDataSource";
@@ -108,12 +109,14 @@ function MapInteraction({
       isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
-    onWheel: ({ delta }) => {
+    onWheel: ({ event }) => {
+      event.persist();
+      const { pixelY } = normalizeWheel(event);
       if (preventMapInteraction || !isInteractingWithCanvas.current) {
         return;
       }
       const newScale = Math.min(
-        Math.max(stageScale + delta[1] * wheelZoomSpeed, minZoom),
+        Math.max(stageScale + pixelY * wheelZoomSpeed, minZoom),
         maxZoom
       );
       setStageScale(newScale);
