@@ -275,7 +275,7 @@ function SelectMapModal({
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: "542px", width: "100%" }}
+      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input

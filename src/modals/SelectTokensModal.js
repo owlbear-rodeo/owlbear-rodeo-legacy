@@ -134,7 +134,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     <Modal
       isOpen={isOpen}
       onRequestClose={handleRequestClose}
-      style={{ maxWidth: "542px", width: "100%" }}
+      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input

@@ -1,28 +1,33 @@
 import React from "react";
-import { Flex, Image, Text } from "theme-ui";
+import { Flex, Image, Text, Box } from "theme-ui";
 
-function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
+function DiceTile({ dice, isSelected, onDiceSelect, onDone, large }) {
   return (
     <Flex
       onClick={() => onDiceSelect(dice)}
       sx={{
-        borderColor: "primary",
-        borderStyle: isSelected ? "solid" : "none",
-        borderWidth: "4px",
         position: "relative",
-        width: "150px",
-        height: "150px",
+        width: large ? "49%" : "32%",
+        height: "0",
+        paddingTop: large ? "49%" : "32%",
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
       }}
-      m={2}
+      my={1}
       bg="muted"
       onDoubleClick={() => onDone(dice)}
     >
       <Image
-        sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
         src={dice.preview}
       />
       <Flex
@@ -48,6 +53,20 @@ function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
           {dice.name}
         </Text>
       </Flex>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          borderColor: "primary",
+          borderStyle: isSelected ? "solid" : "none",
+          borderWidth: "4px",
+          pointerEvents: "none",
+          borderRadius: "4px",
+        }}
+      />
     </Flex>
   );
 }

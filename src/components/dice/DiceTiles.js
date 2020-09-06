@@ -1,19 +1,22 @@
 import React from "react";
 import { Flex } from "theme-ui";
 import SimpleBar from "simplebar-react";
+import { useMedia } from "react-media";
 
 import DiceTile from "./DiceTile";
 
 function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
+  const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
+
   return (
-    <SimpleBar style={{ maxHeight: "300px", width: "500px" }}>
+    <SimpleBar style={{ maxHeight: "300px" }}>
       <Flex
-        py={2}
+        p={2}
         bg="muted"
         sx={{
           flexWrap: "wrap",
-          width: "500px",
           borderRadius: "4px",
+          justifyContent: "space-between",
         }}
       >
         {dice.map((dice) => (
@@ -23,6 +26,7 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
             isSelected={selectedDice && dice.key === selectedDice.key}
             onDiceSelect={onDiceSelect}
             onDone={onDone}
+            large={isSmallScreen}
           />
         ))}
       </Flex>
