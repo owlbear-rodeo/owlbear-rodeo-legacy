@@ -17,6 +17,7 @@ import MapStageContext, {
   MapStageProvider,
 } from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
+import SettingsContext from "../../contexts/SettingsContext";
 
 const wheelZoomSpeed = -0.001;
 const touchZoomSpeed = 0.005;
@@ -313,6 +314,7 @@ function MapInteraction({
   const mapImageRef = useRef();
 
   const auth = useContext(AuthContext);
+  const settings = useContext(SettingsContext);
 
   const mapInteraction = {
     stageScale,
@@ -357,11 +359,13 @@ function MapInteraction({
             />
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
-              <MapInteractionProvider value={mapInteraction}>
-                <MapStageProvider value={mapStageRef}>
-                  {mapLoaded && children}
-                </MapStageProvider>
-              </MapInteractionProvider>
+              <SettingsContext.Provider value={settings}>
+                <MapInteractionProvider value={mapInteraction}>
+                  <MapStageProvider value={mapStageRef}>
+                    {mapLoaded && children}
+                  </MapStageProvider>
+                </MapInteractionProvider>
+              </SettingsContext.Provider>
             </AuthContext.Provider>
           </Layer>
         </Stage>
