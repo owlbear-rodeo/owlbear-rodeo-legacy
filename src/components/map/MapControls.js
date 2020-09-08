@@ -198,7 +198,7 @@ function MapContols({
       <Box
         sx={{
           position: "absolute",
-          right: 0,
+          right: "4px",
           bottom: 0,
           backgroundColor: "overlay",
           borderRadius: "50%",
