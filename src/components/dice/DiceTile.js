@@ -7,15 +7,16 @@ function DiceTile({ dice, isSelected, onDiceSelect, onDone, large }) {
       onClick={() => onDiceSelect(dice)}
       sx={{
         position: "relative",
-        width: large ? "49%" : "32%",
+        width: large ? "48%" : "32%",
         height: "0",
-        paddingTop: large ? "49%" : "32%",
+        paddingTop: large ? "48%" : "32%",
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
       }}
       my={1}
+      mx={`${large ? 1 : 2 / 3}%`}
       bg="muted"
       onDoubleClick={() => onDone(dice)}
     >

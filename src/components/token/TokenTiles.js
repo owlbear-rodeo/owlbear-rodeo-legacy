@@ -29,7 +29,6 @@ function TokenTiles({
           sx={{
             flexWrap: "wrap",
             borderRadius: "4px",
-            justifyContent: "space-between",
           }}
         >
           <Box
@@ -44,14 +43,15 @@ function TokenTiles({
               ":active": {
                 color: "secondary",
               },
-              width: isSmallScreen ? "49%" : "32%",
+              width: isSmallScreen ? "48%" : "32%",
               height: "0",
-              paddingTop: isSmallScreen ? "49%" : "32%",
+              paddingTop: isSmallScreen ? "48%" : "32%",
               borderRadius: "4px",
               position: "relative",
               cursor: "pointer",
             }}
             my={1}
+            mx={`${isSmallScreen ? 1 : 2 / 3}%`}
             bg="muted"
             aria-label="Add Token"
             title="Add Token"

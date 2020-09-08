@@ -16,7 +16,6 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
         sx={{
           flexWrap: "wrap",
           borderRadius: "4px",
-          justifyContent: "space-between",
         }}
       >
         {dice.map((dice) => (

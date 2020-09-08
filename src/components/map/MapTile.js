@@ -98,9 +98,9 @@ function MapTile({
       key={map.id}
       sx={{
         position: "relative",
-        width: large ? "49%" : "32%",
+        width: large ? "48%" : "32%",
         height: "0",
-        paddingTop: large ? "49%" : "32%",
+        paddingTop: large ? "48%" : "32%",
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
@@ -108,6 +108,7 @@ function MapTile({
         overflow: "hidden",
       }}
       my={1}
+      mx={`${large ? 1 : 2 / 3}%`}
       bg="muted"
       onClick={(e) => {
         e.stopPropagation();
