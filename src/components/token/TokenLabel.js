@@ -19,7 +19,7 @@ function TokenLabel({ tokenState, width, height }) {
     } else {
       setRectWidth(0);
     }
-  }, [tokenState.label, paddingX]);
+  }, [tokenState.label, paddingX, width]);
 
   const textRef = useRef();
 
