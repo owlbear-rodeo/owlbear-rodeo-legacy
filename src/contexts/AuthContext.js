@@ -4,18 +4,27 @@ import shortid from "shortid";
 import DatabaseContext from "./DatabaseContext";
 
 import { getRandomMonster } from "../helpers/monsters";
+import FakeStorage from "../helpers/FakeStorage";
 
 const AuthContext = React.createContext();
+
+let storage;
+try {
+  sessionStorage.setItem("__test", "__test");
+  sessionStorage.removeItem("__test");
+  storage = sessionStorage;
+} catch (e) {
+  console.warn("Session storage is disabled, no authentication will be saved");
+  storage = new FakeStorage();
+}
 
 export function AuthProvider({ children }) {
   const { database } = useContext(DatabaseContext);
 
-  const [password, setPassword] = useState(
-    sessionStorage.getItem("auth") || ""
-  );
+  const [password, setPassword] = useState(storage.getItem("auth") || "");
 
   useEffect(() => {
-    sessionStorage.setItem("auth", password);
+    storage.setItem("auth", password);
   }, [password]);
 
   const [authenticationStatus, setAuthenticationStatus] = useState("unknown");
