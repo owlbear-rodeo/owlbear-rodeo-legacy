@@ -102,7 +102,7 @@ function MapSettings({
           </Box>
           <Flex
             mt={2}
-            mb={map.type === "default" ? 2 : 0}
+            mb={mapEmpty || map.type === "default" ? 2 : 0}
             sx={{ alignItems: "flex-end" }}
           >
             <Box sx={{ width: "50%" }}>
@@ -154,8 +154,9 @@ function MapSettings({
                       key={quality.id}
                       value={quality.id}
                       disabled={
-                        quality.id !== "original" &&
-                        !map.resolutions[quality.id]
+                        mapEmpty ||
+                        (quality.id !== "original" &&
+                          !map.resolutions[quality.id])
                       }
                     >
                       {quality.name}

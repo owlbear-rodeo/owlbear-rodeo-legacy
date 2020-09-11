@@ -174,9 +174,9 @@ function SelectMapModal({
 
   async function handleMapRemove(id) {
     await removeMap(id);
-    setSelectedMapId(null);
     setMapSettingChanges({});
     setMapStateSettingChanges({});
+    setSelectedMapId(null);
     // Removed the map from the map screen if needed
     if (currentMap && currentMap.id === selectedMapId) {
       onMapChange(null, null);
@@ -265,8 +265,11 @@ function SelectMapModal({
     }
   }
 
-  const selectedMapWithChanges = { ...selectedMap, ...mapSettingChanges };
-  const selectedMapStateWithChanges = {
+  const selectedMapWithChanges = selectedMap && {
+    ...selectedMap,
+    ...mapSettingChanges,
+  };
+  const selectedMapStateWithChanges = selectedMapState && {
     ...selectedMapState,
     ...mapStateSettingChanges,
   };
