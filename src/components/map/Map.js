@@ -237,7 +237,7 @@ function Map({
     }
   }
 
-  const mapTokens = mapState && (
+  const mapTokens = map && mapState && (
     <Group>
       {Object.values(mapState.tokens)
         .sort((a, b) => sortMapTokenStates(a, b, draggingTokenOptions))
