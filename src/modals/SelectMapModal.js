@@ -149,6 +149,7 @@ function SelectMapModal({
           id: shortid.generate(),
           created: Date.now(),
           lastModified: Date.now(),
+          lastUsed: Date.now(),
           owner: userId,
           ...defaultMapProps,
         });
@@ -213,7 +214,13 @@ function SelectMapModal({
     }
     if (selectedMapId) {
       await applyMapChanges();
-      onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
+      // Update last used for cache invalidation
+      const lastUsed = Date.now();
+      await updateMap(selectedMapId, { lastUsed });
+      onMapChange(
+        { ...selectedMapWithChanges, lastUsed },
+        selectedMapStateWithChanges
+      );
     } else {
       onMapChange(null, null);
     }

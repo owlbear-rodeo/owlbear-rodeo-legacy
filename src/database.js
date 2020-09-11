@@ -184,6 +184,28 @@ function loadVersions(db) {
           delete token.isVehicle;
         });
     });
+  // v1.5.2 - Added automatic cache invalidation to maps
+  db.version(11)
+    .stores({})
+    .upgrade(async (tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.lastUsed = map.lastModified;
+        });
+    });
+  // v1.5.2 - Added automatic cache invalidation to tokens
+  db.version(12)
+    .stores({})
+    .upgrade(async (tx) => {
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.lastUsed = token.lastModified;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

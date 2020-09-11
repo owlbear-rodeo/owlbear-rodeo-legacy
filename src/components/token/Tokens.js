@@ -18,7 +18,7 @@ const listTokenClassName = "list-token";
 
 function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, tokens } = useContext(TokenDataContext);
+  const { ownedTokens, tokens, updateToken } = useContext(TokenDataContext);
   const [fullScreen] = useSetting("map.fullScreen");
 
   function handleProxyDragEnd(isOnMap, token) {
@@ -39,6 +39,8 @@ function Tokens({ onMapTokenStateCreate }) {
         locked: false,
         visible: true,
       });
+      // Update last used for cache invalidation
+      updateToken(token.id, { lastUsed: Date.now() });
     }
   }
 
