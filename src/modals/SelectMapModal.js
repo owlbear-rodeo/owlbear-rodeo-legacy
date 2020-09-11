@@ -149,6 +149,7 @@ function SelectMapModal({
           id: shortid.generate(),
           created: Date.now(),
           lastModified: Date.now(),
+          lastUsed: Date.now(),
           owner: userId,
           ...defaultMapProps,
         });
@@ -174,9 +175,9 @@ function SelectMapModal({
 
   async function handleMapRemove(id) {
     await removeMap(id);
-    setSelectedMapId(null);
     setMapSettingChanges({});
     setMapStateSettingChanges({});
+    setSelectedMapId(null);
     // Removed the map from the map screen if needed
     if (currentMap && currentMap.id === selectedMapId) {
       onMapChange(null, null);
@@ -213,7 +214,13 @@ function SelectMapModal({
     }
     if (selectedMapId) {
       await applyMapChanges();
-      onMapChange(selectedMapWithChanges, selectedMapStateWithChanges);
+      // Update last used for cache invalidation
+      const lastUsed = Date.now();
+      await updateMap(selectedMapId, { lastUsed });
+      onMapChange(
+        { ...selectedMapWithChanges, lastUsed },
+        selectedMapStateWithChanges
+      );
     } else {
       onMapChange(null, null);
     }
@@ -265,14 +272,21 @@ function SelectMapModal({
     }
   }
 
-  const selectedMapWithChanges = { ...selectedMap, ...mapSettingChanges };
-  const selectedMapStateWithChanges = {
+  const selectedMapWithChanges = selectedMap && {
+    ...selectedMap,
+    ...mapSettingChanges,
+  };
+  const selectedMapStateWithChanges = selectedMapState && {
     ...selectedMapState,
     ...mapStateSettingChanges,
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleClose}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={handleClose}
+      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+    >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}

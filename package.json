@@ -1,6 +1,6 @@
 {
   "name": "owlbear-rodeo",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
   "dependencies": {
     "@babylonjs/core": "^4.1.0",
@@ -18,6 +18,7 @@
     "konva": "^6.0.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
+    "normalize-wheel": "^1.0.1",
     "polygon-clipping": "^0.14.3",
     "raw.macro": "^0.3.0",
     "react": "^16.13.0",

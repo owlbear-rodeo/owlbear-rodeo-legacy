@@ -9,6 +9,7 @@ import ProxyToken from "./ProxyToken";
 import SelectTokensButton from "./SelectTokensButton";
 
 import { fromEntries } from "../../helpers/shared";
+import useSetting from "../../helpers/useSetting";
 
 import AuthContext from "../../contexts/AuthContext";
 import TokenDataContext from "../../contexts/TokenDataContext";
@@ -17,7 +18,8 @@ const listTokenClassName = "list-token";
 
 function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, tokens } = useContext(TokenDataContext);
+  const { ownedTokens, tokens, updateToken } = useContext(TokenDataContext);
+  const [fullScreen] = useSetting("map.fullScreen");
 
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenStateCreate) {
@@ -37,6 +39,8 @@ function Tokens({ onMapTokenStateCreate }) {
         locked: false,
         visible: true,
       });
+      // Update last used for cache invalidation
+      updateToken(token.id, { lastUsed: Date.now() });
     }
   }
 
@@ -48,6 +52,7 @@ function Tokens({ onMapTokenStateCreate }) {
           width: "80px",
           minWidth: "80px",
           overflow: "hidden",
+          display: fullScreen ? "none" : "block",
         }}
       >
         <SimpleBar style={{ height: "calc(100% - 48px)", overflowX: "hidden" }}>

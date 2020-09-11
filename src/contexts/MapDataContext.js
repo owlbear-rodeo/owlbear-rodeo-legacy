@@ -7,6 +7,9 @@ import { maps as defaultMaps } from "../maps";
 
 const MapDataContext = React.createContext();
 
+// Maximum number of maps to keep in the cache
+const cachedMapMax = 15;
+
 const defaultMapState = {
   tokens: {},
   // An index into the draw actions array to which only actions before the
@@ -70,12 +73,19 @@ export function MapDataProvider({ children }) {
     loadMaps();
   }, [userId, database]);
 
+  /**
+   * Adds a map to the database, also adds an assosiated state for that map
+   * @param {Object} map map to add
+   */
   async function addMap(map) {
     await database.table("maps").add(map);
     const state = { ...defaultMapState, mapId: map.id };
     await database.table("states").add(state);
     setMaps((prevMaps) => [map, ...prevMaps]);
     setMapStates((prevStates) => [state, ...prevStates]);
+    if (map.owner !== userId) {
+      await updateCache();
+    }
   }
 
   async function removeMap(id) {
@@ -129,6 +139,11 @@ export function MapDataProvider({ children }) {
     });
   }
 
+  /**
+   * Adds a map to the database if none exists or replaces a map if it already exists
+   * Note: this does not add a map state to do that use AddMap
+   * @param {Object} map the map to put
+   */
   async function putMap(map) {
     await database.table("maps").put(map);
     setMaps((prevMaps) => {
@@ -141,6 +156,31 @@ export function MapDataProvider({ children }) {
       }
       return newMaps;
     });
+    if (map.owner !== userId) {
+      await updateCache();
+    }
+  }
+
+  /**
+   * Keep up to cachedMapMax amount of maps that you don't own
+   * Sorted by when they we're last used
+   */
+  async function updateCache() {
+    const cachedMaps = await database
+      .table("maps")
+      .where("owner")
+      .notEqual(userId)
+      .sortBy("lastUsed");
+    if (cachedMaps.length > cachedMapMax) {
+      const cacheDeleteCount = cachedMaps.length - cachedMapMax;
+      const idsToDelete = cachedMaps
+        .slice(0, cacheDeleteCount)
+        .map((map) => map.id);
+      database.table("maps").where("id").anyOf(idsToDelete).delete();
+      setMaps((prevMaps) => {
+        return prevMaps.filter((map) => !idsToDelete.includes(map.id));
+      });
+    }
   }
 
   function getMap(mapId) {

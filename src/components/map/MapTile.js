@@ -16,6 +16,7 @@ function MapTile({
   onMapRemove,
   onMapReset,
   onDone,
+  large,
 }) {
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
@@ -46,7 +47,7 @@ function MapTile({
       }}
       bg="overlay"
       sx={{ borderRadius: "50%" }}
-      m={1}
+      m={2}
     >
       <ExpandMoreDotIcon />
     </IconButton>
@@ -65,7 +66,7 @@ function MapTile({
         }}
         bg="overlay"
         sx={{ borderRadius: "50%" }}
-        m={1}
+        m={2}
       >
         <RemoveMapIcon />
       </IconButton>
@@ -85,7 +86,7 @@ function MapTile({
         }}
         bg="overlay"
         sx={{ borderRadius: "50%" }}
-        m={1}
+        m={2}
       >
         <ResetMapIcon />
       </IconButton>
@@ -96,18 +97,18 @@ function MapTile({
     <Flex
       key={map.id}
       sx={{
-        borderColor: "primary",
-        borderStyle: isSelected ? "solid" : "none",
-        borderWidth: "4px",
         position: "relative",
-        width: "150px",
-        height: "150px",
+        width: large ? "48%" : "32%",
+        height: "0",
+        paddingTop: large ? "48%" : "32%",
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
+        overflow: "hidden",
       }}
-      m={2}
+      my={1}
+      mx={`${large ? 1 : 2 / 3}%`}
       bg="muted"
       onClick={(e) => {
         e.stopPropagation();
@@ -123,7 +124,14 @@ function MapTile({
       }}
     >
       <UIImage
-        sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
         src={mapSource}
       />
       <Flex
@@ -149,6 +157,20 @@ function MapTile({
           {map.name}
         </Text>
       </Flex>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          borderColor: "primary",
+          borderStyle: isSelected ? "solid" : "none",
+          borderWidth: "4px",
+          pointerEvents: "none",
+          borderRadius: "4px",
+        }}
+      />
       {/* Show expand button only if both reset and remove is available */}
       {isSelected && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>

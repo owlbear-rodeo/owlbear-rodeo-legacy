@@ -1,15 +1,27 @@
 import React, { useState, useContext } from "react";
-import { Box, Label, Flex, Button, useColorMode, Checkbox } from "theme-ui";
+import {
+  Box,
+  Label,
+  Flex,
+  Button,
+  useColorMode,
+  Checkbox,
+  Slider,
+  Divider,
+} from "theme-ui";
 
 import Modal from "../components/Modal";
 
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 
+import useSetting from "../helpers/useSetting";
+
 function SettingsModal({ isOpen, onRequestClose }) {
   const { database } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [labelSize, setLabelSize] = useSetting("map.labelSize");
 
   async function handleEraseAllData() {
     localStorage.clear();
@@ -52,16 +64,30 @@ function SettingsModal({ isOpen, onRequestClose }) {
       <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
         <Flex sx={{ flexDirection: "column" }}>
           <Label py={2}>Settings</Label>
+          <Divider bg="text" />
+          <Label py={2}>Accesibility:</Label>
           <Label py={2}>
-            Light theme
+            <span style={{ marginRight: "4px" }}>Light theme</span>
             <Checkbox
               checked={colorMode === "light"}
               onChange={(e) =>
                 setColorMode(e.target.checked ? "light" : "default")
               }
-              pl={1}
             />
           </Label>
+          <Label py={2}>
+            Token Label Size
+            <Slider
+              step={0.5}
+              min={1}
+              max={3}
+              ml={1}
+              sx={{ width: "initial" }}
+              value={labelSize}
+              onChange={(e) => setLabelSize(parseFloat(e.target.value))}
+            />
+          </Label>
+          <Divider bg="text" />
           <Flex py={2}>
             <Button sx={{ flexGrow: 1 }} onClick={handleClearCache}>
               Clear cache

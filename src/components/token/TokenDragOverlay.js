@@ -34,6 +34,9 @@ function TokenDragOverlay({
         x: pointerPosition.x + mapRect.left,
         y: pointerPosition.y + mapRect.top,
       };
+      if (!removeTokenRef.current) {
+        return;
+      }
       const removeIconPosition = removeTokenRef.current.getBoundingClientRect();
 
       if (

@@ -75,6 +75,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           type: "file",
           created: Date.now(),
           lastModified: Date.now(),
+          lastUsed: Date.now(),
           owner: userId,
           defaultSize: 1,
           category: "character",
@@ -131,7 +132,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const selectedTokenWithChanges = { ...selectedToken, ...tokenSettingChanges };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleRequestClose}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={handleRequestClose}
+      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+    >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}

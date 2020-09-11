@@ -7,6 +7,8 @@ import { tokens as defaultTokens } from "../tokens";
 
 const TokenDataContext = React.createContext();
 
+const cachedTokenMax = 100;
+
 export function TokenDataProvider({ children }) {
   const { database } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
@@ -45,6 +47,9 @@ export function TokenDataProvider({ children }) {
   async function addToken(token) {
     await database.table("tokens").add(token);
     setTokens((prevTokens) => [token, ...prevTokens]);
+    if (token.owner !== userId) {
+      await updateCache();
+    }
   }
 
   async function removeToken(id) {
@@ -80,6 +85,31 @@ export function TokenDataProvider({ children }) {
       }
       return newTokens;
     });
+    if (token.owner !== userId) {
+      await updateCache();
+    }
+  }
+
+  /**
+   * Keep up to cachedTokenMax amount of tokens that you don't own
+   * Sorted by when they we're last used
+   */
+  async function updateCache() {
+    const cachedTokens = await database
+      .table("tokens")
+      .where("owner")
+      .notEqual(userId)
+      .sortBy("lastUsed");
+    if (cachedTokens.length > cachedTokenMax) {
+      const cacheDeleteCount = cachedTokens.length - cachedTokenMax;
+      const idsToDelete = cachedTokens
+        .slice(0, cacheDeleteCount)
+        .map((token) => token.id);
+      database.table("tokens").where("id").anyOf(idsToDelete).delete();
+      setTokens((prevTokens) => {
+        return prevTokens.filter((token) => !idsToDelete.includes(token.id));
+      });
+    }
   }
 
   function getToken(tokenId) {

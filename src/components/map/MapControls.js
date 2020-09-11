@@ -16,6 +16,10 @@ import BrushToolIcon from "../../icons/BrushToolIcon";
 import MeasureToolIcon from "../../icons/MeasureToolIcon";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import PointerToolIcon from "../../icons/PointerToolIcon";
+import FullScreenIcon from "../../icons/FullScreenIcon";
+import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
+
+import useSetting from "../../helpers/useSetting";
 
 function MapContols({
   onMapChange,
@@ -31,6 +35,7 @@ function MapContols({
   disabledSettings,
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
 
   const toolsById = {
     pan: {
@@ -190,6 +195,24 @@ function MapContols({
         {controls}
       </Flex>
       {getToolSettings()}
+      <Box
+        sx={{
+          position: "absolute",
+          right: "4px",
+          bottom: 0,
+          backgroundColor: "overlay",
+          borderRadius: "50%",
+        }}
+        m={2}
+      >
+        <IconButton
+          onClick={() => setFullScreen(!fullScreen)}
+          aria-label={fullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+          title={fullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+        >
+          {fullScreen ? <FullScreenExitIcon /> : <FullScreenIcon />}
+        </IconButton>
+      </Box>
     </>
   );
 }

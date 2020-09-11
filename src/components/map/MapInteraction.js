@@ -5,6 +5,7 @@ import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
 import { Stage, Layer, Image } from "react-konva";
 import { EventEmitter } from "events";
+import normalizeWheel from "normalize-wheel";
 
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useDataSource from "../../helpers/useDataSource";
@@ -16,6 +17,7 @@ import MapStageContext, {
   MapStageProvider,
 } from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
+import SettingsContext from "../../contexts/SettingsContext";
 
 const wheelZoomSpeed = -0.001;
 const touchZoomSpeed = 0.005;
@@ -108,12 +110,14 @@ function MapInteraction({
       isInteractingWithCanvas.current =
         event.target === mapLayerRef.current.getCanvas()._canvas;
     },
-    onWheel: ({ delta }) => {
+    onWheel: ({ event }) => {
+      event.persist();
+      const { pixelY } = normalizeWheel(event);
       if (preventMapInteraction || !isInteractingWithCanvas.current) {
         return;
       }
       const newScale = Math.min(
-        Math.max(stageScale + delta[1] * wheelZoomSpeed, minZoom),
+        Math.max(stageScale + pixelY * wheelZoomSpeed, minZoom),
         maxZoom
       );
       setStageScale(newScale);
@@ -310,6 +314,7 @@ function MapInteraction({
   const mapImageRef = useRef();
 
   const auth = useContext(AuthContext);
+  const settings = useContext(SettingsContext);
 
   const mapInteraction = {
     stageScale,
@@ -354,11 +359,13 @@ function MapInteraction({
             />
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
-              <MapInteractionProvider value={mapInteraction}>
-                <MapStageProvider value={mapStageRef}>
-                  {mapLoaded && children}
-                </MapStageProvider>
-              </MapInteractionProvider>
+              <SettingsContext.Provider value={settings}>
+                <MapInteractionProvider value={mapInteraction}>
+                  <MapStageProvider value={mapStageRef}>
+                    {mapLoaded && children}
+                  </MapStageProvider>
+                </MapInteractionProvider>
+              </SettingsContext.Provider>
             </AuthContext.Provider>
           </Layer>
         </Stage>

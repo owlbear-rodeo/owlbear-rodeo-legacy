@@ -24,6 +24,7 @@ import DiceTray from "../../dice/diceTray/DiceTray";
 import DiceLoadingContext from "../../contexts/DiceLoadingContext";
 
 import { getDiceRoll } from "../../helpers/dice";
+import useSetting from "../../helpers/useSetting";
 
 function DiceTrayOverlay({
   isOpen,
@@ -45,6 +46,7 @@ function DiceTrayOverlay({
   const { assetLoadStart, assetLoadFinish, isLoading } = useContext(
     DiceLoadingContext
   );
+  const [fullScreen] = useSetting("map.fullScreen");
 
   function handleAssetLoadStart() {
     assetLoadStart();
@@ -236,6 +238,8 @@ function DiceTrayOverlay({
   });
 
   useEffect(() => {
+    let renderTimeout;
+    let renderCleanup;
     function handleResize() {
       const map = document.querySelector(".map");
       const mapRect = map.getBoundingClientRect();
@@ -251,6 +255,11 @@ function DiceTrayOverlay({
         height = diceTraySize === "single" ? width * 2 : width;
       }
 
+      // Debounce a timeout to force re-rendering on resize
+      renderTimeout = setTimeout(() => {
+        renderCleanup = forceRender();
+      }, 100);
+
       setTraySize({ width, height });
     }
 
@@ -260,8 +269,14 @@ function DiceTrayOverlay({
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      if (renderTimeout) {
+        clearTimeout(renderTimeout);
+      }
+      if (renderCleanup) {
+        renderCleanup();
+      }
     };
-  }, [diceTraySize]);
+  }, [diceTraySize, fullScreen, isOpen]);
 
   // Update dice rolls
   useEffect(() => {

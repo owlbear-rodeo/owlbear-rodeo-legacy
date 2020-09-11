@@ -1,10 +1,14 @@
-import React from "react";
-import { Flex } from "theme-ui";
+import React, { useContext } from "react";
+import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
+import { useMedia } from "react-media";
 
 import AddIcon from "../../icons/AddIcon";
 
 import TokenTile from "./TokenTile";
+import Link from "../Link";
+
+import DatabaseContext from "../../contexts/DatabaseContext";
 
 function TokenTiles({
   tokens,
@@ -13,54 +17,90 @@ function TokenTiles({
   selectedToken,
   onTokenRemove,
 }) {
+  const { databaseStatus } = useContext(DatabaseContext);
+  const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
+
   return (
-    <SimpleBar style={{ maxHeight: "300px", width: "500px" }}>
-      <Flex
-        py={2}
-        bg="muted"
-        sx={{
-          flexWrap: "wrap",
-          width: "500px",
-          borderRadius: "4px",
-        }}
-      >
+    <Box sx={{ position: "relative" }}>
+      <SimpleBar style={{ maxHeight: "300px" }}>
         <Flex
-          onClick={onTokenAdd}
-          sx={{
-            ":hover": {
-              color: "primary",
-            },
-            ":focus": {
-              outline: "none",
-            },
-            ":active": {
-              color: "secondary",
-            },
-            width: "150px",
-            height: "150px",
-            borderRadius: "4px",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          m={2}
+          p={2}
           bg="muted"
-          aria-label="Add Token"
-          title="Add Token"
+          sx={{
+            flexWrap: "wrap",
+            borderRadius: "4px",
+          }}
         >
-          <AddIcon large />
+          <Box
+            onClick={onTokenAdd}
+            sx={{
+              ":hover": {
+                color: "primary",
+              },
+              ":focus": {
+                outline: "none",
+              },
+              ":active": {
+                color: "secondary",
+              },
+              width: isSmallScreen ? "48%" : "32%",
+              height: "0",
+              paddingTop: isSmallScreen ? "48%" : "32%",
+              borderRadius: "4px",
+              position: "relative",
+              cursor: "pointer",
+            }}
+            my={1}
+            mx={`${isSmallScreen ? 1 : 2 / 3}%`}
+            bg="muted"
+            aria-label="Add Token"
+            title="Add Token"
+          >
+            <Flex
+              sx={{
+                width: "100%",
+                height: "100%",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <AddIcon large />
+            </Flex>
+          </Box>
+          {tokens.map((token) => (
+            <TokenTile
+              key={token.id}
+              token={token}
+              isSelected={selectedToken && token.id === selectedToken.id}
+              onTokenSelect={onTokenSelect}
+              onTokenRemove={onTokenRemove}
+              large={isSmallScreen}
+            />
+          ))}
         </Flex>
-        {tokens.map((token) => (
-          <TokenTile
-            key={token.id}
-            token={token}
-            isSelected={selectedToken && token.id === selectedToken.id}
-            onTokenSelect={onTokenSelect}
-            onTokenRemove={onTokenRemove}
-          />
-        ))}
-      </Flex>
-    </SimpleBar>
+      </SimpleBar>
+      {databaseStatus === "disabled" && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+          }}
+          bg="highlight"
+          p={1}
+        >
+          <Text as="p" variant="body2">
+            Token saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
+            for more information.
+          </Text>
+        </Box>
+      )}
+    </Box>
   );
 }
 

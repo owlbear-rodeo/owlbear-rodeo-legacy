@@ -32,7 +32,7 @@ function NetworkedMapAndTokens({ session }) {
     isLoading,
   } = useContext(MapLoadingContext);
 
-  const { putToken, getToken } = useContext(TokenDataContext);
+  const { putToken, getToken, updateToken } = useContext(TokenDataContext);
   const { putMap, updateMap, getMapFromDB } = useContext(MapDataContext);
 
   const [currentMap, setCurrentMap] = useState(null);
@@ -245,11 +245,15 @@ function NetworkedMapAndTokens({ session }) {
         if (newMap && newMap.type === "file") {
           const cachedMap = await getMapFromDB(newMap.id);
           if (cachedMap && cachedMap.lastModified >= newMap.lastModified) {
-            setCurrentMap(cachedMap);
+            // Update last used for cache invalidation
+            const lastUsed = Date.now();
+            await updateMap(cachedMap.id, { lastUsed });
+            setCurrentMap({ ...cachedMap, lastUsed });
           } else {
             // Save map data but remove last modified so if there is an error
-            // during the map request the cache is invalid
-            await putMap({ ...newMap, lastModified: 0 });
+            // during the map request the cache is invalid. Also add last used
+            // for cache invalidation
+            await putMap({ ...newMap, lastModified: 0, lastUsed: Date.now() });
             reply("mapRequest", newMap.id, "map");
           }
         } else {
@@ -326,16 +330,21 @@ function NetworkedMapAndTokens({ session }) {
         if (newToken && newToken.type === "file") {
           const cachedToken = getToken(newToken.id);
           if (
-            !cachedToken ||
-            cachedToken.lastModified !== newToken.lastModified
+            cachedToken &&
+            cachedToken.lastModified >= newToken.lastModified
           ) {
+            // Update last used for cache invalidation
+            const lastUsed = Date.now();
+            await updateToken(cachedToken.id, { lastUsed });
+          } else {
             reply("tokenRequest", newToken.id, "token");
           }
         }
       }
       if (id === "tokenRequest") {
         const token = getToken(data);
-        reply("tokenResponse", token, "token");
+        // Add a last used property for cache invalidation
+        reply("tokenResponse", { ...token, lastUsed: Date.now() }, "token");
       }
       if (id === "tokenResponse") {
         const newToken = data;

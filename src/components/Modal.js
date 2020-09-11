@@ -7,6 +7,7 @@ function StyledModal({
   onRequestClose,
   children,
   allowClose,
+  style,
   ...props
 }) {
   const { theme } = useThemeUI();
@@ -26,6 +27,7 @@ function StyledModal({
           marginRight: "-50%",
           transform: "translate(-50%, -50%)",
           maxHeight: "100%",
+          ...style,
         },
       }}
       {...props}
@@ -44,6 +46,7 @@ function StyledModal({
 
 StyledModal.defaultProps = {
   allowClose: true,
+  style: {},
 };
 
 export default StyledModal;

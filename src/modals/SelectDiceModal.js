@@ -9,7 +9,11 @@ import { dice } from "../dice";
 function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }) {
   const [selectedDice, setSelectedDice] = useState(defaultDice);
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+    >
       <Flex
         sx={{
           flexDirection: "column",
