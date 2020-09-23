@@ -65,7 +65,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
         <Flex sx={{ flexDirection: "column" }}>
           <Label py={2}>Settings</Label>
           <Divider bg="text" />
-          <Label py={2}>Accesibility:</Label>
+          <Label py={2}>Accessibility:</Label>
           <Label py={2}>
             <span style={{ marginRight: "4px" }}>Light theme</span>
             <Checkbox

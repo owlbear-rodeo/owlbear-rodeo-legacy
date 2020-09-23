@@ -8,7 +8,7 @@ Owlbear Rodeo comes with a variety of default tokens that represent various play
 
 ![Default Tokens](defaultTokens)
 
-Currently there are default tokens representing these types: Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rouge, Sorcerer, Warlock, Wizard, Artificer, Blood Hunder, Aberration, Beast, Celestial, Construct, Dragon, Elemental, Fey, Fiend, Giant, Goblinoid, Humanoid, Monstrosity, Ooze, Plant, Shapechanger, Titan and Undead.
+Currently there are default tokens representing these types: Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard, Artificer, Blood Hunder, Aberration, Beast, Celestial, Construct, Dragon, Elemental, Fey, Fiend, Giant, Goblinoid, Humanoid, Monstrosity, Ooze, Plant, Shapechanger, Titan and Undead.
 
 ## Working With Tokens
 
