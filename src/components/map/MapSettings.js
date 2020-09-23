@@ -1,26 +1,19 @@
 import React from "react";
-import {
-  Flex,
-  Box,
-  Label,
-  Input,
-  Checkbox,
-  IconButton,
-  Select,
-} from "theme-ui";
+import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 import { isEmpty } from "../../helpers/shared";
 
 import Divider from "../Divider";
+import Select from "../Select";
 
 const qualitySettings = [
-  { id: "low", name: "Low" },
-  { id: "medium", name: "Medium" },
-  { id: "high", name: "High" },
-  { id: "ultra", name: "Ultra High" },
-  { id: "original", name: "Original" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "ultra", label: "Ultra High" },
+  { value: "original", label: "Original" },
 ];
 
 function MapSettings({
@@ -105,16 +98,17 @@ function MapSettings({
             mb={mapEmpty || map.type === "default" ? 2 : 0}
             sx={{ alignItems: "flex-end" }}
           >
-            <Box sx={{ width: "50%" }}>
-              <Label>Grid Type</Label>
+            <Box mb={1} sx={{ width: "50%" }}>
+              <Label mb={1}>Grid Type</Label>
               <Select
-                defaultValue="Square"
-                my={1}
-                disabled={mapEmpty || map.type === "default"}
-              >
-                <option>Square</option>
-                <option disabled>Hex (Coming Soon)</option>
-              </Select>
+                defaultValue={{ value: "square", label: "Square" }}
+                isDisabled={mapEmpty || map.type === "default"}
+                options={[
+                  { value: "square", label: "Square" },
+                  { value: "hex", label: "Hex (Coming Soon)" },
+                ]}
+                isOptionDisabled={(option) => option.value === "hex"}
+              />
             </Box>
             <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
               <Label>
@@ -141,28 +135,24 @@ function MapSettings({
           </Flex>
           {!mapEmpty && map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>
-              <Box sx={{ width: "50%" }}>
-                <Label>Quality</Label>
+              <Box mb={1} sx={{ width: "50%" }}>
+                <Label mb={1}>Quality</Label>
                 <Select
-                  my={1}
-                  value={!mapEmpty && map.quality}
-                  disabled={mapEmpty}
-                  onChange={(e) => onSettingsChange("quality", e.target.value)}
-                >
-                  {qualitySettings.map((quality) => (
-                    <option
-                      key={quality.id}
-                      value={quality.id}
-                      disabled={
-                        mapEmpty ||
-                        (quality.id !== "original" &&
-                          !map.resolutions[quality.id])
-                      }
-                    >
-                      {quality.name}
-                    </option>
-                  ))}
-                </Select>
+                  options={qualitySettings}
+                  value={
+                    !mapEmpty &&
+                    qualitySettings.find((s) => s.value === map.quality)
+                  }
+                  isDisabled={mapEmpty}
+                  onChange={(option) =>
+                    onSettingsChange("quality", option.value)
+                  }
+                  isOptionDisabled={(option) =>
+                    mapEmpty ||
+                    (option.value !== "original" &&
+                      !map.resolutions[option.value])
+                  }
+                />
               </Box>
               <Label sx={{ width: "50%" }} ml={2}>
                 Size: {getMapSize()}

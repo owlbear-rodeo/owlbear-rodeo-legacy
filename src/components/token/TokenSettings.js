@@ -1,21 +1,15 @@
 import React from "react";
-import {
-  Flex,
-  Box,
-  Input,
-  IconButton,
-  Label,
-  Checkbox,
-  Select,
-} from "theme-ui";
+import { Flex, Box, Input, IconButton, Label, Checkbox } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import { isEmpty } from "../../helpers/shared";
 
+import Select from "../Select";
+
 const categorySettings = [
-  { id: "character", name: "Character" },
-  { id: "prop", name: "Prop" },
-  { id: "vehicle", name: "Vehicle / Mount" },
+  { value: "character", label: "Character" },
+  { value: "prop", label: "Prop" },
+  { value: "vehicle", label: "Vehicle / Mount" },
 ];
 
 function TokenSettings({
@@ -56,20 +50,19 @@ function TokenSettings({
             />
           </Box>
           <Flex my={2}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Label>Category</Label>
+            <Box mb={1} sx={{ flexGrow: 1 }}>
+              <Label mb={1}>Category</Label>
               <Select
-                my={1}
-                value={!tokenEmpty && token.category}
-                disabled={tokenEmpty || token.type === "default"}
-                onChange={(e) => onSettingsChange("category", e.target.value)}
-              >
-                {categorySettings.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
+                options={categorySettings}
+                value={
+                  !tokenEmpty &&
+                  categorySettings.find((s) => s.value === token.category)
+                }
+                isDisabled={tokenEmpty || token.type === "default"}
+                onChange={(option) =>
+                  onSettingsChange("category", option.value)
+                }
+              />
             </Box>
             <Flex sx={{ flexGrow: 1, alignItems: "center" }} ml={2}>
               <Label>
