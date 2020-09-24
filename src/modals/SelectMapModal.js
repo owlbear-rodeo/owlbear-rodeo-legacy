@@ -2,9 +2,10 @@ import React, { useRef, useState, useContext } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 
+import EditMapModal from "./EditMapModal";
+
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
-import MapSettings from "../components/map/MapSettings";
 import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
@@ -13,7 +14,6 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
-import { isEmpty } from "../helpers/shared";
 import { resizeImage } from "../helpers/image";
 
 const defaultMapSize = 22;
@@ -49,7 +49,6 @@ function SelectMapModal({
     removeMap,
     resetMap,
     updateMap,
-    updateMapState,
   } = useContext(MapDataContext);
 
   const [imageLoading, setImageLoading] = useState(false);
@@ -61,6 +60,8 @@ function SelectMapModal({
   const selectedMapState = mapStates.find(
     (state) => state.mapId === selectedMapId
   );
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fileInputRef = useRef();
 
@@ -175,8 +176,6 @@ function SelectMapModal({
 
   async function handleMapRemove(id) {
     await removeMap(id);
-    setMapSettingChanges({});
-    setMapStateSettingChanges({});
     setSelectedMapId(null);
     // Removed the map from the map screen if needed
     if (currentMap && currentMap.id === selectedMapId) {
@@ -185,7 +184,6 @@ function SelectMapModal({
   }
 
   async function handleMapSelect(map) {
-    await applyMapChanges();
     if (map) {
       setSelectedMapId(map.id);
     } else {
@@ -202,9 +200,6 @@ function SelectMapModal({
   }
 
   async function handleClose() {
-    if (selectedMapId) {
-      await applyMapChanges();
-    }
     onDone();
   }
 
@@ -213,73 +208,15 @@ function SelectMapModal({
       return;
     }
     if (selectedMapId) {
-      await applyMapChanges();
       // Update last used for cache invalidation
       const lastUsed = Date.now();
       await updateMap(selectedMapId, { lastUsed });
-      onMapChange(
-        { ...selectedMapWithChanges, lastUsed },
-        selectedMapStateWithChanges
-      );
+      onMapChange({ ...selectedMap, lastUsed }, selectedMapState);
     } else {
       onMapChange(null, null);
     }
     onDone();
   }
-
-  /**
-   * Map settings
-   */
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-  // Local cache of map setting changes
-  // Applied when done is clicked or map selection is changed
-  const [mapSettingChanges, setMapSettingChanges] = useState({});
-  const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
-
-  function handleMapSettingsChange(key, value) {
-    setMapSettingChanges((prevChanges) => ({
-      ...prevChanges,
-      [key]: value,
-      lastModified: Date.now(),
-    }));
-  }
-
-  function handleMapStateSettingsChange(key, value) {
-    setMapStateSettingChanges((prevChanges) => ({
-      ...prevChanges,
-      [key]: value,
-    }));
-  }
-
-  async function applyMapChanges() {
-    if (
-      selectedMapId &&
-      (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges))
-    ) {
-      // Ensure grid values are positive
-      let verifiedChanges = { ...mapSettingChanges };
-      if ("gridX" in verifiedChanges) {
-        verifiedChanges.gridX = verifiedChanges.gridX || 1;
-      }
-      if ("gridY" in verifiedChanges) {
-        verifiedChanges.gridY = verifiedChanges.gridY || 1;
-      }
-      await updateMap(selectedMapId, verifiedChanges);
-      await updateMapState(selectedMapId, mapStateSettingChanges);
-
-      setMapSettingChanges({});
-      setMapStateSettingChanges({});
-    }
-  }
-
-  const selectedMapWithChanges = selectedMap && {
-    ...selectedMap,
-    ...mapSettingChanges,
-  };
-  const selectedMapStateWithChanges = selectedMapState && {
-    ...selectedMapState,
-    ...mapStateSettingChanges,
-  };
 
   return (
     <Modal
@@ -307,31 +244,31 @@ function SelectMapModal({
           <MapTiles
             maps={ownedMaps}
             onMapAdd={openImageDialog}
-            onMapRemove={handleMapRemove}
-            selectedMap={selectedMapWithChanges}
-            selectedMapState={selectedMapStateWithChanges}
-            onMapSelect={handleMapSelect}
+            onMapEdit={() => setIsEditModalOpen(true)}
             onMapReset={handleMapReset}
+            onMapRemove={handleMapRemove}
+            selectedMap={selectedMap}
+            selectedMapState={selectedMapState}
+            onMapSelect={handleMapSelect}
             onDone={handleDone}
-          />
-          <MapSettings
-            map={selectedMapWithChanges}
-            mapState={selectedMapStateWithChanges}
-            onSettingsChange={handleMapSettingsChange}
-            onStateSettingsChange={handleMapStateSettingsChange}
-            showMore={showMoreSettings}
-            onShowMoreChange={setShowMoreSettings}
           />
           <Button
             variant="primary"
-            disabled={imageLoading}
+            disabled={imageLoading || !selectedMapId}
             onClick={handleDone}
+            mt={2}
           >
-            Done
+            Select
           </Button>
         </Flex>
       </ImageDrop>
       {imageLoading && <LoadingOverlay bg="overlay" />}
+      <EditMapModal
+        isOpen={isEditModalOpen}
+        onDone={() => setIsEditModalOpen(false)}
+        map={selectedMap}
+        mapState={selectedMapState}
+      />
     </Modal>
   );
 }

@@ -81,18 +81,18 @@ function MapSettings({
           />
         </Box>
       </Flex>
+      <Box mt={2} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          name="name"
+          value={(map && map.name) || ""}
+          onChange={(e) => onSettingsChange("name", e.target.value)}
+          disabled={mapEmpty || map.type === "default"}
+          my={1}
+        />
+      </Box>
       {showMore && (
         <>
-          <Box mt={2} sx={{ flexGrow: 1 }}>
-            <Label htmlFor="name">Name</Label>
-            <Input
-              name="name"
-              value={(map && map.name) || ""}
-              onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={mapEmpty || map.type === "default"}
-              my={1}
-            />
-          </Box>
           <Flex
             mt={2}
             mb={mapEmpty || map.type === "default" ? 2 : 0}

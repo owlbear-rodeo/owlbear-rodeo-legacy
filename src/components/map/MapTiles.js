@@ -1,9 +1,11 @@
 import React, { useContext } from "react";
-import { Flex, Box, Text } from "theme-ui";
+import { Flex, Box, Text, IconButton, Close } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import { useMedia } from "react-media";
 
 import AddIcon from "../../icons/AddIcon";
+import RemoveMapIcon from "../../icons/RemoveMapIcon";
+import ResetMapIcon from "../../icons/ResetMapIcon";
 
 import MapTile from "./MapTile";
 import Link from "../Link";
@@ -15,19 +17,27 @@ function MapTiles({
   selectedMap,
   selectedMapState,
   onMapSelect,
-  onMapAdd,
   onMapRemove,
   onMapReset,
+  onMapAdd,
+  onMapEdit,
   onDone,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
 
+  const hasMapState =
+    selectedMapState &&
+    (Object.values(selectedMapState.tokens).length > 0 ||
+      selectedMapState.mapDrawActions.length > 0 ||
+      selectedMapState.fogDrawActions.length > 0);
+
   return (
     <Box sx={{ position: "relative" }}>
-      <SimpleBar style={{ maxHeight: "300px" }}>
+      <SimpleBar style={{ maxHeight: "400px" }}>
         <Flex
           p={2}
+          pb={4}
           bg="muted"
           sx={{
             flexWrap: "wrap",
@@ -79,14 +89,10 @@ function MapTiles({
             return (
               <MapTile
                 key={map.id}
-                // TODO: Move to selected map here and fix url error
-                // when done is clicked
                 map={map}
-                mapState={isSelected && selectedMapState}
                 isSelected={isSelected}
                 onMapSelect={onMapSelect}
-                onMapRemove={onMapRemove}
-                onMapReset={onMapReset}
+                onMapEdit={onMapEdit}
                 onDone={onDone}
                 large={isSmallScreen}
               />
@@ -111,6 +117,41 @@ function MapTiles({
             more information.
           </Text>
         </Box>
+      )}
+      {selectedMap && (
+        <Flex
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            justifyContent: "space-between",
+          }}
+          bg="overlay"
+        >
+          <Close
+            title="Clear Selection"
+            aria-label="Clear Selection"
+            onClick={() => onMapSelect(null)}
+          />
+          <Flex>
+            <IconButton
+              aria-label="Reset Map"
+              title="Reset Map"
+              onClick={() => onMapReset(selectedMap.id)}
+              disabled={!hasMapState}
+            >
+              <ResetMapIcon />
+            </IconButton>
+            <IconButton
+              aria-label="Remove Map"
+              title="Remove Map"
+              onClick={() => onMapRemove(selectedMap.id)}
+            >
+              <RemoveMapIcon />
+            </IconButton>
+          </Flex>
+        </Flex>
       )}
     </Box>
   );

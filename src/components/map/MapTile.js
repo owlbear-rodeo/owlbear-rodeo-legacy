@@ -1,23 +1,12 @@
 import React, { useState } from "react";
 import { Flex, Image as UIImage, IconButton, Box, Text } from "theme-ui";
 
-import RemoveMapIcon from "../../icons/RemoveMapIcon";
-import ResetMapIcon from "../../icons/ResetMapIcon";
-import ExpandMoreDotIcon from "../../icons/ExpandMoreDotIcon";
+import EditMapIcon from "../../icons/EditMapIcon";
 
 import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
-function MapTile({
-  map,
-  mapState,
-  isSelected,
-  onMapSelect,
-  onMapRemove,
-  onMapReset,
-  onDone,
-  large,
-}) {
+function MapTile({ map, isSelected, onMapSelect, onMapEdit, onDone, large }) {
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
   const mapSource = useDataSource(
@@ -29,69 +18,6 @@ function MapTile({
     defaultMapSources,
     unknownSource
   );
-
-  const hasMapState =
-    mapState &&
-    (Object.values(mapState.tokens).length > 0 ||
-      mapState.mapDrawActions.length > 0 ||
-      mapState.fogDrawActions.length > 0);
-
-  const expandButton = (
-    <IconButton
-      aria-label="Show Map Actions"
-      title="Show Map Actions"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsTileMenuOpen(true);
-      }}
-      bg="overlay"
-      sx={{ borderRadius: "50%" }}
-      m={2}
-    >
-      <ExpandMoreDotIcon />
-    </IconButton>
-  );
-
-  function removeButton(map) {
-    return (
-      <IconButton
-        aria-label="Remove Map"
-        title="Remove Map"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsTileMenuOpen(false);
-          onMapRemove(map.id);
-        }}
-        bg="overlay"
-        sx={{ borderRadius: "50%" }}
-        m={2}
-      >
-        <RemoveMapIcon />
-      </IconButton>
-    );
-  }
-
-  function resetButton(map) {
-    return (
-      <IconButton
-        aria-label="Reset Map"
-        title="Reset Map"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsTileMenuOpen(false);
-          onMapReset(map.id);
-        }}
-        bg="overlay"
-        sx={{ borderRadius: "50%" }}
-        m={2}
-      >
-        <ResetMapIcon />
-      </IconButton>
-    );
-  }
 
   return (
     <Flex
@@ -174,29 +100,21 @@ function MapTile({
       {/* Show expand button only if both reset and remove is available */}
       {isSelected && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
-          {isDefault && hasMapState && resetButton(map)}
-          {!isDefault && hasMapState && !isMapTileMenuOpen && expandButton}
-          {!isDefault && !hasMapState && removeButton(map)}
+          <IconButton
+            aria-label="Edit Map"
+            title="Edit Map"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onMapEdit(map.id);
+            }}
+            bg="overlay"
+            sx={{ borderRadius: "50%" }}
+            m={2}
+          >
+            <EditMapIcon />
+          </IconButton>
         </Box>
-      )}
-      {/* Tile menu for two actions */}
-      {!isDefault && isMapTileMenuOpen && isSelected && (
-        <Flex
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          bg="muted"
-          onClick={() => setIsTileMenuOpen(false)}
-        >
-          {!isDefault && removeButton(map)}
-          {hasMapState && resetButton(map)}
-        </Flex>
       )}
     </Flex>
   );
