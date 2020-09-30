@@ -6,34 +6,88 @@ import { useMedia } from "react-media";
 import AddIcon from "../../icons/AddIcon";
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
+import SelectMultipleIcon from "../../icons/SelectMultipleIcon";
+import SelectSingleIcon from "../../icons/SelectSingleIcon";
 
 import MapTile from "./MapTile";
 import Link from "../Link";
+import Search from "../Search";
 
 import DatabaseContext from "../../contexts/DatabaseContext";
 
 function MapTiles({
   maps,
-  selectedMap,
-  selectedMapState,
+  selectedMaps,
+  selectedMapStates,
   onMapSelect,
-  onMapRemove,
-  onMapReset,
+  onMapsRemove,
+  onMapsReset,
   onMapAdd,
   onMapEdit,
   onDone,
+  selectMode,
+  onSelectModeChange,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
 
-  const hasMapState =
-    selectedMapState &&
-    (Object.values(selectedMapState.tokens).length > 0 ||
-      selectedMapState.mapDrawActions.length > 0 ||
-      selectedMapState.fogDrawActions.length > 0);
+  let hasMapState = false;
+  if (selectedMapStates.length > 0) {
+    for (let state of selectedMapStates) {
+      if (
+        Object.values(state.tokens).length > 0 ||
+        state.mapDrawActions.length > 0 ||
+        state.fogDrawActions.length > 0
+      ) {
+        hasMapState = true;
+        break;
+      }
+    }
+  }
 
   return (
     <Box sx={{ position: "relative" }}>
+      <Flex
+        bg="muted"
+        sx={{
+          border: "1px solid",
+          borderColor: "text",
+          borderRadius: "4px",
+          alignItems: "center",
+          ":focus-within": {
+            outline: "1px auto",
+            outlineColor: "primary",
+            outlineOffset: "0px",
+          },
+        }}
+        onFocus={() => onMapSelect()}
+      >
+        <Search />
+        <IconButton
+          onClick={() =>
+            onSelectModeChange(selectMode === "single" ? "multiple" : "single")
+          }
+          aria-label={
+            selectMode === "single" ? "Select Multiple" : "Select Single"
+          }
+          title={selectMode === "single" ? "Select Multiple" : "Select Single"}
+          ml={1}
+        >
+          {selectMode === "single" ? (
+            <SelectMultipleIcon />
+          ) : (
+            <SelectSingleIcon />
+          )}
+        </IconButton>
+        <IconButton
+          onClick={onMapAdd}
+          aria-label="Add Map"
+          title="Add Map"
+          mr={1}
+        >
+          <AddIcon />
+        </IconButton>
+      </Flex>
       <SimpleBar style={{ maxHeight: "400px" }}>
         <Flex
           p={2}
@@ -43,49 +97,10 @@ function MapTiles({
             flexWrap: "wrap",
             borderRadius: "4px",
           }}
-          onClick={() => onMapSelect(null)}
+          onClick={() => onMapSelect()}
         >
-          <Flex
-            onClick={onMapAdd}
-            sx={{
-              ":hover": {
-                color: "primary",
-              },
-              ":focus": {
-                outline: "none",
-              },
-              ":active": {
-                color: "secondary",
-              },
-              width: isSmallScreen ? "48%" : "32%",
-              height: "0",
-              paddingTop: isSmallScreen ? "48%" : "32%",
-              borderRadius: "4px",
-              position: "relative",
-              cursor: "pointer",
-            }}
-            my={1}
-            mx={`${isSmallScreen ? 1 : 2 / 3}%`}
-            bg="muted"
-            aria-label="Add Map"
-            title="Add Map"
-          >
-            <Flex
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "absolute",
-                top: 0,
-                left: 0,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <AddIcon large />
-            </Flex>
-          </Flex>
           {maps.map((map) => {
-            const isSelected = selectedMap && map.id === selectedMap.id;
+            const isSelected = selectedMaps.includes(map);
             return (
               <MapTile
                 key={map.id}
@@ -95,6 +110,7 @@ function MapTiles({
                 onMapEdit={onMapEdit}
                 onDone={onDone}
                 large={isSmallScreen}
+                canEdit={isSelected && selectMode === "single"}
               />
             );
           })}
@@ -118,7 +134,7 @@ function MapTiles({
           </Text>
         </Box>
       )}
-      {selectedMap && (
+      {selectedMaps.length > 0 && (
         <Flex
           sx={{
             position: "absolute",
@@ -132,13 +148,13 @@ function MapTiles({
           <Close
             title="Clear Selection"
             aria-label="Clear Selection"
-            onClick={() => onMapSelect(null)}
+            onClick={() => onMapSelect()}
           />
           <Flex>
             <IconButton
               aria-label="Reset Map"
               title="Reset Map"
-              onClick={() => onMapReset(selectedMap.id)}
+              onClick={() => onMapsReset()}
               disabled={!hasMapState}
             >
               <ResetMapIcon />
@@ -146,7 +162,7 @@ function MapTiles({
             <IconButton
               aria-label="Remove Map"
               title="Remove Map"
-              onClick={() => onMapRemove(selectedMap.id)}
+              onClick={() => onMapsRemove()}
             >
               <RemoveMapIcon />
             </IconButton>

@@ -6,7 +6,15 @@ import EditMapIcon from "../../icons/EditMapIcon";
 import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
-function MapTile({ map, isSelected, onMapSelect, onMapEdit, onDone, large }) {
+function MapTile({
+  map,
+  isSelected,
+  onMapSelect,
+  onMapEdit,
+  onDone,
+  large,
+  canEdit,
+}) {
   const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
   const mapSource = useDataSource(
@@ -39,9 +47,7 @@ function MapTile({ map, isSelected, onMapSelect, onMapEdit, onDone, large }) {
       onClick={(e) => {
         e.stopPropagation();
         setIsTileMenuOpen(false);
-        if (!isSelected) {
-          onMapSelect(map);
-        }
+        onMapSelect(map);
       }}
       onDoubleClick={(e) => {
         if (!isMapTileMenuOpen) {
@@ -97,8 +103,7 @@ function MapTile({ map, isSelected, onMapSelect, onMapEdit, onDone, large }) {
           borderRadius: "4px",
         }}
       />
-      {/* Show expand button only if both reset and remove is available */}
-      {isSelected && (
+      {canEdit && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <IconButton
             aria-label="Edit Map"

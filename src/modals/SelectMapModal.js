@@ -54,11 +54,13 @@ function SelectMapModal({
   const [imageLoading, setImageLoading] = useState(false);
 
   // The map selected in the modal
-  const [selectedMapId, setSelectedMapId] = useState(null);
+  const [selectedMapIds, setSelectedMapIds] = useState([]);
 
-  const selectedMap = ownedMaps.find((map) => map.id === selectedMapId);
-  const selectedMapState = mapStates.find(
-    (state) => state.mapId === selectedMapId
+  const selectedMaps = ownedMaps.filter((map) =>
+    selectedMapIds.includes(map.id)
+  );
+  const selectedMapStates = mapStates.filter((state) =>
+    selectedMapIds.includes(state.mapId)
   );
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -171,31 +173,83 @@ function SelectMapModal({
 
   async function handleMapAdd(map) {
     await addMap(map);
-    setSelectedMapId(map.id);
+    setSelectedMapIds([map.id]);
   }
 
-  async function handleMapRemove(id) {
-    await removeMap(id);
-    setSelectedMapId(null);
+  async function handleMapsRemove() {
+    for (let id of selectedMapIds) {
+      await removeMap(id);
+    }
+    setSelectedMapIds([]);
     // Removed the map from the map screen if needed
-    if (currentMap && currentMap.id === selectedMapId) {
+    if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
     }
   }
 
+  // Either single, multiple or range
+  const [selectMode, setSelectMode] = useState("single");
+
   async function handleMapSelect(map) {
     if (map) {
-      setSelectedMapId(map.id);
+      switch (selectMode) {
+        case "single":
+          setSelectedMapIds([map.id]);
+          break;
+        case "multiple":
+          setSelectedMapIds((prev) => {
+            if (prev.includes(map.id)) {
+              return prev.filter((id) => id !== map.id);
+            } else {
+              return [...prev, map.id];
+            }
+          });
+          break;
+        case "range":
+          // Add all items inbetween the previous selected map and the current selected
+          if (selectedMapIds.length > 0) {
+            const mapIndex = ownedMaps.findIndex((m) => m.id === map.id);
+            const lastIndex = ownedMaps.findIndex(
+              (m) => m.id === selectedMapIds[selectedMapIds.length - 1]
+            );
+            let idsToAdd = [];
+            let idsToRemove = [];
+            const direction = mapIndex > lastIndex ? 1 : -1;
+            for (
+              let i = mapIndex;
+              direction > 0 ? i >= lastIndex : i <= lastIndex;
+              i += direction
+            ) {
+              const mapId = ownedMaps[i].id;
+              if (selectedMapIds.includes(mapId)) {
+                idsToRemove.push(mapId);
+              } else {
+                idsToAdd.push(mapId);
+              }
+            }
+            setSelectedMapIds((prev) => {
+              let ids = [...prev, ...idsToAdd];
+              return ids.filter((id) => idsToRemove.includes(id));
+            });
+          } else {
+            setSelectedMapIds([map.id]);
+          }
+          break;
+        default:
+          setSelectedMapIds([]);
+      }
     } else {
-      setSelectedMapId(null);
+      setSelectedMapIds([]);
     }
   }
 
-  async function handleMapReset(id) {
-    const newState = await resetMap(id);
-    // Reset the state of the current map if needed
-    if (currentMap && currentMap.id === selectedMapId) {
-      onMapStateChange(newState);
+  async function handleMapsReset() {
+    for (let id of selectedMapIds) {
+      const newState = await resetMap(id);
+      // Reset the state of the current map if needed
+      if (currentMap && currentMap.id === id) {
+        onMapStateChange(newState);
+      }
     }
   }
 
@@ -207,11 +261,11 @@ function SelectMapModal({
     if (imageLoading) {
       return;
     }
-    if (selectedMapId) {
+    if (selectedMapIds.length === 1) {
       // Update last used for cache invalidation
       const lastUsed = Date.now();
-      await updateMap(selectedMapId, { lastUsed });
-      onMapChange({ ...selectedMap, lastUsed }, selectedMapState);
+      await updateMap(selectedMapIds[0], { lastUsed });
+      onMapChange({ ...selectedMaps[0], lastUsed }, selectedMapStates[0]);
     } else {
       onMapChange(null, null);
     }
@@ -245,16 +299,18 @@ function SelectMapModal({
             maps={ownedMaps}
             onMapAdd={openImageDialog}
             onMapEdit={() => setIsEditModalOpen(true)}
-            onMapReset={handleMapReset}
-            onMapRemove={handleMapRemove}
-            selectedMap={selectedMap}
-            selectedMapState={selectedMapState}
+            onMapsReset={handleMapsReset}
+            onMapsRemove={handleMapsRemove}
+            selectedMaps={selectedMaps}
+            selectedMapStates={selectedMapStates}
             onMapSelect={handleMapSelect}
             onDone={handleDone}
+            selectMode={selectMode}
+            onSelectModeChange={setSelectMode}
           />
           <Button
             variant="primary"
-            disabled={imageLoading || !selectedMapId}
+            disabled={imageLoading || selectedMapIds.length !== 1}
             onClick={handleDone}
             mt={2}
           >
@@ -266,8 +322,8 @@ function SelectMapModal({
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        map={selectedMap}
-        mapState={selectedMapState}
+        map={selectedMaps.length === 1 && selectedMaps[0]}
+        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
       />
     </Modal>
   );
