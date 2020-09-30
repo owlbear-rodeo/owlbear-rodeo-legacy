@@ -29,6 +29,8 @@ function MapTiles({
   onDone,
   selectMode,
   onSelectModeChange,
+  search,
+  onSearchChange,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
@@ -70,7 +72,7 @@ function MapTiles({
         }}
         onFocus={() => onMapSelect()}
       >
-        <Search />
+        <Search value={search} onChange={onSearchChange} />
         <Flex
           mr={1}
           px={1}
@@ -105,7 +107,7 @@ function MapTiles({
           <AddIcon />
         </IconButton>
       </Flex>
-      <SimpleBar style={{ maxHeight: "400px" }}>
+      <SimpleBar style={{ height: "400px" }}>
         <Flex
           p={2}
           pb={4}
@@ -113,6 +115,7 @@ function MapTiles({
           sx={{
             flexWrap: "wrap",
             borderRadius: "4px",
+            minHeight: "400px",
           }}
           onClick={() => onMapSelect()}
         >

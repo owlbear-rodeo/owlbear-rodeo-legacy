@@ -1,6 +1,7 @@
-import React, { useRef, useState, useContext } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
+import Fuse from "fuse.js";
 
 import EditMapModal from "./EditMapModal";
 
@@ -51,6 +52,26 @@ function SelectMapModal({
     resetMap,
     updateMap,
   } = useContext(MapDataContext);
+
+  const [filteredMaps, setFilteredMaps] = useState([]);
+  const [fuse, setFuse] = useState();
+  const [search, setSearch] = useState("");
+
+  // Update search index when maps change
+  useEffect(() => {
+    setFuse(new Fuse(ownedMaps, { keys: ["name"] }));
+  }, [ownedMaps]);
+
+  // Perform search when search changes
+  useEffect(() => {
+    if (search) {
+      setFilteredMaps(fuse.search(search).map((result) => result.item));
+    }
+  }, [search, ownedMaps, fuse]);
+
+  function handleSearchChange(event) {
+    setSearch(event.target.value);
+  }
 
   const [imageLoading, setImageLoading] = useState(false);
 
@@ -207,10 +228,12 @@ function SelectMapModal({
           });
           break;
         case "range":
+          // Use filtered maps if we have searched
+          const maps = search ? filteredMaps : ownedMaps;
           // Add all items inbetween the previous selected map and the current selected
           if (selectedMapIds.length > 0) {
-            const mapIndex = ownedMaps.findIndex((m) => m.id === map.id);
-            const lastIndex = ownedMaps.findIndex(
+            const mapIndex = maps.findIndex((m) => m.id === map.id);
+            const lastIndex = maps.findIndex(
               (m) => m.id === selectedMapIds[selectedMapIds.length - 1]
             );
             let idsToAdd = [];
@@ -221,7 +244,7 @@ function SelectMapModal({
               direction < 0 ? i >= mapIndex : i <= mapIndex;
               i += direction
             ) {
-              const mapId = ownedMaps[i].id;
+              const mapId = maps[i].id;
               if (selectedMapIds.includes(mapId)) {
                 idsToRemove.push(mapId);
               } else {
@@ -317,7 +340,7 @@ function SelectMapModal({
             Select or import a map
           </Label>
           <MapTiles
-            maps={ownedMaps}
+            maps={search ? filteredMaps : ownedMaps}
             onMapAdd={openImageDialog}
             onMapEdit={() => setIsEditModalOpen(true)}
             onMapsReset={handleMapsReset}
@@ -328,6 +351,8 @@ function SelectMapModal({
             onDone={handleDone}
             selectMode={selectMode}
             onSelectModeChange={setSelectMode}
+            search={search}
+            onSearchChange={handleSearchChange}
           />
           <Button
             variant="primary"
