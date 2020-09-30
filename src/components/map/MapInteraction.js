@@ -9,6 +9,7 @@ import normalizeWheel from "normalize-wheel";
 
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useDataSource from "../../helpers/useDataSource";
+import useKeyboard from "../../helpers/useKeyboard";
 
 import { mapSources as defaultMapSources } from "../../maps";
 
@@ -18,6 +19,7 @@ import MapStageContext, {
 } from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 import SettingsContext from "../../contexts/SettingsContext";
+import KeyboardContext from "../../contexts/KeyboardContext";
 
 const wheelZoomSpeed = -0.001;
 const touchZoomSpeed = 0.005;
@@ -206,88 +208,49 @@ function MapInteraction({
     stageHeightRef.current = height;
   }
 
-  // Added key events to interaction emitter
-  useEffect(() => {
-    function handleKeyDown(event) {
-      // Ignore text input
-      if (event.target instanceof HTMLInputElement) {
-        return;
-      }
-      interactionEmitter.emit("keyDown", event);
+  function handleKeyDown(event) {
+    // Change to pan tool when pressing space
+    if (event.key === " " && selectedToolId === "pan") {
+      // Stop active state on pan icon from being selected
+      event.preventDefault();
+    }
+    if (
+      event.key === " " &&
+      selectedToolId !== "pan" &&
+      !disabledControls.includes("pan")
+    ) {
+      event.preventDefault();
+      previousSelectedToolRef.current = selectedToolId;
+      onSelectedToolChange("pan");
     }
 
-    function handleKeyUp(event) {
-      // Ignore text input
-      if (event.target instanceof HTMLInputElement) {
-        return;
-      }
-      interactionEmitter.emit("keyUp", event);
+    // Basic keyboard shortcuts
+    if (event.key === "w" && !disabledControls.includes("pan")) {
+      onSelectedToolChange("pan");
     }
-
-    document.body.addEventListener("keydown", handleKeyDown);
-    document.body.addEventListener("keyup", handleKeyUp);
-    document.body.tabIndex = 1;
-    return () => {
-      document.body.removeEventListener("keydown", handleKeyDown);
-      document.body.removeEventListener("keyup", handleKeyUp);
-      document.body.tabIndex = 0;
-    };
-  }, [interactionEmitter]);
-
-  // Create default keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown(event) {
-      // Change to pan tool when pressing space
-      if (event.key === " " && selectedToolId === "pan") {
-        // Stop active state on pan icon from being selected
-        event.preventDefault();
-      }
-      if (
-        event.key === " " &&
-        selectedToolId !== "pan" &&
-        !disabledControls.includes("pan")
-      ) {
-        event.preventDefault();
-        previousSelectedToolRef.current = selectedToolId;
-        onSelectedToolChange("pan");
-      }
-
-      // Basic keyboard shortcuts
-      if (event.key === "w" && !disabledControls.includes("pan")) {
-        onSelectedToolChange("pan");
-      }
-      if (event.key === "d" && !disabledControls.includes("drawing")) {
-        onSelectedToolChange("drawing");
-      }
-      if (event.key === "f" && !disabledControls.includes("fog")) {
-        onSelectedToolChange("fog");
-      }
-      if (event.key === "m" && !disabledControls.includes("measure")) {
-        onSelectedToolChange("measure");
-      }
-      if (event.key === "q" && !disabledControls.includes("pointer")) {
-        onSelectedToolChange("pointer");
-      }
+    if (event.key === "d" && !disabledControls.includes("drawing")) {
+      onSelectedToolChange("drawing");
     }
-
-    function handleKeyUp(event) {
-      if (event.key === " " && selectedToolId === "pan") {
-        onSelectedToolChange(previousSelectedToolRef.current);
-      }
+    if (event.key === "f" && !disabledControls.includes("fog")) {
+      onSelectedToolChange("fog");
     }
+    if (event.key === "m" && !disabledControls.includes("measure")) {
+      onSelectedToolChange("measure");
+    }
+    if (event.key === "q" && !disabledControls.includes("pointer")) {
+      onSelectedToolChange("pointer");
+    }
+  }
 
-    interactionEmitter.on("keyDown", handleKeyDown);
-    interactionEmitter.on("keyUp", handleKeyUp);
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-      interactionEmitter.off("keyUp", handleKeyUp);
-    };
-  }, [
-    interactionEmitter,
-    onSelectedToolChange,
-    disabledControls,
-    selectedToolId,
-  ]);
+  function handleKeyUp(event) {
+    if (event.key === " " && selectedToolId === "pan") {
+      onSelectedToolChange(previousSelectedToolRef.current);
+    }
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+  // Get keyboard context to pass to Konva
+  const keyboardValue = useContext(KeyboardContext);
 
   function getCursorForTool(tool) {
     switch (tool) {
@@ -360,11 +323,13 @@ function MapInteraction({
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
               <SettingsContext.Provider value={settings}>
-                <MapInteractionProvider value={mapInteraction}>
-                  <MapStageProvider value={mapStageRef}>
-                    {mapLoaded && children}
-                  </MapStageProvider>
-                </MapInteractionProvider>
+                <KeyboardContext.Provider value={keyboardValue}>
+                  <MapInteractionProvider value={mapInteraction}>
+                    <MapStageProvider value={mapStageRef}>
+                      {mapLoaded && children}
+                    </MapStageProvider>
+                  </MapInteractionProvider>
+                </KeyboardContext.Provider>
               </SettingsContext.Provider>
             </AuthContext.Provider>
           </Layer>

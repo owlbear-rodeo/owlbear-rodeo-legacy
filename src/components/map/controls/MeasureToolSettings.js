@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React from "react";
 import { Flex, Input, Text } from "theme-ui";
 
 import ToolSection from "./ToolSection";
@@ -8,28 +8,21 @@ import MeasureManhattanIcon from "../../../icons/MeasureManhattanIcon";
 
 import Divider from "../../Divider";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import useKeyboard from "../../../helpers/useKeyboard";
 
 function MeasureToolSettings({ settings, onSettingChange }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-
   // Keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown({ key }) {
-      if (key === "g") {
-        onSettingChange({ type: "chebyshev" });
-      } else if (key === "l") {
-        onSettingChange({ type: "euclidean" });
-      } else if (key === "c") {
-        onSettingChange({ type: "manhattan" });
-      }
+  function handleKeyDown({ key }) {
+    if (key === "g") {
+      onSettingChange({ type: "chebyshev" });
+    } else if (key === "l") {
+      onSettingChange({ type: "euclidean" });
+    } else if (key === "c") {
+      onSettingChange({ type: "manhattan" });
     }
-    interactionEmitter.on("keyDown", handleKeyDown);
+  }
 
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-    };
-  });
+  useKeyboard(handleKeyDown);
 
   const tools = [
     {

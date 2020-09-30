@@ -15,7 +15,8 @@ import { DatabaseProvider } from "./contexts/DatabaseContext";
 import { MapDataProvider } from "./contexts/MapDataContext";
 import { TokenDataProvider } from "./contexts/TokenDataContext";
 import { MapLoadingProvider } from "./contexts/MapLoadingContext";
-import { SettingsProvider } from "./contexts/SettingsContext.js";
+import { SettingsProvider } from "./contexts/SettingsContext";
+import { KeyboardProvider } from "./contexts/KeyboardContext";
 
 function App() {
   return (
@@ -23,34 +24,36 @@ function App() {
       <DatabaseProvider>
         <SettingsProvider>
           <AuthProvider>
-            <Router>
-              <Switch>
-                <Route path="/howTo">
-                  <HowTo />
-                </Route>
-                <Route path="/releaseNotes">
-                  <ReleaseNotes />
-                </Route>
-                <Route path="/about">
-                  <About />
-                </Route>
-                <Route path="/faq">
-                  <FAQ />
-                </Route>
-                <Route path="/game/:id">
-                  <MapLoadingProvider>
-                    <MapDataProvider>
-                      <TokenDataProvider>
-                        <Game />
-                      </TokenDataProvider>
-                    </MapDataProvider>
-                  </MapLoadingProvider>
-                </Route>
-                <Route path="/">
-                  <Home />
-                </Route>
-              </Switch>
-            </Router>
+            <KeyboardProvider>
+              <Router>
+                <Switch>
+                  <Route path="/howTo">
+                    <HowTo />
+                  </Route>
+                  <Route path="/releaseNotes">
+                    <ReleaseNotes />
+                  </Route>
+                  <Route path="/about">
+                    <About />
+                  </Route>
+                  <Route path="/faq">
+                    <FAQ />
+                  </Route>
+                  <Route path="/game/:id">
+                    <MapLoadingProvider>
+                      <MapDataProvider>
+                        <TokenDataProvider>
+                          <Game />
+                        </TokenDataProvider>
+                      </MapDataProvider>
+                    </MapLoadingProvider>
+                  </Route>
+                  <Route path="/">
+                    <Home />
+                  </Route>
+                </Switch>
+              </Router>
+            </KeyboardProvider>
           </AuthProvider>
         </SettingsProvider>
       </DatabaseProvider>

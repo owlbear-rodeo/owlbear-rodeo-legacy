@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 import { useMedia } from "react-media";
 
@@ -21,7 +21,7 @@ import RedoButton from "./RedoButton";
 
 import Divider from "../../Divider";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import useKeyboard from "../../../helpers/useKeyboard";
 
 function DrawingToolSettings({
   settings,
@@ -29,49 +29,41 @@ function DrawingToolSettings({
   onToolAction,
   disabledActions,
 }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-
   // Keyboard shotcuts
-  useEffect(() => {
-    function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-      if (key === "b") {
-        onSettingChange({ type: "brush" });
-      } else if (key === "p") {
-        onSettingChange({ type: "paint" });
-      } else if (key === "l") {
-        onSettingChange({ type: "line" });
-      } else if (key === "r") {
-        onSettingChange({ type: "rectangle" });
-      } else if (key === "c") {
-        onSettingChange({ type: "circle" });
-      } else if (key === "t") {
-        onSettingChange({ type: "triangle" });
-      } else if (key === "e") {
-        onSettingChange({ type: "erase" });
-      } else if (key === "o") {
-        onSettingChange({ useBlending: !settings.useBlending });
-      } else if (
-        (key === "z" || key === "Z") &&
-        (ctrlKey || metaKey) &&
-        shiftKey &&
-        !disabledActions.includes("redo")
-      ) {
-        onToolAction("mapRedo");
-      } else if (
-        key === "z" &&
-        (ctrlKey || metaKey) &&
-        !shiftKey &&
-        !disabledActions.includes("undo")
-      ) {
-        onToolAction("mapUndo");
-      }
+  function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
+    if (key === "b") {
+      onSettingChange({ type: "brush" });
+    } else if (key === "p") {
+      onSettingChange({ type: "paint" });
+    } else if (key === "l") {
+      onSettingChange({ type: "line" });
+    } else if (key === "r") {
+      onSettingChange({ type: "rectangle" });
+    } else if (key === "c") {
+      onSettingChange({ type: "circle" });
+    } else if (key === "t") {
+      onSettingChange({ type: "triangle" });
+    } else if (key === "e") {
+      onSettingChange({ type: "erase" });
+    } else if (key === "o") {
+      onSettingChange({ useBlending: !settings.useBlending });
+    } else if (
+      (key === "z" || key === "Z") &&
+      (ctrlKey || metaKey) &&
+      shiftKey &&
+      !disabledActions.includes("redo")
+    ) {
+      onToolAction("mapRedo");
+    } else if (
+      key === "z" &&
+      (ctrlKey || metaKey) &&
+      !shiftKey &&
+      !disabledActions.includes("undo")
+    ) {
+      onToolAction("mapUndo");
     }
-
-    interactionEmitter.on("keyDown", handleKeyDown);
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-    };
-  });
+  }
+  useKeyboard(handleKeyDown);
 
   // Change to brush if on erase and it gets disabled
   useEffect(() => {
