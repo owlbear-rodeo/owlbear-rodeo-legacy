@@ -10,6 +10,7 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
+import useKeyboard from "../helpers/useKeyboard";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -216,8 +217,8 @@ function SelectMapModal({
             let idsToRemove = [];
             const direction = mapIndex > lastIndex ? 1 : -1;
             for (
-              let i = mapIndex;
-              direction > 0 ? i >= lastIndex : i <= lastIndex;
+              let i = lastIndex + direction;
+              direction < 0 ? i >= mapIndex : i <= mapIndex;
               i += direction
             ) {
               const mapId = ownedMaps[i].id;
@@ -229,7 +230,7 @@ function SelectMapModal({
             }
             setSelectedMapIds((prev) => {
               let ids = [...prev, ...idsToAdd];
-              return ids.filter((id) => idsToRemove.includes(id));
+              return ids.filter((id) => !idsToRemove.includes(id));
             });
           } else {
             setSelectedMapIds([map.id]);
@@ -271,6 +272,26 @@ function SelectMapModal({
     }
     onDone();
   }
+
+  function handleKeyDown({ key }) {
+    if (key === "Shift") {
+      setSelectMode("range");
+    }
+    if (key === "Control" || key === "Meta") {
+      setSelectMode("multiple");
+    }
+  }
+
+  function handleKeyUp({ key }) {
+    if (key === "Shift" && selectMode === "range") {
+      setSelectMode("single");
+    }
+    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+      setSelectMode("single");
+    }
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
 
   return (
     <Modal

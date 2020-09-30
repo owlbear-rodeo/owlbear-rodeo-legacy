@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Flex, Image as UIImage, IconButton, Box, Text } from "theme-ui";
 
 import EditMapIcon from "../../icons/EditMapIcon";
@@ -15,7 +15,6 @@ function MapTile({
   large,
   canEdit,
 }) {
-  const [isMapTileMenuOpen, setIsTileMenuOpen] = useState(false);
   const isDefault = map.type === "default";
   const mapSource = useDataSource(
     isDefault
@@ -40,17 +39,17 @@ function MapTile({
         alignItems: "center",
         cursor: "pointer",
         overflow: "hidden",
+        userSelect: "none",
       }}
       my={1}
       mx={`${large ? 1 : 2 / 3}%`}
       bg="muted"
       onClick={(e) => {
         e.stopPropagation();
-        setIsTileMenuOpen(false);
         onMapSelect(map);
       }}
       onDoubleClick={(e) => {
-        if (!isMapTileMenuOpen) {
+        if (canEdit) {
           onDone(e);
         }
       }}

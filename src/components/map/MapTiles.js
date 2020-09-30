@@ -32,16 +32,22 @@ function MapTiles({
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
 
   let hasMapState = false;
-  if (selectedMapStates.length > 0) {
-    for (let state of selectedMapStates) {
-      if (
-        Object.values(state.tokens).length > 0 ||
-        state.mapDrawActions.length > 0 ||
-        state.fogDrawActions.length > 0
-      ) {
-        hasMapState = true;
-        break;
-      }
+  for (let state of selectedMapStates) {
+    if (
+      Object.values(state.tokens).length > 0 ||
+      state.mapDrawActions.length > 0 ||
+      state.fogDrawActions.length > 0
+    ) {
+      hasMapState = true;
+      break;
+    }
+  }
+
+  let hasSelectedDefaultMap = false;
+  for (let map of selectedMaps) {
+    if (map.type === "default") {
+      hasSelectedDefaultMap = true;
+      break;
     }
   }
 
@@ -110,7 +116,11 @@ function MapTiles({
                 onMapEdit={onMapEdit}
                 onDone={onDone}
                 large={isSmallScreen}
-                canEdit={isSelected && selectMode === "single"}
+                canEdit={
+                  isSelected &&
+                  selectMode === "single" &&
+                  selectedMaps.length === 1
+                }
               />
             );
           })}
@@ -163,6 +173,7 @@ function MapTiles({
               aria-label="Remove Map"
               title="Remove Map"
               onClick={() => onMapsRemove()}
+              disabled={hasSelectedDefaultMap}
             >
               <RemoveMapIcon />
             </IconButton>
