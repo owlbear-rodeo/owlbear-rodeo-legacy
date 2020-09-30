@@ -48,7 +48,7 @@ function SelectMapModal({
     ownedMaps,
     mapStates,
     addMap,
-    removeMap,
+    removeMaps,
     resetMap,
     updateMap,
   } = useContext(MapDataContext);
@@ -199,9 +199,7 @@ function SelectMapModal({
   }
 
   async function handleMapsRemove() {
-    for (let id of selectedMapIds) {
-      await removeMap(id);
-    }
+    await removeMaps(selectedMapIds);
     setSelectedMapIds([]);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {

@@ -101,6 +101,21 @@ export function MapDataProvider({ children }) {
     });
   }
 
+  async function removeMaps(ids) {
+    await database.table("maps").bulkDelete(ids);
+    await database.table("states").bulkDelete(ids);
+    setMaps((prevMaps) => {
+      const filtered = prevMaps.filter((map) => !ids.includes(map.id));
+      return filtered;
+    });
+    setMapStates((prevMapsStates) => {
+      const filtered = prevMapsStates.filter(
+        (state) => !ids.includes(state.mapId)
+      );
+      return filtered;
+    });
+  }
+
   async function resetMap(id) {
     const state = { ...defaultMapState, mapId: id };
     await database.table("states").put(state);
@@ -199,6 +214,7 @@ export function MapDataProvider({ children }) {
     mapStates,
     addMap,
     removeMap,
+    removeMaps,
     resetMap,
     updateMap,
     updateMapState,
