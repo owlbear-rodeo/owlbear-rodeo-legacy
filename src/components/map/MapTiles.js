@@ -9,6 +9,8 @@ import ResetMapIcon from "../../icons/ResetMapIcon";
 import SelectMultipleIcon from "../../icons/SelectMultipleIcon";
 import SelectSingleIcon from "../../icons/SelectSingleIcon";
 
+import RadioIconButton from "./controls/RadioIconButton";
+
 import MapTile from "./MapTile";
 import Link from "../Link";
 import Search from "../Search";
@@ -69,22 +71,31 @@ function MapTiles({
         onFocus={() => onMapSelect()}
       >
         <Search />
-        <IconButton
-          onClick={() =>
-            onSelectModeChange(selectMode === "single" ? "multiple" : "single")
-          }
-          aria-label={
-            selectMode === "single" ? "Select Multiple" : "Select Single"
-          }
-          title={selectMode === "single" ? "Select Multiple" : "Select Single"}
-          ml={1}
+        <Flex
+          mr={1}
+          px={1}
+          sx={{
+            borderRight: "1px solid",
+            borderColor: "text",
+            height: "36px",
+            alignItems: "center",
+          }}
         >
-          {selectMode === "single" ? (
-            <SelectMultipleIcon />
-          ) : (
+          <RadioIconButton
+            title="Select Single"
+            onClick={() => onSelectModeChange("single")}
+            isSelected={selectMode === "single"}
+          >
             <SelectSingleIcon />
-          )}
-        </IconButton>
+          </RadioIconButton>
+          <RadioIconButton
+            title="Select Multiple"
+            onClick={() => onSelectModeChange("multiple")}
+            isSelected={selectMode === "multiple" || selectMode === "range"}
+          >
+            <SelectMultipleIcon />
+          </RadioIconButton>
+        </Flex>
         <IconButton
           onClick={onMapAdd}
           aria-label="Add Map"
