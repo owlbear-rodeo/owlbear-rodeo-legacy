@@ -54,3 +54,18 @@ export function logImage(url, width, height) {
 export function isEmpty(obj) {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
+
+export function keyBy(array, key) {
+  return array.reduce(
+    (prev, current) => ({ ...prev, [key ? current[key] : current]: current }),
+    {}
+  );
+}
+
+export function groupBy(array, key) {
+  return array.reduce((prev, current) => {
+    const k = current[key];
+    (prev[k] || (prev[k] = [])).push(current);
+    return prev;
+  }, {});
+}
