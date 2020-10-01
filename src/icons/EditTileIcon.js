@@ -1,6 +1,6 @@
 import React from "react";
 
-function EditMapIcon() {
+function EditTileIcon() {
   return (
     <svg
       width="24"
@@ -15,4 +15,4 @@ function EditMapIcon() {
   );
 }
 
-export default EditMapIcon;
+export default EditTileIcon;
