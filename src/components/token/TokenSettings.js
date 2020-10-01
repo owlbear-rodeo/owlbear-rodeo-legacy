@@ -62,6 +62,7 @@ function TokenSettings({
                 onChange={(option) =>
                   onSettingsChange("category", option.value)
                 }
+                isSearchable={false}
               />
             </Box>
             <Flex sx={{ flexGrow: 1, alignItems: "center" }} ml={2}>

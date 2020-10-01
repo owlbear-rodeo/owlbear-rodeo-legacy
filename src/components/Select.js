@@ -1,17 +1,19 @@
 import React from "react";
 import ReactSelect from "react-select";
+import Creatable from "react-select/creatable";
 import { useThemeUI } from "theme-ui";
 
-function Select(props) {
+function Select({ creatable, ...props }) {
   const { theme } = useThemeUI();
 
   function getColor(state) {
     return state.isDisabled ? theme.colors.gray : theme.colors.text;
   }
 
+  const Component = creatable ? Creatable : ReactSelect;
+
   return (
-    <ReactSelect
-      isSearchable={false}
+    <Component
       styles={{
         menu: (provided, state) => ({
           ...provided,
@@ -38,6 +40,10 @@ function Select(props) {
           ":hover": {
             color: state.isDisabled ? theme.colors.gray : theme.colors.primary,
           },
+        }),
+        input: (provided, state) => ({
+          ...provided,
+          color: getColor(state),
         }),
       }}
       theme={(t) => ({

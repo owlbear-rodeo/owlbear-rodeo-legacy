@@ -108,6 +108,7 @@ function MapSettings({
                   { value: "hex", label: "Hex (Coming Soon)" },
                 ]}
                 isOptionDisabled={(option) => option.value === "hex"}
+                isSearchable={false}
               />
             </Box>
             <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
@@ -152,6 +153,7 @@ function MapSettings({
                     (option.value !== "original" &&
                       !map.resolutions[option.value])
                   }
+                  isSearchable={false}
                 />
               </Box>
               <Label sx={{ width: "50%" }} ml={2}>
