@@ -48,6 +48,7 @@ export function MapDataProvider({ children }) {
           gridType: "grid",
           showGrid: false,
           snapToGrid: true,
+          group: "default",
         });
         // Add a state for the map if there isn't one already
         const state = await database.table("states").get(id);

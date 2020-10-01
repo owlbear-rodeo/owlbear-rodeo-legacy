@@ -1,13 +1,15 @@
 import React, { useContext } from "react";
-import { Flex, Box, Text, IconButton, Close } from "theme-ui";
+import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import { useMedia } from "react-media";
+import Case from "case";
 
 import AddIcon from "../../icons/AddIcon";
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import SelectMultipleIcon from "../../icons/SelectMultipleIcon";
 import SelectSingleIcon from "../../icons/SelectSingleIcon";
+import GroupIcon from "../../icons/GroupIcon";
 
 import RadioIconButton from "./controls/RadioIconButton";
 
@@ -19,6 +21,7 @@ import DatabaseContext from "../../contexts/DatabaseContext";
 
 function MapTiles({
   maps,
+  groups,
   selectedMaps,
   selectedMapStates,
   onMapSelect,
@@ -31,6 +34,7 @@ function MapTiles({
   onSelectModeChange,
   search,
   onSearchChange,
+  onMapsGroup,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
@@ -54,6 +58,26 @@ function MapTiles({
       break;
     }
   }
+
+  function mapToTile(map) {
+    const isSelected = selectedMaps.includes(map);
+    return (
+      <MapTile
+        key={map.id}
+        map={map}
+        isSelected={isSelected}
+        onMapSelect={onMapSelect}
+        onMapEdit={onMapEdit}
+        onDone={onDone}
+        large={isSmallScreen}
+        canEdit={
+          isSelected && selectMode === "single" && selectedMaps.length === 1
+        }
+      />
+    );
+  }
+
+  const multipleSelected = selectedMaps.length > 1;
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -116,28 +140,19 @@ function MapTiles({
             flexWrap: "wrap",
             borderRadius: "4px",
             minHeight: "400px",
+            alignContent: "flex-start",
           }}
           onClick={() => onMapSelect()}
         >
-          {maps.map((map) => {
-            const isSelected = selectedMaps.includes(map);
-            return (
-              <MapTile
-                key={map.id}
-                map={map}
-                isSelected={isSelected}
-                onMapSelect={onMapSelect}
-                onMapEdit={onMapEdit}
-                onDone={onDone}
-                large={isSmallScreen}
-                canEdit={
-                  isSelected &&
-                  selectMode === "single" &&
-                  selectedMaps.length === 1
-                }
-              />
-            );
-          })}
+          {/* Render ungrouped maps, grouped maps then default maps */}
+          {groups.map((group) => (
+            <React.Fragment key={group}>
+              <Label mx={1} mt={2}>
+                {Case.capital(group)}
+              </Label>
+              {maps[group].map(mapToTile)}
+            </React.Fragment>
+          ))}
         </Flex>
       </SimpleBar>
       {databaseStatus === "disabled" && (
@@ -176,16 +191,24 @@ function MapTiles({
           />
           <Flex>
             <IconButton
-              aria-label="Reset Map"
-              title="Reset Map"
+              aria-label={multipleSelected ? "Group Maps" : "Group Map"}
+              title={multipleSelected ? "Group Maps" : "Group Map"}
+              onClick={() => onMapsGroup()}
+              disabled={hasSelectedDefaultMap}
+            >
+              <GroupIcon />
+            </IconButton>
+            <IconButton
+              aria-label={multipleSelected ? "Reset Maps" : "Reset Map"}
+              title={multipleSelected ? "Reset Maps" : "Reset Map"}
               onClick={() => onMapsReset()}
               disabled={!hasMapState}
             >
               <ResetMapIcon />
             </IconButton>
             <IconButton
-              aria-label="Remove Map"
-              title="Remove Map"
+              aria-label={multipleSelected ? "Remove Maps" : "Remove Map"}
+              title={multipleSelected ? "Remove Maps" : "Remove Map"}
               onClick={() => onMapsRemove()}
               disabled={hasSelectedDefaultMap}
             >

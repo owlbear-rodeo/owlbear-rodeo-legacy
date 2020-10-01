@@ -187,7 +187,7 @@ function loadVersions(db) {
   // v1.5.2 - Added automatic cache invalidation to maps
   db.version(11)
     .stores({})
-    .upgrade(async (tx) => {
+    .upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -198,12 +198,23 @@ function loadVersions(db) {
   // v1.5.2 - Added automatic cache invalidation to tokens
   db.version(12)
     .stores({})
-    .upgrade(async (tx) => {
+    .upgrade((tx) => {
       return tx
         .table("tokens")
         .toCollection()
         .modify((token) => {
           token.lastUsed = token.lastModified;
+        });
+    });
+  // v1.6.0 - Added map grouping
+  db.version(13)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.group = "";
         });
     });
 }

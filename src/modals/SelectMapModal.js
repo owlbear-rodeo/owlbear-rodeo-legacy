@@ -4,6 +4,7 @@ import shortid from "shortid";
 import Fuse from "fuse.js";
 
 import EditMapModal from "./EditMapModal";
+import EditGroupModal from "./EditGroupModal";
 
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
@@ -17,6 +18,7 @@ import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
 import { resizeImage } from "../helpers/image";
+import { groupBy } from "../helpers/shared";
 
 const defaultMapSize = 22;
 const defaultMapProps = {
@@ -26,6 +28,7 @@ const defaultMapProps = {
   showGrid: false,
   snapToGrid: true,
   quality: "original",
+  group: "",
 };
 
 const mapResolutions = [
@@ -53,19 +56,29 @@ function SelectMapModal({
     updateMap,
   } = useContext(MapDataContext);
 
+  /**
+   * Search
+   */
   const [filteredMaps, setFilteredMaps] = useState([]);
+  const [filteredMapScores, setFilteredMapScores] = useState({});
   const [fuse, setFuse] = useState();
   const [search, setSearch] = useState("");
 
   // Update search index when maps change
   useEffect(() => {
-    setFuse(new Fuse(ownedMaps, { keys: ["name"] }));
+    setFuse(
+      new Fuse(ownedMaps, { keys: ["name", "group"], includeScore: true })
+    );
   }, [ownedMaps]);
 
   // Perform search when search changes
   useEffect(() => {
     if (search) {
-      setFilteredMaps(fuse.search(search).map((result) => result.item));
+      const query = fuse.search(search);
+      setFilteredMaps(query.map((result) => result.item));
+      setFilteredMapScores(
+        query.reduce((acc, value) => ({ ...acc, [value.item.id]: value.score }))
+      );
     }
   }, [search, ownedMaps, fuse]);
 
@@ -73,21 +86,50 @@ function SelectMapModal({
     setSearch(event.target.value);
   }
 
-  const [imageLoading, setImageLoading] = useState(false);
+  /**
+   * Group
+   */
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
-  // The map selected in the modal
-  const [selectedMapIds, setSelectedMapIds] = useState([]);
+  async function handleMapsGroup(group) {
+    setIsGroupModalOpen(false);
+    for (let id of selectedMapIds) {
+      await updateMap(id, { group });
+    }
+  }
 
-  const selectedMaps = ownedMaps.filter((map) =>
-    selectedMapIds.includes(map.id)
-  );
-  const selectedMapStates = mapStates.filter((state) =>
-    selectedMapIds.includes(state.mapId)
-  );
+  const mapsByGroup = groupBy(search ? filteredMaps : ownedMaps, "group");
+  // Get the groups of the maps sorting by the average score if we're filtering or the alphabetical order
+  // with "" at the start and "default" at the end if not
+  let mapGroups = Object.keys(mapsByGroup);
+  if (search) {
+    mapGroups.sort((a, b) => {
+      const aScore = mapsByGroup[a].reduce(
+        (acc, map) => (acc + filteredMapScores[map.id]) / 2
+      );
+      const bScore = mapsByGroup[b].reduce(
+        (acc, map) => (acc + filteredMapScores[map.id]) / 2
+      );
+      return aScore - bScore;
+    });
+  } else {
+    mapGroups.sort((a, b) => {
+      if (a === "" || b === "default") {
+        return -1;
+      }
+      if (b === "" || a === "default") {
+        return 1;
+      }
+      return a.localeCompare(b);
+    });
+  }
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  /**
+   * Image Upload
+   */
 
   const fileInputRef = useRef();
+  const [imageLoading, setImageLoading] = useState(false);
 
   async function handleImagesUpload(files) {
     for (let file of files) {
@@ -193,6 +235,20 @@ function SelectMapModal({
     }
   }
 
+  /**
+   * Map Controls
+   */
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // The map selected in the modal
+  const [selectedMapIds, setSelectedMapIds] = useState([]);
+
+  const selectedMaps = ownedMaps.filter((map) =>
+    selectedMapIds.includes(map.id)
+  );
+  const selectedMapStates = mapStates.filter((state) =>
+    selectedMapIds.includes(state.mapId)
+  );
+
   async function handleMapAdd(map) {
     await addMap(map);
     setSelectedMapIds([map.id]);
@@ -204,6 +260,16 @@ function SelectMapModal({
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
+    }
+  }
+
+  async function handleMapsReset() {
+    for (let id of selectedMapIds) {
+      const newState = await resetMap(id);
+      // Reset the state of the current map if needed
+      if (currentMap && currentMap.id === id) {
+        onMapStateChange(newState);
+      }
     }
   }
 
@@ -226,8 +292,12 @@ function SelectMapModal({
           });
           break;
         case "range":
-          // Use filtered maps if we have searched
-          const maps = search ? filteredMaps : ownedMaps;
+          // Create maps array
+          let maps = mapGroups.reduce(
+            (acc, group) => [...acc, ...mapsByGroup[group]],
+            []
+          );
+
           // Add all items inbetween the previous selected map and the current selected
           if (selectedMapIds.length > 0) {
             const mapIndex = maps.findIndex((m) => m.id === map.id);
@@ -265,15 +335,9 @@ function SelectMapModal({
     }
   }
 
-  async function handleMapsReset() {
-    for (let id of selectedMapIds) {
-      const newState = await resetMap(id);
-      // Reset the state of the current map if needed
-      if (currentMap && currentMap.id === id) {
-        onMapStateChange(newState);
-      }
-    }
-  }
+  /**
+   * Modal Controls
+   */
 
   async function handleClose() {
     onDone();
@@ -294,6 +358,9 @@ function SelectMapModal({
     onDone();
   }
 
+  /**
+   * Shortcuts
+   */
   function handleKeyDown({ key }) {
     if (key === "Shift") {
       setSelectMode("range");
@@ -338,7 +405,8 @@ function SelectMapModal({
             Select or import a map
           </Label>
           <MapTiles
-            maps={search ? filteredMaps : ownedMaps}
+            maps={mapsByGroup}
+            groups={mapGroups}
             onMapAdd={openImageDialog}
             onMapEdit={() => setIsEditModalOpen(true)}
             onMapsReset={handleMapsReset}
@@ -351,6 +419,7 @@ function SelectMapModal({
             onSelectModeChange={setSelectMode}
             search={search}
             onSearchChange={handleSearchChange}
+            onMapsGroup={() => setIsGroupModalOpen(true)}
           />
           <Button
             variant="primary"
@@ -368,6 +437,21 @@ function SelectMapModal({
         onDone={() => setIsEditModalOpen(false)}
         map={selectedMaps.length === 1 && selectedMaps[0]}
         mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
+      />
+      <EditGroupModal
+        isOpen={isGroupModalOpen}
+        onChange={handleMapsGroup}
+        groups={mapGroups.filter(
+          (group) => group !== "" && group !== "default"
+        )}
+        onRequestClose={() => setIsGroupModalOpen(false)}
+        // Select the default group by testing whether all selected maps are the same
+        defaultGroup={
+          selectedMaps.length > 0 &&
+          selectedMaps
+            .map((map) => map.group)
+            .reduce((prev, curr) => (prev === curr ? curr : undefined))
+        }
       />
     </Modal>
   );
