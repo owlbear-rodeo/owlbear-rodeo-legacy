@@ -119,4 +119,17 @@ function Tile({
   );
 }
 
+Tile.defaultProps = {
+  src: "",
+  title: "",
+  isSelected: false,
+  onSelect: () => {},
+  onEdit: () => {},
+  onDoubleClick: () => {},
+  large: false,
+  canEdit: false,
+  badges: [],
+  editTitle: "Edit",
+};
+
 export default Tile;

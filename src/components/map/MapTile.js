@@ -37,6 +37,7 @@ function MapTile({
       large={large}
       canEdit={canEdit}
       badges={badges}
+      editTitle="Edit Map"
     />
   );
 }
