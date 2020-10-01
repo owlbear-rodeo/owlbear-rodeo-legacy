@@ -362,6 +362,9 @@ function SelectMapModal({
    * Shortcuts
    */
   function handleKeyDown({ key }) {
+    if (!isOpen) {
+      return;
+    }
     if (key === "Shift") {
       setSelectMode("range");
     }
@@ -371,6 +374,9 @@ function SelectMapModal({
   }
 
   function handleKeyUp({ key }) {
+    if (!isOpen) {
+      return;
+    }
     if (key === "Shift" && selectMode === "range") {
       setSelectMode("single");
     }
