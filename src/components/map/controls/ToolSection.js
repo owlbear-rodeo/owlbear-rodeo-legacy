@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Flex } from "theme-ui";
 
-import RadioIconButton from "./RadioIconButton";
+import RadioIconButton from "../../RadioIconButton";
 
 // Section of map tools with the option to collapse into a vertical list
 function ToolSection({ collapse, tools, onToolClick }) {

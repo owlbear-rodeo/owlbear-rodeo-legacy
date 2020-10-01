@@ -2,8 +2,9 @@ import React from "react";
 import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
+import RadioIconButton from "../../RadioIconButton";
+
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
-import RadioIconButton from "./RadioIconButton";
 import FogPreviewToggle from "./FogPreviewToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";

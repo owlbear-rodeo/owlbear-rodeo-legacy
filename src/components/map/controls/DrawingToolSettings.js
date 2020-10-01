@@ -2,9 +2,10 @@ import React, { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 import { useMedia } from "react-media";
 
+import RadioIconButton from "../../RadioIconButton";
+
 import ColorControl from "./ColorControl";
 import AlphaBlendToggle from "./AlphaBlendToggle";
-import RadioIconButton from "./RadioIconButton";
 import ToolSection from "./ToolSection";
 
 import BrushIcon from "../../../icons/BrushToolIcon";

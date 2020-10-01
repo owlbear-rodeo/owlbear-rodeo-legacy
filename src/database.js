@@ -217,6 +217,17 @@ function loadVersions(db) {
           map.group = "";
         });
     });
+  // v1.6.0 - Added token grouping
+  db.version(14)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.group = "";
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

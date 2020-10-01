@@ -143,6 +143,22 @@ export function MapDataProvider({ children }) {
     });
   }
 
+  async function updateMaps(ids, update) {
+    await Promise.all(
+      ids.map((id) => database.table("maps").update(id, update))
+    );
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      for (let id of ids) {
+        const i = newMaps.findIndex((map) => map.id === id);
+        if (i > -1) {
+          newMaps[i] = { ...newMaps[i], ...update };
+        }
+      }
+      return newMaps;
+    });
+  }
+
   async function updateMapState(id, update) {
     await database.table("states").update(id, update);
     setMapStates((prevMapStates) => {
@@ -218,6 +234,7 @@ export function MapDataProvider({ children }) {
     removeMaps,
     resetMap,
     updateMap,
+    updateMaps,
     updateMapState,
     putMap,
     getMap,

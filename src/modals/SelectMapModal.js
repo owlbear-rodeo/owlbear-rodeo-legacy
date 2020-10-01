@@ -1,7 +1,6 @@
-import React, { useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useState, useContext } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
-import Fuse from "fuse.js";
 
 import EditMapModal from "./EditMapModal";
 import EditGroupModal from "./EditGroupModal";
@@ -13,12 +12,11 @@ import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
+import { resizeImage } from "../helpers/image";
+import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
-
-import { resizeImage } from "../helpers/image";
-import { groupBy } from "../helpers/shared";
 
 const defaultMapSize = 22;
 const defaultMapProps = {
@@ -54,33 +52,14 @@ function SelectMapModal({
     removeMaps,
     resetMap,
     updateMap,
+    updateMaps,
   } = useContext(MapDataContext);
 
   /**
    * Search
    */
-  const [filteredMaps, setFilteredMaps] = useState([]);
-  const [filteredMapScores, setFilteredMapScores] = useState({});
-  const [fuse, setFuse] = useState();
   const [search, setSearch] = useState("");
-
-  // Update search index when maps change
-  useEffect(() => {
-    setFuse(
-      new Fuse(ownedMaps, { keys: ["name", "group"], includeScore: true })
-    );
-  }, [ownedMaps]);
-
-  // Perform search when search changes
-  useEffect(() => {
-    if (search) {
-      const query = fuse.search(search);
-      setFilteredMaps(query.map((result) => result.item));
-      setFilteredMapScores(
-        query.reduce((acc, value) => ({ ...acc, [value.item.id]: value.score }))
-      );
-    }
-  }, [search, ownedMaps, fuse]);
+  const [filteredMaps, filteredMapScores] = useSearch(ownedMaps, search);
 
   function handleSearchChange(event) {
     setSearch(event.target.value);
@@ -93,36 +72,15 @@ function SelectMapModal({
 
   async function handleMapsGroup(group) {
     setIsGroupModalOpen(false);
-    for (let id of selectedMapIds) {
-      await updateMap(id, { group });
-    }
+    updateMaps(selectedMapIds, { group });
   }
 
-  const mapsByGroup = groupBy(search ? filteredMaps : ownedMaps, "group");
-  // Get the groups of the maps sorting by the average score if we're filtering or the alphabetical order
-  // with "" at the start and "default" at the end if not
-  let mapGroups = Object.keys(mapsByGroup);
-  if (search) {
-    mapGroups.sort((a, b) => {
-      const aScore = mapsByGroup[a].reduce(
-        (acc, map) => (acc + filteredMapScores[map.id]) / 2
-      );
-      const bScore = mapsByGroup[b].reduce(
-        (acc, map) => (acc + filteredMapScores[map.id]) / 2
-      );
-      return aScore - bScore;
-    });
-  } else {
-    mapGroups.sort((a, b) => {
-      if (a === "" || b === "default") {
-        return -1;
-      }
-      if (b === "" || a === "default") {
-        return 1;
-      }
-      return a.localeCompare(b);
-    });
-  }
+  const [mapsByGroup, mapGroups] = useGroup(
+    ownedMaps,
+    filteredMaps,
+    !!search,
+    filteredMapScores
+  );
 
   /**
    * Image Upload
@@ -276,63 +234,15 @@ function SelectMapModal({
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
-  async function handleMapSelect(map) {
-    if (map) {
-      switch (selectMode) {
-        case "single":
-          setSelectedMapIds([map.id]);
-          break;
-        case "multiple":
-          setSelectedMapIds((prev) => {
-            if (prev.includes(map.id)) {
-              return prev.filter((id) => id !== map.id);
-            } else {
-              return [...prev, map.id];
-            }
-          });
-          break;
-        case "range":
-          // Create maps array
-          let maps = mapGroups.reduce(
-            (acc, group) => [...acc, ...mapsByGroup[group]],
-            []
-          );
-
-          // Add all items inbetween the previous selected map and the current selected
-          if (selectedMapIds.length > 0) {
-            const mapIndex = maps.findIndex((m) => m.id === map.id);
-            const lastIndex = maps.findIndex(
-              (m) => m.id === selectedMapIds[selectedMapIds.length - 1]
-            );
-            let idsToAdd = [];
-            let idsToRemove = [];
-            const direction = mapIndex > lastIndex ? 1 : -1;
-            for (
-              let i = lastIndex + direction;
-              direction < 0 ? i >= mapIndex : i <= mapIndex;
-              i += direction
-            ) {
-              const mapId = maps[i].id;
-              if (selectedMapIds.includes(mapId)) {
-                idsToRemove.push(mapId);
-              } else {
-                idsToAdd.push(mapId);
-              }
-            }
-            setSelectedMapIds((prev) => {
-              let ids = [...prev, ...idsToAdd];
-              return ids.filter((id) => !idsToRemove.includes(id));
-            });
-          } else {
-            setSelectedMapIds([map.id]);
-          }
-          break;
-        default:
-          setSelectedMapIds([]);
-      }
-    } else {
-      setSelectedMapIds([]);
-    }
+  function handleMapSelect(map) {
+    handleItemSelect(
+      map,
+      selectMode,
+      selectedMapIds,
+      setSelectedMapIds,
+      mapsByGroup,
+      mapGroups
+    );
   }
 
   /**

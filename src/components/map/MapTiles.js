@@ -4,18 +4,13 @@ import SimpleBar from "simplebar-react";
 import { useMedia } from "react-media";
 import Case from "case";
 
-import AddIcon from "../../icons/AddIcon";
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
-import SelectMultipleIcon from "../../icons/SelectMultipleIcon";
-import SelectSingleIcon from "../../icons/SelectSingleIcon";
 import GroupIcon from "../../icons/GroupIcon";
-
-import RadioIconButton from "./controls/RadioIconButton";
 
 import MapTile from "./MapTile";
 import Link from "../Link";
-import Search from "../Search";
+import FilterBar from "../FilterBar";
 
 import DatabaseContext from "../../contexts/DatabaseContext";
 
@@ -82,56 +77,15 @@ function MapTiles({
 
   return (
     <Box sx={{ position: "relative" }}>
-      <Flex
-        bg="muted"
-        sx={{
-          border: "1px solid",
-          borderColor: "text",
-          borderRadius: "4px",
-          alignItems: "center",
-          ":focus-within": {
-            outline: "1px auto",
-            outlineColor: "primary",
-            outlineOffset: "0px",
-          },
-        }}
+      <FilterBar
         onFocus={() => onMapSelect()}
-      >
-        <Search value={search} onChange={onSearchChange} />
-        <Flex
-          mr={1}
-          px={1}
-          sx={{
-            borderRight: "1px solid",
-            borderColor: "text",
-            height: "36px",
-            alignItems: "center",
-          }}
-        >
-          <RadioIconButton
-            title="Select Single"
-            onClick={() => onSelectModeChange("single")}
-            isSelected={selectMode === "single"}
-          >
-            <SelectSingleIcon />
-          </RadioIconButton>
-          <RadioIconButton
-            title="Select Multiple"
-            onClick={() => onSelectModeChange("multiple")}
-            isSelected={selectMode === "multiple" || selectMode === "range"}
-          >
-            <SelectMultipleIcon />
-          </RadioIconButton>
-        </Flex>
-        <IconButton
-          onClick={onMapAdd}
-          aria-label="Add Map"
-          title="Add Map"
-          mr={1}
-        >
-          <AddIcon />
-        </IconButton>
-      </Flex>
+        search={search}
+        onSearchChange={onSearchChange}
+        selectMode={selectMode}
+        onSelectModeChange={onSelectModeChange}
+        onAdd={onMapAdd}
+        addTitle="Add Map"
+      />
       <SimpleBar style={{ height: "400px" }}>
         <Flex
           p={2}
@@ -145,7 +99,6 @@ function MapTiles({
           }}
           onClick={() => onMapSelect()}
         >
-          {/* Render ungrouped maps, grouped maps then default maps */}
           {groups.map((group) => (
             <React.Fragment key={group}>
               <Label mx={1} mt={2}>

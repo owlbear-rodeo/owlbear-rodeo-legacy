@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from "react";
 import { IconButton, Flex, Box } from "theme-ui";
 
-import RadioIconButton from "./controls/RadioIconButton";
+import RadioIconButton from "../RadioIconButton";
 import Divider from "../Divider";
 
 import SelectMapButton from "./SelectMapButton";

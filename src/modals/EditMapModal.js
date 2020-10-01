@@ -9,7 +9,7 @@ import MapDataContext from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
 
-function SelectMapModal({ isOpen, onDone, map, mapState }) {
+function EditMapModal({ isOpen, onDone, map, mapState }) {
   const { updateMap, updateMapState } = useContext(MapDataContext);
 
   function handleClose() {
@@ -102,4 +102,4 @@ function SelectMapModal({ isOpen, onDone, map, mapState }) {
   );
 }
 
-export default SelectMapModal;
+export default EditMapModal;
