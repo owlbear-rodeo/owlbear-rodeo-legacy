@@ -11,7 +11,15 @@ import { getStrokeWidth } from "../../helpers/drawing";
 import { getImageLightness } from "../../helpers/image";
 
 function MapGrid({ map, gridSize }) {
-  const mapSource = useDataSource(map, defaultMapSources);
+  let mapSourceMap = map;
+  // Use lowest resolution for grid lightness
+  if (map && map.type === "file" && map.resolutions) {
+    const resolutionArray = Object.keys(map.resolutions);
+    if (resolutionArray.length > 0) {
+      mapSourceMap = map.resolutions[resolutionArray[0]];
+    }
+  }
+  const mapSource = useDataSource(mapSourceMap, defaultMapSources);
   const [mapImage, mapLoadingStatus] = useImage(mapSource);
 
   const gridX = map && map.gridX;
