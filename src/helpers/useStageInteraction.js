@@ -12,6 +12,7 @@ function useStageInteraction(
   stageScale,
   onStageScaleChange,
   stageTranslateRef,
+  tool = "pan",
   preventInteraction = false,
   gesture = {}
 ) {
@@ -89,14 +90,16 @@ function useStageInteraction(
 
       const [dx, dy] = delta;
       const stageTranslate = stageTranslateRef.current;
-      const newTranslate = {
-        x: stageTranslate.x + dx / stageScale,
-        y: stageTranslate.y + dy / stageScale,
-      };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
+      if (tool === "pan") {
+        const newTranslate = {
+          x: stageTranslate.x + dx / stageScale,
+          y: stageTranslate.y + dy / stageScale,
+        };
+        layer.x(newTranslate.x);
+        layer.y(newTranslate.y);
+        layer.draw();
+        stageTranslateRef.current = newTranslate;
+      }
       gesture.onDrag && gesture.onDrag(props);
     },
   });

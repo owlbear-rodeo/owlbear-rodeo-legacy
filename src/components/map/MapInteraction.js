@@ -89,6 +89,7 @@ function MapInteraction({
     stageScale,
     setStageScale,
     stageTranslateRef,
+    selectedToolId,
     preventMapInteraction,
     {
       onPinchStart: () => {
