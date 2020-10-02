@@ -87,7 +87,10 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
         <Label pt={2} pb={1}>
           Edit map
         </Label>
-        <MapEditor map={selectedMapWithChanges} />
+        <MapEditor
+          map={selectedMapWithChanges}
+          onSettingsChange={handleMapSettingsChange}
+        />
         <MapSettings
           map={selectedMapWithChanges}
           mapState={selectedMapStateWithChanges}

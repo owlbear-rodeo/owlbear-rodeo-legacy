@@ -23,8 +23,7 @@ export const maps = Object.keys(mapSources).map((key) => ({
   name: Case.capital(key),
   grid: {
     size: { x: 22, y: 22 },
-    scale: { x: 1, y: 1 },
-    offset: { x: 0, y: 0 },
+    inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
     type: "square",
   },
   width: 1024,

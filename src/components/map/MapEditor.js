@@ -7,7 +7,12 @@ import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
 
-function MapEditor({ map }) {
+import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
+
+import MapGrid from "./MapGrid";
+import MapGridEditor from "./MapGridEditor";
+
+function MapEditor({ map, onSettingsChange }) {
   const [mapImageSource] = useMapImage(map);
 
   const [stageWidth, setStageWidth] = useState(1);
@@ -29,6 +34,7 @@ function MapEditor({ map }) {
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapLayerRef = useRef();
+  const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
   function handleResize(width, height) {
     setStageWidth(width);
@@ -66,11 +72,29 @@ function MapEditor({ map }) {
     mapLayerRef.current,
     stageScale,
     setStageScale,
-    stageTranslateRef
+    stageTranslateRef,
+    "pan",
+    preventMapInteraction
   );
 
   const containerRef = useRef();
   usePreventOverscroll(containerRef);
+
+  function handleGridChange(inset) {
+    onSettingsChange("grid", {
+      ...map.grid,
+      inset,
+    });
+  }
+
+  const mapInteraction = {
+    stageScale,
+    stageWidth,
+    stageHeight,
+    setPreventMapInteraction,
+    mapWidth,
+    mapHeight,
+  };
 
   return (
     <Box
@@ -96,6 +120,10 @@ function MapEditor({ map }) {
         >
           <Layer ref={mapLayerRef}>
             <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
+            <MapInteractionProvider value={mapInteraction}>
+              <MapGrid map={map} strokeWidth={0.5} />
+              <MapGridEditor map={map} onGridChange={handleGridChange} />
+            </MapInteractionProvider>
           </Layer>
         </Stage>
       </ReactResizeDetector>

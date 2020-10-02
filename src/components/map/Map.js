@@ -330,9 +330,7 @@ function Map({
     />
   );
 
-  const mapGrid = map && map.showGrid && (
-    <MapGrid map={map} gridSize={gridSizeNormalized} />
-  );
+  const mapGrid = map && map.showGrid && <MapGrid map={map} />;
 
   const mapMeasure = (
     <MapMeasure

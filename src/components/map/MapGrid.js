@@ -10,7 +10,7 @@ import { mapSources as defaultMapSources } from "../../maps";
 import { getStrokeWidth } from "../../helpers/drawing";
 import { getImageLightness } from "../../helpers/image";
 
-function MapGrid({ map, gridSize }) {
+function MapGrid({ map, strokeWidth }) {
   let mapSourceMap = map;
   // Use lowest resolution for grid lightness
   if (map && map.type === "file" && map.resolutions) {
@@ -24,6 +24,10 @@ function MapGrid({ map, gridSize }) {
 
   const gridX = map && map.grid.size.x;
   const gridY = map && map.grid.size.y;
+  const gridSizeNormalized = {
+    x: gridX ? 1 / gridX : 0,
+    y: gridY ? 1 / gridY : 0,
+  };
 
   const { mapWidth, mapHeight } = useContext(MapInteractionContext);
 
@@ -35,6 +39,7 @@ function MapGrid({ map, gridSize }) {
   // When the map changes find the average lightness of its pixels
   useEffect(() => {
     if (mapLoadingStatus === "loaded") {
+      console.log("getting lightness");
       setIsImageLight(getImageLightness(mapImage));
     }
   }, [mapImage, mapLoadingStatus]);
@@ -46,7 +51,12 @@ function MapGrid({ map, gridSize }) {
         key={`grid_x_${x}`}
         points={[x * lineSpacingX, 0, x * lineSpacingX, mapHeight]}
         stroke={isImageLight ? "black" : "white"}
-        strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
+        strokeWidth={getStrokeWidth(
+          strokeWidth,
+          gridSizeNormalized,
+          mapWidth,
+          mapHeight
+        )}
         opacity={0.5}
       />
     );
@@ -57,7 +67,12 @@ function MapGrid({ map, gridSize }) {
         key={`grid_y_${y}`}
         points={[0, y * lineSpacingY, mapWidth, y * lineSpacingY]}
         stroke={isImageLight ? "black" : "white"}
-        strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
+        strokeWidth={getStrokeWidth(
+          strokeWidth,
+          gridSizeNormalized,
+          mapWidth,
+          mapHeight
+        )}
         opacity={0.5}
       />
     );
@@ -65,5 +80,9 @@ function MapGrid({ map, gridSize }) {
 
   return <Group>{lines}</Group>;
 }
+
+MapGrid.defaultProps = {
+  strokeWidth: 0.1,
+};
 
 export default MapGrid;

@@ -217,8 +217,7 @@ function loadVersions(db) {
           map.group = "";
           map.grid = {
             size: { x: map.gridX, y: map.gridY },
-            scale: { x: 1, y: 1 },
-            offset: { x: 0, y: 0 },
+            inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
             type: "square",
           };
           delete map.gridX;

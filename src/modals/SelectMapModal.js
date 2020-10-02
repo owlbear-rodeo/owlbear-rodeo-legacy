@@ -167,8 +167,7 @@ function SelectMapModal({
           type: "file",
           grid: {
             size: { x: fileGridX, y: fileGridY },
-            scale: { x: 1, y: 1 },
-            offset: { x: 0, y: 0 },
+            inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
             type: "square",
           },
           width: image.width,
