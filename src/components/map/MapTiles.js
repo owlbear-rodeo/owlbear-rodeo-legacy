@@ -68,7 +68,7 @@ function MapTiles({
         canEdit={
           isSelected && selectMode === "single" && selectedMaps.length === 1
         }
-        badges={[`${map.gridX}x${map.gridY}`]}
+        badges={[`${map.grid.size.x}x${map.grid.size.y}`]}
       />
     );
   }

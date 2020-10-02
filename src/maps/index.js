@@ -21,8 +21,12 @@ export const mapSources = {
 export const maps = Object.keys(mapSources).map((key) => ({
   key,
   name: Case.capital(key),
-  gridX: 22,
-  gridY: 22,
+  grid: {
+    size: { x: 22, y: 22 },
+    scale: { x: 1, y: 1 },
+    offset: { x: 0, y: 0 },
+    type: "square",
+  },
   width: 1024,
   height: 1024,
   type: "default",

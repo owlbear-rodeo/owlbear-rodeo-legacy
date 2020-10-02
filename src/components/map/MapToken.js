@@ -86,7 +86,10 @@ function MapToken({
         x: tokenGroup.x() + tokenGroup.width() / 2,
         y: tokenGroup.y() + tokenGroup.height() / 2,
       };
-      const gridSize = { x: mapWidth / map.gridX, y: mapHeight / map.gridY };
+      const gridSize = {
+        x: mapWidth / map.grid.size.x,
+        y: mapHeight / map.grid.size.y,
+      };
       const gridSnap = Vector2.roundTo(position, gridSize);
       const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
       const minGrid = Vector2.min(gridSize);

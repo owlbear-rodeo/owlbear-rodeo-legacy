@@ -45,7 +45,6 @@ export function MapDataProvider({ children }) {
           // Emulate the time increasing to avoid sort errors
           created: Date.now() + i,
           lastModified: Date.now() + i,
-          gridType: "grid",
           showGrid: false,
           snapToGrid: true,
           group: "default",

@@ -40,8 +40,8 @@ function Map({
 }) {
   const { tokensById } = useContext(TokenDataContext);
 
-  const gridX = map && map.gridX;
-  const gridY = map && map.gridY;
+  const gridX = map && map.grid.size.x;
+  const gridY = map && map.grid.size.y;
   const gridSizeNormalized = {
     x: gridX ? 1 / gridX : 0,
     y: gridY ? 1 / gridY : 0,

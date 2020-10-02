@@ -35,6 +35,17 @@ function MapSettings({
     }
   }
 
+  function handleGridSizeChange(event, dimension) {
+    const value = parseInt(event.target.value);
+    onSettingsChange("grid", {
+      ...map.grid,
+      size: {
+        ...map.grid.size,
+        [dimension]: value,
+      },
+    });
+  }
+
   function getMapSize() {
     let size = 0;
     if (map.quality === "original") {
@@ -57,10 +68,8 @@ function MapSettings({
           <Input
             type="number"
             name="gridX"
-            value={`${(map && map.gridX) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("gridX", parseInt(e.target.value))
-            }
+            value={`${(map && map.grid.size.x) || 0}`}
+            onChange={(e) => handleGridSizeChange(e, "x")}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
@@ -71,10 +80,8 @@ function MapSettings({
           <Input
             type="number"
             name="gridY"
-            value={`${(map && map.gridY) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("gridY", parseInt(e.target.value))
-            }
+            value={`${(map && map.grid.size.y) || 0}`}
+            onChange={(e) => handleGridSizeChange(e, "y")}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}

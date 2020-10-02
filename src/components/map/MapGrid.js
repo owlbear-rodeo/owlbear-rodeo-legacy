@@ -22,8 +22,8 @@ function MapGrid({ map, gridSize }) {
   const mapSource = useDataSource(mapSourceMap, defaultMapSources);
   const [mapImage, mapLoadingStatus] = useImage(mapSource);
 
-  const gridX = map && map.gridX;
-  const gridY = map && map.gridY;
+  const gridX = map && map.grid.size.x;
+  const gridY = map && map.grid.size.y;
 
   const { mapWidth, mapHeight } = useContext(MapInteractionContext);
 

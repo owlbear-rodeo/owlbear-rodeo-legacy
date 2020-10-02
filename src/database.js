@@ -206,7 +206,7 @@ function loadVersions(db) {
           token.lastUsed = token.lastModified;
         });
     });
-  // v1.6.0 - Added map grouping
+  // v1.6.0 - Added map grouping and grid scale and offset
   db.version(13)
     .stores({})
     .upgrade((tx) => {
@@ -215,6 +215,15 @@ function loadVersions(db) {
         .toCollection()
         .modify((map) => {
           map.group = "";
+          map.grid = {
+            size: { x: map.gridX, y: map.gridY },
+            scale: { x: 1, y: 1 },
+            offset: { x: 0, y: 0 },
+            type: "square",
+          };
+          delete map.gridX;
+          delete map.gridY;
+          delete map.gridType;
         });
     });
   // v1.6.0 - Added token grouping

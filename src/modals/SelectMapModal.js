@@ -21,8 +21,6 @@ import AuthContext from "../contexts/AuthContext";
 const defaultMapSize = 22;
 const defaultMapProps = {
   // Grid type
-  // TODO: add support for hex horizontal and hex vertical
-  gridType: "grid",
   showGrid: false,
   snapToGrid: true,
   quality: "original",
@@ -167,8 +165,12 @@ function SelectMapModal({
           resolutions,
           name,
           type: "file",
-          gridX: fileGridX,
-          gridY: fileGridY,
+          grid: {
+            size: { x: fileGridX, y: fileGridY },
+            scale: { x: 1, y: 1 },
+            offset: { x: 0, y: 0 },
+            type: "square",
+          },
           width: image.width,
           height: image.height,
           id: shortid.generate(),
