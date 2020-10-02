@@ -5,7 +5,7 @@ import normalizeWheel from "normalize-wheel";
 const wheelZoomSpeed = -0.001;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
-const maxZoom = 5;
+const maxZoom = 10;
 
 function useStageInteraction(
   layer,
