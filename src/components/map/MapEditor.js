@@ -2,23 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { Box } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
-import useImage from "use-image";
-import { useGesture } from "react-use-gesture";
-import normalizeWheel from "normalize-wheel";
 
-import useDataSource from "../../helpers/useDataSource";
+import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-
-import { mapSources as defaultMapSources } from "../../maps";
-
-const wheelZoomSpeed = -0.001;
-const touchZoomSpeed = 0.005;
-const minZoom = 0.1;
-const maxZoom = 5;
+import useStageInteraction from "../../helpers/useStageInteraction";
 
 function MapEditor({ map }) {
-  const mapSource = useDataSource(map, defaultMapSources);
-  const [mapSourceImage] = useImage(mapSource);
+  const [mapImageSource] = useMapImage(map);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -38,9 +28,6 @@ function MapEditor({ map }) {
   }
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const isInteractingWithCanvas = useRef(false);
-  const pinchPreviousDistanceRef = useRef();
-  const pinchPreviousOriginRef = useRef();
   const mapLayerRef = useRef();
 
   function handleResize(width, height) {
@@ -48,10 +35,11 @@ function MapEditor({ map }) {
     setStageHeight(height);
   }
 
+  // Reset map translate and scale
   useEffect(() => {
     const layer = mapLayerRef.current;
     const containerRect = containerRef.current.getBoundingClientRect();
-    if (map && layer) {
+    if (layer) {
       let newTranslate;
       if (stageRatio > mapRatio) {
         newTranslate = {
@@ -72,80 +60,14 @@ function MapEditor({ map }) {
 
       setStageScale(1);
     }
-  }, [map, mapWidth, mapHeight, stageRatio, mapRatio]);
+  }, [map.id, mapWidth, mapHeight, stageRatio, mapRatio]);
 
-  const bind = useGesture({
-    onWheelStart: ({ event }) => {
-      isInteractingWithCanvas.current =
-        event.target === mapLayerRef.current.getCanvas()._canvas;
-    },
-    onWheel: ({ event }) => {
-      event.persist();
-      const { pixelY } = normalizeWheel(event);
-      if (!isInteractingWithCanvas.current) {
-        return;
-      }
-      const newScale = Math.min(
-        Math.max(stageScale + pixelY * wheelZoomSpeed, minZoom),
-        maxZoom
-      );
-      setStageScale(newScale);
-    },
-    onPinch: ({ da, origin, first }) => {
-      const [distance] = da;
-      const [originX, originY] = origin;
-      if (first) {
-        pinchPreviousDistanceRef.current = distance;
-        pinchPreviousOriginRef.current = { x: originX, y: originY };
-      }
-
-      // Apply scale
-      const distanceDelta = distance - pinchPreviousDistanceRef.current;
-      const originXDelta = originX - pinchPreviousOriginRef.current.x;
-      const originYDelta = originY - pinchPreviousOriginRef.current.y;
-      const newScale = Math.min(
-        Math.max(stageScale + distanceDelta * touchZoomSpeed, minZoom),
-        maxZoom
-      );
-      setStageScale(newScale);
-
-      // Apply translate
-      const stageTranslate = stageTranslateRef.current;
-      const layer = mapLayerRef.current;
-      const newTranslate = {
-        x: stageTranslate.x + originXDelta / newScale,
-        y: stageTranslate.y + originYDelta / newScale,
-      };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
-
-      pinchPreviousDistanceRef.current = distance;
-      pinchPreviousOriginRef.current = { x: originX, y: originY };
-    },
-    onDragStart: ({ event }) => {
-      isInteractingWithCanvas.current =
-        event.target === mapLayerRef.current.getCanvas()._canvas;
-    },
-    onDrag: ({ delta, pinching }) => {
-      if (pinching || !isInteractingWithCanvas.current) {
-        return;
-      }
-
-      const [dx, dy] = delta;
-      const stageTranslate = stageTranslateRef.current;
-      const layer = mapLayerRef.current;
-      const newTranslate = {
-        x: stageTranslate.x + dx / stageScale,
-        y: stageTranslate.y + dy / stageScale,
-      };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
-    },
-  });
+  const bind = useStageInteraction(
+    mapLayerRef.current,
+    stageScale,
+    setStageScale,
+    stageTranslateRef
+  );
 
   const containerRef = useRef();
   usePreventOverscroll(containerRef);
@@ -155,7 +77,7 @@ function MapEditor({ map }) {
       sx={{
         width: "100%",
         height: "300px",
-        cursor: "pointer",
+        cursor: "move",
         touchAction: "none",
         outline: "none",
       }}
@@ -173,7 +95,7 @@ function MapEditor({ map }) {
           offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
         >
           <Layer ref={mapLayerRef}>
-            <Image image={mapSourceImage} width={mapWidth} height={mapHeight} />
+            <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
           </Layer>
         </Stage>
       </ReactResizeDetector>
