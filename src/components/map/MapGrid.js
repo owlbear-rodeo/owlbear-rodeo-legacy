@@ -28,18 +28,25 @@ function MapGrid({ map, strokeWidth }) {
     x: gridX ? 1 / gridX : 0,
     y: gridY ? 1 / gridY : 0,
   };
+  const gridInset = map && map.grid.inset;
 
   const { mapWidth, mapHeight } = useContext(MapInteractionContext);
 
-  const lineSpacingX = mapWidth / gridX;
-  const lineSpacingY = mapHeight / gridY;
+  const insetWidth = (gridInset.bottomRight.x - gridInset.topLeft.x) * mapWidth;
+  const insetHeight =
+    (gridInset.bottomRight.y - gridInset.topLeft.y) * mapHeight;
+
+  const lineSpacingX = insetWidth / gridX;
+  const lineSpacingY = insetHeight / gridY;
+
+  const offsetX = gridInset.topLeft.x * mapWidth * -1;
+  const offsetY = gridInset.topLeft.y * mapHeight * -1;
 
   const [isImageLight, setIsImageLight] = useState(true);
 
   // When the map changes find the average lightness of its pixels
   useEffect(() => {
     if (mapLoadingStatus === "loaded") {
-      console.log("getting lightness");
       setIsImageLight(getImageLightness(mapImage));
     }
   }, [mapImage, mapLoadingStatus]);
@@ -49,7 +56,7 @@ function MapGrid({ map, strokeWidth }) {
     lines.push(
       <Line
         key={`grid_x_${x}`}
-        points={[x * lineSpacingX, 0, x * lineSpacingX, mapHeight]}
+        points={[x * lineSpacingX, 0, x * lineSpacingX, insetHeight]}
         stroke={isImageLight ? "black" : "white"}
         strokeWidth={getStrokeWidth(
           strokeWidth,
@@ -58,6 +65,8 @@ function MapGrid({ map, strokeWidth }) {
           mapHeight
         )}
         opacity={0.5}
+        offsetX={offsetX}
+        offsetY={offsetY}
       />
     );
   }
@@ -65,7 +74,7 @@ function MapGrid({ map, strokeWidth }) {
     lines.push(
       <Line
         key={`grid_y_${y}`}
-        points={[0, y * lineSpacingY, mapWidth, y * lineSpacingY]}
+        points={[0, y * lineSpacingY, insetWidth, y * lineSpacingY]}
         stroke={isImageLight ? "black" : "white"}
         strokeWidth={getStrokeWidth(
           strokeWidth,
@@ -74,6 +83,8 @@ function MapGrid({ map, strokeWidth }) {
           mapHeight
         )}
         opacity={0.5}
+        offsetX={offsetX}
+        offsetY={offsetY}
       />
     );
   }
