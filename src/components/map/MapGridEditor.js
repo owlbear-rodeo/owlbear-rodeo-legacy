@@ -62,7 +62,7 @@ function MapGridEditor({ map, onGridChange }) {
   const editRectProps = {
     fill: "transparent",
     stroke: "rgba(255, 255, 255, 0.75)",
-    strokeWidth: editCircleRadius / 5,
+    strokeWidth: editCircleRadius / 10,
   };
 
   function getHandleInset(handle) {
