@@ -12,6 +12,7 @@ function EditTokenModal({ isOpen, onDone, token }) {
   const { updateToken } = useContext(TokenDataContext);
 
   function handleClose() {
+    setTokenSettingChanges({});
     onDone();
   }
 

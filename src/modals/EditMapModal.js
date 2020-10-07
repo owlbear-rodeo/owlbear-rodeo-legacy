@@ -13,6 +13,8 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
   const { updateMap, updateMapState } = useContext(MapDataContext);
 
   function handleClose() {
+    setMapSettingChanges({});
+    setMapStateSettingChanges({});
     onDone();
   }
 
