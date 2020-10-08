@@ -6,6 +6,7 @@ import ReactResizeDetector from "react-resize-detector";
 import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
+import { getMapDefaultInset } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 
@@ -35,6 +36,13 @@ function MapEditor({ map, onSettingsChange }) {
     mapWidth = stageWidth;
     mapHeight = map ? stageWidth * (map.height / map.width) : stageHeight;
   }
+
+  const defaultInset = getMapDefaultInset(
+    map.width,
+    map.height,
+    map.grid.size.x,
+    map.grid.size.y
+  );
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapLayerRef = useRef();
@@ -94,7 +102,7 @@ function MapEditor({ map, onSettingsChange }) {
   function handleMapReset() {
     onSettingsChange("grid", {
       ...map.grid,
-      inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+      inset: defaultInset,
     });
   }
 
@@ -110,10 +118,10 @@ function MapEditor({ map, onSettingsChange }) {
   };
 
   const gridChanged =
-    map.grid.inset.topLeft.x !== 0 ||
-    map.grid.inset.topLeft.y !== 0 ||
-    map.grid.inset.bottomRight.x !== 1 ||
-    map.grid.inset.bottomRight.y !== 1;
+    map.grid.inset.topLeft.x !== defaultInset.topLeft.x ||
+    map.grid.inset.topLeft.y !== defaultInset.topLeft.y ||
+    map.grid.inset.bottomRight.x !== defaultInset.bottomRight.x ||
+    map.grid.inset.bottomRight.y !== defaultInset.bottomRight.y;
 
   return (
     <Box

@@ -35,13 +35,42 @@ function MapSettings({
     }
   }
 
-  function handleGridSizeChange(event, dimension) {
+  function handleGridSizeXChange(event) {
     const value = parseInt(event.target.value);
+    const gridY = map.grid.size.y;
+
+    let inset = map.grid.inset;
+
+    const gridScale =
+      ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
+    inset.bottomRight.y = (gridY * gridScale) / map.height;
+
     onSettingsChange("grid", {
       ...map.grid,
+      inset,
       size: {
         ...map.grid.size,
-        [dimension]: value,
+        x: value,
+      },
+    });
+  }
+
+  function handleGridSizeYChange(event) {
+    const value = parseInt(event.target.value);
+    const gridX = map.grid.size.x;
+
+    let inset = map.grid.inset;
+
+    const gridScale =
+      ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
+    inset.bottomRight.y = (value * gridScale) / map.height;
+
+    onSettingsChange("grid", {
+      ...map.grid,
+      inset,
+      size: {
+        ...map.grid.size,
+        y: value,
       },
     });
   }
@@ -69,7 +98,7 @@ function MapSettings({
             type="number"
             name="gridX"
             value={`${(map && map.grid.size.x) || 0}`}
-            onChange={(e) => handleGridSizeChange(e, "x")}
+            onChange={handleGridSizeXChange}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
@@ -81,7 +110,7 @@ function MapSettings({
             type="number"
             name="gridY"
             value={`${(map && map.grid.size.y) || 0}`}
-            onChange={(e) => handleGridSizeChange(e, "y")}
+            onChange={handleGridSizeYChange}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}

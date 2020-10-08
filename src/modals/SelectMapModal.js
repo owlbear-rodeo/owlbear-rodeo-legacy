@@ -14,11 +14,11 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
+import { getMapDefaultInset, gridSizeHeuristic } from "../helpers/map";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
-const defaultMapSize = 22;
 const defaultMapProps = {
   // Grid type
   showGrid: false,
@@ -99,34 +99,6 @@ function SelectMapModal({
     if (!file) {
       return Promise.reject();
     }
-    let fileGridX = defaultMapSize;
-    let fileGridY = defaultMapSize;
-    let name = "Unknown Map";
-    if (file.name) {
-      // TODO: match all not supported on safari, find alternative
-      if (file.name.matchAll) {
-        // Match against a regex to find the grid size in the file name
-        // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
-        const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
-        if (gridMatches.length > 0) {
-          const lastMatch = gridMatches[gridMatches.length - 1];
-          const matchX = parseInt(lastMatch[1]);
-          const matchY = parseInt(lastMatch[3]);
-          if (!isNaN(matchX) && !isNaN(matchY)) {
-            fileGridX = matchX;
-            fileGridY = matchY;
-          }
-        }
-      }
-
-      // Remove file extension
-      name = file.name.replace(/\.[^/.]+$/, "");
-      // Removed grid size expression
-      name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
-      // Clean string
-      name = name.replace(/ +/g, " ");
-      name = name.trim();
-    }
     let image = new Image();
     setImageLoading(true);
 
@@ -138,6 +110,37 @@ function SelectMapModal({
 
     return new Promise((resolve, reject) => {
       image.onload = async function () {
+        // Find name and grid size
+        let gridSize;
+        let name = "Unknown Map";
+        if (file.name) {
+          if (file.name.matchAll) {
+            // Match against a regex to find the grid size in the file name
+            // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
+            const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+            if (gridMatches.length > 0) {
+              const lastMatch = gridMatches[gridMatches.length - 1];
+              const matchX = parseInt(lastMatch[1]);
+              const matchY = parseInt(lastMatch[3]);
+              if (!isNaN(matchX) && !isNaN(matchY)) {
+                gridSize = { x: matchX, y: matchY };
+              }
+            }
+          }
+
+          if (!gridSize) {
+            gridSize = gridSizeHeuristic(image.width, image.height);
+          }
+
+          // Remove file extension
+          name = file.name.replace(/\.[^/.]+$/, "");
+          // Removed grid size expression
+          name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
+          // Clean string
+          name = name.replace(/ +/g, " ");
+          name = name.trim();
+        }
+
         // Create resolutions
         const resolutions = {};
         for (let resolution of mapResolutions) {
@@ -166,8 +169,13 @@ function SelectMapModal({
           name,
           type: "file",
           grid: {
-            size: { x: fileGridX, y: fileGridY },
-            inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+            size: gridSize,
+            inset: getMapDefaultInset(
+              image.width,
+              image.height,
+              gridSize.x,
+              gridSize.y
+            ),
             type: "square",
           },
           width: image.width,
