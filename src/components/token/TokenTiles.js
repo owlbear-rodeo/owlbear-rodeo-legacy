@@ -6,6 +6,8 @@ import Case from "case";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 import GroupIcon from "../../icons/GroupIcon";
+import TokenHideIcon from "../../icons/TokenHideIcon";
+import TokenShowIcon from "../../icons/TokenShowIcon";
 
 import TokenTile from "./TokenTile";
 import Link from "../Link";
@@ -26,15 +28,19 @@ function TokenTiles({
   search,
   onSearchChange,
   onTokensGroup,
+  onTokensHide,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
 
   let hasSelectedDefaultToken = false;
+  let allTokensVisible = true;
   for (let token of selectedTokens) {
     if (token.type === "default") {
       hasSelectedDefaultToken = true;
-      break;
+    }
+    if (token.hideInSidebar) {
+      allTokensVisible = false;
     }
   }
 
@@ -60,6 +66,21 @@ function TokenTiles({
   }
 
   const multipleSelected = selectedTokens.length > 1;
+
+  let hideTitle = "";
+  if (multipleSelected) {
+    if (allTokensVisible) {
+      hideTitle = "Hide Tokens in Sidebar";
+    } else {
+      hideTitle = "Show Tokens in Sidebar";
+    }
+  } else {
+    if (allTokensVisible) {
+      hideTitle = "Hide Token in Sidebar";
+    } else {
+      hideTitle = "Show Token in Sidebar";
+    }
+  }
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -130,6 +151,14 @@ function TokenTiles({
             onClick={() => onTokenSelect()}
           />
           <Flex>
+            <IconButton
+              aria-label={hideTitle}
+              title={hideTitle}
+              disabled={hasSelectedDefaultToken}
+              onClick={() => onTokensHide(allTokensVisible)}
+            >
+              {allTokensVisible ? <TokenShowIcon /> : <TokenHideIcon />}
+            </IconButton>
             <IconButton
               aria-label={multipleSelected ? "Group Tokens" : "Group Token"}
               title={multipleSelected ? "Group Tokens" : "Group Token"}

@@ -136,6 +136,10 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     setSelectedTokenIds([]);
   }
 
+  async function handleTokensHide(hideInSidebar) {
+    await updateTokens(selectedTokenIds, { hideInSidebar });
+  }
+
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
@@ -215,6 +219,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             search={search}
             onSearchChange={handleSearchChange}
             onTokensGroup={() => setIsGroupModalOpen(true)}
+            onTokensHide={handleTokensHide}
           />
           <Button
             variant="primary"

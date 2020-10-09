@@ -45,13 +45,14 @@ function EditTokenModal({ isOpen, onDone, token }) {
     ...tokenSettingChanges,
   };
 
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{
+        maxWidth: "542px",
+        width: "calc(100% - 16px)",
+      }}
     >
       <Flex
         sx={{
@@ -63,9 +64,7 @@ function EditTokenModal({ isOpen, onDone, token }) {
         </Label>
         <TokenSettings
           token={selectedTokenWithChanges}
-          showMore={showMoreSettings}
           onSettingsChange={handleTokenSettingsChange}
-          onShowMoreChange={setShowMoreSettings}
         />
         <Button onClick={handleSave}>Save</Button>
       </Flex>
