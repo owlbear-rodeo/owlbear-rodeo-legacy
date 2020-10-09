@@ -117,6 +117,8 @@ function MapEditor({ map, onSettingsChange }) {
     mapHeight,
   };
 
+  const canEditGrid = map.type !== "default";
+
   const gridChanged =
     map.grid.inset.topLeft.x !== defaultInset.topLeft.x ||
     map.grid.inset.topLeft.y !== defaultInset.topLeft.y ||
@@ -149,8 +151,10 @@ function MapEditor({ map, onSettingsChange }) {
           <Layer ref={mapLayerRef}>
             <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
             <MapInteractionProvider value={mapInteraction}>
-              {showGridControls && <MapGrid map={map} strokeWidth={0.5} />}
-              {showGridControls && (
+              {showGridControls && canEditGrid && (
+                <MapGrid map={map} strokeWidth={0.5} />
+              )}
+              {showGridControls && canEditGrid && (
                 <MapGridEditor map={map} onGridChange={handleGridChange} />
               )}
             </MapInteractionProvider>
@@ -169,19 +173,26 @@ function MapEditor({ map, onSettingsChange }) {
           <ResetMapIcon />
         </IconButton>
       )}
-      <IconButton
-        title={showGridControls ? "Hide Grid Controls" : "Show Grid Controls"}
-        aria-label={
-          showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
-        }
-        onClick={() => setShowGridControls(!showGridControls)}
-        bg="overlay"
-        sx={{ borderRadius: "50%", position: "absolute", bottom: 0, right: 0 }}
-        m={2}
-        p="6px"
-      >
-        {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
-      </IconButton>
+      {canEditGrid && (
+        <IconButton
+          title={showGridControls ? "Hide Grid Controls" : "Show Grid Controls"}
+          aria-label={
+            showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
+          }
+          onClick={() => setShowGridControls(!showGridControls)}
+          bg="overlay"
+          sx={{
+            borderRadius: "50%",
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+          }}
+          m={2}
+          p="6px"
+        >
+          {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
+        </IconButton>
+      )}
     </Box>
   );
 }
