@@ -44,7 +44,7 @@ function MapSettings({
     if (value > 0) {
       const gridScale =
         ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
-      inset.bottomRight.y = (gridY * gridScale) / map.height;
+      inset.bottomRight.y = inset.topLeft.y + (gridY * gridScale) / map.height;
     }
 
     onSettingsChange("grid", {
@@ -66,7 +66,7 @@ function MapSettings({
     if (gridX > 0) {
       const gridScale =
         ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
-      inset.bottomRight.y = (value * gridScale) / map.height;
+      inset.bottomRight.y = inset.topLeft.y + (value * gridScale) / map.height;
     }
 
     onSettingsChange("grid", {
