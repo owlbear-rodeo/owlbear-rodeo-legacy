@@ -29,23 +29,29 @@ function dividers(a, b) {
   return factors(d);
 }
 
-const commonGridScales = [70, 111, 140, 300];
+const commonGridScales = [35, 70, 72, 111, 140, 144, 300];
+
+// Most grid scales are above 10 and below 100
+function gridScaleVaild(x, y) {
+  return x > 10 && y > 10 && x < 100 && y < 100;
+}
 
 export function gridSizeHeuristic(width, height) {
   const div = dividers(width, height);
   if (div.length > 0) {
-    // default to middle divider
-    let scale = div[Math.floor(div.length / 2)];
-    for (let common of commonGridScales) {
-      // Check common but make sure the grid size is above 10
-      if (div.includes(common) && width / common > 10 && height / common > 10) {
-        scale = common;
+    let x = 1;
+    let y = 1;
+    // Check common scales but make sure the grid size is above 10 and below 100
+    for (let scale of commonGridScales) {
+      const tempX = Math.floor(width / scale);
+      const tempY = Math.floor(height / scale);
+      if (div.includes(scale) && gridScaleVaild(tempX, tempY)) {
+        x = tempX;
+        y = tempY;
       }
     }
-    const x = Math.floor(width / scale);
-    const y = Math.floor(height / scale);
-    // Check grid size is below 100
-    if (x < 100 && y < 100) {
+
+    if (gridScaleVaild(x, y)) {
       return { x, y };
     }
   }
