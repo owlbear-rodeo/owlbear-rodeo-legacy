@@ -20,10 +20,18 @@ function MapGridEditor({ map, onGridChange }) {
   const bottomRightHandleRef = useRef();
   const bottomLeftHandleRef = useRef();
 
-  function handleScaleCircleDragStart() {}
+  const handlePreviousPositionRef = useRef();
+
+  function handleScaleCircleDragStart(event) {
+    const handle = event.target;
+    const position = getHandleNormalizedPosition(handle);
+    handlePreviousPositionRef.current = position;
+  }
 
   function handleScaleCircleDragMove(event) {
-    onGridChange(getHandleInset(event.target));
+    const handle = event.target;
+    onGridChange(getHandleInset(handle));
+    handlePreviousPositionRef.current = getHandleNormalizedPosition(handle);
   }
 
   function handleScaleCircleDragEnd(event) {
@@ -66,35 +74,66 @@ function MapGridEditor({ map, onGridChange }) {
   };
 
   function getHandleInset(handle) {
-    const topLeftHandle = topLeftHandleRef.current;
-    const topRightHandle = topRightHandleRef.current;
-    const bottomRightHandle = bottomRightHandleRef.current;
-    const bottomLeftHandle = bottomLeftHandleRef.current;
+    const gridX = map.grid.size.x;
+    const gridY = map.grid.size.y;
 
-    const topLeft = Vector2.divide(
-      { x: topLeftHandle.x(), y: topLeftHandle.y() },
-      mapSize
-    );
-    const topRight = Vector2.divide(
-      { x: topRightHandle.x(), y: topRightHandle.y() },
-      mapSize
-    );
-    const bottomRight = Vector2.divide(
-      { x: bottomRightHandle.x(), y: bottomRightHandle.y() },
-      mapSize
-    );
-    const bottomLeft = Vector2.divide(
-      { x: bottomLeftHandle.x(), y: bottomLeftHandle.y() },
-      mapSize
+    const name = handle.name();
+
+    // Find distance and direction of dragging
+    const previousPosition = handlePreviousPositionRef.current;
+    const position = getHandleNormalizedPosition(handle);
+    const distance = Vector2.distance(previousPosition, position, "euclidean");
+    const direction = Vector2.normalize(
+      Vector2.subtract(position, previousPosition)
     );
 
-    if (handle === topLeftHandle || handle === bottomRightHandle) {
-      return { topLeft, bottomRight };
-    } else {
+    const inset = map.grid.inset;
+
+    if (direction.x === 0 && direction.y === 0) {
+      return inset;
+    }
+
+    // Scale the grid direction by the distance dragged and the
+    // dot product between the drag direction and the grid direction
+    // This drags the handle while keeping the aspect ratio
+    if (name === "topLeft") {
+      const gridDirection = Vector2.normalize({ x: gridX, y: gridY });
+      const dot = Vector2.dot(direction, gridDirection);
+      const offset = Vector2.multiply(gridDirection, distance * dot);
+      const newPosition = Vector2.add(previousPosition, offset);
       return {
-        topLeft: { x: bottomLeft.x, y: topRight.y },
-        bottomRight: { x: topRight.x, y: bottomLeft.y },
+        topLeft: newPosition,
+        bottomRight: inset.bottomRight,
       };
+    } else if (name === "topRight") {
+      const gridDirection = Vector2.normalize({ x: -gridX, y: gridY });
+      const dot = Vector2.dot(direction, gridDirection);
+      const offset = Vector2.multiply(gridDirection, distance * dot);
+      const newPosition = Vector2.add(previousPosition, offset);
+      return {
+        topLeft: { x: inset.topLeft.x, y: newPosition.y },
+        bottomRight: { x: newPosition.x, y: inset.bottomRight.y },
+      };
+    } else if (name === "bottomRight") {
+      const gridDirection = Vector2.normalize({ x: -gridX, y: -gridY });
+      const dot = Vector2.dot(direction, gridDirection);
+      const offset = Vector2.multiply(gridDirection, distance * dot);
+      const newPosition = Vector2.add(previousPosition, offset);
+      return {
+        topLeft: inset.topLeft,
+        bottomRight: newPosition,
+      };
+    } else if (name === "bottomLeft") {
+      const gridDirection = Vector2.normalize({ x: gridX, y: -gridY });
+      const dot = Vector2.dot(direction, gridDirection);
+      const offset = Vector2.multiply(gridDirection, distance * dot);
+      const newPosition = Vector2.add(previousPosition, offset);
+      return {
+        topLeft: { x: newPosition.x, y: inset.topLeft.y },
+        bottomRight: { x: inset.bottomRight.x, y: newPosition.y },
+      };
+    } else {
+      return inset;
     }
   }
 
@@ -115,6 +154,10 @@ function MapGridEditor({ map, onGridChange }) {
     };
   }
 
+  function getHandleNormalizedPosition(handle) {
+    return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
+  }
+
   const handlePositions = getHandlePositions();
 
   return (
@@ -129,24 +172,28 @@ function MapGridEditor({ map, onGridChange }) {
         ref={topLeftHandleRef}
         x={handlePositions.topLeft.x}
         y={handlePositions.topLeft.y}
+        name="topLeft"
         {...editCircleProps}
       />
       <Circle
         ref={topRightHandleRef}
         x={handlePositions.topRight.x}
         y={handlePositions.topRight.y}
+        name="topRight"
         {...editCircleProps}
       />
       <Circle
         ref={bottomRightHandleRef}
         x={handlePositions.bottomRight.x}
         y={handlePositions.bottomRight.y}
+        name="bottomRight"
         {...editCircleProps}
       />
       <Circle
         ref={bottomLeftHandleRef}
         x={handlePositions.bottomLeft.x}
         y={handlePositions.bottomLeft.y}
+        name="bottomLeft"
         {...editCircleProps}
       />
     </Group>
