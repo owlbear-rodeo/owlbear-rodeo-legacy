@@ -15,11 +15,6 @@ function MapGridEditor({ map, onGridChange }) {
 
   const mapSize = { x: mapWidth, y: mapHeight };
 
-  const topLeftHandleRef = useRef();
-  const topRightHandleRef = useRef();
-  const bottomRightHandleRef = useRef();
-  const bottomLeftHandleRef = useRef();
-
   const handlePreviousPositionRef = useRef();
 
   function handleScaleCircleDragStart(event) {
@@ -46,32 +41,6 @@ function MapGridEditor({ map, onGridChange }) {
   function handleInteractivePointerUp() {
     setPreventMapInteraction(false);
   }
-
-  const editCircleRadius = Math.max(
-    (Math.min(mapWidth, mapHeight) / 30) * Math.max(1 / stageScale, 1),
-    1
-  );
-
-  const editCircleProps = {
-    radius: editCircleRadius,
-    fill: "rgba(0, 0, 0, 0.5)",
-    stroke: "white",
-    strokeWidth: editCircleRadius / 5,
-    draggable: true,
-    onDragStart: handleScaleCircleDragStart,
-    onDragMove: handleScaleCircleDragMove,
-    onDragEnd: handleScaleCircleDragEnd,
-    onMouseDown: handleInteractivePointerDown,
-    onMouseUp: handleInteractivePointerUp,
-    onTouchStart: handleInteractivePointerDown,
-    onTouchEnd: handleInteractivePointerUp,
-  };
-
-  const editRectProps = {
-    fill: "transparent",
-    stroke: "rgba(255, 255, 255, 0.75)",
-    strokeWidth: editCircleRadius / 10,
-  };
 
   function getHandleInset(handle) {
     const gridX = map.grid.size.x;
@@ -132,6 +101,12 @@ function MapGridEditor({ map, onGridChange }) {
         topLeft: { x: newPosition.x, y: inset.topLeft.y },
         bottomRight: { x: inset.bottomRight.x, y: newPosition.y },
       };
+    } else if (name === "center") {
+      const offset = Vector2.subtract(position, previousPosition);
+      return {
+        topLeft: Vector2.add(inset.topLeft, offset),
+        bottomRight: Vector2.add(inset.bottomRight, offset),
+      };
     } else {
       return inset;
     }
@@ -158,6 +133,32 @@ function MapGridEditor({ map, onGridChange }) {
     return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
   }
 
+  const editCircleRadius = Math.max(
+    (Math.min(mapWidth, mapHeight) / 30) * Math.max(1 / stageScale, 1),
+    1
+  );
+
+  const editCircleProps = {
+    radius: editCircleRadius,
+    fill: "rgba(0, 0, 0, 0.5)",
+    stroke: "white",
+    strokeWidth: editCircleRadius / 5,
+    draggable: true,
+    onDragStart: handleScaleCircleDragStart,
+    onDragMove: handleScaleCircleDragMove,
+    onDragEnd: handleScaleCircleDragEnd,
+    onMouseDown: handleInteractivePointerDown,
+    onMouseUp: handleInteractivePointerUp,
+    onTouchStart: handleInteractivePointerDown,
+    onTouchEnd: handleInteractivePointerUp,
+  };
+
+  const editRectProps = {
+    fill: "transparent",
+    stroke: "rgba(255, 255, 255, 0.75)",
+    strokeWidth: editCircleRadius / 10,
+  };
+
   const handlePositions = getHandlePositions();
 
   return (
@@ -169,32 +170,35 @@ function MapGridEditor({ map, onGridChange }) {
         {...editRectProps}
       />
       <Circle
-        ref={topLeftHandleRef}
         x={handlePositions.topLeft.x}
         y={handlePositions.topLeft.y}
         name="topLeft"
         {...editCircleProps}
       />
       <Circle
-        ref={topRightHandleRef}
         x={handlePositions.topRight.x}
         y={handlePositions.topRight.y}
         name="topRight"
         {...editCircleProps}
       />
       <Circle
-        ref={bottomRightHandleRef}
         x={handlePositions.bottomRight.x}
         y={handlePositions.bottomRight.y}
         name="bottomRight"
         {...editCircleProps}
       />
       <Circle
-        ref={bottomLeftHandleRef}
         x={handlePositions.bottomLeft.x}
         y={handlePositions.bottomLeft.y}
         name="bottomLeft"
         {...editCircleProps}
+      />
+      <Circle
+        x={(handlePositions.topLeft.x + handlePositions.bottomRight.x) / 2}
+        y={(handlePositions.topLeft.y + handlePositions.bottomRight.y) / 2}
+        name="center"
+        {...editCircleProps}
+        radius={editCircleRadius / 1.5}
       />
     </Group>
   );
