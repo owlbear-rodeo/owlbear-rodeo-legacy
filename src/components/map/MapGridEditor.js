@@ -43,9 +43,6 @@ function MapGridEditor({ map, onGridChange }) {
   }
 
   function getHandleInset(handle) {
-    const gridX = map.grid.size.x;
-    const gridY = map.grid.size.y;
-
     const name = handle.name();
 
     // Find distance and direction of dragging
@@ -66,7 +63,10 @@ function MapGridEditor({ map, onGridChange }) {
     // dot product between the drag direction and the grid direction
     // This drags the handle while keeping the aspect ratio
     if (name === "topLeft") {
-      const gridDirection = Vector2.normalize({ x: gridX, y: gridY });
+      // Top left to bottom right
+      const gridDirection = Vector2.normalize(
+        Vector2.subtract(inset.topLeft, inset.bottomRight)
+      );
       const dot = Vector2.dot(direction, gridDirection);
       const offset = Vector2.multiply(gridDirection, distance * dot);
       const newPosition = Vector2.add(previousPosition, offset);
@@ -75,7 +75,13 @@ function MapGridEditor({ map, onGridChange }) {
         bottomRight: inset.bottomRight,
       };
     } else if (name === "topRight") {
-      const gridDirection = Vector2.normalize({ x: -gridX, y: gridY });
+      // Top right to bottom left
+      const gridDirection = Vector2.normalize(
+        Vector2.subtract(
+          { x: inset.bottomRight.x, y: inset.topLeft.y },
+          { x: inset.topLeft.x, y: inset.bottomRight.y }
+        )
+      );
       const dot = Vector2.dot(direction, gridDirection);
       const offset = Vector2.multiply(gridDirection, distance * dot);
       const newPosition = Vector2.add(previousPosition, offset);
@@ -84,7 +90,10 @@ function MapGridEditor({ map, onGridChange }) {
         bottomRight: { x: newPosition.x, y: inset.bottomRight.y },
       };
     } else if (name === "bottomRight") {
-      const gridDirection = Vector2.normalize({ x: -gridX, y: -gridY });
+      // Bottom right to top left
+      const gridDirection = Vector2.normalize(
+        Vector2.subtract(inset.bottomRight, inset.topLeft)
+      );
       const dot = Vector2.dot(direction, gridDirection);
       const offset = Vector2.multiply(gridDirection, distance * dot);
       const newPosition = Vector2.add(previousPosition, offset);
@@ -93,7 +102,13 @@ function MapGridEditor({ map, onGridChange }) {
         bottomRight: newPosition,
       };
     } else if (name === "bottomLeft") {
-      const gridDirection = Vector2.normalize({ x: gridX, y: -gridY });
+      // Bottom left to top right
+      const gridDirection = Vector2.normalize(
+        Vector2.subtract(
+          { x: inset.topLeft.x, y: inset.bottomRight.y },
+          { x: inset.bottomRight.x, y: inset.topLeft.y }
+        )
+      );
       const dot = Vector2.dot(direction, gridDirection);
       const offset = Vector2.multiply(gridDirection, distance * dot);
       const newPosition = Vector2.add(previousPosition, offset);
