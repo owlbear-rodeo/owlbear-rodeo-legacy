@@ -50,13 +50,13 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
     if (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges)) {
       // Ensure grid values are positive
       let verifiedChanges = { ...mapSettingChanges };
-      if ("gridX" in verifiedChanges) {
-        verifiedChanges.gridX = verifiedChanges.gridX || 1;
+      if ("grid" in verifiedChanges && "size" in verifiedChanges.grid) {
+        verifiedChanges.grid.size.x = verifiedChanges.grid.size.x || 1;
       }
-      if ("gridY" in verifiedChanges) {
-        verifiedChanges.gridY = verifiedChanges.gridY || 1;
+      if ("grid" in verifiedChanges && "size" in verifiedChanges.grid) {
+        verifiedChanges.grid.size.y = verifiedChanges.grid.size.y || 1;
       }
-      await updateMap(map.id, verifiedChanges);
+      await updateMap(map.id, mapSettingChanges);
       await updateMapState(map.id, mapStateSettingChanges);
 
       setMapSettingChanges({});

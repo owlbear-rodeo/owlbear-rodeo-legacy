@@ -63,7 +63,7 @@ function MapSettings({
 
     let inset = map.grid.inset;
 
-    if (value > 0) {
+    if (gridX > 0) {
       const gridScale =
         ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
       inset.bottomRight.y = (value * gridScale) / map.height;
