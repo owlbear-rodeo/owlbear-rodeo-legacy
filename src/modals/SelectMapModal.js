@@ -1,6 +1,7 @@
 import React, { useRef, useState, useContext } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
+import Case from "case";
 
 import EditMapModal from "./EditMapModal";
 import EditGroupModal from "./EditGroupModal";
@@ -139,6 +140,8 @@ function SelectMapModal({
           // Clean string
           name = name.replace(/ +/g, " ");
           name = name.trim();
+          // Capitalize and remove underscores
+          name = Case.capital(name);
         }
 
         // Create resolutions

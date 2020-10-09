@@ -1,6 +1,7 @@
 import React, { useRef, useContext, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
+import Case from "case";
 
 import EditTokenModal from "./EditTokenModal";
 import EditGroupModal from "./EditGroupModal";
@@ -80,6 +81,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       // Clean string
       name = name.replace(/ +/g, " ");
       name = name.trim();
+      // Capitalize and remove underscores
+      name = Case.capital(name);
     }
     let image = new Image();
     setImageLoading(true);
