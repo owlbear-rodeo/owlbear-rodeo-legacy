@@ -97,7 +97,7 @@ function MapToken({
           map.grid.size.x,
         y:
           (mapHeight *
-            (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
+            (map.grid.inset.bottomRight.y - map.grid.inset.topLeft.y)) /
           map.grid.size.y,
       };
       // Transform into offset space, round, then transform back
