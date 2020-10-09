@@ -14,6 +14,7 @@ export function getBrushPositionForTool(
   shapes
 ) {
   let position = brushPosition;
+
   const useGridSnappning =
     map.snapToGrid &&
     ((tool === "drawing" &&
@@ -25,13 +26,26 @@ export function getBrushPositionForTool(
 
   if (useGridSnappning) {
     // Snap to corners of grid
-    const gridSnap = Vector2.roundTo(position, gridSize);
+    // Subtract offset to transform into offset space then add it back transform back
+    const offset = map.grid.inset.topLeft;
+    const gridSnap = Vector2.add(
+      Vector2.roundTo(Vector2.subtract(position, offset), gridSize),
+      offset
+    );
     const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
 
     // Snap to center of grid
+    // Subtract offset and half size to transform it into offset half space then transform it back
+    const halfSize = Vector2.multiply(gridSize, 0.5);
     const centerSnap = Vector2.add(
-      Vector2.roundTo(position, gridSize),
-      Vector2.multiply(gridSize, 0.5)
+      Vector2.add(
+        Vector2.roundTo(
+          Vector2.subtract(Vector2.subtract(position, offset), halfSize),
+          gridSize
+        ),
+        halfSize
+      ),
+      offset
     );
     const centerDistance = Vector2.length(
       Vector2.subtract(centerSnap, position)

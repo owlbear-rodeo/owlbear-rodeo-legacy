@@ -42,9 +42,10 @@ function Map({
 
   const gridX = map && map.grid.size.x;
   const gridY = map && map.grid.size.y;
+  const inset = map && map.grid.inset;
   const gridSizeNormalized = {
-    x: gridX ? 1 / gridX : 0,
-    y: gridY ? 1 / gridY : 0,
+    x: gridX ? (inset.bottomRight.x - inset.topLeft.x) / gridX : 0,
+    y: gridY ? (inset.bottomRight.y - inset.topLeft.y) / gridY : 0,
   };
   const tokenSizePercent = gridSizeNormalized.x;
 

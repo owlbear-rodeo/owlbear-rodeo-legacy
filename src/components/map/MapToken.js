@@ -82,15 +82,29 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
+      const offset = Vector2.multiply(map.grid.inset.topLeft, {
+        x: mapWidth,
+        y: mapHeight,
+      });
       const position = {
         x: tokenGroup.x() + tokenGroup.width() / 2,
         y: tokenGroup.y() + tokenGroup.height() / 2,
       };
       const gridSize = {
-        x: mapWidth / map.grid.size.x,
-        y: mapHeight / map.grid.size.y,
+        x:
+          (mapWidth *
+            (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
+          map.grid.size.x,
+        y:
+          (mapHeight *
+            (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
+          map.grid.size.y,
       };
-      const gridSnap = Vector2.roundTo(position, gridSize);
+      // Transform into offset space, round, then transform back
+      const gridSnap = Vector2.add(
+        Vector2.roundTo(Vector2.subtract(position, offset), gridSize),
+        offset
+      );
       const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
       const minGrid = Vector2.min(gridSize);
       if (gridDistance < minGrid * snappingThreshold) {

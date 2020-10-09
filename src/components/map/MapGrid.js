@@ -40,11 +40,12 @@ function MapGrid({ map, strokeWidth }) {
     return null;
   }
 
-  const gridSizeNormalized = {
-    x: 1 / gridX,
-    y: 1 / gridY,
-  };
   const gridInset = map && map.grid.inset;
+
+  const gridSizeNormalized = {
+    x: (gridInset.bottomRight.x - gridInset.topLeft.x) / gridX,
+    y: (gridInset.bottomRight.y - gridInset.topLeft.y) / gridY,
+  };
 
   const insetWidth = (gridInset.bottomRight.x - gridInset.topLeft.x) * mapWidth;
   const insetHeight =
