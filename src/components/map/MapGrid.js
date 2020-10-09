@@ -11,6 +11,8 @@ import { getStrokeWidth } from "../../helpers/drawing";
 import { getImageLightness } from "../../helpers/image";
 
 function MapGrid({ map, strokeWidth }) {
+  const { mapWidth, mapHeight } = useContext(MapInteractionContext);
+
   let mapSourceMap = map;
   // Use lowest resolution for grid lightness
   if (map && map.type === "file" && map.resolutions) {
@@ -22,15 +24,27 @@ function MapGrid({ map, strokeWidth }) {
   const mapSource = useDataSource(mapSourceMap, defaultMapSources);
   const [mapImage, mapLoadingStatus] = useImage(mapSource);
 
+  const [isImageLight, setIsImageLight] = useState(true);
+
+  // When the map changes find the average lightness of its pixels
+  useEffect(() => {
+    if (mapLoadingStatus === "loaded") {
+      setIsImageLight(getImageLightness(mapImage));
+    }
+  }, [mapImage, mapLoadingStatus]);
+
   const gridX = map && map.grid.size.x;
   const gridY = map && map.grid.size.y;
+
+  if (!gridX || !gridY) {
+    return null;
+  }
+
   const gridSizeNormalized = {
-    x: gridX ? 1 / gridX : 0,
-    y: gridY ? 1 / gridY : 0,
+    x: 1 / gridX,
+    y: 1 / gridY,
   };
   const gridInset = map && map.grid.inset;
-
-  const { mapWidth, mapHeight } = useContext(MapInteractionContext);
 
   const insetWidth = (gridInset.bottomRight.x - gridInset.topLeft.x) * mapWidth;
   const insetHeight =
@@ -41,15 +55,6 @@ function MapGrid({ map, strokeWidth }) {
 
   const offsetX = gridInset.topLeft.x * mapWidth * -1;
   const offsetY = gridInset.topLeft.y * mapHeight * -1;
-
-  const [isImageLight, setIsImageLight] = useState(true);
-
-  // When the map changes find the average lightness of its pixels
-  useEffect(() => {
-    if (mapLoadingStatus === "loaded") {
-      setIsImageLight(getImageLightness(mapImage));
-    }
-  }, [mapImage, mapLoadingStatus]);
 
   const lines = [];
   for (let x = 1; x < gridX; x++) {

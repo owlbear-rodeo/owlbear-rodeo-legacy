@@ -36,14 +36,16 @@ function MapSettings({
   }
 
   function handleGridSizeXChange(event) {
-    const value = parseInt(event.target.value);
+    const value = parseInt(event.target.value) || 0;
     const gridY = map.grid.size.y;
 
     let inset = map.grid.inset;
 
-    const gridScale =
-      ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
-    inset.bottomRight.y = (gridY * gridScale) / map.height;
+    if (value > 0) {
+      const gridScale =
+        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
+      inset.bottomRight.y = (gridY * gridScale) / map.height;
+    }
 
     onSettingsChange("grid", {
       ...map.grid,
@@ -56,14 +58,16 @@ function MapSettings({
   }
 
   function handleGridSizeYChange(event) {
-    const value = parseInt(event.target.value);
+    const value = parseInt(event.target.value) || 0;
     const gridX = map.grid.size.x;
 
     let inset = map.grid.inset;
 
-    const gridScale =
-      ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
-    inset.bottomRight.y = (value * gridScale) / map.height;
+    if (value > 0) {
+      const gridScale =
+        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
+      inset.bottomRight.y = (value * gridScale) / map.height;
+    }
 
     onSettingsChange("grid", {
       ...map.grid,

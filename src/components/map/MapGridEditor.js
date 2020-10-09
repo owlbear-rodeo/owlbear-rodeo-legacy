@@ -15,6 +15,24 @@ function MapGridEditor({ map, onGridChange }) {
 
   const mapSize = { x: mapWidth, y: mapHeight };
 
+  function getHandlePositions() {
+    const topLeft = Vector2.multiply(map.grid.inset.topLeft, mapSize);
+    const bottomRight = Vector2.multiply(map.grid.inset.bottomRight, mapSize);
+
+    const size = Vector2.subtract(bottomRight, topLeft);
+    const offset = Vector2.multiply(topLeft, -1);
+
+    return {
+      topLeft,
+      topRight: { x: bottomRight.x, y: topLeft.y },
+      bottomRight,
+      bottomLeft: { x: topLeft.x, y: bottomRight.y },
+      size,
+      offset,
+    };
+  }
+  const handlePositions = getHandlePositions();
+
   const handlePreviousPositionRef = useRef();
 
   function handleScaleCircleDragStart(event) {
@@ -127,23 +145,6 @@ function MapGridEditor({ map, onGridChange }) {
     }
   }
 
-  function getHandlePositions() {
-    const topLeft = Vector2.multiply(map.grid.inset.topLeft, mapSize);
-    const bottomRight = Vector2.multiply(map.grid.inset.bottomRight, mapSize);
-
-    const size = Vector2.subtract(bottomRight, topLeft);
-    const offset = Vector2.multiply(topLeft, -1);
-
-    return {
-      topLeft,
-      topRight: { x: bottomRight.x, y: topLeft.y },
-      bottomRight,
-      bottomLeft: { x: topLeft.x, y: bottomRight.y },
-      size,
-      offset,
-    };
-  }
-
   function getHandleNormalizedPosition(handle) {
     return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
   }
@@ -173,8 +174,6 @@ function MapGridEditor({ map, onGridChange }) {
     stroke: "rgba(255, 255, 255, 0.75)",
     strokeWidth: editCircleRadius / 10,
   };
-
-  const handlePositions = getHandlePositions();
 
   return (
     <Group>
