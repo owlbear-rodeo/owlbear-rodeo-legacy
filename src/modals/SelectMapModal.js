@@ -5,6 +5,7 @@ import Case from "case";
 
 import EditMapModal from "./EditMapModal";
 import EditGroupModal from "./EditGroupModal";
+import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
@@ -224,7 +225,9 @@ function SelectMapModal({
     setSelectedMapIds([map.id]);
   }
 
+  const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
   async function handleMapsRemove() {
+    setIsMapsRemoveModalOpen(false);
     await removeMaps(selectedMapIds);
     setSelectedMapIds([]);
     // Removed the map from the map screen if needed
@@ -233,7 +236,9 @@ function SelectMapModal({
     }
   }
 
+  const [isMapsResetModalOpen, setIsMapsResetModalOpen] = useState(false);
   async function handleMapsReset() {
+    setIsMapsResetModalOpen(false);
     for (let id of selectedMapIds) {
       const newState = await resetMap(id);
       // Reset the state of the current map if needed
@@ -349,8 +354,8 @@ function SelectMapModal({
             groups={mapGroups}
             onMapAdd={openImageDialog}
             onMapEdit={() => setIsEditModalOpen(true)}
-            onMapsReset={handleMapsReset}
-            onMapsRemove={handleMapsRemove}
+            onMapsReset={() => setIsMapsResetModalOpen(true)}
+            onMapsRemove={() => setIsMapsRemoveModalOpen(true)}
             selectedMaps={selectedMaps}
             selectedMapStates={selectedMapStates}
             onMapSelect={handleMapSelect}
@@ -392,6 +397,26 @@ function SelectMapModal({
             .map((map) => map.group)
             .reduce((prev, curr) => (prev === curr ? curr : undefined))
         }
+      />
+      <ConfirmModal
+        isOpen={isMapsResetModalOpen}
+        onRequestClose={() => setIsMapsResetModalOpen(false)}
+        onConfirm={handleMapsReset}
+        confirmText="Reset"
+        label={`Reset ${selectedMapIds.length} Map${
+          selectedMapIds.length > 1 ? "s" : ""
+        }`}
+        description="This will remove all fog, drawings and tokens from the selected maps."
+      />
+      <ConfirmModal
+        isOpen={isMapsRemoveModalOpen}
+        onRequestClose={() => setIsMapsRemoveModalOpen(false)}
+        onConfirm={handleMapsRemove}
+        confirmText="Remove"
+        label={`Remove ${selectedMapIds.length} Map${
+          selectedMapIds.length > 1 ? "s" : ""
+        }`}
+        description="This operation cannot be undone."
       />
     </Modal>
   );

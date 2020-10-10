@@ -5,6 +5,7 @@ import Case from "case";
 
 import EditTokenModal from "./EditTokenModal";
 import EditGroupModal from "./EditGroupModal";
+import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
@@ -131,7 +132,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     setSelectedTokenIds([token.id]);
   }
 
+  const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
   async function handleTokensRemove() {
+    setIsTokensRemoveModalOpen(false);
     await removeTokens(selectedTokenIds);
     setSelectedTokenIds([]);
   }
@@ -223,7 +226,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             groups={tokenGroups}
             onTokenAdd={openImageDialog}
             onTokenEdit={() => setIsEditModalOpen(true)}
-            onTokensRemove={handleTokensRemove}
+            onTokensRemove={() => setIsTokensRemoveModalOpen(true)}
             selectedTokens={selectedTokens}
             onTokenSelect={handleTokenSelect}
             selectMode={selectMode}
@@ -261,6 +264,16 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             .map((map) => map.group)
             .reduce((prev, curr) => (prev === curr ? curr : undefined))
         }
+      />
+      <ConfirmModal
+        isOpen={isTokensRemoveModalOpen}
+        onRequestClose={() => setIsTokensRemoveModalOpen(false)}
+        onConfirm={handleTokensRemove}
+        confirmText="Remove"
+        label={`Remove ${selectedTokenIds.length} Token${
+          selectedTokenIds.length > 1 ? "s" : ""
+        }`}
+        description="This operation cannot be undone."
       />
     </Modal>
   );
