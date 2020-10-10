@@ -4,14 +4,33 @@ import {
   lerp as lerpNumber,
 } from "./shared";
 
+/**
+ * Vector class with x and y
+ * @typedef {Object} Vector2
+ * @property {number} x - X component of the vector
+ * @property {number} y - Y component of the vector
+ */
+
+/**
+ * @param {Vector2} p
+ * @returns {number} Length squared of `p`
+ */
 export function lengthSquared(p) {
   return p.x * p.x + p.y * p.y;
 }
 
+/**
+ * @param {Vector2} p
+ * @returns {number} Length of `p`
+ */
 export function length(p) {
   return Math.sqrt(lengthSquared(p));
 }
 
+/**
+ * @param {Vector2} p
+ * @returns {Vector2} `p` normalized, if length of `p` is 0 `{x: 0, y: 0}` is returned
+ */
 export function normalize(p) {
   const l = length(p);
   if (l === 0) {
@@ -20,10 +39,20 @@ export function normalize(p) {
   return divide(p, l);
 }
 
+/**
+ * @param {Vector2} a
+ * @param {Vector2} b
+ * @returns {number}  Dot product between `a` and `b`
+ */
 export function dot(a, b) {
   return a.x * b.x + a.y * b.y;
 }
 
+/**
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} b
+ * @returns {Vector2} a - b
+ */
 export function subtract(a, b) {
   if (typeof b === "number") {
     return { x: a.x - b, y: a.y - b };
@@ -32,6 +61,11 @@ export function subtract(a, b) {
   }
 }
 
+/**
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} b
+ * @returns {Vector2} a + b
+ */
 export function add(a, b) {
   if (typeof b === "number") {
     return { x: a.x + b, y: a.y + b };
@@ -40,6 +74,11 @@ export function add(a, b) {
   }
 }
 
+/**
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} b
+ * @returns {Vector2} a * b
+ */
 export function multiply(a, b) {
   if (typeof b === "number") {
     return { x: a.x * b, y: a.y * b };
@@ -48,6 +87,11 @@ export function multiply(a, b) {
   }
 }
 
+/**
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} b
+ * @returns {Vector2} a / b
+ */
 export function divide(a, b) {
   if (typeof b === "number") {
     return { x: a.x / b, y: a.y / b };
@@ -56,6 +100,13 @@ export function divide(a, b) {
   }
 }
 
+/**
+ * Rotates a point around a given origin by an angle in degrees
+ * @param {Vector2} point Point to rotate
+ * @param {Vector2} origin Origin of the rotation
+ * @param {number} angle Angle of rotation in degrees
+ * @returns {Vector2} Rotated point
+ */
 export function rotate(point, origin, angle) {
   const cos = Math.cos(toRadians(angle));
   const sin = Math.sin(toRadians(angle));
@@ -66,18 +117,53 @@ export function rotate(point, origin, angle) {
   };
 }
 
+/**
+ * Rotates a direction by a given angle in degrees
+ * @param {Vector2} direction Direction to rotate
+ * @param {number} angle Angle of rotation in degrees
+ * @returns {Vector2} Rotated direction
+ */
 export function rotateDirection(direction, angle) {
   return rotate(direction, { x: 0, y: 0 }, angle);
 }
 
-export function min(a) {
-  return a.x < a.y ? a.x : a.y;
+/**
+ * Returns the min of `value` and `minimum`, if `minimum` is undefined component wise min is returned instead
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} [minimum] Value to compare
+ * @returns {(Vector2 | number)}
+ */
+export function min(a, minimum) {
+  if (minimum === undefined) {
+    return a.x < a.y ? a.x : a.y;
+  } else if (typeof minimum === "number") {
+    return { x: Math.min(a.x, minimum), y: Math.min(a.y, minimum) };
+  } else {
+    return { x: Math.min(a.x, minimum.x), y: Math.min(a.y, minimum.y) };
+  }
+}
+/**
+ * Returns the max of `a` and `maximum`, if `maximum` is undefined component wise max is returned instead
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} [maximum] Value to compare
+ * @returns {(Vector2 | number)}
+ */
+export function max(a, maximum) {
+  if (maximum === undefined) {
+    return a.x > a.y ? a.x : a.y;
+  } else if (typeof maximum === "number") {
+    return { x: Math.max(a.x, maximum), y: Math.max(a.y, maximum) };
+  } else {
+    return { x: Math.max(a.x, maximum.x), y: Math.max(a.y, maximum.y) };
+  }
 }
 
-export function max(a) {
-  return a.x > a.y ? a.x : a.y;
-}
-
+/**
+ * Rounds `p` to the nearest value of `to`
+ * @param {Vector2} p
+ * @param {Vector2} to
+ * @returns {Vector2}
+ */
 export function roundTo(p, to) {
   return {
     x: roundToNumber(p.x, to.x),
@@ -85,14 +171,27 @@ export function roundTo(p, to) {
   };
 }
 
+/**
+ * @param {Vector2} a
+ * @returns {Vector2} The component wise sign of `a`
+ */
 export function sign(a) {
   return { x: Math.sign(a.x), y: Math.sign(a.y) };
 }
 
+/**
+ * @param {Vector2} a
+ * @returns {Vector2} The component wise absolute of `a`
+ */
 export function abs(a) {
   return { x: Math.abs(a.x), y: Math.abs(a.y) };
 }
 
+/**
+ * @param {Vector2} a
+ * @param {(Vector2 | number)} b
+ * @returns {Vector2} `a` to the power of `b`
+ */
 export function pow(a, b) {
   if (typeof b === "number") {
     return { x: Math.pow(a.x, b), y: Math.pow(a.y, b) };
@@ -101,10 +200,21 @@ export function pow(a, b) {
   }
 }
 
+/**
+ * @param {Vector2} a
+ * @returns {number} The dot product between `a` and `a`
+ */
 export function dot2(a) {
   return dot(a, a);
 }
 
+/**
+ * Clamps `a` between `min` and `max`
+ * @param {Vector2} a
+ * @param {number} min
+ * @param {number} max
+ * @returns {Vector2}
+ */
 export function clamp(a, min, max) {
   return {
     x: Math.min(Math.max(a.x, min), max),
@@ -112,7 +222,14 @@ export function clamp(a, min, max) {
   };
 }
 
-// https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d
+/**
+ * Calculates the distance between a point and a line segment
+ * See more at {@link https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm}
+ * @param {Vector2} p Point
+ * @param {Vector2} a Start of the line
+ * @param {Vector2} b End of the line
+ * @returns {Object} The distance to and the closest point on the line segment
+ */
 export function distanceToLine(p, a, b) {
   const pa = subtract(p, a);
   const ba = subtract(b, a);
@@ -122,8 +239,16 @@ export function distanceToLine(p, a, b) {
   return { distance, point };
 }
 
-// TODO: Fix the robustness of this to allow smoothing on fog layers
-// https://www.shadertoy.com/view/MlKcDD
+/**
+ * Calculates the distance between a point and a quadratic bezier curve
+ * See more at {@link https://www.shadertoy.com/view/MlKcDD}
+ * @todo Fix the robustness of this to allow smoothing on fog layers
+ * @param {Vector2} pos Position
+ * @param {Vector2} A Start of the curve
+ * @param {Vector2} B Control point of the curve
+ * @param {Vector2} C End of the curve
+ * @returns {Object} The distance to and the closest point on the curve
+ */
 export function distanceToQuadraticBezier(pos, A, B, C) {
   let distance = 0;
   let point = { x: pos.x, y: pos.y };
@@ -174,6 +299,11 @@ export function distanceToQuadraticBezier(pos, A, B, C) {
   return { distance: Math.sqrt(distance), point: point };
 }
 
+/**
+ * Calculates an axis-aligned bounding box around an array of point
+ * @param {Vector2[]} points
+ * @returns {Object}
+ */
 export function getBounds(points) {
   let minX = Number.MAX_VALUE;
   let maxX = Number.MIN_VALUE;
@@ -188,9 +318,14 @@ export function getBounds(points) {
   return { minX, maxX, minY, maxY };
 }
 
-// Check bounds then use ray casting algorithm
-// https://en.wikipedia.org/wiki/Point_in_polygon#Ray_casting_algorithm
-// https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778
+/**
+ * Checks to see if a point is in a polygon using ray casting
+ * See more at {@link https://en.wikipedia.org/wiki/Point_in_polygon#Ray_casting_algorithm}
+ * and {@link https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778}
+ * @param {Vector2} p
+ * @param {Vector2[]} points
+ * @returns {boolean}
+ */
 export function pointInPolygon(p, points) {
   const { minX, maxX, minY, maxY } = getBounds(points);
   if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) {
@@ -215,7 +350,7 @@ export function pointInPolygon(p, points) {
 }
 
 /**
- * Returns true if a the distance between a and b is under threshold
+ * Returns true if a the distance between `a` and `b` is under `threshold`
  * @param {Vector2} a
  * @param {Vector2} b
  * @param {number} threshold
@@ -228,7 +363,7 @@ export function compare(a, b, threshold) {
  * Returns the distance between two vectors
  * @param {Vector2} a
  * @param {Vector2} b
- * @param {string} type - "chebyshev" | "euclidean" | "manhattan"
+ * @param {string} type - `chebyshev | euclidean | manhattan`
  */
 export function distance(a, b, type) {
   switch (type) {
@@ -243,13 +378,20 @@ export function distance(a, b, type) {
   }
 }
 
+/**
+ * Linear interpolate between `a` and `b` by `alpha`
+ * @param {Vector2} a
+ * @param {Vector2} b
+ * @param {number} alpha
+ * @returns {Vector2}
+ */
 export function lerp(a, b, alpha) {
   return { x: lerpNumber(a.x, b.x, alpha), y: lerpNumber(a.y, b.y, alpha) };
 }
 
 /**
  * Returns total length of a an array of points treated as a path
- * @param {Array} points the array of points in the path
+ * @param {Vector2[]} points the array of points in the path
  */
 export function pathLength(points) {
   let l = 0;
@@ -262,7 +404,7 @@ export function pathLength(points) {
 /**
  * Resample a path to n number of evenly distributed points
  * based off of http://depts.washington.edu/acelab/proj/dollar/index.html
- * @param {Array} points the points to resample
+ * @param {Vector2[]} points the points to resample
  * @param {number} n the number of new points
  */
 export function resample(points, n) {
