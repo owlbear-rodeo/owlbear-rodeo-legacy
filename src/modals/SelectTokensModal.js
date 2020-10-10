@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -182,6 +182,18 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   }
 
   useKeyboard(handleKeyDown, handleKeyUp);
+
+  // Set select mode to single when alt+tabing
+  useEffect(() => {
+    function handleBlur() {
+      setSelectMode("single");
+    }
+
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   return (
     <Modal

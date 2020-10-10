@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -308,6 +308,18 @@ function SelectMapModal({
   }
 
   useKeyboard(handleKeyDown, handleKeyUp);
+
+  // Set select mode to single when alt+tabing
+  useEffect(() => {
+    function handleBlur() {
+      setSelectMode("single");
+    }
+
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   return (
     <Modal
