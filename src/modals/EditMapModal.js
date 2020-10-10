@@ -8,6 +8,7 @@ import MapEditor from "../components/map/MapEditor";
 import MapDataContext from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
+import { getMapDefaultInset } from "../helpers/map";
 
 function EditMapModal({ isOpen, onDone, map, mapState }) {
   const { updateMap, updateMapState } = useContext(MapDataContext);
@@ -52,9 +53,31 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
       let verifiedChanges = { ...mapSettingChanges };
       if ("grid" in verifiedChanges && "size" in verifiedChanges.grid) {
         verifiedChanges.grid.size.x = verifiedChanges.grid.size.x || 1;
-      }
-      if ("grid" in verifiedChanges && "size" in verifiedChanges.grid) {
         verifiedChanges.grid.size.y = verifiedChanges.grid.size.y || 1;
+      }
+      // Ensure inset isn't flipped
+      if ("grid" in verifiedChanges && "inset" in verifiedChanges.grid) {
+        const inset = verifiedChanges.grid.inset;
+        if (
+          inset.topLeft.x > inset.bottomRight.x ||
+          inset.topLeft.y > inset.bottomRight.y
+        ) {
+          if ("size" in verifiedChanges.grid) {
+            verifiedChanges.grid.inset = getMapDefaultInset(
+              map.width,
+              map.height,
+              verifiedChanges.grid.size.x,
+              verifiedChanges.grid.size.y
+            );
+          } else {
+            verifiedChanges.grid.inset = getMapDefaultInset(
+              map.width,
+              map.height,
+              map.grid.size.x,
+              map.grid.size.y
+            );
+          }
+        }
       }
       await updateMap(map.id, mapSettingChanges);
       await updateMapState(map.id, mapStateSettingChanges);
