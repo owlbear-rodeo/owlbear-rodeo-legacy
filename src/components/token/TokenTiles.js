@@ -33,16 +33,10 @@ function TokenTiles({
   const { databaseStatus } = useContext(DatabaseContext);
   const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
 
-  let hasSelectedDefaultToken = false;
-  let allTokensVisible = true;
-  for (let token of selectedTokens) {
-    if (token.type === "default") {
-      hasSelectedDefaultToken = true;
-    }
-    if (token.hideInSidebar) {
-      allTokensVisible = false;
-    }
-  }
+  let hasSelectedDefaultToken = selectedTokens.some(
+    (token) => token.type === "default"
+  );
+  let allTokensVisible = selectedTokens.every((token) => !token.hideInSidebar);
 
   function tokenToTile(token) {
     const isSelected = selectedTokens.includes(token);

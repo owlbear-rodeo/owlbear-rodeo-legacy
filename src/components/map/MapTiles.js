@@ -46,13 +46,9 @@ function MapTiles({
     }
   }
 
-  let hasSelectedDefaultMap = false;
-  for (let map of selectedMaps) {
-    if (map.type === "default") {
-      hasSelectedDefaultMap = true;
-      break;
-    }
-  }
+  let hasSelectedDefaultMap = selectedMaps.some(
+    (map) => map.type === "default"
+  );
 
   function mapToTile(map) {
     const isSelected = selectedMaps.includes(map);

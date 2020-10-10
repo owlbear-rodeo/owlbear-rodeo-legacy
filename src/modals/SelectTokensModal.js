@@ -170,6 +170,15 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     if (key === "Control" || key === "Meta") {
       setSelectMode("multiple");
     }
+    if (key === "Backspace" || key === "Delete") {
+      // Selected tokens and none are default
+      if (
+        selectedTokenIds.length > 0 &&
+        !selectedTokens.some((token) => token.type === "default")
+      ) {
+        setIsTokensRemoveModalOpen(true);
+      }
+    }
   }
 
   function handleKeyUp({ key }) {

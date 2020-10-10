@@ -298,6 +298,15 @@ function SelectMapModal({
     if (key === "Control" || key === "Meta") {
       setSelectMode("multiple");
     }
+    if (key === "Backspace" || key === "Delete") {
+      // Selected maps and none are default
+      if (
+        selectedMapIds.length > 0 &&
+        !selectedMaps.some((map) => map.type === "default")
+      ) {
+        setIsMapsRemoveModalOpen(true);
+      }
+    }
   }
 
   function handleKeyUp({ key }) {
