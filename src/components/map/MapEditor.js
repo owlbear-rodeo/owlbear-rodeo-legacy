@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
@@ -9,6 +9,7 @@ import useStageInteraction from "../../helpers/useStageInteraction";
 import { getMapDefaultInset } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
+import KeyboardContext from "../../contexts/KeyboardContext";
 
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import GridOnIcon from "../../icons/GridOnIcon";
@@ -117,6 +118,9 @@ function MapEditor({ map, onSettingsChange }) {
     mapHeight,
   };
 
+  // Get keyboard context to pass to Konva
+  const keyboardValue = useContext(KeyboardContext);
+
   const canEditGrid = map.type !== "default";
 
   const gridChanged =
@@ -150,14 +154,16 @@ function MapEditor({ map, onSettingsChange }) {
         >
           <Layer ref={mapLayerRef}>
             <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
-            <MapInteractionProvider value={mapInteraction}>
-              {showGridControls && canEditGrid && (
-                <MapGrid map={map} strokeWidth={0.5} />
-              )}
-              {showGridControls && canEditGrid && (
-                <MapGridEditor map={map} onGridChange={handleGridChange} />
-              )}
-            </MapInteractionProvider>
+            <KeyboardContext.Provider value={keyboardValue}>
+              <MapInteractionProvider value={mapInteraction}>
+                {showGridControls && canEditGrid && (
+                  <MapGrid map={map} strokeWidth={0.5} />
+                )}
+                {showGridControls && canEditGrid && (
+                  <MapGridEditor map={map} onGridChange={handleGridChange} />
+                )}
+              </MapInteractionProvider>
+            </KeyboardContext.Provider>
           </Layer>
         </Stage>
       </ReactResizeDetector>

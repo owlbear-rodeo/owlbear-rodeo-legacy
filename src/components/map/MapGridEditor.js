@@ -4,6 +4,7 @@ import { Group, Circle, Rect } from "react-konva";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 import * as Vector2 from "../../helpers/vector2";
+import useKeyboard from "../../helpers/useKeyboard";
 
 function MapGridEditor({ map, onGridChange }) {
   const {
@@ -144,6 +145,39 @@ function MapGridEditor({ map, onGridChange }) {
       return inset;
     }
   }
+
+  function nudgeGrid(direction) {
+    const inset = map.grid.inset;
+    const gridSizeNormalized = Vector2.divide(
+      Vector2.subtract(inset.bottomRight, inset.topLeft),
+      map.grid.size
+    );
+    const offset = Vector2.divide(
+      Vector2.multiply(direction, gridSizeNormalized),
+      stageScale * 2
+    );
+    onGridChange({
+      topLeft: Vector2.add(inset.topLeft, offset),
+      bottomRight: Vector2.add(inset.bottomRight, offset),
+    });
+  }
+
+  function handleKeyDown({ key }) {
+    if (key === "ArrowUp") {
+      nudgeGrid({ x: 0, y: -1 });
+    }
+    if (key === "ArrowLeft") {
+      nudgeGrid({ x: -1, y: 0 });
+    }
+    if (key === "ArrowRight") {
+      nudgeGrid({ x: 1, y: 0 });
+    }
+    if (key === "ArrowDown") {
+      nudgeGrid({ x: 0, y: 1 });
+    }
+  }
+
+  useKeyboard(handleKeyDown);
 
   function getHandleNormalizedPosition(handle) {
     return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
