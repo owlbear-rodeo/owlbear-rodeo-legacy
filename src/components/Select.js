@@ -23,6 +23,7 @@ function Select({ creatable, ...props }) {
           borderColor: theme.colors.gray,
           borderStyle: "solid",
           borderWidth: "1px",
+          fontFamily: theme.fonts.body2,
         }),
         control: (provided, state) => ({
           ...provided,
@@ -33,12 +34,20 @@ function Select({ creatable, ...props }) {
         singleValue: (provided, state) => ({
           ...provided,
           color: getColor(state),
+          fontFamily: theme.fonts.body2,
+        }),
+        option: (provided, state) => ({
+          ...provided,
+          color: getColor(state),
+          opacity: state.isDisabled ? 0.5 : 1,
         }),
         dropdownIndicator: (provided, state) => ({
           ...provided,
           color: getColor(state),
           ":hover": {
-            color: state.isDisabled ? theme.colors.gray : theme.colors.primary,
+            color: state.isDisabled
+              ? theme.colors.disabled
+              : theme.colors.primary,
           },
         }),
         input: (provided, state) => ({

@@ -24,12 +24,12 @@ export default {
     },
   },
   fonts: {
-    body: "'Bree Serif', serif",
+    body: "'Bree Serif', Georgia, serif",
     body2:
       "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
     heading: "'Bree Serif', serif",
     monospace: "Menlo, monospace",
-    display: "'Pacifico', cursive",
+    display: "'Pacifico', Helvetica, sans-serif",
   },
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 72],
   fontWeights: {
@@ -178,6 +178,7 @@ export default {
         color: "gray",
         borderColor: "text",
       },
+      fontFamily: "body2",
     },
     slider: {
       "&:disabled": {
