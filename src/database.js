@@ -1,7 +1,7 @@
 import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
-import { getMapDefaultInset } from "./helpers/getDefautMapInset";
+import { getMapDefaultInset } from "./helpers/map";
 
 function loadVersions(db) {
   // v1.2.0
