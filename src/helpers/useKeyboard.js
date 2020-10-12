@@ -2,6 +2,10 @@ import { useEffect, useContext } from "react";
 
 import KeyboardContext from "../contexts/KeyboardContext";
 
+/**
+ * @param {KeyboardEvent} onKeyDown
+ * @param {KeyboardEvent} onKeyUp
+ */
 function useKeyboard(onKeyDown, onKeyUp) {
   const { keyEmitter } = useContext(KeyboardContext);
   useEffect(() => {
