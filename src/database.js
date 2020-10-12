@@ -1,6 +1,7 @@
 import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
+import { getMapDefaultInset } from "./helpers/getDefautMapInset";
 
 function loadVersions(db) {
   // v1.2.0
@@ -217,7 +218,12 @@ function loadVersions(db) {
           map.group = "";
           map.grid = {
             size: { x: map.gridX, y: map.gridY },
-            inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+            inset: getMapDefaultInset(
+              map.width,
+              map.height,
+              map.gridX,
+              map.gridY
+            ),
             type: "square",
           };
           delete map.gridX;
