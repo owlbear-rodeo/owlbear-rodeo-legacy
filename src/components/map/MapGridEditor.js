@@ -146,15 +146,15 @@ function MapGridEditor({ map, onGridChange }) {
     }
   }
 
-  function nudgeGrid(direction) {
+  function nudgeGrid(direction, scale) {
     const inset = map.grid.inset;
     const gridSizeNormalized = Vector2.divide(
       Vector2.subtract(inset.bottomRight, inset.topLeft),
       map.grid.size
     );
-    const offset = Vector2.divide(
+    const offset = Vector2.multiply(
       Vector2.multiply(direction, gridSizeNormalized),
-      stageScale * 2
+      Math.min(scale / (stageScale * stageScale), 1)
     );
     onGridChange({
       topLeft: Vector2.add(inset.topLeft, offset),
@@ -162,18 +162,19 @@ function MapGridEditor({ map, onGridChange }) {
     });
   }
 
-  function handleKeyDown({ key }) {
+  function handleKeyDown({ key, shiftKey }) {
+    const nudgeAmount = shiftKey ? 2 : 0.5;
     if (key === "ArrowUp") {
-      nudgeGrid({ x: 0, y: -1 });
+      nudgeGrid({ x: 0, y: -1 }, nudgeAmount);
     }
     if (key === "ArrowLeft") {
-      nudgeGrid({ x: -1, y: 0 });
+      nudgeGrid({ x: -1, y: 0 }, nudgeAmount);
     }
     if (key === "ArrowRight") {
-      nudgeGrid({ x: 1, y: 0 });
+      nudgeGrid({ x: 1, y: 0 }, nudgeAmount);
     }
     if (key === "ArrowDown") {
-      nudgeGrid({ x: 0, y: 1 });
+      nudgeGrid({ x: 0, y: 1 }, nudgeAmount);
     }
   }
 
