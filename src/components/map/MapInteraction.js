@@ -32,8 +32,7 @@ function MapInteraction({
   useEffect(() => {
     if (map === null) {
       setMapLoaded(false);
-    }
-    if (mapImageSourceStatus === "loaded") {
+    } else if (mapImageSourceStatus === "loaded") {
       setMapLoaded(true);
     }
   }, [mapImageSourceStatus, map]);

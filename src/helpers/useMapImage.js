@@ -3,6 +3,8 @@ import useImage from "use-image";
 
 import useDataSource from "./useDataSource";
 
+import { isEmpty } from "./shared";
+
 import { mapSources as defaultMapSources } from "../maps";
 
 function useMapImage(map) {
@@ -38,6 +40,8 @@ function useMapImage(map) {
       if (map.file && map.quality !== mapSourceMap.quality) {
         updateMapSource();
       }
+    } else if (!map && !isEmpty(mapSourceMap)) {
+      setMapSourceMap({});
     }
   }, [map, mapSourceMap]);
 
