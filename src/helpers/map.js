@@ -1,3 +1,5 @@
+import GridSizeModel from "../ml/gridSize/GridSizeModel";
+
 export function getMapDefaultInset(width, height, gridX, gridY) {
   // Max the width
   const gridScale = width / gridX;
@@ -33,33 +35,98 @@ function dividers(a, b) {
 const gridSizeMean = { x: 31.567792, y: 32.597987 };
 const gridSizeStd = { x: 14.438842, y: 15.582376 };
 
-// Most grid sizes are above 10 and below 100
+// Most grid sizes are above 10 and below 200
+const minGridSize = 10;
+const maxGridSize = 200;
+
 function gridSizeVaild(x, y) {
-  return x > 10 && y > 10 && x < 100 && y < 100;
+  return (
+    x > minGridSize && y > minGridSize && x < maxGridSize && y < maxGridSize
+  );
 }
 
-export function gridSizeHeuristic(width, height) {
-  const div = dividers(width, height);
-  if (div.length > 0) {
-    // Find the best division by comparing the absolute z-scores of each axis
-    let bestX = 1;
-    let bestY = 1;
-    let bestScore = Number.MAX_VALUE;
-    for (let scale of div) {
-      const x = Math.floor(width / scale);
-      const y = Math.floor(height / scale);
-      const xScore = Math.abs((x - gridSizeMean.x) / gridSizeStd.x);
-      const yScore = Math.abs((y - gridSizeMean.y) / gridSizeStd.y);
-      if (xScore < bestScore || yScore < bestScore) {
-        bestX = x;
-        bestY = y;
-        bestScore = Math.min(xScore, yScore);
-      }
-    }
-
-    if (gridSizeVaild(bestX, bestY)) {
-      return { x: bestX, y: bestY };
+function gridSizeHeuristic(image, candidates) {
+  const width = image.width;
+  const height = image.height;
+  // Find the best candidate by comparing the absolute z-scores of each axis
+  let bestX = 1;
+  let bestY = 1;
+  let bestScore = Number.MAX_VALUE;
+  for (let scale of candidates) {
+    const x = Math.floor(width / scale);
+    const y = Math.floor(height / scale);
+    const xScore = Math.abs((x - gridSizeMean.x) / gridSizeStd.x);
+    const yScore = Math.abs((y - gridSizeMean.y) / gridSizeStd.y);
+    if (xScore < bestScore || yScore < bestScore) {
+      bestX = x;
+      bestY = y;
+      bestScore = Math.min(xScore, yScore);
     }
   }
-  return { x: 22, y: 22 };
+
+  if (gridSizeVaild(bestX, bestY)) {
+    return { x: bestX, y: bestY };
+  } else {
+    return null;
+  }
+}
+
+async function gridSizeML(image, candidates) {
+  const width = image.width;
+  const height = image.height;
+  const ratio = width / height;
+  let canvas = document.createElement("canvas");
+  let context = canvas.getContext("2d");
+  canvas.width = 2048;
+  canvas.height = 2048 / ratio;
+
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  let imageData = context.getImageData(0, canvas.height / 2 - 16, 2048, 32);
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const r = imageData.data[i];
+    const g = imageData.data[i + 1];
+    const b = imageData.data[i + 2];
+    // ITU-R 601-2 Luma Transform
+    const luma = (r * 299) / 1000 + (g * 587) / 1000 + (b * 114) / 1000;
+
+    imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = luma;
+  }
+
+  const model = new GridSizeModel();
+  const prediction = await model.predict(imageData);
+
+  // Find the candidate that is closest to the prediction
+  let bestScale = 1;
+  let bestScore = Number.MAX_VALUE;
+  for (let scale of candidates) {
+    const x = Math.floor(width / scale);
+    const score = Math.abs(x - prediction);
+    if (score < bestScore && x > minGridSize && x < maxGridSize) {
+      bestScale = scale;
+      bestScore = score;
+    }
+  }
+
+  const x = Math.floor(width / bestScale);
+  const y = Math.floor(height / bestScale);
+
+  if (gridSizeVaild(x, y)) {
+    return { x, y };
+  } else {
+    return null;
+  }
+}
+
+export async function getGridSize(image) {
+  const candidates = dividers(image.width, image.height);
+  let prediction = await gridSizeML(image, candidates);
+  if (!prediction) {
+    prediction = gridSizeHeuristic(image, candidates);
+  }
+  if (!prediction) {
+    prediction = { x: 22, y: 22 };
+  }
+
+  return prediction;
 }

@@ -16,7 +16,7 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { getMapDefaultInset, gridSizeHeuristic } from "../helpers/map";
+import { getMapDefaultInset, getGridSize } from "../helpers/map";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -131,7 +131,7 @@ function SelectMapModal({
           }
 
           if (!gridSize) {
-            gridSize = gridSizeHeuristic(image.width, image.height);
+            gridSize = await getGridSize(image);
           }
 
           // Remove file extension
