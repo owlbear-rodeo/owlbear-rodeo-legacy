@@ -78,11 +78,16 @@ async function gridSizeML(image, candidates) {
   let canvas = document.createElement("canvas");
   let context = canvas.getContext("2d");
   canvas.width = 2048;
-  canvas.height = 2048 / ratio;
+  canvas.height = Math.floor(2048 / ratio);
 
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  let imageData = context.getImageData(0, canvas.height / 2 - 16, 2048, 32);
+  let imageData = context.getImageData(
+    0,
+    Math.floor(canvas.height / 2) - 16,
+    2048,
+    32
+  );
   for (let i = 0; i < imageData.data.length; i += 4) {
     const r = imageData.data[i];
     const g = imageData.data[i + 1];
