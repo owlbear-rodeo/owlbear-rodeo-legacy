@@ -6,7 +6,7 @@ import StreamMuteIcon from "../../icons/StreamMuteIcon";
 import Banner from "../Banner";
 
 function Stream({ stream, nickname }) {
-  const [streamVolume, setStreamVolume] = useState(1);
+  const [streamVolume, setStreamVolume] = useState(0);
   const [showStreamInteractBanner, setShowStreamInteractBanner] = useState(
     false
   );
@@ -21,6 +21,7 @@ function Stream({ stream, nickname }) {
         .play()
         .then(() => {
           // Played fine
+          setStreamVolume(1);
         })
         .catch(() => {
           // Unable to autoplay
@@ -46,12 +47,17 @@ function Stream({ stream, nickname }) {
   function handleVolumeChange(event) {
     const volume = parseFloat(event.target.value);
     setStreamVolume(volume);
+    if (showStreamInteractBanner) {
+      audioRef.current.play().then(() => {
+        setShowStreamInteractBanner(false);
+      });
+    }
   }
 
   // Use an audio context gain node to control volume to go past 100%
   const audioGainRef = useRef();
   useEffect(() => {
-    if (stream) {
+    if (stream && !streamMuted) {
       let audioContext = new AudioContext();
       let source = audioContext.createMediaStreamSource(stream);
       let gainNode = audioContext.createGain();
@@ -60,7 +66,7 @@ function Stream({ stream, nickname }) {
       gainNode.connect(audioContext.destination);
       audioGainRef.current = gainNode;
     }
-  }, [stream]);
+  }, [stream, streamMuted]);
 
   // Platforms like iOS don't allow you to control audio volume
   // Detect this by trying to change the audio volume
@@ -71,7 +77,7 @@ function Stream({ stream, nickname }) {
     if (audioRef.current) {
       const prevVolume = audioRef.current.volume;
       audioRef.current.volume = 0.5;
-      setIsVolumeControlAvailable(audioRef.current.volume !== 0.5);
+      setIsVolumeControlAvailable(audioRef.current.volume === 0.5);
       audioRef.current.volume = prevVolume;
     }
   }, [stream]);
