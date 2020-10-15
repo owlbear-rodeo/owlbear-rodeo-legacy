@@ -6,10 +6,6 @@ import { useThemeUI } from "theme-ui";
 function Select({ creatable, ...props }) {
   const { theme } = useThemeUI();
 
-  function getColor(state) {
-    return state.isDisabled ? theme.colors.gray : theme.colors.text;
-  }
-
   const Component = creatable ? Creatable : ReactSelect;
 
   return (
@@ -18,32 +14,34 @@ function Select({ creatable, ...props }) {
         menu: (provided, state) => ({
           ...provided,
           backgroundColor: theme.colors.background,
-          color: getColor(state),
+          color: theme.colors.text,
           borderRadius: "4px",
           borderColor: theme.colors.gray,
           borderStyle: "solid",
           borderWidth: "1px",
           fontFamily: theme.fonts.body2,
+          opacity: state.isDisabled ? 0.5 : 1,
         }),
         control: (provided, state) => ({
           ...provided,
           backgroundColor: theme.colors.background,
-          color: getColor(state),
+          color: theme.colors.text,
           borderColor: theme.colors.text,
+          opacity: state.isDisabled ? 0.5 : 1,
         }),
-        singleValue: (provided, state) => ({
+        singleValue: (provided) => ({
           ...provided,
-          color: getColor(state),
+          color: theme.colors.text,
           fontFamily: theme.fonts.body2,
         }),
         option: (provided, state) => ({
           ...provided,
-          color: getColor(state),
+          color: theme.colors.text,
           opacity: state.isDisabled ? 0.5 : 1,
         }),
         dropdownIndicator: (provided, state) => ({
           ...provided,
-          color: getColor(state),
+          color: theme.colors.text,
           ":hover": {
             color: state.isDisabled
               ? theme.colors.disabled
@@ -52,7 +50,8 @@ function Select({ creatable, ...props }) {
         }),
         input: (provided, state) => ({
           ...provided,
-          color: getColor(state),
+          color: theme.colors.text,
+          opacity: state.isDisabled ? 0.5 : 1,
         }),
       }}
       theme={(t) => ({

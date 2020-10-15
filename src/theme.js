@@ -175,7 +175,7 @@ export default {
       },
       "&:disabled": {
         backgroundColor: "muted",
-        color: "gray",
+        opacity: 0.5,
         borderColor: "text",
       },
       fontFamily: "body2",
