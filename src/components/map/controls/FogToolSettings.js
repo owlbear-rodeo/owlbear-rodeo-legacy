@@ -73,13 +73,13 @@ function BrushToolSettings({
   const drawTools = [
     {
       id: "polygon",
-      title: "Fog Polygon",
+      title: "Fog Polygon (P)",
       isSelected: settings.type === "polygon",
       icon: <FogPolygonIcon />,
     },
     {
       id: "brush",
-      title: "Fog Brush",
+      title: "Fog Brush (B)",
       isSelected: settings.type === "brush",
       icon: <FogBrushIcon />,
     },
@@ -109,14 +109,14 @@ function BrushToolSettings({
       />
       <Divider vertical />
       <RadioIconButton
-        title="Toggle Fog"
+        title="Toggle Fog (T)"
         onClick={() => onSettingChange({ type: "toggle" })}
         isSelected={settings.type === "toggle"}
       >
         <FogToggleIcon />
       </RadioIconButton>
       <RadioIconButton
-        title="Remove Fog"
+        title="Remove Fog (R)"
         onClick={() => onSettingChange({ type: "remove" })}
         isSelected={settings.type === "remove"}
       >

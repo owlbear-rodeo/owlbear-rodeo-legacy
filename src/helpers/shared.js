@@ -69,3 +69,5 @@ export function groupBy(array, key) {
     return prev;
   }, {});
 }
+
+export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);

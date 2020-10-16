@@ -7,8 +7,8 @@ import BlendOffIcon from "../../../icons/BlendOffIcon";
 function AlphaBlendToggle({ useBlending, onBlendingChange }) {
   return (
     <IconButton
-      aria-label={useBlending ? "Disable Blending" : "Enable Blending"}
-      title={useBlending ? "Disable Blending" : "Enable Blending"}
+      aria-label={useBlending ? "Disable Blending (O)" : "Enable Blending (O)"}
+      title={useBlending ? "Disable Blending (O)" : "Enable Blending (O)"}
       onClick={() => onBlendingChange(!useBlending)}
     >
       {useBlending ? <BlendOnIcon /> : <BlendOffIcon />}

@@ -41,30 +41,30 @@ function MapContols({
     pan: {
       id: "pan",
       icon: <PanToolIcon />,
-      title: "Pan Tool",
+      title: "Pan Tool (W)",
     },
     fog: {
       id: "fog",
       icon: <FogToolIcon />,
-      title: "Fog Tool",
+      title: "Fog Tool (F)",
       SettingsComponent: FogToolSettings,
     },
     drawing: {
       id: "drawing",
       icon: <BrushToolIcon />,
-      title: "Drawing Tool",
+      title: "Drawing Tool (D)",
       SettingsComponent: DrawingToolSettings,
     },
     measure: {
       id: "measure",
       icon: <MeasureToolIcon />,
-      title: "Measure Tool",
+      title: "Measure Tool (M)",
       SettingsComponent: MeasureToolSettings,
     },
     pointer: {
       id: "pointer",
       icon: <PointerToolIcon />,
-      title: "Pointer Tool",
+      title: "Pointer Tool (Q)",
     },
   };
   const tools = ["pan", "fog", "drawing", "measure", "pointer"];

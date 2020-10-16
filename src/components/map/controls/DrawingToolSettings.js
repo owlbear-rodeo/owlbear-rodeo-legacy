@@ -78,37 +78,37 @@ function DrawingToolSettings({
   const tools = [
     {
       id: "brush",
-      title: "Brush",
+      title: "Brush (B)",
       isSelected: settings.type === "brush",
       icon: <BrushIcon />,
     },
     {
       id: "paint",
-      title: "Paint",
+      title: "Paint (P)",
       isSelected: settings.type === "paint",
       icon: <BrushPaintIcon />,
     },
     {
       id: "line",
-      title: "Line",
+      title: "Line (L)",
       isSelected: settings.type === "line",
       icon: <BrushLineIcon />,
     },
     {
       id: "rectangle",
-      title: "Rectangle",
+      title: "Rectangle (R)",
       isSelected: settings.type === "rectangle",
       icon: <BrushRectangleIcon />,
     },
     {
       id: "circle",
-      title: "Circle",
+      title: "Circle (C)",
       isSelected: settings.type === "circle",
       icon: <BrushCircleIcon />,
     },
     {
       id: "triangle",
-      title: "Triangle",
+      title: "Triangle (T)",
       isSelected: settings.type === "triangle",
       icon: <BrushTriangleIcon />,
     },
@@ -128,7 +128,7 @@ function DrawingToolSettings({
       />
       <Divider vertical />
       <RadioIconButton
-        title="Erase"
+        title="Erase (E)"
         onClick={() => onSettingChange({ type: "erase" })}
         isSelected={settings.type === "erase"}
         disabled={disabledActions.includes("erase")}
