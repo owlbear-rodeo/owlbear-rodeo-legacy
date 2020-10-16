@@ -1,7 +1,7 @@
 import defaultMaps from "./DefaultMaps.mp4";
 import customMaps from "./CustomMaps.mp4";
-import customMapsAdvanced from "./CustomMapsAdvanced.jpg";
-import resetingAndRemovingMaps from "./ResetingAndRemovingMaps.mp4";
+import editingMapsAdvanced from "./EditingMapsAdvanced.jpg";
+import resetAndRemovingMaps from "./ResetAndRemovingMaps.mp4";
 import usingDrawing from "./UsingDrawing.mp4";
 import openDiceTray from "./OpenDiceTray.mp4";
 import diceRolling from "./DiceRolling.mp4";
@@ -21,12 +21,14 @@ import startGame from "./StartGame.mp4";
 import diceSharing from "./DiceSharing.mp4";
 import usingTimer from "./UsingTimer.mp4";
 import usingPointer from "./UsingPointer.mp4";
+import mapEditor from "./MapEditor.mp4";
+import filteringMaps from "./FilteringMaps.mp4";
 
 export default {
   defaultMaps,
   customMaps,
-  customMapsAdvanced,
-  resetingAndRemovingMaps,
+  editingMapsAdvanced,
+  resetAndRemovingMaps,
   usingDrawing,
   openDiceTray,
   diceRolling,
@@ -46,4 +48,6 @@ export default {
   diceSharing,
   usingTimer,
   usingPointer,
+  mapEditor,
+  filteringMaps,
 };
