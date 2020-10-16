@@ -3,6 +3,7 @@ import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
 import TokenSettings from "../components/token/TokenSettings";
+import TokenPreview from "../components/token/TokenPreview";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 
@@ -62,6 +63,7 @@ function EditTokenModal({ isOpen, onDone, token }) {
         <Label pt={2} pb={1}>
           Edit token
         </Label>
+        <TokenPreview token={selectedTokenWithChanges} />
         <TokenSettings
           token={selectedTokenWithChanges}
           onSettingsChange={handleTokenSettingsChange}
