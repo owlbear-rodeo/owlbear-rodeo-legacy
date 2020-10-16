@@ -1,30 +1,32 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Flex, Button, Image, Text, IconButton, Link } from "theme-ui";
+import { useHistory } from "react-router-dom";
 
 import Footer from "../components/Footer";
 
 import StartModal from "../modals/StartModal";
 import JoinModal from "../modals/JoinModal";
-import DonateModal from "../modals/DonationModal";
 
 import AuthContext from "../contexts/AuthContext";
 
 import RedditIcon from "../icons/SocialRedditIcon";
 import TwitterIcon from "../icons/SocialTwitterIcon";
 import YouTubeIcon from "../icons/SocialYouTubeIcon";
+import DonateIcon from "../icons/DonateIcon";
 
 import owlington from "../images/Owlington.png";
 
 function Home() {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
 
   // Reset password on visiting home
   const { setPassword } = useContext(AuthContext);
   useEffect(() => {
     setPassword("");
   }, [setPassword]);
+
+  const history = useHistory();
 
   return (
     <Flex
@@ -58,13 +60,23 @@ function Home() {
           Beta v{process.env.REACT_APP_VERSION}
         </Text>
         <Button
-          m={2}
-          onClick={() => setIsDonateModalOpen(true)}
-          variant="secondary"
+          as="a"
+          href="/donate"
+          my={4}
+          mx={2}
+          onClick={(e) => {
+            e.preventDefault();
+            history.push("/donate");
+          }}
+          sx={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+          }}
         >
-          Support Us
+          Donate <DonateIcon />
         </Button>
-        <Flex sx={{ justifyContent: "center" }}>
+        <Flex mb={4} mt={0} sx={{ justifyContent: "center" }}>
           <Link href="https://www.reddit.com/r/OwlbearRodeo/">
             <IconButton title="Reddit" aria-label="Reddit">
               <RedditIcon />
@@ -88,10 +100,6 @@ function Home() {
         <StartModal
           isOpen={isStartModalOpen}
           onRequestClose={() => setIsStartModalOpen(false)}
-        />
-        <DonateModal
-          isOpen={isDonateModalOpen}
-          onRequestClose={() => setIsDonateModalOpen(false)}
         />
       </Flex>
       <Footer />

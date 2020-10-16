@@ -24,10 +24,10 @@ function Footer() {
       <Link m={2} to="/faq" variant="footer">
         FAQ
       </Link>
-      <Link m={2} to="/releaseNotes" variant="footer">
+      <Link m={2} to="/release-notes" variant="footer">
         Release Notes
       </Link>
-      <Link m={2} to="/howTo" variant="footer">
+      <Link m={2} to="/how-to" variant="footer">
         How To
       </Link>
     </Flex>

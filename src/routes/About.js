@@ -22,7 +22,7 @@ function About() {
         m={4}
       >
         <Text my={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
-          About ʕ•ᴥ•ʔ
+          About <span aria-hidden="true">ʕ•ᴥ•ʔ</span>
         </Text>
         <Text my={1} mt={2} variant="heading" as="h3" sx={{ fontSize: 3 }}>
           The Goal

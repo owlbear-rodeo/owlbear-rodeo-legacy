@@ -9,6 +9,7 @@ import About from "./routes/About";
 import FAQ from "./routes/FAQ";
 import ReleaseNotes from "./routes/ReleaseNotes";
 import HowTo from "./routes/HowTo";
+import Donate from "./routes/Donate";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
@@ -27,10 +28,14 @@ function App() {
             <KeyboardProvider>
               <Router>
                 <Switch>
-                  <Route path="/howTo">
+                  <Route path="/donate">
+                    <Donate />
+                  </Route>
+                  {/* Legacy support camel case routes */}
+                  <Route path={["/howTo", "/how-to"]}>
                     <HowTo />
                   </Route>
-                  <Route path="/releaseNotes">
+                  <Route path={["/releaseNotes", "/release-notes"]}>
                     <ReleaseNotes />
                   </Route>
                   <Route path="/about">
