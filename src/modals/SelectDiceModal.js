@@ -29,7 +29,7 @@ function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }) {
           onDone={onDone}
         />
         <Button my={2} variant="primary" onClick={() => onDone(selectedDice)}>
-          Done
+          Select
         </Button>
       </Flex>
     </Modal>
