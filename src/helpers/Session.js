@@ -58,6 +58,8 @@ class Session extends EventEmitter {
     super();
     this.socket = io(process.env.REACT_APP_BROKER_URL);
 
+    this.socket.emit("join party", null, null);
+
     this.socket.on(
       "party member joined",
       this._handlePartyMemberJoined.bind(this)
