@@ -32,11 +32,13 @@ To get access to these settings you can click the Edit Map button while a map is
 
 The topmost view of the Edit Map Screen is a grid editor. This allows you to visually set up any inset your map's grid may have.
 
+`Tip: When editing a grid you can use the arrow keys on your keyboard to nudge the grid in the vertical or horizontal direction.`
+
 Next there are the Column and Row properties. Columns represent how many grid cells your map has in the horizontal direction while Rows represents the amount of cells in the vertical direction.
 
 Next you can set the name of your map shown in the Map Select Screen.
 
-`Tip: If Owlbear Rodeo's grid detection feature fails to automatically fill the Column and Row properties for you, you can also include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows`
+`Tip: If Owlbear Rodeo's grid detection feature fails to automatically fill the Column and Row properties for you, you can also include them in the file name of the uploaded map. E.g. River [10x15] will create a map named River with 10 columns and 15 rows.`
 
 ## Editing Maps (Advanced)
 
