@@ -1,10 +1,11 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 import { useMedia } from "react-media";
 
+import RadioIconButton from "../../RadioIconButton";
+
 import ColorControl from "./ColorControl";
 import AlphaBlendToggle from "./AlphaBlendToggle";
-import RadioIconButton from "./RadioIconButton";
 import ToolSection from "./ToolSection";
 
 import BrushIcon from "../../../icons/BrushToolIcon";
@@ -21,7 +22,7 @@ import RedoButton from "./RedoButton";
 
 import Divider from "../../Divider";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import useKeyboard from "../../../helpers/useKeyboard";
 
 function DrawingToolSettings({
   settings,
@@ -29,49 +30,41 @@ function DrawingToolSettings({
   onToolAction,
   disabledActions,
 }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-
   // Keyboard shotcuts
-  useEffect(() => {
-    function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-      if (key === "b") {
-        onSettingChange({ type: "brush" });
-      } else if (key === "p") {
-        onSettingChange({ type: "paint" });
-      } else if (key === "l") {
-        onSettingChange({ type: "line" });
-      } else if (key === "r") {
-        onSettingChange({ type: "rectangle" });
-      } else if (key === "c") {
-        onSettingChange({ type: "circle" });
-      } else if (key === "t") {
-        onSettingChange({ type: "triangle" });
-      } else if (key === "e") {
-        onSettingChange({ type: "erase" });
-      } else if (key === "o") {
-        onSettingChange({ useBlending: !settings.useBlending });
-      } else if (
-        (key === "z" || key === "Z") &&
-        (ctrlKey || metaKey) &&
-        shiftKey &&
-        !disabledActions.includes("redo")
-      ) {
-        onToolAction("mapRedo");
-      } else if (
-        key === "z" &&
-        (ctrlKey || metaKey) &&
-        !shiftKey &&
-        !disabledActions.includes("undo")
-      ) {
-        onToolAction("mapUndo");
-      }
+  function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
+    if (key === "b") {
+      onSettingChange({ type: "brush" });
+    } else if (key === "p") {
+      onSettingChange({ type: "paint" });
+    } else if (key === "l") {
+      onSettingChange({ type: "line" });
+    } else if (key === "r") {
+      onSettingChange({ type: "rectangle" });
+    } else if (key === "c") {
+      onSettingChange({ type: "circle" });
+    } else if (key === "t") {
+      onSettingChange({ type: "triangle" });
+    } else if (key === "e") {
+      onSettingChange({ type: "erase" });
+    } else if (key === "o") {
+      onSettingChange({ useBlending: !settings.useBlending });
+    } else if (
+      (key === "z" || key === "Z") &&
+      (ctrlKey || metaKey) &&
+      shiftKey &&
+      !disabledActions.includes("redo")
+    ) {
+      onToolAction("mapRedo");
+    } else if (
+      key === "z" &&
+      (ctrlKey || metaKey) &&
+      !shiftKey &&
+      !disabledActions.includes("undo")
+    ) {
+      onToolAction("mapUndo");
     }
-
-    interactionEmitter.on("keyDown", handleKeyDown);
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-    };
-  });
+  }
+  useKeyboard(handleKeyDown);
 
   // Change to brush if on erase and it gets disabled
   useEffect(() => {
@@ -85,37 +78,37 @@ function DrawingToolSettings({
   const tools = [
     {
       id: "brush",
-      title: "Brush",
+      title: "Brush (B)",
       isSelected: settings.type === "brush",
       icon: <BrushIcon />,
     },
     {
       id: "paint",
-      title: "Paint",
+      title: "Paint (P)",
       isSelected: settings.type === "paint",
       icon: <BrushPaintIcon />,
     },
     {
       id: "line",
-      title: "Line",
+      title: "Line (L)",
       isSelected: settings.type === "line",
       icon: <BrushLineIcon />,
     },
     {
       id: "rectangle",
-      title: "Rectangle",
+      title: "Rectangle (R)",
       isSelected: settings.type === "rectangle",
       icon: <BrushRectangleIcon />,
     },
     {
       id: "circle",
-      title: "Circle",
+      title: "Circle (C)",
       isSelected: settings.type === "circle",
       icon: <BrushCircleIcon />,
     },
     {
       id: "triangle",
-      title: "Triangle",
+      title: "Triangle (T)",
       isSelected: settings.type === "triangle",
       icon: <BrushTriangleIcon />,
     },
@@ -135,7 +128,7 @@ function DrawingToolSettings({
       />
       <Divider vertical />
       <RadioIconButton
-        title="Erase"
+        title="Erase (E)"
         onClick={() => onSettingChange({ type: "erase" })}
         isSelected={settings.type === "erase"}
         disabled={disabledActions.includes("erase")}

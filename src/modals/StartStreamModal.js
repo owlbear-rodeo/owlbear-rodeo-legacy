@@ -18,7 +18,7 @@ function StartStreamModal({
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
       <Box>
         <Label pt={2} pb={1}>
-          Radio (experimental)
+          Audio Sharing (experimental)
         </Label>
         <Text as="p" mb={2} variant="caption">
           Share your computers audio with the party
@@ -28,12 +28,12 @@ function StartStreamModal({
         <Flex py={2}>
           {isSupported && !stream && (
             <Button sx={{ flexGrow: 1 }} onClick={onStreamStart}>
-              Start Radio
+              Start Sharing
             </Button>
           )}
           {isSupported && stream && (
             <Button sx={{ flexGrow: 1 }} onClick={() => onStreamEnd(stream)}>
-              Stop Radio
+              Stop Sharing
             </Button>
           )}
         </Flex>

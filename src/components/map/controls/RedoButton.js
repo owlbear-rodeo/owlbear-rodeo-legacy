@@ -3,9 +3,16 @@ import { IconButton } from "theme-ui";
 
 import RedoIcon from "../../../icons/RedoIcon";
 
+import { isMacLike } from "../../../helpers/shared";
+
 function RedoButton({ onClick, disabled }) {
   return (
-    <IconButton onClick={onClick} disabled={disabled}>
+    <IconButton
+      title={`Redo (${isMacLike ? "Cmd" : "Ctrl"} + Shift + Z)`}
+      aria-label={`Redo (${isMacLike ? "Cmd" : "Ctrl"} + Shift + Z)`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       <RedoIcon />
     </IconButton>
   );

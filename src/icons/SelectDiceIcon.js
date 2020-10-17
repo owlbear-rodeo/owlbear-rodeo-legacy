@@ -1,6 +1,6 @@
 import React from "react";
 
-function SelectMapIcon() {
+function SelectDiceIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function SelectMapIcon() {
   );
 }
 
-export default SelectMapIcon;
+export default SelectDiceIcon;

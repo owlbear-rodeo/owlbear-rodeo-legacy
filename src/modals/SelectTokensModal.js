@@ -1,41 +1,67 @@
-import React, { useRef, useContext, useState } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
+import Case from "case";
+
+import EditTokenModal from "./EditTokenModal";
+import EditGroupModal from "./EditGroupModal";
+import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
-import TokenSettings from "../components/token/TokenSettings";
 
 import blobToBuffer from "../helpers/blobToBuffer";
+import useKeyboard from "../helpers/useKeyboard";
+import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 import AuthContext from "../contexts/AuthContext";
-import { isEmpty } from "../helpers/shared";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, addToken, removeToken, updateToken } = useContext(
+  const { ownedTokens, addToken, removeTokens, updateTokens } = useContext(
     TokenDataContext
   );
-  const fileInputRef = useRef();
 
-  const [imageLoading, setImageLoading] = useState(false);
+  /**
+   * Search
+   */
+  const [search, setSearch] = useState("");
+  const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
 
-  const [selectedTokenId, setSelectedTokenId] = useState(null);
-  const selectedToken = ownedTokens.find(
-    (token) => token.id === selectedTokenId
+  function handleSearchChange(event) {
+    setSearch(event.target.value);
+  }
+
+  /**
+   * Group
+   */
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
+  async function handleTokensGroup(group) {
+    setIsGroupModalOpen(false);
+    await updateTokens(selectedTokenIds, { group });
+  }
+
+  const [tokensByGroup, tokenGroups] = useGroup(
+    ownedTokens,
+    filteredTokens,
+    !!search,
+    filteredTokenScores
   );
+
+  /**
+   * Image Upload
+   */
+
+  const fileInputRef = useRef();
+  const [imageLoading, setImageLoading] = useState(false);
 
   function openImageDialog() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }
-
-  function handleTokenAdd(token) {
-    addToken(token);
-    setSelectedTokenId(token.id);
   }
 
   async function handleImagesUpload(files) {
@@ -56,6 +82,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       // Clean string
       name = name.replace(/ +/g, " ");
       name = name.trim();
+      // Capitalize and remove underscores
+      name = Case.capital(name);
     }
     let image = new Image();
     setImageLoading(true);
@@ -80,6 +108,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           defaultSize: 1,
           category: "character",
           hideInSidebar: false,
+          group: "",
         });
         setImageLoading(false);
         resolve();
@@ -89,52 +118,99 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     });
   }
 
-  async function handleTokenSelect(token) {
-    await applyTokenChanges();
-    setSelectedTokenId(token.id);
+  /**
+   * Token controls
+   */
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTokenIds, setSelectedTokenIds] = useState([]);
+  const selectedTokens = ownedTokens.filter((token) =>
+    selectedTokenIds.includes(token.id)
+  );
+
+  function handleTokenAdd(token) {
+    addToken(token);
+    setSelectedTokenIds([token.id]);
   }
 
-  async function handleTokenRemove(id) {
-    await removeToken(id);
-    setSelectedTokenId(null);
-    setTokenSettingChanges({});
+  const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
+  async function handleTokensRemove() {
+    setIsTokensRemoveModalOpen(false);
+    await removeTokens(selectedTokenIds);
+    setSelectedTokenIds([]);
+  }
+
+  async function handleTokensHide(hideInSidebar) {
+    await updateTokens(selectedTokenIds, { hideInSidebar });
+  }
+
+  // Either single, multiple or range
+  const [selectMode, setSelectMode] = useState("single");
+
+  async function handleTokenSelect(token) {
+    handleItemSelect(
+      token,
+      selectMode,
+      selectedTokenIds,
+      setSelectedTokenIds,
+      tokensByGroup,
+      tokenGroups
+    );
   }
 
   /**
-   * Token settings
+   * Shortcuts
    */
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-
-  const [tokenSettingChanges, setTokenSettingChanges] = useState({});
-
-  function handleTokenSettingsChange(key, value) {
-    setTokenSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
-  }
-
-  async function applyTokenChanges() {
-    if (selectedTokenId && !isEmpty(tokenSettingChanges)) {
-      // Ensure size value is positive
-      let verifiedChanges = { ...tokenSettingChanges };
-      if ("defaultSize" in verifiedChanges) {
-        verifiedChanges.defaultSize = verifiedChanges.defaultSize || 1;
+  function handleKeyDown({ key }) {
+    if (!isOpen) {
+      return;
+    }
+    if (key === "Shift") {
+      setSelectMode("range");
+    }
+    if (key === "Control" || key === "Meta") {
+      setSelectMode("multiple");
+    }
+    if (key === "Backspace" || key === "Delete") {
+      // Selected tokens and none are default
+      if (
+        selectedTokenIds.length > 0 &&
+        !selectedTokens.some((token) => token.type === "default")
+      ) {
+        setIsTokensRemoveModalOpen(true);
       }
-
-      await updateToken(selectedTokenId, verifiedChanges);
-      setTokenSettingChanges({});
     }
   }
 
-  async function handleRequestClose() {
-    await applyTokenChanges();
-    onRequestClose();
+  function handleKeyUp({ key }) {
+    if (!isOpen) {
+      return;
+    }
+    if (key === "Shift" && selectMode === "range") {
+      setSelectMode("single");
+    }
+    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+      setSelectMode("single");
+    }
   }
 
-  const selectedTokenWithChanges = { ...selectedToken, ...tokenSettingChanges };
+  useKeyboard(handleKeyDown, handleKeyUp);
+
+  // Set select mode to single when alt+tabing
+  useEffect(() => {
+    function handleBlur() {
+      setSelectMode("single");
+    }
+
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   return (
     <Modal
       isOpen={isOpen}
-      onRequestClose={handleRequestClose}
+      onRequestClose={onRequestClose}
       style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
@@ -155,27 +231,59 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             Edit or import a token
           </Label>
           <TokenTiles
-            tokens={ownedTokens}
+            tokens={tokensByGroup}
+            groups={tokenGroups}
             onTokenAdd={openImageDialog}
-            selectedToken={selectedTokenWithChanges}
+            onTokenEdit={() => setIsEditModalOpen(true)}
+            onTokensRemove={() => setIsTokensRemoveModalOpen(true)}
+            selectedTokens={selectedTokens}
             onTokenSelect={handleTokenSelect}
-            onTokenRemove={handleTokenRemove}
-          />
-          <TokenSettings
-            token={selectedTokenWithChanges}
-            showMore={showMoreSettings}
-            onSettingsChange={handleTokenSettingsChange}
-            onShowMoreChange={setShowMoreSettings}
+            selectMode={selectMode}
+            onSelectModeChange={setSelectMode}
+            search={search}
+            onSearchChange={handleSearchChange}
+            onTokensGroup={() => setIsGroupModalOpen(true)}
+            onTokensHide={handleTokensHide}
           />
           <Button
             variant="primary"
             disabled={imageLoading}
-            onClick={handleRequestClose}
+            onClick={onRequestClose}
           >
             Done
           </Button>
         </Flex>
       </ImageDrop>
+      <EditTokenModal
+        isOpen={isEditModalOpen}
+        onDone={() => setIsEditModalOpen(false)}
+        token={selectedTokens.length === 1 && selectedTokens[0]}
+      />
+      <EditGroupModal
+        isOpen={isGroupModalOpen}
+        onChange={handleTokensGroup}
+        groups={tokenGroups.filter(
+          (group) => group !== "" && group !== "default"
+        )}
+        onRequestClose={() => setIsGroupModalOpen(false)}
+        // Select the default group by testing whether all selected tokens are the same
+        defaultGroup={
+          selectedTokens.length > 0 &&
+          selectedTokens
+            .map((map) => map.group)
+            .reduce((prev, curr) => (prev === curr ? curr : undefined))
+        }
+      />
+      <ConfirmModal
+        isOpen={isTokensRemoveModalOpen}
+        onRequestClose={() => setIsTokensRemoveModalOpen(false)}
+        onConfirm={handleTokensRemove}
+        confirmText="Remove"
+        label={`Remove ${selectedTokenIds.length} Token${
+          selectedTokenIds.length > 1 ? "s" : ""
+        }`}
+        description="This operation cannot be undone."
+      />
     </Modal>
   );
 }

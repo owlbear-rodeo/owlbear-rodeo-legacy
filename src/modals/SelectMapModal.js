@@ -1,29 +1,32 @@
-import React, { useRef, useState, useContext } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
+import Case from "case";
+
+import EditMapModal from "./EditMapModal";
+import EditGroupModal from "./EditGroupModal";
+import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import MapTiles from "../components/map/MapTiles";
-import MapSettings from "../components/map/MapSettings";
 import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
+import useKeyboard from "../helpers/useKeyboard";
+import { resizeImage } from "../helpers/image";
+import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
+import { getMapDefaultInset, getGridSize } from "../helpers/map";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
-import { isEmpty } from "../helpers/shared";
-import { resizeImage } from "../helpers/image";
-
-const defaultMapSize = 22;
 const defaultMapProps = {
   // Grid type
-  // TODO: add support for hex horizontal and hex vertical
-  gridType: "grid",
   showGrid: false,
   snapToGrid: true,
   quality: "original",
+  group: "",
 };
 
 const mapResolutions = [
@@ -46,23 +49,45 @@ function SelectMapModal({
     ownedMaps,
     mapStates,
     addMap,
-    removeMap,
+    removeMaps,
     resetMap,
     updateMap,
-    updateMapState,
+    updateMaps,
   } = useContext(MapDataContext);
 
-  const [imageLoading, setImageLoading] = useState(false);
+  /**
+   * Search
+   */
+  const [search, setSearch] = useState("");
+  const [filteredMaps, filteredMapScores] = useSearch(ownedMaps, search);
 
-  // The map selected in the modal
-  const [selectedMapId, setSelectedMapId] = useState(null);
+  function handleSearchChange(event) {
+    setSearch(event.target.value);
+  }
 
-  const selectedMap = ownedMaps.find((map) => map.id === selectedMapId);
-  const selectedMapState = mapStates.find(
-    (state) => state.mapId === selectedMapId
+  /**
+   * Group
+   */
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
+  async function handleMapsGroup(group) {
+    setIsGroupModalOpen(false);
+    updateMaps(selectedMapIds, { group });
+  }
+
+  const [mapsByGroup, mapGroups] = useGroup(
+    ownedMaps,
+    filteredMaps,
+    !!search,
+    filteredMapScores
   );
 
+  /**
+   * Image Upload
+   */
+
   const fileInputRef = useRef();
+  const [imageLoading, setImageLoading] = useState(false);
 
   async function handleImagesUpload(files) {
     for (let file of files) {
@@ -76,34 +101,6 @@ function SelectMapModal({
     if (!file) {
       return Promise.reject();
     }
-    let fileGridX = defaultMapSize;
-    let fileGridY = defaultMapSize;
-    let name = "Unknown Map";
-    if (file.name) {
-      // TODO: match all not supported on safari, find alternative
-      if (file.name.matchAll) {
-        // Match against a regex to find the grid size in the file name
-        // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
-        const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
-        if (gridMatches.length > 0) {
-          const lastMatch = gridMatches[gridMatches.length - 1];
-          const matchX = parseInt(lastMatch[1]);
-          const matchY = parseInt(lastMatch[3]);
-          if (!isNaN(matchX) && !isNaN(matchY)) {
-            fileGridX = matchX;
-            fileGridY = matchY;
-          }
-        }
-      }
-
-      // Remove file extension
-      name = file.name.replace(/\.[^/.]+$/, "");
-      // Removed grid size expression
-      name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
-      // Clean string
-      name = name.replace(/ +/g, " ");
-      name = name.trim();
-    }
     let image = new Image();
     setImageLoading(true);
 
@@ -115,6 +112,39 @@ function SelectMapModal({
 
     return new Promise((resolve, reject) => {
       image.onload = async function () {
+        // Find name and grid size
+        let gridSize;
+        let name = "Unknown Map";
+        if (file.name) {
+          if (file.name.matchAll) {
+            // Match against a regex to find the grid size in the file name
+            // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
+            const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+            if (gridMatches.length > 0) {
+              const lastMatch = gridMatches[gridMatches.length - 1];
+              const matchX = parseInt(lastMatch[1]);
+              const matchY = parseInt(lastMatch[3]);
+              if (!isNaN(matchX) && !isNaN(matchY)) {
+                gridSize = { x: matchX, y: matchY };
+              }
+            }
+          }
+
+          if (!gridSize) {
+            gridSize = await getGridSize(image);
+          }
+
+          // Remove file extension
+          name = file.name.replace(/\.[^/.]+$/, "");
+          // Removed grid size expression
+          name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
+          // Clean string
+          name = name.replace(/ +/g, " ");
+          name = name.trim();
+          // Capitalize and remove underscores
+          name = Case.capital(name);
+        }
+
         // Create resolutions
         const resolutions = {};
         for (let resolution of mapResolutions) {
@@ -142,8 +172,16 @@ function SelectMapModal({
           resolutions,
           name,
           type: "file",
-          gridX: fileGridX,
-          gridY: fileGridY,
+          grid: {
+            size: gridSize,
+            inset: getMapDefaultInset(
+              image.width,
+              image.height,
+              gridSize.x,
+              gridSize.y
+            ),
+            type: "square",
+          },
           width: image.width,
           height: image.height,
           id: shortid.generate(),
@@ -168,43 +206,67 @@ function SelectMapModal({
     }
   }
 
+  /**
+   * Map Controls
+   */
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // The map selected in the modal
+  const [selectedMapIds, setSelectedMapIds] = useState([]);
+
+  const selectedMaps = ownedMaps.filter((map) =>
+    selectedMapIds.includes(map.id)
+  );
+  const selectedMapStates = mapStates.filter((state) =>
+    selectedMapIds.includes(state.mapId)
+  );
+
   async function handleMapAdd(map) {
     await addMap(map);
-    setSelectedMapId(map.id);
+    setSelectedMapIds([map.id]);
   }
 
-  async function handleMapRemove(id) {
-    await removeMap(id);
-    setMapSettingChanges({});
-    setMapStateSettingChanges({});
-    setSelectedMapId(null);
+  const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
+  async function handleMapsRemove() {
+    setIsMapsRemoveModalOpen(false);
+    await removeMaps(selectedMapIds);
+    setSelectedMapIds([]);
     // Removed the map from the map screen if needed
-    if (currentMap && currentMap.id === selectedMapId) {
+    if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
     }
   }
 
-  async function handleMapSelect(map) {
-    await applyMapChanges();
-    if (map) {
-      setSelectedMapId(map.id);
-    } else {
-      setSelectedMapId(null);
+  const [isMapsResetModalOpen, setIsMapsResetModalOpen] = useState(false);
+  async function handleMapsReset() {
+    setIsMapsResetModalOpen(false);
+    for (let id of selectedMapIds) {
+      const newState = await resetMap(id);
+      // Reset the state of the current map if needed
+      if (currentMap && currentMap.id === id) {
+        onMapStateChange(newState);
+      }
     }
   }
 
-  async function handleMapReset(id) {
-    const newState = await resetMap(id);
-    // Reset the state of the current map if needed
-    if (currentMap && currentMap.id === selectedMapId) {
-      onMapStateChange(newState);
-    }
+  // Either single, multiple or range
+  const [selectMode, setSelectMode] = useState("single");
+
+  function handleMapSelect(map) {
+    handleItemSelect(
+      map,
+      selectMode,
+      selectedMapIds,
+      setSelectedMapIds,
+      mapsByGroup,
+      mapGroups
+    );
   }
+
+  /**
+   * Modal Controls
+   */
 
   async function handleClose() {
-    if (selectedMapId) {
-      await applyMapChanges();
-    }
     onDone();
   }
 
@@ -212,15 +274,11 @@ function SelectMapModal({
     if (imageLoading) {
       return;
     }
-    if (selectedMapId) {
-      await applyMapChanges();
+    if (selectedMapIds.length === 1) {
       // Update last used for cache invalidation
       const lastUsed = Date.now();
-      await updateMap(selectedMapId, { lastUsed });
-      onMapChange(
-        { ...selectedMapWithChanges, lastUsed },
-        selectedMapStateWithChanges
-      );
+      await updateMap(selectedMapIds[0], { lastUsed });
+      onMapChange({ ...selectedMaps[0], lastUsed }, selectedMapStates[0]);
     } else {
       onMapChange(null, null);
     }
@@ -228,58 +286,54 @@ function SelectMapModal({
   }
 
   /**
-   * Map settings
+   * Shortcuts
    */
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-  // Local cache of map setting changes
-  // Applied when done is clicked or map selection is changed
-  const [mapSettingChanges, setMapSettingChanges] = useState({});
-  const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
-
-  function handleMapSettingsChange(key, value) {
-    setMapSettingChanges((prevChanges) => ({
-      ...prevChanges,
-      [key]: value,
-      lastModified: Date.now(),
-    }));
-  }
-
-  function handleMapStateSettingsChange(key, value) {
-    setMapStateSettingChanges((prevChanges) => ({
-      ...prevChanges,
-      [key]: value,
-    }));
-  }
-
-  async function applyMapChanges() {
-    if (
-      selectedMapId &&
-      (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges))
-    ) {
-      // Ensure grid values are positive
-      let verifiedChanges = { ...mapSettingChanges };
-      if ("gridX" in verifiedChanges) {
-        verifiedChanges.gridX = verifiedChanges.gridX || 1;
+  function handleKeyDown({ key }) {
+    if (!isOpen) {
+      return;
+    }
+    if (key === "Shift") {
+      setSelectMode("range");
+    }
+    if (key === "Control" || key === "Meta") {
+      setSelectMode("multiple");
+    }
+    if (key === "Backspace" || key === "Delete") {
+      // Selected maps and none are default
+      if (
+        selectedMapIds.length > 0 &&
+        !selectedMaps.some((map) => map.type === "default")
+      ) {
+        setIsMapsRemoveModalOpen(true);
       }
-      if ("gridY" in verifiedChanges) {
-        verifiedChanges.gridY = verifiedChanges.gridY || 1;
-      }
-      await updateMap(selectedMapId, verifiedChanges);
-      await updateMapState(selectedMapId, mapStateSettingChanges);
-
-      setMapSettingChanges({});
-      setMapStateSettingChanges({});
     }
   }
 
-  const selectedMapWithChanges = selectedMap && {
-    ...selectedMap,
-    ...mapSettingChanges,
-  };
-  const selectedMapStateWithChanges = selectedMapState && {
-    ...selectedMapState,
-    ...mapStateSettingChanges,
-  };
+  function handleKeyUp({ key }) {
+    if (!isOpen) {
+      return;
+    }
+    if (key === "Shift" && selectMode === "range") {
+      setSelectMode("single");
+    }
+    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+      setSelectMode("single");
+    }
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+
+  // Set select mode to single when alt+tabing
+  useEffect(() => {
+    function handleBlur() {
+      setSelectMode("single");
+    }
+
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   return (
     <Modal
@@ -305,33 +359,74 @@ function SelectMapModal({
             Select or import a map
           </Label>
           <MapTiles
-            maps={ownedMaps}
+            maps={mapsByGroup}
+            groups={mapGroups}
             onMapAdd={openImageDialog}
-            onMapRemove={handleMapRemove}
-            selectedMap={selectedMapWithChanges}
-            selectedMapState={selectedMapStateWithChanges}
+            onMapEdit={() => setIsEditModalOpen(true)}
+            onMapsReset={() => setIsMapsResetModalOpen(true)}
+            onMapsRemove={() => setIsMapsRemoveModalOpen(true)}
+            selectedMaps={selectedMaps}
+            selectedMapStates={selectedMapStates}
             onMapSelect={handleMapSelect}
-            onMapReset={handleMapReset}
             onDone={handleDone}
-          />
-          <MapSettings
-            map={selectedMapWithChanges}
-            mapState={selectedMapStateWithChanges}
-            onSettingsChange={handleMapSettingsChange}
-            onStateSettingsChange={handleMapStateSettingsChange}
-            showMore={showMoreSettings}
-            onShowMoreChange={setShowMoreSettings}
+            selectMode={selectMode}
+            onSelectModeChange={setSelectMode}
+            search={search}
+            onSearchChange={handleSearchChange}
+            onMapsGroup={() => setIsGroupModalOpen(true)}
           />
           <Button
             variant="primary"
-            disabled={imageLoading}
+            disabled={imageLoading || selectedMapIds.length !== 1}
             onClick={handleDone}
+            mt={2}
           >
-            Done
+            Select
           </Button>
         </Flex>
       </ImageDrop>
       {imageLoading && <LoadingOverlay bg="overlay" />}
+      <EditMapModal
+        isOpen={isEditModalOpen}
+        onDone={() => setIsEditModalOpen(false)}
+        map={selectedMaps.length === 1 && selectedMaps[0]}
+        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
+      />
+      <EditGroupModal
+        isOpen={isGroupModalOpen}
+        onChange={handleMapsGroup}
+        groups={mapGroups.filter(
+          (group) => group !== "" && group !== "default"
+        )}
+        onRequestClose={() => setIsGroupModalOpen(false)}
+        // Select the default group by testing whether all selected maps are the same
+        defaultGroup={
+          selectedMaps.length > 0 &&
+          selectedMaps
+            .map((map) => map.group)
+            .reduce((prev, curr) => (prev === curr ? curr : undefined))
+        }
+      />
+      <ConfirmModal
+        isOpen={isMapsResetModalOpen}
+        onRequestClose={() => setIsMapsResetModalOpen(false)}
+        onConfirm={handleMapsReset}
+        confirmText="Reset"
+        label={`Reset ${selectedMapIds.length} Map${
+          selectedMapIds.length > 1 ? "s" : ""
+        }`}
+        description="This will remove all fog, drawings and tokens from the selected maps."
+      />
+      <ConfirmModal
+        isOpen={isMapsRemoveModalOpen}
+        onRequestClose={() => setIsMapsRemoveModalOpen(false)}
+        onConfirm={handleMapsRemove}
+        confirmText="Remove"
+        label={`Remove ${selectedMapIds.length} Map${
+          selectedMapIds.length > 1 ? "s" : ""
+        }`}
+        description="This operation cannot be undone."
+      />
     </Modal>
   );
 }

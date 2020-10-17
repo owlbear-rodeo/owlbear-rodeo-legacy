@@ -20,6 +20,7 @@ import {
   getRelativePointerPositionNormalized,
   Tick,
 } from "../../helpers/konva";
+import useKeyboard from "../../helpers/useKeyboard";
 
 function MapFog({
   map,
@@ -248,44 +249,37 @@ function MapFog({
   }, [toolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
 
   // Add keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown({ key }) {
-      if (key === "Enter" && toolSettings.type === "polygon" && drawingShape) {
-        finishDrawingPolygon();
-      }
-      if (key === "Escape" && drawingShape) {
-        setDrawingShape(null);
-      }
-      if (key === "Alt" && drawingShape) {
-        updateShapeColor();
-      }
+  function handleKeyDown({ key }) {
+    if (key === "Enter" && toolSettings.type === "polygon" && drawingShape) {
+      finishDrawingPolygon();
     }
+    if (key === "Escape" && drawingShape) {
+      setDrawingShape(null);
+    }
+    if (key === "Alt" && drawingShape) {
+      updateShapeColor();
+    }
+  }
 
-    function handleKeyUp({ key }) {
-      if (key === "Alt" && drawingShape) {
-        updateShapeColor();
+  function handleKeyUp({ key }) {
+    if (key === "Alt" && drawingShape) {
+      updateShapeColor();
+    }
+  }
+
+  function updateShapeColor() {
+    setDrawingShape((prevShape) => {
+      if (!prevShape) {
+        return;
       }
-    }
+      return {
+        ...prevShape,
+        color: toolSettings.useFogSubtract ? "black" : "red",
+      };
+    });
+  }
 
-    function updateShapeColor() {
-      setDrawingShape((prevShape) => {
-        if (!prevShape) {
-          return;
-        }
-        return {
-          ...prevShape,
-          color: toolSettings.useFogSubtract ? "black" : "red",
-        };
-      });
-    }
-
-    interactionEmitter.on("keyDown", handleKeyDown);
-    interactionEmitter.on("keyUp", handleKeyUp);
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-      interactionEmitter.off("keyUp", handleKeyUp);
-    };
-  }, [finishDrawingPolygon, interactionEmitter, drawingShape, toolSettings]);
+  useKeyboard(handleKeyDown, handleKeyUp);
 
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {

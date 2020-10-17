@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React from "react";
 import { Flex, Input, Text } from "theme-ui";
 
 import ToolSection from "./ToolSection";
@@ -8,45 +8,38 @@ import MeasureManhattanIcon from "../../../icons/MeasureManhattanIcon";
 
 import Divider from "../../Divider";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
+import useKeyboard from "../../../helpers/useKeyboard";
 
 function MeasureToolSettings({ settings, onSettingChange }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-
   // Keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown({ key }) {
-      if (key === "g") {
-        onSettingChange({ type: "chebyshev" });
-      } else if (key === "l") {
-        onSettingChange({ type: "euclidean" });
-      } else if (key === "c") {
-        onSettingChange({ type: "manhattan" });
-      }
+  function handleKeyDown({ key }) {
+    if (key === "g") {
+      onSettingChange({ type: "chebyshev" });
+    } else if (key === "l") {
+      onSettingChange({ type: "euclidean" });
+    } else if (key === "c") {
+      onSettingChange({ type: "manhattan" });
     }
-    interactionEmitter.on("keyDown", handleKeyDown);
+  }
 
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-    };
-  });
+  useKeyboard(handleKeyDown);
 
   const tools = [
     {
       id: "chebyshev",
-      title: "Grid Distance",
+      title: "Grid Distance (G)",
       isSelected: settings.type === "chebyshev",
       icon: <MeasureChebyshevIcon />,
     },
     {
       id: "euclidean",
-      title: "Line Distance",
+      title: "Line Distance (L)",
       isSelected: settings.type === "euclidean",
       icon: <MeasureEuclideanIcon />,
     },
     {
       id: "manhattan",
-      title: "City Block Distance",
+      title: "City Block Distance (C)",
       isSelected: settings.type === "manhattan",
       icon: <MeasureManhattanIcon />,
     },

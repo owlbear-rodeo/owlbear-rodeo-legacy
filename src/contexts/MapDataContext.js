@@ -45,9 +45,9 @@ export function MapDataProvider({ children }) {
           // Emulate the time increasing to avoid sort errors
           created: Date.now() + i,
           lastModified: Date.now() + i,
-          gridType: "grid",
           showGrid: false,
           snapToGrid: true,
+          group: "default",
         });
         // Add a state for the map if there isn't one already
         const state = await database.table("states").get(id);
@@ -101,6 +101,21 @@ export function MapDataProvider({ children }) {
     });
   }
 
+  async function removeMaps(ids) {
+    await database.table("maps").bulkDelete(ids);
+    await database.table("states").bulkDelete(ids);
+    setMaps((prevMaps) => {
+      const filtered = prevMaps.filter((map) => !ids.includes(map.id));
+      return filtered;
+    });
+    setMapStates((prevMapsStates) => {
+      const filtered = prevMapsStates.filter(
+        (state) => !ids.includes(state.mapId)
+      );
+      return filtered;
+    });
+  }
+
   async function resetMap(id) {
     const state = { ...defaultMapState, mapId: id };
     await database.table("states").put(state);
@@ -122,6 +137,22 @@ export function MapDataProvider({ children }) {
       const i = newMaps.findIndex((map) => map.id === id);
       if (i > -1) {
         newMaps[i] = { ...newMaps[i], ...update };
+      }
+      return newMaps;
+    });
+  }
+
+  async function updateMaps(ids, update) {
+    await Promise.all(
+      ids.map((id) => database.table("maps").update(id, update))
+    );
+    setMaps((prevMaps) => {
+      const newMaps = [...prevMaps];
+      for (let id of ids) {
+        const i = newMaps.findIndex((map) => map.id === id);
+        if (i > -1) {
+          newMaps[i] = { ...newMaps[i], ...update };
+        }
       }
       return newMaps;
     });
@@ -199,8 +230,10 @@ export function MapDataProvider({ children }) {
     mapStates,
     addMap,
     removeMap,
+    removeMaps,
     resetMap,
     updateMap,
+    updateMaps,
     updateMapState,
     putMap,
     getMap,

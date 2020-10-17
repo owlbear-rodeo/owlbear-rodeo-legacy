@@ -1,9 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React from "react";
 import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
+import RadioIconButton from "../../RadioIconButton";
+
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
-import RadioIconButton from "./RadioIconButton";
 import FogPreviewToggle from "./FogPreviewToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";
@@ -15,11 +16,11 @@ import FogSubtractIcon from "../../../icons/FogSubtractIcon";
 
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
+import ToolSection from "./ToolSection";
 
 import Divider from "../../Divider";
 
-import MapInteractionContext from "../../../contexts/MapInteractionContext";
-import ToolSection from "./ToolSection";
+import useKeyboard from "../../../helpers/useKeyboard";
 
 function BrushToolSettings({
   settings,
@@ -27,67 +28,58 @@ function BrushToolSettings({
   onToolAction,
   disabledActions,
 }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-
   // Keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-      if (key === "Alt") {
-        onSettingChange({ useFogSubtract: !settings.useFogSubtract });
-      } else if (key === "p") {
-        onSettingChange({ type: "polygon" });
-      } else if (key === "b") {
-        onSettingChange({ type: "brush" });
-      } else if (key === "t") {
-        onSettingChange({ type: "toggle" });
-      } else if (key === "r") {
-        onSettingChange({ type: "remove" });
-      } else if (key === "s") {
-        onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
-      } else if (key === "f") {
-        onSettingChange({ preview: !settings.preview });
-      } else if (
-        (key === "z" || key === "Z") &&
-        (ctrlKey || metaKey) &&
-        shiftKey &&
-        !disabledActions.includes("redo")
-      ) {
-        onToolAction("fogRedo");
-      } else if (
-        key === "z" &&
-        (ctrlKey || metaKey) &&
-        !shiftKey &&
-        !disabledActions.includes("undo")
-      ) {
-        onToolAction("fogUndo");
-      }
+  function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
+    if (key === "Alt") {
+      onSettingChange({ useFogSubtract: !settings.useFogSubtract });
+    } else if (key === "p") {
+      onSettingChange({ type: "polygon" });
+    } else if (key === "b") {
+      onSettingChange({ type: "brush" });
+    } else if (key === "t") {
+      onSettingChange({ type: "toggle" });
+    } else if (key === "r") {
+      onSettingChange({ type: "remove" });
+    } else if (key === "s") {
+      onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+    } else if (key === "f") {
+      onSettingChange({ preview: !settings.preview });
+    } else if (
+      (key === "z" || key === "Z") &&
+      (ctrlKey || metaKey) &&
+      shiftKey &&
+      !disabledActions.includes("redo")
+    ) {
+      onToolAction("fogRedo");
+    } else if (
+      key === "z" &&
+      (ctrlKey || metaKey) &&
+      !shiftKey &&
+      !disabledActions.includes("undo")
+    ) {
+      onToolAction("fogUndo");
     }
+  }
 
-    function handleKeyUp({ key }) {
-      if (key === "Alt") {
-        onSettingChange({ useFogSubtract: !settings.useFogSubtract });
-      }
+  function handleKeyUp({ key }) {
+    if (key === "Alt") {
+      onSettingChange({ useFogSubtract: !settings.useFogSubtract });
     }
+  }
 
-    interactionEmitter.on("keyDown", handleKeyDown);
-    interactionEmitter.on("keyUp", handleKeyUp);
-    return () => {
-      interactionEmitter.off("keyDown", handleKeyDown);
-      interactionEmitter.off("keyUp", handleKeyUp);
-    };
-  });
+  useKeyboard(handleKeyDown, handleKeyUp);
 
   const isSmallScreen = useMedia({ query: "(max-width: 799px)" });
   const drawTools = [
     {
       id: "polygon",
-      title: "Fog Polygon",
+      title: "Fog Polygon (P)",
       isSelected: settings.type === "polygon",
       icon: <FogPolygonIcon />,
     },
     {
       id: "brush",
-      title: "Fog Brush",
+      title: "Fog Brush (B)",
       isSelected: settings.type === "brush",
       icon: <FogBrushIcon />,
     },
@@ -117,14 +109,14 @@ function BrushToolSettings({
       />
       <Divider vertical />
       <RadioIconButton
-        title="Toggle Fog"
+        title="Toggle Fog (T)"
         onClick={() => onSettingChange({ type: "toggle" })}
         isSelected={settings.type === "toggle"}
       >
         <FogToggleIcon />
       </RadioIconButton>
       <RadioIconButton
-        title="Remove Fog"
+        title="Remove Fog (R)"
         onClick={() => onSettingChange({ type: "remove" })}
         isSelected={settings.type === "remove"}
       >

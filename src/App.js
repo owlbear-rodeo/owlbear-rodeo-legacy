@@ -9,13 +9,15 @@ import About from "./routes/About";
 import FAQ from "./routes/FAQ";
 import ReleaseNotes from "./routes/ReleaseNotes";
 import HowTo from "./routes/HowTo";
+import Donate from "./routes/Donate";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
 import { MapDataProvider } from "./contexts/MapDataContext";
 import { TokenDataProvider } from "./contexts/TokenDataContext";
 import { MapLoadingProvider } from "./contexts/MapLoadingContext";
-import { SettingsProvider } from "./contexts/SettingsContext.js";
+import { SettingsProvider } from "./contexts/SettingsContext";
+import { KeyboardProvider } from "./contexts/KeyboardContext";
 
 function App() {
   return (
@@ -23,34 +25,40 @@ function App() {
       <DatabaseProvider>
         <SettingsProvider>
           <AuthProvider>
-            <Router>
-              <Switch>
-                <Route path="/howTo">
-                  <HowTo />
-                </Route>
-                <Route path="/releaseNotes">
-                  <ReleaseNotes />
-                </Route>
-                <Route path="/about">
-                  <About />
-                </Route>
-                <Route path="/faq">
-                  <FAQ />
-                </Route>
-                <Route path="/game/:id">
-                  <MapLoadingProvider>
-                    <MapDataProvider>
-                      <TokenDataProvider>
-                        <Game />
-                      </TokenDataProvider>
-                    </MapDataProvider>
-                  </MapLoadingProvider>
-                </Route>
-                <Route path="/">
-                  <Home />
-                </Route>
-              </Switch>
-            </Router>
+            <KeyboardProvider>
+              <Router>
+                <Switch>
+                  <Route path="/donate">
+                    <Donate />
+                  </Route>
+                  {/* Legacy support camel case routes */}
+                  <Route path={["/howTo", "/how-to"]}>
+                    <HowTo />
+                  </Route>
+                  <Route path={["/releaseNotes", "/release-notes"]}>
+                    <ReleaseNotes />
+                  </Route>
+                  <Route path="/about">
+                    <About />
+                  </Route>
+                  <Route path="/faq">
+                    <FAQ />
+                  </Route>
+                  <Route path="/game/:id">
+                    <MapLoadingProvider>
+                      <MapDataProvider>
+                        <TokenDataProvider>
+                          <Game />
+                        </TokenDataProvider>
+                      </MapDataProvider>
+                    </MapLoadingProvider>
+                  </Route>
+                  <Route path="/">
+                    <Home />
+                  </Route>
+                </Switch>
+              </Router>
+            </KeyboardProvider>
           </AuthProvider>
         </SettingsProvider>
       </DatabaseProvider>

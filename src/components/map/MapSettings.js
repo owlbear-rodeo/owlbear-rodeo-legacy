@@ -1,26 +1,19 @@
 import React from "react";
-import {
-  Flex,
-  Box,
-  Label,
-  Input,
-  Checkbox,
-  IconButton,
-  Select,
-} from "theme-ui";
+import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 import { isEmpty } from "../../helpers/shared";
 
 import Divider from "../Divider";
+import Select from "../Select";
 
 const qualitySettings = [
-  { id: "low", name: "Low" },
-  { id: "medium", name: "Medium" },
-  { id: "high", name: "High" },
-  { id: "ultra", name: "Ultra High" },
-  { id: "original", name: "Original" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "ultra", label: "Ultra High" },
+  { value: "original", label: "Original" },
 ];
 
 function MapSettings({
@@ -40,6 +33,50 @@ function MapSettings({
         mapState.editFlags.filter((f) => f !== flag)
       );
     }
+  }
+
+  function handleGridSizeXChange(event) {
+    const value = parseInt(event.target.value) || 0;
+    const gridY = map.grid.size.y;
+
+    let inset = map.grid.inset;
+
+    if (value > 0) {
+      const gridScale =
+        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
+      inset.bottomRight.y = inset.topLeft.y + (gridY * gridScale) / map.height;
+    }
+
+    onSettingsChange("grid", {
+      ...map.grid,
+      inset,
+      size: {
+        ...map.grid.size,
+        x: value,
+      },
+    });
+  }
+
+  function handleGridSizeYChange(event) {
+    const value = parseInt(event.target.value) || 0;
+    const gridX = map.grid.size.x;
+
+    let inset = map.grid.inset;
+
+    if (gridX > 0) {
+      const gridScale =
+        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
+      inset.bottomRight.y = inset.topLeft.y + (value * gridScale) / map.height;
+    }
+
+    onSettingsChange("grid", {
+      ...map.grid,
+      inset,
+      size: {
+        ...map.grid.size,
+        y: value,
+      },
+    });
   }
 
   function getMapSize() {
@@ -64,10 +101,8 @@ function MapSettings({
           <Input
             type="number"
             name="gridX"
-            value={`${(map && map.gridX) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("gridX", parseInt(e.target.value))
-            }
+            value={`${(map && map.grid.size.x) || 0}`}
+            onChange={handleGridSizeXChange}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
@@ -78,43 +113,43 @@ function MapSettings({
           <Input
             type="number"
             name="gridY"
-            value={`${(map && map.gridY) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("gridY", parseInt(e.target.value))
-            }
+            value={`${(map && map.grid.size.y) || 0}`}
+            onChange={handleGridSizeYChange}
             disabled={mapEmpty || map.type === "default"}
             min={1}
             my={1}
           />
         </Box>
       </Flex>
+      <Box mt={2} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          name="name"
+          value={(map && map.name) || ""}
+          onChange={(e) => onSettingsChange("name", e.target.value)}
+          disabled={mapEmpty || map.type === "default"}
+          my={1}
+        />
+      </Box>
       {showMore && (
         <>
-          <Box mt={2} sx={{ flexGrow: 1 }}>
-            <Label htmlFor="name">Name</Label>
-            <Input
-              name="name"
-              value={(map && map.name) || ""}
-              onChange={(e) => onSettingsChange("name", e.target.value)}
-              disabled={mapEmpty || map.type === "default"}
-              my={1}
-            />
-          </Box>
           <Flex
             mt={2}
             mb={mapEmpty || map.type === "default" ? 2 : 0}
             sx={{ alignItems: "flex-end" }}
           >
-            <Box sx={{ width: "50%" }}>
-              <Label>Grid Type</Label>
+            <Box mb={1} sx={{ width: "50%" }}>
+              <Label mb={1}>Grid Type</Label>
               <Select
-                defaultValue="Square"
-                my={1}
-                disabled={mapEmpty || map.type === "default"}
-              >
-                <option>Square</option>
-                <option disabled>Hex (Coming Soon)</option>
-              </Select>
+                defaultValue={{ value: "square", label: "Square" }}
+                isDisabled={mapEmpty || map.type === "default"}
+                options={[
+                  { value: "square", label: "Square" },
+                  { value: "hex", label: "Hex (Coming Soon)" },
+                ]}
+                isOptionDisabled={(option) => option.value === "hex"}
+                isSearchable={false}
+              />
             </Box>
             <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
               <Label>
@@ -141,28 +176,25 @@ function MapSettings({
           </Flex>
           {!mapEmpty && map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>
-              <Box sx={{ width: "50%" }}>
-                <Label>Quality</Label>
+              <Box mb={1} sx={{ width: "50%" }}>
+                <Label mb={1}>Quality</Label>
                 <Select
-                  my={1}
-                  value={!mapEmpty && map.quality}
-                  disabled={mapEmpty}
-                  onChange={(e) => onSettingsChange("quality", e.target.value)}
-                >
-                  {qualitySettings.map((quality) => (
-                    <option
-                      key={quality.id}
-                      value={quality.id}
-                      disabled={
-                        mapEmpty ||
-                        (quality.id !== "original" &&
-                          !map.resolutions[quality.id])
-                      }
-                    >
-                      {quality.name}
-                    </option>
-                  ))}
-                </Select>
+                  options={qualitySettings}
+                  value={
+                    !mapEmpty &&
+                    qualitySettings.find((s) => s.value === map.quality)
+                  }
+                  isDisabled={mapEmpty}
+                  onChange={(option) =>
+                    onSettingsChange("quality", option.value)
+                  }
+                  isOptionDisabled={(option) =>
+                    mapEmpty ||
+                    (option.value !== "original" &&
+                      !map.resolutions[option.value])
+                  }
+                  isSearchable={false}
+                />
               </Box>
               <Label sx={{ width: "50%" }} ml={2}>
                 Size: {getMapSize()}

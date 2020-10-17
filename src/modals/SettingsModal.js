@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
 import {
-  Box,
   Label,
   Flex,
   Button,
@@ -16,6 +15,8 @@ import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 
 import useSetting from "../helpers/useSetting";
+
+import ConfirmModal from "./ConfirmModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
   const { database } = useContext(DatabaseContext);
@@ -65,7 +66,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
         <Flex sx={{ flexDirection: "column" }}>
           <Label py={2}>Settings</Label>
           <Divider bg="text" />
-          <Label py={2}>Accesibility:</Label>
+          <Label py={2}>Accessibility:</Label>
           <Label py={2}>
             <span style={{ marginRight: "4px" }}>Light theme</span>
             <Checkbox
@@ -103,26 +104,14 @@ function SettingsModal({ isOpen, onRequestClose }) {
           </Flex>
         </Flex>
       </Modal>
-      <Modal
+      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onRequestClose={() => setIsDeleteModalOpen(false)}
-      >
-        <Box>
-          <Label py={2}>Are you sure?</Label>
-          <Flex py={2}>
-            <Button
-              sx={{ flexGrow: 1 }}
-              m={1}
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button m={1} sx={{ flexGrow: 1 }} onClick={handleEraseAllData}>
-              Erase
-            </Button>
-          </Flex>
-        </Box>
-      </Modal>
+        onConfirm={handleEraseAllData}
+        label="Erase All Content?"
+        description="This will remove all data including saved maps and tokens."
+        confirmText="Erase"
+      />
     </>
   );
 }

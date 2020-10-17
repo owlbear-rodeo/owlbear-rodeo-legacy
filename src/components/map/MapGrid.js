@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Line, Group } from "react-konva";
 import useImage from "use-image";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
@@ -7,20 +6,23 @@ import MapInteractionContext from "../../contexts/MapInteractionContext";
 import useDataSource from "../../helpers/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
 
-import { getStrokeWidth } from "../../helpers/drawing";
 import { getImageLightness } from "../../helpers/image";
 
-function MapGrid({ map, gridSize }) {
-  const mapSource = useDataSource(map, defaultMapSources);
-  const [mapImage, mapLoadingStatus] = useImage(mapSource);
+import Grid from "../Grid";
 
-  const gridX = map && map.gridX;
-  const gridY = map && map.gridY;
-
+function MapGrid({ map, strokeWidth }) {
   const { mapWidth, mapHeight } = useContext(MapInteractionContext);
 
-  const lineSpacingX = mapWidth / gridX;
-  const lineSpacingY = mapHeight / gridY;
+  let mapSourceMap = map;
+  // Use lowest resolution for grid lightness
+  if (map && map.type === "file" && map.resolutions) {
+    const resolutionArray = Object.keys(map.resolutions);
+    if (resolutionArray.length > 0) {
+      mapSourceMap = map.resolutions[resolutionArray[0]];
+    }
+  }
+  const mapSource = useDataSource(mapSourceMap, defaultMapSources);
+  const [mapImage, mapLoadingStatus] = useImage(mapSource);
 
   const [isImageLight, setIsImageLight] = useState(true);
 
@@ -31,31 +33,26 @@ function MapGrid({ map, gridSize }) {
     }
   }, [mapImage, mapLoadingStatus]);
 
-  const lines = [];
-  for (let x = 1; x < gridX; x++) {
-    lines.push(
-      <Line
-        key={`grid_x_${x}`}
-        points={[x * lineSpacingX, 0, x * lineSpacingX, mapHeight]}
-        stroke={isImageLight ? "black" : "white"}
-        strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
-        opacity={0.5}
-      />
-    );
-  }
-  for (let y = 1; y < gridY; y++) {
-    lines.push(
-      <Line
-        key={`grid_y_${y}`}
-        points={[0, y * lineSpacingY, mapWidth, y * lineSpacingY]}
-        stroke={isImageLight ? "black" : "white"}
-        strokeWidth={getStrokeWidth(0.1, gridSize, mapWidth, mapHeight)}
-        opacity={0.5}
-      />
-    );
-  }
+  const gridX = map && map.grid.size.x;
+  const gridY = map && map.grid.size.y;
 
-  return <Group>{lines}</Group>;
+  const gridInset = map && map.grid.inset;
+
+  return (
+    <Grid
+      gridX={gridX}
+      gridY={gridY}
+      gridInset={gridInset}
+      strokeWidth={strokeWidth}
+      width={mapWidth}
+      height={mapHeight}
+      stroke={isImageLight ? "black" : "white"}
+    />
+  );
 }
+
+MapGrid.defaultProps = {
+  strokeWidth: 0.1,
+};
 
 export default MapGrid;

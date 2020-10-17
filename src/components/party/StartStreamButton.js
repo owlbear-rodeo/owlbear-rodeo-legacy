@@ -22,7 +22,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
         Browser not supported for audio sharing.
         <br />
         <br />
-        See <Link to="/howTo#sharingAudio">How To</Link> for more information.
+        See <Link to="/how-to#sharingAudio">How To</Link> for more information.
       </Text>
     </Box>
   );
@@ -35,7 +35,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
         Ensure "Share audio" is selected when sharing.
         <br />
         <br />
-        See <Link to="/howTo#sharingAudio">How To</Link> for more information.
+        See <Link to="/how-to#sharingAudio">How To</Link> for more information.
       </Text>
     </Box>
   );
@@ -77,8 +77,8 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }) {
     <>
       <IconButton
         m={1}
-        aria-label="Start Radio Stream"
-        title="Start Radio Stream"
+        aria-label="Share Audio"
+        title="Share Audio"
         onClick={openModal}
       >
         <svg

@@ -1,6 +1,7 @@
 import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
+import { getMapDefaultInset } from "./helpers/map";
 
 function loadVersions(db) {
   // v1.2.0
@@ -187,7 +188,7 @@ function loadVersions(db) {
   // v1.5.2 - Added automatic cache invalidation to maps
   db.version(11)
     .stores({})
-    .upgrade(async (tx) => {
+    .upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -198,12 +199,47 @@ function loadVersions(db) {
   // v1.5.2 - Added automatic cache invalidation to tokens
   db.version(12)
     .stores({})
-    .upgrade(async (tx) => {
+    .upgrade((tx) => {
       return tx
         .table("tokens")
         .toCollection()
         .modify((token) => {
           token.lastUsed = token.lastModified;
+        });
+    });
+  // v1.6.0 - Added map grouping and grid scale and offset
+  db.version(13)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.group = "";
+          map.grid = {
+            size: { x: map.gridX, y: map.gridY },
+            inset: getMapDefaultInset(
+              map.width,
+              map.height,
+              map.gridX,
+              map.gridY
+            ),
+            type: "square",
+          };
+          delete map.gridX;
+          delete map.gridY;
+          delete map.gridType;
+        });
+    });
+  // v1.6.0 - Added token grouping
+  db.version(14)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.group = "";
         });
     });
 }

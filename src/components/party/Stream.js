@@ -10,8 +10,8 @@ function Stream({ stream, nickname }) {
   const [showStreamInteractBanner, setShowStreamInteractBanner] = useState(
     false
   );
+  const [streamMuted, setStreamMuted] = useState(false);
   const audioRef = useRef();
-  const streamMuted = streamVolume === 0;
 
   useEffect(() => {
     if (audioRef.current) {
@@ -24,7 +24,7 @@ function Stream({ stream, nickname }) {
         })
         .catch(() => {
           // Unable to autoplay
-          setStreamVolume(0);
+          setStreamMuted(true);
           setShowStreamInteractBanner(true);
         });
     }
@@ -34,11 +34,11 @@ function Stream({ stream, nickname }) {
     if (audioRef.current) {
       if (streamMuted) {
         audioRef.current.play().then(() => {
-          setStreamVolume(1);
+          setStreamMuted(false);
           setShowStreamInteractBanner(false);
         });
       } else {
-        setStreamVolume(0);
+        setStreamMuted(true);
       }
     }
   }
@@ -48,11 +48,36 @@ function Stream({ stream, nickname }) {
     setStreamVolume(volume);
   }
 
+  // Platforms like iOS don't allow you to control audio volume
+  // Detect this by trying to change the audio volume
+  const [isVolumeControlAvailable, setIsVolumeControlAvailable] = useState(
+    true
+  );
+  useEffect(() => {
+    let audio = audioRef.current;
+    function checkVolumeControlAvailable() {
+      const prevVolume = audio.volume;
+      // Set volume to 0.5, then check if the value actually stuck 100ms later
+      audio.volume = 0.5;
+      setTimeout(() => {
+        setIsVolumeControlAvailable(audio.volume === 0.5);
+        audio.volume = prevVolume;
+      }, [100]);
+    }
+
+    audio.addEventListener("playing", checkVolumeControlAvailable);
+
+    return () => {
+      audio.removeEventListener("playing", checkVolumeControlAvailable);
+    };
+  }, []);
+
   // Use an audio context gain node to control volume to go past 100%
   const audioGainRef = useRef();
   useEffect(() => {
-    if (stream) {
-      let audioContext = new AudioContext();
+    let audioContext;
+    if (stream && !streamMuted && isVolumeControlAvailable) {
+      audioContext = new AudioContext();
       let source = audioContext.createMediaStreamSource(stream);
       let gainNode = audioContext.createGain();
       gainNode.gain.value = 0;
@@ -60,21 +85,11 @@ function Stream({ stream, nickname }) {
       gainNode.connect(audioContext.destination);
       audioGainRef.current = gainNode;
     }
-  }, [stream]);
 
-  // Platforms like iOS don't allow you to control audio volume
-  // Detect this by trying to change the audio volume
-  const [isVolumeControlAvailable, setIsVolumeControlAvailable] = useState(
-    true
-  );
-  useEffect(() => {
-    if (audioRef.current) {
-      const prevVolume = audioRef.current.volume;
-      audioRef.current.volume = 0.5;
-      setIsVolumeControlAvailable(audioRef.current.volume !== 0.5);
-      audioRef.current.volume = prevVolume;
-    }
-  }, [stream]);
+    return () => {
+      audioContext && audioContext.close();
+    };
+  }, [stream, streamMuted, isVolumeControlAvailable]);
 
   useEffect(() => {
     if (audioGainRef.current && audioRef.current) {
@@ -103,12 +118,12 @@ function Stream({ stream, nickname }) {
           <StreamMuteIcon muted={streamMuted} />
         </IconButton>
         <Slider
-          value={streamVolume}
+          value={streamMuted ? 0 : streamVolume}
           min={0}
           max={2}
           step={0.1}
           onChange={handleVolumeChange}
-          disabled={!isVolumeControlAvailable}
+          disabled={!isVolumeControlAvailable || streamMuted}
         />
         {stream && <audio ref={audioRef} playsInline muted={streamMuted} />}
       </Flex>

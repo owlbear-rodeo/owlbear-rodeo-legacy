@@ -26,6 +26,7 @@ export function TokenDataProvider({ children }) {
           ...defaultToken,
           id: `__default-${defaultToken.name}`,
           owner: userId,
+          group: "default",
         });
       }
       return defaultTokensWithIds;
@@ -60,6 +61,14 @@ export function TokenDataProvider({ children }) {
     });
   }
 
+  async function removeTokens(ids) {
+    await database.table("tokens").bulkDelete(ids);
+    setTokens((prevTokens) => {
+      const filtered = prevTokens.filter((token) => !ids.includes(token.id));
+      return filtered;
+    });
+  }
+
   async function updateToken(id, update) {
     const change = { ...update, lastModified: Date.now() };
     await database.table("tokens").update(id, change);
@@ -68,6 +77,23 @@ export function TokenDataProvider({ children }) {
       const i = newTokens.findIndex((token) => token.id === id);
       if (i > -1) {
         newTokens[i] = { ...newTokens[i], ...change };
+      }
+      return newTokens;
+    });
+  }
+
+  async function updateTokens(ids, update) {
+    const change = { ...update, lastModified: Date.now() };
+    await Promise.all(
+      ids.map((id) => database.table("tokens").update(id, change))
+    );
+    setTokens((prevTokens) => {
+      const newTokens = [...prevTokens];
+      for (let id of ids) {
+        const i = newTokens.findIndex((token) => token.id === id);
+        if (i > -1) {
+          newTokens[i] = { ...newTokens[i], ...change };
+        }
       }
       return newTokens;
     });
@@ -128,7 +154,9 @@ export function TokenDataProvider({ children }) {
     ownedTokens,
     addToken,
     removeToken,
+    removeTokens,
     updateToken,
+    updateTokens,
     putToken,
     getToken,
     tokensById,

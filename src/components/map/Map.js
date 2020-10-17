@@ -40,11 +40,12 @@ function Map({
 }) {
   const { tokensById } = useContext(TokenDataContext);
 
-  const gridX = map && map.gridX;
-  const gridY = map && map.gridY;
+  const gridX = map && map.grid.size.x;
+  const gridY = map && map.grid.size.y;
+  const inset = map && map.grid.inset;
   const gridSizeNormalized = {
-    x: gridX ? 1 / gridX : 0,
-    y: gridY ? 1 / gridY : 0,
+    x: gridX ? (inset.bottomRight.x - inset.topLeft.x) / gridX : 0,
+    y: gridY ? (inset.bottomRight.y - inset.topLeft.y) / gridY : 0,
   };
   const tokenSizePercent = gridSizeNormalized.x;
 
@@ -330,9 +331,7 @@ function Map({
     />
   );
 
-  const mapGrid = map && map.showGrid && (
-    <MapGrid map={map} gridSize={gridSizeNormalized} />
-  );
+  const mapGrid = map && map.showGrid && <MapGrid map={map} />;
 
   const mapMeasure = (
     <MapMeasure

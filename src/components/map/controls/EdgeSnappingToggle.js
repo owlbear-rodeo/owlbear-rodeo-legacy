@@ -8,9 +8,15 @@ function EdgeSnappingToggle({ useEdgeSnapping, onEdgeSnappingChange }) {
   return (
     <IconButton
       aria-label={
-        useEdgeSnapping ? "Disable Edge Snapping" : "Enable Edge Snapping"
+        useEdgeSnapping
+          ? "Disable Edge Snapping (S)"
+          : "Enable Edge Snapping (S)"
       }
-      title={useEdgeSnapping ? "Disable Edge Snapping" : "Enable Edge Snapping"}
+      title={
+        useEdgeSnapping
+          ? "Disable Edge Snapping (S)"
+          : "Enable Edge Snapping (S)"
+      }
       onClick={() => onEdgeSnappingChange(!useEdgeSnapping)}
     >
       {useEdgeSnapping ? <SnappingOnIcon /> : <SnappingOffIcon />}
