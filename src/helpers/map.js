@@ -113,8 +113,16 @@ async function gridSizeML(image, candidates) {
     }
   }
 
-  const x = Math.floor(width / bestScale);
-  const y = Math.floor(height / bestScale);
+  let x = Math.floor(width / bestScale);
+  let y = Math.floor(height / bestScale);
+
+  if (gridSizeVaild(x, y)) {
+    return { x, y };
+  } else {
+    // Fallback to raw prediction
+    x = Math.round(prediction);
+    y = Math.floor(x / ratio);
+  }
 
   if (gridSizeVaild(x, y)) {
     return { x, y };
