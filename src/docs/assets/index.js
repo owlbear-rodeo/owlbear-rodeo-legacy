@@ -13,7 +13,7 @@ import defaultTokens from "./DefaultTokens.mp4";
 import workingWithTokens from "./WorkingWithTokens.mp4";
 import deletingTokens from "./DeletingTokens.mp4";
 import customTokens from "./CustomTokens.mp4";
-import customTokensAdvanced from "./CustomTokensAdvanced.jpg";
+import tokenEditor from "./TokenEditor.mp4";
 import addPartyMember from "./AddPartyMember.mp4";
 import changeNickname from "./ChangeNickname.mp4";
 import sharingAudio from "./SharingAudio.mp4";
@@ -23,6 +23,8 @@ import usingTimer from "./UsingTimer.mp4";
 import usingPointer from "./UsingPointer.mp4";
 import mapEditor from "./MapEditor.mp4";
 import filteringMaps from "./FilteringMaps.mp4";
+import groupAndRemovingTokens from "./GroupAndRemovingTokens.mp4";
+import filteringTokens from "./FilteringTokens.mp4";
 
 export default {
   defaultMaps,
@@ -40,7 +42,7 @@ export default {
   workingWithTokens,
   deletingTokens,
   customTokens,
-  customTokensAdvanced,
+  tokenEditor,
   addPartyMember,
   changeNickname,
   sharingAudio,
@@ -50,4 +52,6 @@ export default {
   usingPointer,
   mapEditor,
   filteringMaps,
+  groupAndRemovingTokens,
+  filteringTokens,
 };

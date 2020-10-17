@@ -35,35 +35,48 @@ When you need more then the default tokens Owlbear Rodeo allows you to upload a 
 
 ![Custom Tokens](customTokens)
 
-To upload a custom token select the Edit Tokens Button at the bottom of the Token List. This will open the Edit Token Screen which allows you to upload and edit tokens.
+To upload a custom token select the Edit Tokens Button at the bottom of the Token List. This will open the Edit Tokens Screen which allows you to upload and edit tokens.
 
-To upload a new token either click the Add Token Button or drag an image into the Edit Token Screen.
-
-Once a token has been uploaded you can adjust the default size that is used when adding the token to the map by adjusting the Default Size Input.
-
-`Note: The size input for a non-square image represents the number of grid cells a token takes up on the horizontal axis. The number of cells in the vertical axis is determined by the aspect ratio of the uploaded image.`
+To upload a new token either click the Add Token Button or drag an image into the Edit Tokens Screen.
 
 `Tip: Owlbear Rodeo has full transparency support for tokens. This means that players can only interact with visible parts of a token so feel free to upload creatures that might have large extended areas like wings.`
 
-## Custom Tokens (Advanced)
+## Editing Tokens
 
-When uploading a custom token there are a couple of more advanced options that may come in handy.
+![Token Editor](tokenEditor)
 
-To get access to these settings select the desired token in the Edit Token Screen and click the Show More Button under the Default Size Input.
+Once a custom token has been added there are a few settings you can edit if you wish.
 
-![Custom Tokens Advanced](customTokensAdvanced)
+To get access to these settings you can click the Edit Token button while a token is selected.
 
-A brief summary of these settings is listed below.
+The topmost view of the Edit Token Screen is a preview of what the token will look like on a map.
 
-- Name: The name of the custom token.
-- Category:
-  - Character - when selected this token will render on top of all other tokens. Used for things like players or enemies.
-  - Prop - when selected this token will render beneath all other tokens. Used for things like items or markers.
-  - Vehicle / Mount - when selected this token will render beneath characters but above props and when moved a character on top of this token will also be moved.
-- Hide in Sidebar: When enabled the token will not show up in the Token List on the right side of the screen.
+The first setting available is the Name input which allows you to change the name of the token that shows up in the Edit Tokens Screen.
 
-## Removing a Custom Token
+Next you can change the Category of your token, a summary of the options is below.
 
-To remove a custom token open the Token Edit Screen, select the desired token and click the Remove Token Button on the token tile.
+- Character - when selected this token will render on top of all other tokens. Used for things like players or enemies.
+- Prop - when selected this token will render beneath all other tokens. Used for things like items or markers.
+- Vehicle / Mount - when selected this token will render beneath characters but above props and when moved a character on top of this token will also be moved.
 
-`Warning: This operation cannot be undone`
+Lastly you can adjust the default size that is used when adding the token to the map by adjusting the Default Size Input.
+
+`Note: The size input for a non-square image represents the number of grid cells a token takes up on the horizontal axis. The number of cells in the vertical axis is determined by the aspect ratio of the uploaded image.`
+
+## Removing, Grouping and Hiding Tokens
+
+![Hiding, Removing and Grouping Tokens](groupAndRemovingTokens)
+
+To remove a custom token select the token in the Edit Tokens Screen then click the Remove Token button or use the Delete keyboard shortcut.
+
+Once a token has been added you can use the Hide/Show Token in Sidebar toggle to prevent it from taking up room in the Token List on the right side of your screen.
+
+Tokens can also be grouped to allow for better organisation. To do this with a token selected click on the Group Token button then select or create a new group.
+
+`Tip: You can select multiple tokens at the same time using the Select Multiple option or using the Ctrl/Cmd or Shift keyboard shortcuts`
+
+## Filtering Tokens
+
+![Filtering Tokens](filteringTokens)
+
+In the Edit Tokens Screen you can filter the tokens that are being shown by entering a term in the Search Bar. This will show tokens whose names or groups best match your search term.
