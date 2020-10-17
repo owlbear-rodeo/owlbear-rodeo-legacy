@@ -49,7 +49,17 @@ function Donate() {
       return;
     }
 
-    const response = await fetch("/create-session", { method: "POST" });
+    const response = await fetch(
+      process.env.REACT_APP_STRIPE_URL + "/create-checkout-session",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currency: "usd", amount: value * 100 }),
+      }
+    );
     const session = await response.json();
     const result = await stripe.redirectToCheckout({ sessionId: session.id });
 
