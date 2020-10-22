@@ -152,7 +152,7 @@ function MapSettings({
               disabled={mapEmpty || map.type === "default"}
               onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
             />
-            Show Grid
+            Draw Grid
           </Label>
           <Label>
             <Checkbox
