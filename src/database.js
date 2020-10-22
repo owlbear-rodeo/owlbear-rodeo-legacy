@@ -242,6 +242,32 @@ function loadVersions(db) {
           token.group = "";
         });
     });
+  // v1.6.1 - Added width and height to tokens
+  db.version(15)
+    .stores({})
+    .upgrade(async (tx) => {
+      const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
+      let tokenSizes = {};
+      for (let token of tokens) {
+        const url = URL.createObjectURL(new Blob([token.file]));
+        let image = new Image();
+        tokenSizes[token.id] = await Dexie.waitFor(
+          new Promise((resolve) => {
+            image.onload = () => {
+              resolve({ width: image.width, height: image.height });
+            };
+            image.src = url;
+          })
+        );
+      }
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.width = tokenSizes[token.id].width;
+          token.height = tokenSizes[token.id].height;
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext
