@@ -7,6 +7,7 @@ import useImage from "use-image";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
 import useDataSource from "../../helpers/useDataSource";
+import useImageCenter from "../../helpers/useImageCenter";
 
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
@@ -29,80 +30,42 @@ function TokenPreview({ token }) {
     unknownSource
   );
   const [tokenSourceImage] = useImage(tokenSource);
-  const [tokenRatio, setTokenRatio] = useState(1);
-
-  useEffect(() => {
-    if (tokenSourceImage) {
-      setTokenRatio(tokenSourceImage.width / tokenSourceImage.height);
-    }
-  }, [tokenSourceImage]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
 
-  const stageRatio = stageWidth / stageHeight;
-
-  let tokenWidth;
-  let tokenHeight;
-  if (stageRatio > tokenRatio) {
-    tokenWidth = tokenSourceImage
-      ? stageHeight / (tokenSourceImage.height / tokenSourceImage.width)
-      : stageWidth;
-    tokenHeight = stageHeight;
-  } else {
-    tokenWidth = stageWidth;
-    tokenHeight = tokenSourceImage
-      ? stageWidth * (tokenSourceImage.height / tokenSourceImage.width)
-      : stageHeight;
-  }
-
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapLayerRef = useRef();
+  const tokenStageRef = useRef();
+  const tokenLayerRef = useRef();
 
   function handleResize(width, height) {
     setStageWidth(width);
     setStageHeight(height);
   }
 
-  // Reset map translate and scale
-  useEffect(() => {
-    const layer = mapLayerRef.current;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    if (layer) {
-      let newTranslate;
-      if (stageRatio > tokenRatio) {
-        newTranslate = {
-          x: -(tokenWidth - containerRect.width) / 2,
-          y: 0,
-        };
-      } else {
-        newTranslate = {
-          x: 0,
-          y: -(tokenHeight - containerRect.height) / 2,
-        };
-      }
+  const containerRef = useRef();
+  usePreventOverscroll(containerRef);
 
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
-
-      setStageScale(1);
-    }
-  }, [token.id, tokenWidth, tokenHeight, stageRatio, tokenRatio]);
+  const [tokenWidth, tokenHeight] = useImageCenter(
+    token,
+    tokenStageRef,
+    stageWidth,
+    stageHeight,
+    stageTranslateRef,
+    setStageScale,
+    tokenLayerRef,
+    containerRef,
+    true
+  );
 
   const bind = useStageInteraction(
-    mapLayerRef.current,
+    tokenStageRef.current,
     stageScale,
     setStageScale,
     stageTranslateRef,
-    10,
-    "pan"
+    tokenLayerRef.current
   );
-
-  const containerRef = useRef();
-  usePreventOverscroll(containerRef);
 
   const [showGridPreview, setShowGridPreview] = useState(true);
   const gridWidth = tokenWidth;
@@ -134,11 +97,9 @@ function TokenPreview({ token }) {
           width={stageWidth}
           height={stageHeight}
           scale={{ x: stageScale, y: stageScale }}
-          x={stageWidth / 2}
-          y={stageHeight / 2}
-          offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
+          ref={tokenStageRef}
         >
-          <Layer ref={mapLayerRef}>
+          <Layer ref={tokenLayerRef}>
             <Image
               image={tokenSourceImage}
               width={tokenWidth}

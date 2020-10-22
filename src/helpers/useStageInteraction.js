@@ -7,10 +7,11 @@ const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 
 function useStageInteraction(
-  layer,
+  stage,
   stageScale,
   onStageScaleChange,
   stageTranslateRef,
+  layer,
   maxZoom = 10,
   tool = "pan",
   preventInteraction = false,
@@ -43,6 +44,20 @@ function useStageInteraction(
         ),
         maxZoom
       );
+
+      const pointer = stage.getPointerPosition();
+      const pointerChange = {
+        x: (pointer.x - stage.x()) / stageScale,
+        y: (pointer.y - stage.y()) / stageScale,
+      };
+
+      const newTranslate = {
+        x: pointer.x - pointerChange.x * newScale,
+        y: pointer.y - pointerChange.y * newScale,
+      };
+      stage.position(newTranslate);
+      stageTranslateRef.current = newTranslate;
+
       onStageScaleChange(newScale);
       gesture.onWheel && gesture.onWheel(props);
     },
@@ -68,12 +83,11 @@ function useStageInteraction(
       // Apply translate
       const stageTranslate = stageTranslateRef.current;
       const newTranslate = {
-        x: stageTranslate.x + originXDelta / newScale,
-        y: stageTranslate.y + originYDelta / newScale,
+        x: stageTranslate.x + originXDelta,
+        y: stageTranslate.y + originYDelta,
       };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
+      stage.position(newTranslate);
+      stage.draw();
       stageTranslateRef.current = newTranslate;
 
       pinchPreviousDistanceRef.current = distance;
@@ -96,12 +110,11 @@ function useStageInteraction(
       const stageTranslate = stageTranslateRef.current;
       if (tool === "pan") {
         const newTranslate = {
-          x: stageTranslate.x + dx / stageScale,
-          y: stageTranslate.y + dy / stageScale,
+          x: stageTranslate.x + dx,
+          y: stageTranslate.y + dy,
         };
-        layer.x(newTranslate.x);
-        layer.y(newTranslate.y);
-        layer.draw();
+        stage.position(newTranslate);
+        stage.draw();
         stageTranslateRef.current = newTranslate;
       }
       gesture.onDrag && gesture.onDrag(props);
