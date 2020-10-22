@@ -87,6 +87,8 @@ export const tokens = Object.keys(tokenSources).map((key) => ({
   defaultSize: getDefaultTokenSize(key),
   category: "character",
   hideInSidebar: false,
+  width: 256,
+  height: 256,
 }));
 
 export const unknownSource = unknown;
