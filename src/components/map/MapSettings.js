@@ -1,7 +1,5 @@
 import React from "react";
-import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
-
-import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
+import { Flex, Box, Label, Input, Checkbox } from "theme-ui";
 
 import { isEmpty } from "../../helpers/shared";
 
