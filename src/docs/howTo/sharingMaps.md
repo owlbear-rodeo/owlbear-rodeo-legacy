@@ -50,7 +50,7 @@ To get access to these settings, click the Show More button under the Name input
 A brief summary of these settings is listed below.
 
 - Grid Type: Change the type of grid to use for the map. Currently only the Square type is supported however Hex will be added in a future release.
-- Show Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded doesn't include a grid.
+- Draw Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded doesn't include a grid.
 - Snap to Grid: When enabled tokens, drawing, fog and measurements will attempt to snap to the grid.
 - Quality: When uploading a map Owlbear Rodeo will automatically generate various quality options, selecting a lower quality may help speed up map sending in resource constrained environments.
 - Allow others to edit: These properties control what other party members can edit when viewing your map.
