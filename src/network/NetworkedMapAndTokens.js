@@ -10,7 +10,7 @@ import { omit } from "../helpers/shared";
 import useDebounce from "../helpers/useDebounce";
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
-import Session from "../helpers/Session";
+import Session from "./Session";
 
 import Map from "../components/map/Map";
 import Tokens from "../components/token/Tokens";

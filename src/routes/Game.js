@@ -14,7 +14,7 @@ import { MapStageProvider } from "../contexts/MapStageContext";
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
-import Session from "../helpers/Session";
+import Session from "../network/Session";
 
 const session = new Session();
 

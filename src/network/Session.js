@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 
 import Connection from "./Connection";
 
-import { omit } from "./shared";
+import { omit } from "../helpers/shared";
 
 /**
  * @typedef {object} SessionPeer
