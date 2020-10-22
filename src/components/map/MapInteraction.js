@@ -8,6 +8,7 @@ import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useKeyboard from "../../helpers/useKeyboard";
 import useStageInteraction from "../../helpers/useStageInteraction";
+import { getMapMaxZoom } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import MapStageContext, {
@@ -88,6 +89,7 @@ function MapInteraction({
     stageScale,
     setStageScale,
     stageTranslateRef,
+    getMapMaxZoom(map),
     selectedToolId,
     preventMapInteraction,
     {

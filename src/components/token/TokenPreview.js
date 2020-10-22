@@ -97,6 +97,7 @@ function TokenPreview({ token }) {
     stageScale,
     setStageScale,
     stageTranslateRef,
+    10,
     "pan"
   );
 

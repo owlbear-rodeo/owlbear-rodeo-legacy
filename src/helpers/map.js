@@ -152,3 +152,11 @@ export async function getGridSize(image) {
 
   return prediction;
 }
+
+export function getMapMaxZoom(map) {
+  if (!map) {
+    return 10;
+  }
+  // Return max grid size / 2
+  return Math.max(Math.min(map.grid.size.x, map.grid.size.y) / 2, 5);
+}

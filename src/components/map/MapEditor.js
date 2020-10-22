@@ -6,7 +6,7 @@ import ReactResizeDetector from "react-resize-detector";
 import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
-import { getMapDefaultInset } from "../../helpers/map";
+import { getMapDefaultInset, getMapMaxZoom } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
@@ -86,6 +86,7 @@ function MapEditor({ map, onSettingsChange }) {
     stageScale,
     setStageScale,
     stageTranslateRef,
+    getMapMaxZoom(map),
     "pan",
     preventMapInteraction
   );

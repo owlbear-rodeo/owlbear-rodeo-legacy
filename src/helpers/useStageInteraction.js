@@ -2,16 +2,16 @@ import { useRef } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
-const wheelZoomSpeed = -0.001;
+const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
-const maxZoom = 10;
 
 function useStageInteraction(
   layer,
   stageScale,
   onStageScaleChange,
   stageTranslateRef,
+  maxZoom = 10,
   tool = "pan",
   preventInteraction = false,
   gesture = {}
@@ -36,7 +36,11 @@ function useStageInteraction(
         return;
       }
       const newScale = Math.min(
-        Math.max(stageScale + pixelY * wheelZoomSpeed, minZoom),
+        Math.max(
+          stageScale +
+            (pixelY * wheelZoomSpeed * (stageScale + 1)) / window.innerHeight,
+          minZoom
+        ),
         maxZoom
       );
       onStageScaleChange(newScale);
