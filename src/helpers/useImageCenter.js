@@ -24,7 +24,7 @@ function useImageCenter(
     imageHeight = data ? stageWidth * (data.height / data.width) : stageHeight;
   }
 
-  // Reset data translate and scale
+  // Reset image translate and stage scale
   const previousDataIdRef = useRef();
   const previousStageRatioRef = useRef(stageRatio);
   useEffect(() => {
