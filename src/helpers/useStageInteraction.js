@@ -39,7 +39,7 @@ function useStageInteraction(
       const newScale = Math.min(
         Math.max(
           stageScale +
-            (pixelY * wheelZoomSpeed * (stageScale + 1)) / window.innerHeight,
+            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
           minZoom
         ),
         maxZoom
