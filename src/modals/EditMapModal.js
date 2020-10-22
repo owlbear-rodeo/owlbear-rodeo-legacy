@@ -96,8 +96,6 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
     ...mapStateSettingChanges,
   };
 
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-
   return (
     <Modal
       isOpen={isOpen}
@@ -121,8 +119,6 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
           mapState={selectedMapStateWithChanges}
           onSettingsChange={handleMapSettingsChange}
           onStateSettingsChange={handleMapStateSettingsChange}
-          showMore={showMoreSettings}
-          onShowMoreChange={setShowMoreSettings}
         />
         <Button onClick={handleSave}>Save</Button>
       </Flex>
