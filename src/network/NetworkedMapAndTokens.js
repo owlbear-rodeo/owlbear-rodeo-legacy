@@ -33,7 +33,9 @@ function NetworkedMapAndTokens({ session }) {
   } = useContext(MapLoadingContext);
 
   const { putToken, getToken, updateToken } = useContext(TokenDataContext);
-  const { putMap, updateMap, getMapFromDB } = useContext(MapDataContext);
+  const { putMap, updateMap, getMapFromDB, updateMapState } = useContext(
+    MapDataContext
+  );
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useState(null);
@@ -53,11 +55,9 @@ function NetworkedMapAndTokens({ session }) {
       currentMap.owner === userId &&
       database
     ) {
-      // Update the database directly to avoid re-renders
-      database
-        .table("states")
-        .update(debouncedMapState.mapId, debouncedMapState);
+      updateMapState(debouncedMapState.mapId, debouncedMapState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMap, debouncedMapState, userId, database]);
 
   function handleMapChange(newMap, newMapState) {
