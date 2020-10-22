@@ -39,7 +39,7 @@ const gridSizeStd = { x: 14.438842, y: 15.582376 };
 const minGridSize = 10;
 const maxGridSize = 200;
 
-function gridSizeVaild(x, y) {
+export function gridSizeVaild(x, y) {
   return (
     x > minGridSize && y > minGridSize && x < maxGridSize && y < maxGridSize
   );
