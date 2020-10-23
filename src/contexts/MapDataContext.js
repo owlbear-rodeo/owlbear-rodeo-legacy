@@ -229,7 +229,13 @@ export function MapDataProvider({ children }) {
   }
 
   async function getMapFromDB(mapId) {
-    return await database.table("maps").get(mapId);
+    let map = await database.table("maps").get(mapId);
+    // Check state maps if not in database as a work around for the fake-indexeddb error
+    // TODO: remove this when the error if fixed
+    if (!map) {
+      map = getMap(mapId);
+    }
+    return map;
   }
 
   const ownedMaps = maps.filter((map) => map.owner === userId);
