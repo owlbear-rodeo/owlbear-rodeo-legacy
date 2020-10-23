@@ -45,16 +45,13 @@ function useStageInteraction(
         maxZoom
       );
 
+      // Center on pointer
       const pointer = stage.getPointerPosition();
-      const pointerChange = {
-        x: (pointer.x - stage.x()) / stageScale,
-        y: (pointer.y - stage.y()) / stageScale,
+      const newTranslate = {
+        x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+        y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
       };
 
-      const newTranslate = {
-        x: pointer.x - pointerChange.x * newScale,
-        y: pointer.y - pointerChange.y * newScale,
-      };
       stage.position(newTranslate);
       stageTranslateRef.current = newTranslate;
 
@@ -78,17 +75,33 @@ function useStageInteraction(
         Math.max(stageScale + distanceDelta * touchZoomSpeed, minZoom),
         maxZoom
       );
-      onStageScaleChange(newScale);
 
-      // Apply translate
-      const stageTranslate = stageTranslateRef.current;
-      const newTranslate = {
-        x: stageTranslate.x + originXDelta,
-        y: stageTranslate.y + originYDelta,
+      const canvasRect = layer.getCanvas()._canvas.getBoundingClientRect();
+      const relativeOrigin = {
+        x: originX - canvasRect.left,
+        y: originY - canvasRect.top,
       };
+
+      // Center on pinch origin
+      const centeredTranslate = {
+        x:
+          relativeOrigin.x -
+          ((relativeOrigin.x - stage.x()) / stageScale) * newScale,
+        y:
+          relativeOrigin.y -
+          ((relativeOrigin.y - stage.y()) / stageScale) * newScale,
+      };
+
+      // Add pinch movement
+      const newTranslate = {
+        x: centeredTranslate.x + originXDelta,
+        y: centeredTranslate.y + originYDelta,
+      };
+
       stage.position(newTranslate);
-      stage.draw();
       stageTranslateRef.current = newTranslate;
+
+      onStageScaleChange(newScale);
 
       pinchPreviousDistanceRef.current = distance;
       pinchPreviousOriginRef.current = { x: originX, y: originY };
