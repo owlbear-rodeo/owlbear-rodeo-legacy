@@ -2,16 +2,17 @@ import { useRef } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
-const wheelZoomSpeed = -0.001;
+const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
-const maxZoom = 10;
 
 function useStageInteraction(
-  layer,
+  stage,
   stageScale,
   onStageScaleChange,
   stageTranslateRef,
+  layer,
+  maxZoom = 10,
   tool = "pan",
   preventInteraction = false,
   gesture = {}
@@ -36,41 +37,84 @@ function useStageInteraction(
         return;
       }
       const newScale = Math.min(
-        Math.max(stageScale + pixelY * wheelZoomSpeed, minZoom),
+        Math.max(
+          stageScale +
+            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+          minZoom
+        ),
         maxZoom
       );
+
+      // Center on pointer
+      const pointer = stage.getPointerPosition();
+      const newTranslate = {
+        x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+        y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+      };
+
+      stage.position(newTranslate);
+      stageTranslateRef.current = newTranslate;
+
       onStageScaleChange(newScale);
       gesture.onWheel && gesture.onWheel(props);
     },
-    onPinch: (props) => {
-      const { da, origin, first } = props;
+    onPinchStart: (props) => {
+      const { event } = props;
+      isInteractingWithCanvas.current =
+        event.target === layer.getCanvas()._canvas;
+      const { da, origin } = props;
       const [distance] = da;
       const [originX, originY] = origin;
-      if (first) {
-        pinchPreviousDistanceRef.current = distance;
-        pinchPreviousOriginRef.current = { x: originX, y: originY };
+      pinchPreviousDistanceRef.current = distance;
+      pinchPreviousOriginRef.current = { x: originX, y: originY };
+      gesture.onPinchStart && gesture.onPinchStart(props);
+    },
+    onPinch: (props) => {
+      if (preventInteraction || !isInteractingWithCanvas.current) {
+        return;
       }
+      const { da, origin } = props;
+      const [distance] = da;
+      const [originX, originY] = origin;
 
       // Apply scale
       const distanceDelta = distance - pinchPreviousDistanceRef.current;
       const originXDelta = originX - pinchPreviousOriginRef.current.x;
       const originYDelta = originY - pinchPreviousOriginRef.current.y;
       const newScale = Math.min(
-        Math.max(stageScale + distanceDelta * touchZoomSpeed, minZoom),
+        Math.max(
+          stageScale + distanceDelta * touchZoomSpeed * stageScale,
+          minZoom
+        ),
         maxZoom
       );
-      onStageScaleChange(newScale);
 
-      // Apply translate
-      const stageTranslate = stageTranslateRef.current;
-      const newTranslate = {
-        x: stageTranslate.x + originXDelta / newScale,
-        y: stageTranslate.y + originYDelta / newScale,
+      const canvasRect = layer.getCanvas()._canvas.getBoundingClientRect();
+      const relativeOrigin = {
+        x: originX - canvasRect.left,
+        y: originY - canvasRect.top,
       };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
+
+      // Center on pinch origin
+      const centeredTranslate = {
+        x:
+          relativeOrigin.x -
+          ((relativeOrigin.x - stage.x()) / stageScale) * newScale,
+        y:
+          relativeOrigin.y -
+          ((relativeOrigin.y - stage.y()) / stageScale) * newScale,
+      };
+
+      // Add pinch movement
+      const newTranslate = {
+        x: centeredTranslate.x + originXDelta,
+        y: centeredTranslate.y + originYDelta,
+      };
+
+      stage.position(newTranslate);
       stageTranslateRef.current = newTranslate;
+
+      onStageScaleChange(newScale);
 
       pinchPreviousDistanceRef.current = distance;
       pinchPreviousOriginRef.current = { x: originX, y: originY };
@@ -92,12 +136,11 @@ function useStageInteraction(
       const stageTranslate = stageTranslateRef.current;
       if (tool === "pan") {
         const newTranslate = {
-          x: stageTranslate.x + dx / stageScale,
-          y: stageTranslate.y + dy / stageScale,
+          x: stageTranslate.x + dx,
+          y: stageTranslate.y + dy,
         };
-        layer.x(newTranslate.x);
-        layer.y(newTranslate.y);
-        layer.draw();
+        stage.position(newTranslate);
+        stage.draw();
         stageTranslateRef.current = newTranslate;
       }
       gesture.onDrag && gesture.onDrag(props);

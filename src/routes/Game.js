@@ -10,11 +10,12 @@ import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
+import DatabaseContext from "../contexts/DatabaseContext";
 
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
-import Session from "../helpers/Session";
+import Session from "../network/Session";
 
 const session = new Session();
 
@@ -25,6 +26,7 @@ function Game() {
     password,
     setAuthenticationStatus,
   } = useContext(AuthContext);
+  const { databaseStatus } = useContext(DatabaseContext);
 
   // Handle authentication status
   useEffect(() => {
@@ -82,8 +84,10 @@ function Game() {
 
   // Join game
   useEffect(() => {
-    session.joinParty(gameId, password);
-  }, [gameId, password]);
+    if (databaseStatus !== "loading") {
+      session.joinParty(gameId, password);
+    }
+  }, [gameId, password, databaseStatus]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component

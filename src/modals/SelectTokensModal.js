@@ -109,6 +109,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           category: "character",
           hideInSidebar: false,
           group: "",
+          width: image.width,
+          height: image.height,
         });
         setImageLoading(false);
         resolve();

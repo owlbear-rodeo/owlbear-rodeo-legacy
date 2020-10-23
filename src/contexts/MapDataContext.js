@@ -23,14 +23,14 @@ const defaultMapState = {
 };
 
 export function MapDataProvider({ children }) {
-  const { database } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
 
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    if (!userId || !database) {
+    if (!userId || !database || databaseStatus === "loading") {
       return;
     }
     async function getDefaultMaps() {
@@ -71,7 +71,7 @@ export function MapDataProvider({ children }) {
     }
 
     loadMaps();
-  }, [userId, database]);
+  }, [userId, database, databaseStatus]);
 
   /**
    * Adds a map to the database, also adds an assosiated state for that map
@@ -131,7 +131,14 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
-    await database.table("maps").update(id, update);
+    // fake-indexeddb throws an error when updating maps in production.
+    // Catch that error and use put when it fails
+    try {
+      await database.table("maps").update(id, update);
+    } catch (error) {
+      const map = (await getMapFromDB(id)) || {};
+      await database.table("maps").put({ ...map, id, ...update });
+    }
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === id);
@@ -219,7 +226,8 @@ export function MapDataProvider({ children }) {
   }
 
   async function getMapFromDB(mapId) {
-    return await database.table("maps").get(mapId);
+    let map = await database.table("maps").get(mapId);
+    return map;
   }
 
   const ownedMaps = maps.filter((map) => map.owner === userId);

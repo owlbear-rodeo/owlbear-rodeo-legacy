@@ -96,7 +96,7 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
     ...mapStateSettingChanges,
   };
 
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
+  const [showMoreSettings, setShowMoreSettings] = useState(true);
 
   return (
     <Modal

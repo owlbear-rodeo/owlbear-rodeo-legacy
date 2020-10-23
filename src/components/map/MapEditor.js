@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
@@ -6,7 +6,8 @@ import ReactResizeDetector from "react-resize-detector";
 import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
-import { getMapDefaultInset } from "../../helpers/map";
+import useImageCenter from "../../helpers/useImageCenter";
+import { getMapDefaultInset, getMapMaxZoom } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
@@ -25,19 +26,6 @@ function MapEditor({ map, onSettingsChange }) {
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
 
-  const stageRatio = stageWidth / stageHeight;
-  const mapRatio = map ? map.width / map.height : 1;
-
-  let mapWidth;
-  let mapHeight;
-  if (stageRatio > mapRatio) {
-    mapWidth = map ? stageHeight / (map.height / map.width) : stageWidth;
-    mapHeight = stageHeight;
-  } else {
-    mapWidth = stageWidth;
-    mapHeight = map ? stageWidth * (map.height / map.width) : stageHeight;
-  }
-
   const defaultInset = getMapDefaultInset(
     map.width,
     map.height,
@@ -46,6 +34,7 @@ function MapEditor({ map, onSettingsChange }) {
   );
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
+  const mapStageRef = useRef();
   const mapLayerRef = useRef();
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
@@ -54,44 +43,31 @@ function MapEditor({ map, onSettingsChange }) {
     setStageHeight(height);
   }
 
-  // Reset map translate and scale
-  useEffect(() => {
-    const layer = mapLayerRef.current;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    if (layer) {
-      let newTranslate;
-      if (stageRatio > mapRatio) {
-        newTranslate = {
-          x: -(mapWidth - containerRect.width) / 2,
-          y: 0,
-        };
-      } else {
-        newTranslate = {
-          x: 0,
-          y: -(mapHeight - containerRect.height) / 2,
-        };
-      }
+  const containerRef = useRef();
+  usePreventOverscroll(containerRef);
 
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
-
-      setStageScale(1);
-    }
-  }, [map.id, mapWidth, mapHeight, stageRatio, mapRatio]);
+  const [mapWidth, mapHeight] = useImageCenter(
+    map,
+    mapStageRef,
+    stageWidth,
+    stageHeight,
+    stageTranslateRef,
+    setStageScale,
+    mapLayerRef,
+    containerRef,
+    true
+  );
 
   const bind = useStageInteraction(
-    mapLayerRef.current,
+    mapStageRef.current,
     stageScale,
     setStageScale,
     stageTranslateRef,
+    mapLayerRef.current,
+    getMapMaxZoom(map),
     "pan",
     preventMapInteraction
   );
-
-  const containerRef = useRef();
-  usePreventOverscroll(containerRef);
 
   function handleGridChange(inset) {
     onSettingsChange("grid", {
@@ -128,7 +104,6 @@ function MapEditor({ map, onSettingsChange }) {
     map.grid.inset.topLeft.y !== defaultInset.topLeft.y ||
     map.grid.inset.bottomRight.x !== defaultInset.bottomRight.x ||
     map.grid.inset.bottomRight.y !== defaultInset.bottomRight.y;
-
   return (
     <Box
       sx={{
@@ -148,19 +123,17 @@ function MapEditor({ map, onSettingsChange }) {
           width={stageWidth}
           height={stageHeight}
           scale={{ x: stageScale, y: stageScale }}
-          x={stageWidth / 2}
-          y={stageHeight / 2}
-          offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
+          ref={mapStageRef}
         >
           <Layer ref={mapLayerRef}>
             <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
             <KeyboardContext.Provider value={keyboardValue}>
               <MapInteractionProvider value={mapInteraction}>
                 {showGridControls && canEditGrid && (
-                  <MapGrid map={map} strokeWidth={0.5} />
-                )}
-                {showGridControls && canEditGrid && (
-                  <MapGridEditor map={map} onGridChange={handleGridChange} />
+                  <>
+                    <MapGrid map={map} strokeWidth={0.5} />
+                    <MapGridEditor map={map} onGridChange={handleGridChange} />
+                  </>
                 )}
               </MapInteractionProvider>
             </KeyboardContext.Provider>

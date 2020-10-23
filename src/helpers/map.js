@@ -39,7 +39,7 @@ const gridSizeStd = { x: 14.438842, y: 15.582376 };
 const minGridSize = 10;
 const maxGridSize = 200;
 
-function gridSizeVaild(x, y) {
+export function gridSizeVaild(x, y) {
   return (
     x > minGridSize && y > minGridSize && x < maxGridSize && y < maxGridSize
   );
@@ -133,7 +133,16 @@ async function gridSizeML(image, candidates) {
 
 export async function getGridSize(image) {
   const candidates = dividers(image.width, image.height);
-  let prediction = await gridSizeML(image, candidates);
+  let prediction;
+
+  // Try and use ML grid detection
+  // TODO: Fix possible error on Android
+  try {
+    prediction = await gridSizeML(image, candidates);
+  } catch (error) {
+    console.error(error);
+  }
+
   if (!prediction) {
     prediction = gridSizeHeuristic(image, candidates);
   }
@@ -142,4 +151,12 @@ export async function getGridSize(image) {
   }
 
   return prediction;
+}
+
+export function getMapMaxZoom(map) {
+  if (!map) {
+    return 10;
+  }
+  // Return max grid size / 2
+  return Math.max(Math.min(map.grid.size.x, map.grid.size.y) / 2, 5);
 }

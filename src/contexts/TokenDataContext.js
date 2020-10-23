@@ -10,13 +10,13 @@ const TokenDataContext = React.createContext();
 const cachedTokenMax = 100;
 
 export function TokenDataProvider({ children }) {
-  const { database } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
 
   const [tokens, setTokens] = useState([]);
 
   useEffect(() => {
-    if (!userId || !database) {
+    if (!userId || !database || databaseStatus === "loading") {
       return;
     }
     function getDefaultTokes() {
@@ -43,7 +43,7 @@ export function TokenDataProvider({ children }) {
     }
 
     loadTokens();
-  }, [userId, database]);
+  }, [userId, database, databaseStatus]);
 
   async function addToken(token) {
     await database.table("tokens").add(token);

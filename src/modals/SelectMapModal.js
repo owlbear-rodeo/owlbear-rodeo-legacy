@@ -16,7 +16,7 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { getMapDefaultInset, getGridSize } from "../helpers/map";
+import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -120,11 +120,14 @@ function SelectMapModal({
             // Match against a regex to find the grid size in the file name
             // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
             const gridMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
-            if (gridMatches.length > 0) {
-              const lastMatch = gridMatches[gridMatches.length - 1];
-              const matchX = parseInt(lastMatch[1]);
-              const matchY = parseInt(lastMatch[3]);
-              if (!isNaN(matchX) && !isNaN(matchY)) {
+            for (let match of gridMatches) {
+              const matchX = parseInt(match[1]);
+              const matchY = parseInt(match[3]);
+              if (
+                !isNaN(matchX) &&
+                !isNaN(matchY) &&
+                gridSizeVaild(matchX, matchY)
+              ) {
                 gridSize = { x: matchX, y: matchY };
               }
             }

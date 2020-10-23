@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
-import Session from "../helpers/Session";
+import Session from "./Session";
 import { isStreamStopped, omit, fromEntries } from "../helpers/shared";
 
 import AuthContext from "../contexts/AuthContext";

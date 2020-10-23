@@ -11,11 +11,14 @@ export function DatabaseProvider({ children }) {
   useEffect(() => {
     // Create a test database and open it to see if indexedDB is enabled
     let testDBRequest = window.indexedDB.open("__test");
-    testDBRequest.onsuccess = function () {
+    testDBRequest.onsuccess = async function () {
       testDBRequest.result.close();
-      let db = getDatabase();
+      let db = getDatabase({ autoOpen: false });
       setDatabase(db);
-      setDatabaseStatus("loaded");
+      db.on("ready", () => {
+        setDatabaseStatus("loaded");
+      });
+      await db.open();
       window.indexedDB.deleteDatabase("__test");
     };
     // If indexedb disabled create an in memory database
@@ -23,9 +26,12 @@ export function DatabaseProvider({ children }) {
       console.warn("Database is disabled, no state will be saved");
       const indexedDB = await import("fake-indexeddb");
       const IDBKeyRange = await import("fake-indexeddb/lib/FDBKeyRange");
-      let db = getDatabase({ indexedDB, IDBKeyRange });
+      let db = getDatabase({ indexedDB, IDBKeyRange, autoOpen: false });
       setDatabase(db);
-      setDatabaseStatus("disabled");
+      db.on("ready", () => {
+        setDatabaseStatus("disabled");
+      });
+      await db.open();
       window.indexedDB.deleteDatabase("__test");
     };
   }, []);

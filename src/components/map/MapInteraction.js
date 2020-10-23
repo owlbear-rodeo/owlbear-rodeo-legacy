@@ -8,6 +8,8 @@ import useMapImage from "../../helpers/useMapImage";
 import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useKeyboard from "../../helpers/useKeyboard";
 import useStageInteraction from "../../helpers/useStageInteraction";
+import useImageCenter from "../../helpers/useImageCenter";
+import { getMapMaxZoom } from "../../helpers/map";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import MapStageContext, {
@@ -42,52 +44,42 @@ function MapInteraction({
   const [stageScale, setStageScale] = useState(1);
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
-  const stageWidthRef = useRef(stageWidth);
-  const stageHeightRef = useRef(stageHeight);
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-
-  // Reset transform when map changes
-  const previousMapIdRef = useRef();
-  useEffect(() => {
-    const layer = mapLayerRef.current;
-    const previousMapId = previousMapIdRef.current;
-    if (map && layer && previousMapId !== map.id) {
-      const mapHeight = stageWidthRef.current * (map.height / map.width);
-      const newTranslate = {
-        x: 0,
-        y: -(mapHeight - stageHeightRef.current) / 2,
-      };
-      layer.x(newTranslate.x);
-      layer.y(newTranslate.y);
-      layer.draw();
-      stageTranslateRef.current = newTranslate;
-
-      setStageScale(1);
-    }
-    previousMapIdRef.current = map && map.id;
-  }, [map]);
+  const mapStageRef = useContext(MapStageContext);
+  const mapLayerRef = useRef();
+  const mapImageRef = useRef();
 
   function handleResize(width, height) {
     setStageWidth(width);
     setStageHeight(height);
-    stageWidthRef.current = width;
-    stageHeightRef.current = height;
   }
 
-  const mapStageRef = useContext(MapStageContext);
-  const mapLayerRef = useRef();
-  const mapImageRef = useRef();
+  const containerRef = useRef();
+  usePreventOverscroll(containerRef);
+
+  const [mapWidth, mapHeight] = useImageCenter(
+    map,
+    mapStageRef,
+    stageWidth,
+    stageHeight,
+    stageTranslateRef,
+    setStageScale,
+    mapLayerRef,
+    containerRef
+  );
 
   const previousSelectedToolRef = useRef(selectedToolId);
 
   const [interactionEmitter] = useState(new EventEmitter());
 
   const bind = useStageInteraction(
-    mapLayerRef.current,
+    mapStageRef.current,
     stageScale,
     setStageScale,
     stageTranslateRef,
+    mapLayerRef.current,
+    getMapMaxZoom(map),
     selectedToolId,
     preventMapInteraction,
     {
@@ -169,12 +161,6 @@ function MapInteraction({
     }
   }
 
-  const containerRef = useRef();
-  usePreventOverscroll(containerRef);
-
-  const mapWidth = stageWidth;
-  const mapHeight = map ? stageWidth * (map.height / map.width) : stageHeight;
-
   const auth = useContext(AuthContext);
   const settings = useContext(SettingsContext);
 
@@ -206,9 +192,6 @@ function MapInteraction({
           width={stageWidth}
           height={stageHeight}
           scale={{ x: stageScale, y: stageScale }}
-          x={stageWidth / 2}
-          y={stageHeight / 2}
-          offset={{ x: stageWidth / 2, y: stageHeight / 2 }}
           ref={mapStageRef}
         >
           <Layer ref={mapLayerRef}>

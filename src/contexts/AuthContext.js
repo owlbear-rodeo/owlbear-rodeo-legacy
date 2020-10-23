@@ -19,7 +19,7 @@ try {
 }
 
 export function AuthProvider({ children }) {
-  const { database } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useContext(DatabaseContext);
 
   const [password, setPassword] = useState(storage.getItem("auth") || "");
 
@@ -31,7 +31,7 @@ export function AuthProvider({ children }) {
 
   const [userId, setUserId] = useState();
   useEffect(() => {
-    if (!database) {
+    if (!database || databaseStatus === "loading") {
       return;
     }
     async function loadUserId() {
@@ -46,11 +46,11 @@ export function AuthProvider({ children }) {
     }
 
     loadUserId();
-  }, [database]);
+  }, [database, databaseStatus]);
 
   const [nickname, setNickname] = useState("");
   useEffect(() => {
-    if (!database) {
+    if (!database || databaseStatus === "loading") {
       return;
     }
     async function loadNickname() {
@@ -65,13 +65,17 @@ export function AuthProvider({ children }) {
     }
 
     loadNickname();
-  }, [database]);
+  }, [database, databaseStatus]);
 
   useEffect(() => {
-    if (nickname !== undefined && database !== undefined) {
+    if (
+      nickname !== undefined &&
+      database !== undefined &&
+      databaseStatus !== "loading"
+    ) {
       database.table("user").update("nickname", { value: nickname });
     }
-  }, [nickname, database]);
+  }, [nickname, database, databaseStatus]);
 
   const value = {
     userId,

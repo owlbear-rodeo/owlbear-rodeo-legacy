@@ -160,7 +160,7 @@ function MapSettings({
                     onSettingsChange("showGrid", e.target.checked)
                   }
                 />
-                Show Grid
+                Draw Grid
               </Label>
               <Label>
                 <Checkbox
