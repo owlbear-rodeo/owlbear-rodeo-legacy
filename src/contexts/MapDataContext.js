@@ -131,7 +131,7 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
-    console.log("updating", update);
+    console.log("updating", id, update);
     await database.table("maps").update(id, update);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];

@@ -318,7 +318,8 @@ function NetworkedMapAndTokens({ session }) {
         }
       }
       if (id === "mapResponse") {
-        await updateMap(data.id, data);
+        const { id, ...update } = data;
+        await updateMap(id, update);
         const newMap = await getMapFromDB(data.id);
         setCurrentMap(newMap);
       }
