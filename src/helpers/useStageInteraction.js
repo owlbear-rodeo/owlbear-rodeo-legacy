@@ -58,14 +58,24 @@ function useStageInteraction(
       onStageScaleChange(newScale);
       gesture.onWheel && gesture.onWheel(props);
     },
-    onPinch: (props) => {
-      const { da, origin, first } = props;
+    onPinchStart: (props) => {
+      const { event } = props;
+      isInteractingWithCanvas.current =
+        event.target === layer.getCanvas()._canvas;
+      const { da, origin } = props;
       const [distance] = da;
       const [originX, originY] = origin;
-      if (first) {
-        pinchPreviousDistanceRef.current = distance;
-        pinchPreviousOriginRef.current = { x: originX, y: originY };
+      pinchPreviousDistanceRef.current = distance;
+      pinchPreviousOriginRef.current = { x: originX, y: originY };
+      gesture.onPinchStart && gesture.onPinchStart(props);
+    },
+    onPinch: (props) => {
+      if (preventInteraction || !isInteractingWithCanvas.current) {
+        return;
       }
+      const { da, origin } = props;
+      const [distance] = da;
+      const [originX, originY] = origin;
 
       // Apply scale
       const distanceDelta = distance - pinchPreviousDistanceRef.current;
