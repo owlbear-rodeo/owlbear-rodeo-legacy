@@ -82,7 +82,10 @@ function useStageInteraction(
       const originXDelta = originX - pinchPreviousOriginRef.current.x;
       const originYDelta = originY - pinchPreviousOriginRef.current.y;
       const newScale = Math.min(
-        Math.max(stageScale + distanceDelta * touchZoomSpeed, minZoom),
+        Math.max(
+          stageScale + distanceDelta * touchZoomSpeed * stageScale,
+          minZoom
+        ),
         maxZoom
       );
 
