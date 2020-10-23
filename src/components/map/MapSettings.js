@@ -1,5 +1,7 @@
 import React from "react";
-import { Flex, Box, Label, Input, Checkbox } from "theme-ui";
+import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
+
+import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 import { isEmpty } from "../../helpers/shared";
 
@@ -19,6 +21,8 @@ function MapSettings({
   mapState,
   onSettingsChange,
   onStateSettingsChange,
+  showMore,
+  onShowMoreChange,
 }) {
   function handleFlagChange(event, flag) {
     if (event.target.checked) {
@@ -127,97 +131,127 @@ function MapSettings({
           my={1}
         />
       </Box>
-      <Flex
-        mt={2}
-        mb={mapEmpty || map.type === "default" ? 2 : 0}
-        sx={{ alignItems: "flex-end" }}
-      >
-        <Box mb={1} sx={{ width: "50%" }}>
-          <Label mb={1}>Grid Type</Label>
-          <Select
-            defaultValue={{ value: "square", label: "Square" }}
-            isDisabled={mapEmpty || map.type === "default"}
-            options={[
-              { value: "square", label: "Square" },
-              { value: "hex", label: "Hex (Coming Soon)" },
-            ]}
-            isOptionDisabled={(option) => option.value === "hex"}
-            isSearchable={false}
-          />
-        </Box>
-        <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
-          <Label>
-            <Checkbox
-              checked={!mapEmpty && map.showGrid}
-              disabled={mapEmpty || map.type === "default"}
-              onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
-            />
-            Draw Grid
-          </Label>
-          <Label>
-            <Checkbox
-              checked={!mapEmpty && map.snapToGrid}
-              disabled={mapEmpty || map.type === "default"}
-              onChange={(e) => onSettingsChange("snapToGrid", e.target.checked)}
-            />
-            Snap to Grid
-          </Label>
-        </Flex>
-      </Flex>
-      {!mapEmpty && map.type !== "default" && (
-        <Flex my={2} sx={{ alignItems: "center" }}>
-          <Box mb={1} sx={{ width: "50%" }}>
-            <Label mb={1}>Quality</Label>
-            <Select
-              options={qualitySettings}
-              value={
-                !mapEmpty &&
-                qualitySettings.find((s) => s.value === map.quality)
-              }
-              isDisabled={mapEmpty}
-              onChange={(option) => onSettingsChange("quality", option.value)}
-              isOptionDisabled={(option) =>
-                mapEmpty ||
-                (option.value !== "original" && !map.resolutions[option.value])
-              }
-              isSearchable={false}
-            />
+      {showMore && (
+        <>
+          <Flex
+            mt={2}
+            mb={mapEmpty || map.type === "default" ? 2 : 0}
+            sx={{ alignItems: "flex-end" }}
+          >
+            <Box mb={1} sx={{ width: "50%" }}>
+              <Label mb={1}>Grid Type</Label>
+              <Select
+                defaultValue={{ value: "square", label: "Square" }}
+                isDisabled={mapEmpty || map.type === "default"}
+                options={[
+                  { value: "square", label: "Square" },
+                  { value: "hex", label: "Hex (Coming Soon)" },
+                ]}
+                isOptionDisabled={(option) => option.value === "hex"}
+                isSearchable={false}
+              />
+            </Box>
+            <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
+              <Label>
+                <Checkbox
+                  checked={!mapEmpty && map.showGrid}
+                  disabled={mapEmpty || map.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("showGrid", e.target.checked)
+                  }
+                />
+                Draw Grid
+              </Label>
+              <Label>
+                <Checkbox
+                  checked={!mapEmpty && map.snapToGrid}
+                  disabled={mapEmpty || map.type === "default"}
+                  onChange={(e) =>
+                    onSettingsChange("snapToGrid", e.target.checked)
+                  }
+                />
+                Snap to Grid
+              </Label>
+            </Flex>
+          </Flex>
+          {!mapEmpty && map.type !== "default" && (
+            <Flex my={2} sx={{ alignItems: "center" }}>
+              <Box mb={1} sx={{ width: "50%" }}>
+                <Label mb={1}>Quality</Label>
+                <Select
+                  options={qualitySettings}
+                  value={
+                    !mapEmpty &&
+                    qualitySettings.find((s) => s.value === map.quality)
+                  }
+                  isDisabled={mapEmpty}
+                  onChange={(option) =>
+                    onSettingsChange("quality", option.value)
+                  }
+                  isOptionDisabled={(option) =>
+                    mapEmpty ||
+                    (option.value !== "original" &&
+                      !map.resolutions[option.value])
+                  }
+                  isSearchable={false}
+                />
+              </Box>
+              <Label sx={{ width: "50%" }} ml={2}>
+                Size: {getMapSize()}
+              </Label>
+            </Flex>
+          )}
+          <Divider fill />
+          <Box my={2} sx={{ flexGrow: 1 }}>
+            <Label>Allow Others to Edit</Label>
+            <Flex my={1}>
+              <Label>
+                <Checkbox
+                  checked={!mapStateEmpty && mapState.editFlags.includes("fog")}
+                  disabled={mapStateEmpty}
+                  onChange={(e) => handleFlagChange(e, "fog")}
+                />
+                Fog
+              </Label>
+              <Label>
+                <Checkbox
+                  checked={
+                    !mapStateEmpty && mapState.editFlags.includes("drawing")
+                  }
+                  disabled={mapStateEmpty}
+                  onChange={(e) => handleFlagChange(e, "drawing")}
+                />
+                Drawings
+              </Label>
+              <Label>
+                <Checkbox
+                  checked={
+                    !mapStateEmpty && mapState.editFlags.includes("tokens")
+                  }
+                  disabled={mapStateEmpty}
+                  onChange={(e) => handleFlagChange(e, "tokens")}
+                />
+                Tokens
+              </Label>
+            </Flex>
           </Box>
-          <Label sx={{ width: "50%" }} ml={2}>
-            Size: {getMapSize()}
-          </Label>
-        </Flex>
+        </>
       )}
-      <Divider fill />
-      <Box my={2} sx={{ flexGrow: 1 }}>
-        <Label>Allow Others to Edit</Label>
-        <Flex my={1}>
-          <Label>
-            <Checkbox
-              checked={!mapStateEmpty && mapState.editFlags.includes("fog")}
-              disabled={mapStateEmpty}
-              onChange={(e) => handleFlagChange(e, "fog")}
-            />
-            Fog
-          </Label>
-          <Label>
-            <Checkbox
-              checked={!mapStateEmpty && mapState.editFlags.includes("drawing")}
-              disabled={mapStateEmpty}
-              onChange={(e) => handleFlagChange(e, "drawing")}
-            />
-            Drawings
-          </Label>
-          <Label>
-            <Checkbox
-              checked={!mapStateEmpty && mapState.editFlags.includes("tokens")}
-              disabled={mapStateEmpty}
-              onChange={(e) => handleFlagChange(e, "tokens")}
-            />
-            Tokens
-          </Label>
-        </Flex>
-      </Box>
+      <IconButton
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onShowMoreChange(!showMore);
+        }}
+        sx={{
+          transform: `rotate(${showMore ? "180deg" : "0"})`,
+          alignSelf: "center",
+        }}
+        aria-label={showMore ? "Show Less" : "Show More"}
+        title={showMore ? "Show Less" : "Show More"}
+      >
+        <ExpandMoreIcon />
+      </IconButton>
     </Flex>
   );
 }
