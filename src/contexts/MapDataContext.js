@@ -131,7 +131,8 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
-    console.log("updating", id, update);
+    // fake-indexeddb throws an error when updating maps
+    // TODO: find the root cause of the error
     try {
       await database.table("maps").update(id, update);
     } catch (error) {
@@ -146,6 +147,7 @@ export function MapDataProvider({ children }) {
       return newMaps;
     });
 
+    // Return the updated map and ensure it has the update in it
     const updatedMap = (await database.table("maps").get(id)) || {};
     return { ...updatedMap, ...update };
   }
@@ -184,7 +186,6 @@ export function MapDataProvider({ children }) {
    * @param {Object} map the map to put
    */
   async function putMap(map) {
-    console.log("putting", map);
     await database.table("maps").put(map);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -199,7 +200,6 @@ export function MapDataProvider({ children }) {
     if (map.owner !== userId) {
       await updateCache();
     }
-    console.log("map put");
   }
 
   /**
@@ -229,10 +229,7 @@ export function MapDataProvider({ children }) {
   }
 
   async function getMapFromDB(mapId) {
-    console.log(mapId, database.table("maps"));
-    const map = await database.table("maps").get(mapId);
-    console.log(map);
-    return map;
+    return await database.table("maps").get(mapId);
   }
 
   const ownedMaps = maps.filter((map) => map.owner === userId);
