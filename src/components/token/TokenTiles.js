@@ -114,7 +114,7 @@ function TokenTiles({
         <Box
           sx={{
             position: "absolute",
-            top: 0,
+            top: "39px",
             left: 0,
             right: 0,
             textAlign: "center",
