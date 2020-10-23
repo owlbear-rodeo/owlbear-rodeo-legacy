@@ -219,7 +219,6 @@ export function MapDataProvider({ children }) {
   }
 
   async function getMapFromDB(mapId) {
-    if (!database) return;
     return await database.table("maps").get(mapId);
   }
 
