@@ -247,8 +247,8 @@ function NetworkedMapAndTokens({ session }) {
           if (cachedMap && cachedMap.lastModified >= newMap.lastModified) {
             // Update last used for cache invalidation
             const lastUsed = Date.now();
-            await updateMap(cachedMap.id, { lastUsed });
-            setCurrentMap({ ...cachedMap, lastUsed });
+            const updatedMap = await updateMap(cachedMap.id, { lastUsed });
+            setCurrentMap(updatedMap);
           } else {
             // Save map data but remove last modified so if there is an error
             // during the map request the cache is invalid. Also add last used
@@ -319,9 +319,8 @@ function NetworkedMapAndTokens({ session }) {
       }
       if (id === "mapResponse") {
         const { id, ...update } = data;
-        await updateMap(id, update);
-        const newMap = await getMapFromDB(data.id);
-        setCurrentMap(newMap);
+        const updatedMap = await updateMap(id, update);
+        setCurrentMap(updatedMap);
       }
       if (id === "mapState") {
         setCurrentMapState(data);

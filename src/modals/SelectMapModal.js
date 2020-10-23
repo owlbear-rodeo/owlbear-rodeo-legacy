@@ -280,8 +280,8 @@ function SelectMapModal({
     if (selectedMapIds.length === 1) {
       // Update last used for cache invalidation
       const lastUsed = Date.now();
-      await updateMap(selectedMapIds[0], { lastUsed });
-      onMapChange({ ...selectedMaps[0], lastUsed }, selectedMapStates[0]);
+      const updatedMap = await updateMap(selectedMapIds[0], { lastUsed });
+      onMapChange(updatedMap, selectedMapStates[0]);
     } else {
       onMapChange(null, null);
     }

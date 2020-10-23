@@ -145,7 +145,9 @@ export function MapDataProvider({ children }) {
       }
       return newMaps;
     });
-    console.log("updated");
+
+    const updatedMap = (await database.table("maps").get(id)) || {};
+    return { ...updatedMap, ...update };
   }
 
   async function updateMaps(ids, update) {
