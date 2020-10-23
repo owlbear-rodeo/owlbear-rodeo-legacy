@@ -219,7 +219,10 @@ export function MapDataProvider({ children }) {
   }
 
   async function getMapFromDB(mapId) {
-    return await database.table("maps").get(mapId);
+    console.log(mapId, database.table("maps"));
+    const map = await database.table("maps").get(mapId);
+    console.log(map);
+    return map;
   }
 
   const ownedMaps = maps.filter((map) => map.owner === userId);
