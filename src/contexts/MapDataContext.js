@@ -132,7 +132,11 @@ export function MapDataProvider({ children }) {
 
   async function updateMap(id, update) {
     console.log("updating", id, update);
-    await database.table("maps").update(id, update);
+    try {
+      await database.table("maps").update(id, update);
+    } catch (error) {
+      console.error(error);
+    }
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
       const i = newMaps.findIndex((map) => map.id === id);
