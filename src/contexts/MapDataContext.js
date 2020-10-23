@@ -131,15 +131,13 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
-    // fake-indexeddb throws an error when updating maps
-    // TODO: find the root cause of the error
+    // fake-indexeddb throws an error when updating maps in production.
+    // Catch that error and use put when it fails
     try {
       await database.table("maps").update(id, update);
     } catch (error) {
-      // Use put when update fails
       const map = (await getMapFromDB(id)) || {};
       await database.table("maps").put({ ...map, id, ...update });
-      console.error(error);
     }
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -149,10 +147,6 @@ export function MapDataProvider({ children }) {
       }
       return newMaps;
     });
-
-    // Return the updated map and ensure it has the update in it
-    const updatedMap = (await database.table("maps").get(id)) || {};
-    return { ...updatedMap, ...update };
   }
 
   async function updateMaps(ids, update) {
