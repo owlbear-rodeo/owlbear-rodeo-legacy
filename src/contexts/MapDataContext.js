@@ -131,6 +131,7 @@ export function MapDataProvider({ children }) {
   }
 
   async function updateMap(id, update) {
+    console.log("updating", update);
     await database.table("maps").update(id, update);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -140,6 +141,7 @@ export function MapDataProvider({ children }) {
       }
       return newMaps;
     });
+    console.log("updated");
   }
 
   async function updateMaps(ids, update) {
@@ -176,6 +178,7 @@ export function MapDataProvider({ children }) {
    * @param {Object} map the map to put
    */
   async function putMap(map) {
+    console.log("putting", map);
     await database.table("maps").put(map);
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -190,6 +193,7 @@ export function MapDataProvider({ children }) {
     if (map.owner !== userId) {
       await updateCache();
     }
+    console.log("map put");
   }
 
   /**

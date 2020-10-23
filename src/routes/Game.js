@@ -85,7 +85,6 @@ function Game() {
   // Join game
   useEffect(() => {
     if (databaseStatus !== "loading") {
-      console.log("join", databaseStatus);
       session.joinParty(gameId, password);
     }
   }, [gameId, password, databaseStatus]);
