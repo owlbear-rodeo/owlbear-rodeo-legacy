@@ -23,14 +23,14 @@ const defaultMapState = {
 };
 
 export function MapDataProvider({ children }) {
-  const { database } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
 
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    if (!userId || !database) {
+    if (!userId || !database || databaseStatus === "loading") {
       return;
     }
     async function getDefaultMaps() {
@@ -71,7 +71,7 @@ export function MapDataProvider({ children }) {
     }
 
     loadMaps();
-  }, [userId, database]);
+  }, [userId, database, databaseStatus]);
 
   /**
    * Adds a map to the database, also adds an assosiated state for that map
