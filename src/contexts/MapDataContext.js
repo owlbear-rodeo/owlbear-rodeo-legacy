@@ -136,6 +136,9 @@ export function MapDataProvider({ children }) {
     try {
       await database.table("maps").update(id, update);
     } catch (error) {
+      // Use put when update fails
+      const map = (await getMapFromDB(id)) || {};
+      await database.table("maps").put({ ...map, id, ...update });
       console.error(error);
     }
     setMaps((prevMaps) => {
@@ -230,11 +233,6 @@ export function MapDataProvider({ children }) {
 
   async function getMapFromDB(mapId) {
     let map = await database.table("maps").get(mapId);
-    // Check state maps if not in database as a work around for the fake-indexeddb error
-    // TODO: remove this when the error if fixed
-    if (!map) {
-      map = getMap(mapId);
-    }
     return map;
   }
 
