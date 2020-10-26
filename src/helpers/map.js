@@ -1,5 +1,7 @@
 import GridSizeModel from "../ml/gridSize/GridSizeModel";
 
+import { logError } from "./logging";
+
 export function getMapDefaultInset(width, height, gridX, gridY) {
   // Max the width
   const gridScale = width / gridX;
@@ -140,7 +142,7 @@ export async function getGridSize(image) {
   try {
     prediction = await gridSizeML(image, candidates);
   } catch (error) {
-    console.error(error);
+    logError(error);
   }
 
   if (!prediction) {

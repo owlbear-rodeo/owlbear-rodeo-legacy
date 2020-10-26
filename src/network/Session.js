@@ -4,6 +4,7 @@ import { EventEmitter } from "events";
 import Connection from "./Connection";
 
 import { omit } from "../helpers/shared";
+import { logError } from "../helpers/logging";
 
 /**
  * @typedef {object} SessionPeer
@@ -112,8 +113,8 @@ class Session extends EventEmitter {
       const data = await response.json();
       this._iceServers = data.iceServers;
       this.socket.emit("join party", partyId, password);
-    } catch (e) {
-      console.error("Unable to join party:", e.message);
+    } catch (error) {
+      logError(error);
       this.emit("disconnected");
     }
   }
@@ -190,6 +191,7 @@ class Session extends EventEmitter {
 
       this.peers[id] = peer;
     } catch (error) {
+      logError(error);
       this.emit("error", { error });
     }
   }

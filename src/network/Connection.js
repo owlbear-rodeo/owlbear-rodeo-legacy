@@ -3,6 +3,7 @@ import { encode, decode } from "@msgpack/msgpack";
 import shortid from "shortid";
 
 import blobToBuffer from "../helpers/blobToBuffer";
+import { logError } from "../helpers/logging";
 
 // Limit buffer size to 16kb to avoid issues with chrome packet size
 // http://viblast.com/blog/2015/2/5/webrtc-data-channel-message-size/
@@ -78,7 +79,7 @@ class Connection extends SimplePeer {
         }
       }
     } catch (error) {
-      console.error(error);
+      logError(error);
     }
   }
 

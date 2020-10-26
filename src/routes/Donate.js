@@ -15,6 +15,8 @@ import Footer from "../components/Footer";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
 
+import { logError } from "../helpers/logging";
+
 const prices = [
   { price: "$5.00", name: "Small", value: 5 },
   { price: "$15.00", name: "Medium", value: 15 },
@@ -36,8 +38,9 @@ function Donate() {
           setStripe(stripe);
           setLoading(false);
         })
-        .catch((err) => {
-          setError(err.message);
+        .catch((error) => {
+          logError(error);
+          setError(error.message);
           setLoading(false);
         });
     });
