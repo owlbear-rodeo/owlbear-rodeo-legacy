@@ -49,7 +49,6 @@ function Game() {
   const [peerError, setPeerError] = useState(null);
   useEffect(() => {
     function handlePeerError({ error }) {
-      console.error(error.code);
       if (error.code === "ERR_WEBRTC_SUPPORT") {
         setPeerError("WebRTC not supported.");
       } else if (error.code === "ERR_CREATE_OFFER") {
