@@ -37,7 +37,13 @@ function Home() {
         alignItems: "center",
       }}
     >
-      <button onClick={methodDoesNotExist}>Break the world</button>;
+      <button
+        onClick={() => {
+          throw Error("AHHHHHH");
+        }}
+      >
+        Break the world
+      </button>
       <Flex
         sx={{
           flexDirection: "column",
