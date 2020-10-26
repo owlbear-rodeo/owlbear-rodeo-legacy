@@ -37,13 +37,6 @@ function Home() {
         alignItems: "center",
       }}
     >
-      <button
-        onClick={() => {
-          throw Error("AHHHHHH");
-        }}
-      >
-        Break the world
-      </button>
       <Flex
         sx={{
           flexDirection: "column",
