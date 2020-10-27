@@ -173,12 +173,19 @@ class Session extends EventEmitter {
 
       function handleClose() {
         this.emit("disconnect", { peer });
+        console.log("CLOSE", peer);
         peer.connection.destroy();
         this.peers = omit(this.peers, [peer.id]);
       }
 
       function handleError(error) {
+        logError(error);
+        peer.connection.destroy();
         this.emit("error", { peer, error });
+        this.emit("disconnected");
+        if (this._partyId) {
+          this.joinParty(this._partyId, this._password);
+        }
       }
 
       peer.connection.on("signal", handleSignal.bind(this));
@@ -193,6 +200,10 @@ class Session extends EventEmitter {
     } catch (error) {
       logError(error);
       this.emit("error", { error });
+      this.emit("disconnected");
+      if (this._partyId) {
+        this.joinParty(this._partyId, this._password);
+      }
     }
   }
 
