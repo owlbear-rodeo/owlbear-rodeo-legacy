@@ -144,7 +144,7 @@ function NetworkedParty({ gameId, session }) {
 
     function handlePeerDisconnect({ peer }) {
       if (partyNicknames[peer.id]) {
-        addToast(`${partyNicknames[peer.id]} Left the Party`);
+        addToast(`${partyNicknames[peer.id]} left the party`);
       }
       setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
       setPartyTimers((prevTimers) => omit(prevTimers, [peer.id]));
@@ -155,7 +155,7 @@ function NetworkedParty({ gameId, session }) {
         if (!peer.initiator) {
           for (let peerId in data) {
             if (!(peerId in partyNicknames)) {
-              addToast(`${data[peerId]} Joined the Party`);
+              addToast(`${data[peerId]} joined the party`);
             }
           }
         }
