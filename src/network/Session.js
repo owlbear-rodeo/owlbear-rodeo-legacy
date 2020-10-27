@@ -258,7 +258,6 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
-    this.emit("connected");
     console.log("SOCKET RECONNECT");
     if (this._partyId) {
       this.joinParty(this._partyId, this._password);
