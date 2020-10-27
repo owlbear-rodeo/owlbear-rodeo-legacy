@@ -19,6 +19,8 @@ import { MapLoadingProvider } from "./contexts/MapLoadingContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { KeyboardProvider } from "./contexts/KeyboardContext";
 
+import { ToastProvider } from "./components/Toast";
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -26,38 +28,40 @@ function App() {
         <SettingsProvider>
           <AuthProvider>
             <KeyboardProvider>
-              <Router>
-                <Switch>
-                  <Route path="/donate">
-                    <Donate />
-                  </Route>
-                  {/* Legacy support camel case routes */}
-                  <Route path={["/howTo", "/how-to"]}>
-                    <HowTo />
-                  </Route>
-                  <Route path={["/releaseNotes", "/release-notes"]}>
-                    <ReleaseNotes />
-                  </Route>
-                  <Route path="/about">
-                    <About />
-                  </Route>
-                  <Route path="/faq">
-                    <FAQ />
-                  </Route>
-                  <Route path="/game/:id">
-                    <MapLoadingProvider>
-                      <MapDataProvider>
-                        <TokenDataProvider>
-                          <Game />
-                        </TokenDataProvider>
-                      </MapDataProvider>
-                    </MapLoadingProvider>
-                  </Route>
-                  <Route path="/">
-                    <Home />
-                  </Route>
-                </Switch>
-              </Router>
+              <ToastProvider>
+                <Router>
+                  <Switch>
+                    <Route path="/donate">
+                      <Donate />
+                    </Route>
+                    {/* Legacy support camel case routes */}
+                    <Route path={["/howTo", "/how-to"]}>
+                      <HowTo />
+                    </Route>
+                    <Route path={["/releaseNotes", "/release-notes"]}>
+                      <ReleaseNotes />
+                    </Route>
+                    <Route path="/about">
+                      <About />
+                    </Route>
+                    <Route path="/faq">
+                      <FAQ />
+                    </Route>
+                    <Route path="/game/:id">
+                      <MapLoadingProvider>
+                        <MapDataProvider>
+                          <TokenDataProvider>
+                            <Game />
+                          </TokenDataProvider>
+                        </MapDataProvider>
+                      </MapLoadingProvider>
+                    </Route>
+                    <Route path="/">
+                      <Home />
+                    </Route>
+                  </Switch>
+                </Router>
+              </ToastProvider>
             </KeyboardProvider>
           </AuthProvider>
         </SettingsProvider>

@@ -10,7 +10,7 @@ function Banner({ isOpen, onRequestClose, children, allowClose }) {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{
-        overlay: { bottom: "0", top: "initial" },
+        overlay: { bottom: "0", top: "initial", zIndex: 2000 },
         content: {
           backgroundColor: theme.colors.highlight,
           color: "hsl(210, 50%, 96%)",
