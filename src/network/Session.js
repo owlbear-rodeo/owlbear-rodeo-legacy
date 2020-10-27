@@ -120,6 +120,7 @@ class Session extends EventEmitter {
   }
 
   _addPeer(id, initiator, sync) {
+    console.log("adding", id, initiator, sync);
     try {
       const connection = new Connection({
         initiator,
@@ -180,9 +181,11 @@ class Session extends EventEmitter {
 
       function handleError(error) {
         logError(error);
-        peer.connection.destroy();
         this.emit("error", { peer, error });
         this.emit("disconnected");
+        for (let peer of Object.values(this.peers)) {
+          peer.connection && peer.connection.destroy();
+        }
         if (this._partyId) {
           this.joinParty(this._partyId, this._password);
         }
@@ -201,6 +204,9 @@ class Session extends EventEmitter {
       logError(error);
       this.emit("error", { error });
       this.emit("disconnected");
+      for (let peer of Object.values(this.peers)) {
+        peer.connection && peer.connection.destroy();
+      }
       if (this._partyId) {
         this.joinParty(this._partyId, this._password);
       }
@@ -247,6 +253,9 @@ class Session extends EventEmitter {
 
   _handleSocketDisconnect() {
     this.emit("disconnected");
+    for (let peer of Object.values(this.peers)) {
+      peer.connection && peer.connection.destroy();
+    }
   }
 
   _handleSocketReconnect() {
