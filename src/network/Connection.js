@@ -79,7 +79,7 @@ class Connection extends SimplePeer {
         }
       }
     } catch (error) {
-      logError(error);
+      console.error(error);
     }
   }
 
