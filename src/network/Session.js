@@ -180,7 +180,7 @@ class Session extends EventEmitter {
       }
 
       function handleError(error) {
-        logError(error);
+        console.error(error);
         this.emit("error", { peer, error });
         if (peer.id in this.peers) {
           peer.connection.destroy();
