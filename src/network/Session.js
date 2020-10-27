@@ -178,6 +178,7 @@ class Session extends EventEmitter {
       }
 
       function handleError(error) {
+        logError(error);
         this.emit("error", { peer, error });
       }
 
