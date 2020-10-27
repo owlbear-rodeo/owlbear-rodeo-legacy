@@ -8,7 +8,7 @@ export default {
     purple: "hsl(290, 100%, 80%)",
     muted: "hsla(230, 20%, 0%, 20%)",
     gray: "hsl(0, 0%, 70%)",
-    overlay: "hsla(230, 25%, 18%, 0.8)",
+    overlay: "hsla(230, 25%, 15%, 80%)",
     border: "hsla(210, 50%, 96%, 0.5)",
     modes: {
       light: {
@@ -18,7 +18,7 @@ export default {
         secondary: "hsl(290, 100%, 80%)",
         highlight: "hsl(260, 20%, 40%)",
         muted: "hsla(230, 20%, 60%, 20%)",
-        overlay: "hsla(230, 100%, 97%, 0.8)",
+        overlay: "hsla(230, 100%, 97%, 80%)",
         border: "hsla(10, 20%, 20%, 0.5)",
       },
     },

@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect, useCallback } from "react";
+import { useToasts } from "react-toast-notifications";
 
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
@@ -28,6 +29,8 @@ function NetworkedParty({ gameId, session }) {
   const [partyTimers, setPartyTimers] = useState({});
   const [diceRolls, setDiceRolls] = useState([]);
   const [partyDiceRolls, setPartyDiceRolls] = useState({});
+
+  const { addToast } = useToasts();
 
   const [shareDice, setShareDice] = useSetting("dice.shareDice");
 
@@ -140,12 +143,22 @@ function NetworkedParty({ gameId, session }) {
     }
 
     function handlePeerDisconnect({ peer }) {
+      if (partyNicknames[peer.id]) {
+        addToast(`${partyNicknames[peer.id]} left the party`);
+      }
       setPartyNicknames((prevNicknames) => omit(prevNicknames, [peer.id]));
       setPartyTimers((prevTimers) => omit(prevTimers, [peer.id]));
     }
 
-    function handlePeerData({ id, data }) {
+    function handlePeerData({ id, data, peer }) {
       if (id === "nickname") {
+        if (!peer.initiator) {
+          for (let peerId in data) {
+            if (!(peerId in partyNicknames)) {
+              addToast(`${data[peerId]} joined the party`);
+            }
+          }
+        }
         setPartyNicknames((prevNicknames) => ({
           ...prevNicknames,
           ...data,
@@ -204,7 +217,16 @@ function NetworkedParty({ gameId, session }) {
       session.off("trackAdded", handlePeerTrackAdded);
       session.off("trackRemoved", handlePeerTrackRemoved);
     };
-  }, [session, nickname, stream, timer, shareDice, diceRolls]);
+  }, [
+    session,
+    nickname,
+    stream,
+    timer,
+    shareDice,
+    diceRolls,
+    partyNicknames,
+    addToast,
+  ]);
 
   useEffect(() => {
     if (stream) {
@@ -223,25 +245,27 @@ function NetworkedParty({ gameId, session }) {
   }, [stream, handleStreamEnd]);
 
   return (
-    <Party
-      gameId={gameId}
-      onNicknameChange={handleNicknameChange}
-      onStreamStart={handleStreamStart}
-      onStreamEnd={handleStreamEnd}
-      nickname={nickname}
-      partyNicknames={partyNicknames}
-      stream={stream}
-      partyStreams={partyStreams}
-      timer={timer}
-      partyTimers={partyTimers}
-      onTimerStart={handleTimerStart}
-      onTimerStop={handleTimerStop}
-      shareDice={shareDice}
-      onShareDiceChage={handleShareDiceChange}
-      diceRolls={diceRolls}
-      onDiceRollsChange={handleDiceRollsChange}
-      partyDiceRolls={partyDiceRolls}
-    />
+    <>
+      <Party
+        gameId={gameId}
+        onNicknameChange={handleNicknameChange}
+        onStreamStart={handleStreamStart}
+        onStreamEnd={handleStreamEnd}
+        nickname={nickname}
+        partyNicknames={partyNicknames}
+        stream={stream}
+        partyStreams={partyStreams}
+        timer={timer}
+        partyTimers={partyTimers}
+        onTimerStart={handleTimerStart}
+        onTimerStop={handleTimerStop}
+        shareDice={shareDice}
+        onShareDiceChage={handleShareDiceChange}
+        diceRolls={diceRolls}
+        onDiceRollsChange={handleDiceRollsChange}
+        partyDiceRolls={partyDiceRolls}
+      />
+    </>
   );
 }
 
