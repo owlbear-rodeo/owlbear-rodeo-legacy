@@ -276,7 +276,17 @@ function NetworkedMapAndTokens({ session }) {
           }
         }
 
-        function replyWithFile(file) {
+        function replyWithFile(resolution) {
+          let file;
+          // If the resolution exists send that
+          if (map.resolutions[resolution]) {
+            file = map.resolutions[resolution].file;
+          } else if (map.file) {
+            // The resolution might not exist for other users so send the file instead
+            file = map.file;
+          } else {
+            return;
+          }
           reply(
             "mapResponse",
             {
@@ -291,19 +301,19 @@ function NetworkedMapAndTokens({ session }) {
 
         switch (map.quality) {
           case "low":
-            replyWithFile(map.resolutions.low.file);
+            replyWithFile("low");
             break;
           case "medium":
             replyWithPreview("low");
-            replyWithFile(map.resolutions.medium.file);
+            replyWithFile("medium");
             break;
           case "high":
             replyWithPreview("medium");
-            replyWithFile(map.resolutions.high.file);
+            replyWithFile("high");
             break;
           case "ultra":
             replyWithPreview("medium");
-            replyWithFile(map.resolutions.ultra.file);
+            replyWithFile("ultra");
             break;
           case "original":
             if (map.resolutions.medium) {
@@ -311,10 +321,10 @@ function NetworkedMapAndTokens({ session }) {
             } else if (map.resolutions.low) {
               replyWithPreview("low");
             }
-            replyWithFile(map.file);
+            replyWithFile();
             break;
           default:
-            replyWithFile(map.file);
+            replyWithFile();
         }
       }
       if (id === "mapResponse") {
