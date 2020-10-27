@@ -16,6 +16,8 @@ if (process.env.NODE_ENV === "production") {
     dsn:
       "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
+    // Ignore resize error as it is triggered by going fullscreen on slower computers
+    ignoreErrors: ["ResizeObserver loop limit exceeded"],
   });
 }
 
