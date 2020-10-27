@@ -16,6 +16,7 @@ function LoadingOverlay(bg) {
         top: 0,
         left: 0,
         flexDirection: "column",
+        zIndex: 2,
       }}
       bg={bg}
     >

@@ -42,6 +42,7 @@ function MapLoadingOverlay() {
           bottom: "8px",
           flexDirection: "column",
           borderRadius: "28px",
+          zIndex: 2,
         }}
         bg="overlay"
       >
