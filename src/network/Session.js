@@ -175,19 +175,18 @@ class Session extends EventEmitter {
       function handleClose() {
         this.emit("disconnect", { peer });
         console.log("CLOSE", peer);
-        peer.connection.destroy();
-        this.peers = omit(this.peers, [peer.id]);
+        if (peer.id in this.peers) {
+          peer.connection.destroy();
+          this.peers = omit(this.peers, [peer.id]);
+        }
       }
 
       function handleError(error) {
         logError(error);
         this.emit("error", { peer, error });
-        this.emit("disconnected");
-        for (let peer of Object.values(this.peers)) {
-          peer.connection && peer.connection.destroy();
-        }
-        if (this._partyId) {
-          this.joinParty(this._partyId, this._password);
+        if (peer.id in this.peers) {
+          peer.connection.destroy();
+          this.peers = omit(this.peers, [peer.id]);
         }
       }
 
@@ -207,17 +206,16 @@ class Session extends EventEmitter {
       for (let peer of Object.values(this.peers)) {
         peer.connection && peer.connection.destroy();
       }
-      if (this._partyId) {
-        this.joinParty(this._partyId, this._password);
-      }
     }
   }
 
   _handlePartyMemberJoined(id) {
+    console.log("joined", id);
     this._addPeer(id, false, false);
   }
 
   _handlePartyMemberLeft(id) {
+    console.log("left", id);
     if (id in this.peers) {
       this.peers[id].connection.destroy();
       delete this.peers[id];
@@ -253,6 +251,7 @@ class Session extends EventEmitter {
 
   _handleSocketDisconnect() {
     this.emit("disconnected");
+    console.log("SOCKET DISCONNECT");
     for (let peer of Object.values(this.peers)) {
       peer.connection && peer.connection.destroy();
     }
@@ -260,6 +259,7 @@ class Session extends EventEmitter {
 
   _handleSocketReconnect() {
     this.emit("connected");
+    console.log("SOCKET RECONNECT");
     if (this._partyId) {
       this.joinParty(this._partyId, this._password);
     }
