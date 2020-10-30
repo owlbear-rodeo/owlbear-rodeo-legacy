@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { Flex, IconButton } from "theme-ui";
+import { Flex, IconButton, Box } from "theme-ui";
 
 import ExpandMoreDiceIcon from "../../icons/ExpandMoreDiceIcon";
-import DiceTrayOverlay from "../dice/DiceTrayOverlay";
 
 import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
 
 import useSetting from "../../helpers/useSetting";
+
+import LoadingOverlay from "../LoadingOverlay";
+
+const DiceTrayOverlay = React.lazy(() => import("../dice/DiceTrayOverlay"));
 
 function DiceTrayButton({
   shareDice,
@@ -46,13 +49,31 @@ function DiceTrayButton({
         <ExpandMoreDiceIcon isExpanded={isExpanded} />
       </IconButton>
       <DiceLoadingProvider>
-        <DiceTrayOverlay
-          isOpen={isExpanded}
-          shareDice={shareDice}
-          onShareDiceChage={onShareDiceChage}
-          diceRolls={diceRolls}
-          onDiceRollsChange={onDiceRollsChange}
-        />
+        <React.Suspense
+          fallback={
+            isExpanded && (
+              <Box
+                sx={{
+                  width: "32px",
+                  height: "32px",
+                  position: "absolute",
+                  top: "40px",
+                  left: "8px",
+                }}
+              >
+                <LoadingOverlay />
+              </Box>
+            )
+          }
+        >
+          <DiceTrayOverlay
+            isOpen={isExpanded}
+            shareDice={shareDice}
+            onShareDiceChage={onShareDiceChage}
+            diceRolls={diceRolls}
+            onDiceRollsChange={onDiceRollsChange}
+          />
+        </React.Suspense>
       </DiceLoadingProvider>
     </Flex>
   );
