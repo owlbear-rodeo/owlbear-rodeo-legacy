@@ -316,10 +316,12 @@ function NetworkedMapAndTokens({ session }) {
             replyWithFile("ultra");
             break;
           case "original":
-            if (map.resolutions.medium) {
-              replyWithPreview("medium");
-            } else if (map.resolutions.low) {
-              replyWithPreview("low");
+            if (map.resolutions) {
+              if (map.resolutions.medium) {
+                replyWithPreview("medium");
+              } else if (map.resolutions.low) {
+                replyWithPreview("low");
+              }
             }
             replyWithFile();
             break;
