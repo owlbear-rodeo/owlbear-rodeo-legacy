@@ -365,31 +365,31 @@ function NetworkedMapAndTokens({ session }) {
           putToken(newToken);
         }
       }
-      if (id === "tokenStateEdit") {
+      if (id === "tokenStateEdit" && currentMapState) {
         setCurrentMapState((prevMapState) => ({
           ...prevMapState,
           tokens: { ...prevMapState.tokens, ...data },
         }));
       }
-      if (id === "tokenStateRemove") {
+      if (id === "tokenStateRemove" && currentMapState) {
         setCurrentMapState((prevMapState) => ({
           ...prevMapState,
           tokens: omit(prevMapState.tokens, Object.keys(data)),
         }));
       }
-      if (id === "mapDraw") {
+      if (id === "mapDraw" && currentMapState) {
         addMapDrawActions(data, "mapDrawActionIndex", "mapDrawActions");
       }
-      if (id === "mapDrawIndex") {
+      if (id === "mapDrawIndex" && currentMapState) {
         setCurrentMapState((prevMapState) => ({
           ...prevMapState,
           mapDrawActionIndex: data,
         }));
       }
-      if (id === "mapFog") {
+      if (id === "mapFog" && currentMapState) {
         addMapDrawActions(data, "fogDrawActionIndex", "fogDrawActions");
       }
-      if (id === "mapFogIndex") {
+      if (id === "mapFogIndex" && currentMapState) {
         setCurrentMapState((prevMapState) => ({
           ...prevMapState,
           fogDrawActionIndex: data,
