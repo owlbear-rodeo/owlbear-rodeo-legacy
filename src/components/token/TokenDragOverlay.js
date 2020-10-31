@@ -29,6 +29,10 @@ function TokenDragOverlay({
     const mapRect = map.getBoundingClientRect();
 
     function detectRemoveHover() {
+      if (!tokenGroup) {
+        return;
+      }
+
       const pointerPosition = tokenGroup.getStage().getPointerPosition();
       const screenSpacePointerPosition = {
         x: pointerPosition.x + mapRect.left,
