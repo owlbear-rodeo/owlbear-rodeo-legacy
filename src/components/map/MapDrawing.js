@@ -23,7 +23,6 @@ function MapDrawing({
   onShapeAdd,
   onShapesRemove,
   active,
-  toolId,
   toolSettings,
   gridSize,
 }) {

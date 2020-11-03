@@ -30,7 +30,6 @@ function MapFog({
   onShapesRemove,
   onShapesEdit,
   active,
-  toolId,
   toolSettings,
   gridSize,
   transparent,

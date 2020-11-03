@@ -311,7 +311,6 @@ function Map({
       onShapeAdd={handleMapShapeAdd}
       onShapesRemove={handleMapShapesRemove}
       active={selectedToolId === "drawing"}
-      toolId="drawing"
       toolSettings={settings.drawing}
       gridSize={gridSizeNormalized}
     />
@@ -326,7 +325,6 @@ function Map({
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
-      toolId="fog"
       toolSettings={settings.fog}
       gridSize={gridSizeNormalized}
       transparent={allowFogDrawing && !settings.fog.preview}
