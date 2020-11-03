@@ -33,6 +33,7 @@ function Map({
   onFogDraw,
   onFogDrawUndo,
   onFogDrawRedo,
+  onMapNoteAdd,
   allowMapDrawing,
   allowFogDrawing,
   allowMapChange,
@@ -356,6 +357,9 @@ function Map({
       active={selectedToolId === "note"}
       gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
+      onNoteAdd={onMapNoteAdd}
+      // TODO: Sort by last modified
+      notes={mapState ? Object.values(mapState.notes) : []}
     />
   );
 

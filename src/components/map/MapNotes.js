@@ -1,21 +1,31 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Group, Rect } from "react-konva";
+import shortid from "shortid";
+import { Group } from "react-konva";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
+import AuthContext from "../../contexts/AuthContext";
 
 import { getBrushPositionForTool } from "../../helpers/drawing";
 import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 
+import MapNote from "./MapNote";
+
 const defaultNoteSize = 2;
 
-function MapNotes({ map, selectedToolSettings, active, gridSize }) {
-  const { mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
+function MapNotes({
+  map,
+  selectedToolSettings,
+  active,
+  gridSize,
+  onNoteAdd,
+  notes,
+}) {
+  const { interactionEmitter } = useContext(MapInteractionContext);
+  const { userId } = useContext(AuthContext);
   const mapStageRef = useContext(MapStageContext);
   const [isBrushDown, setIsBrushDown] = useState(false);
-  const [brushPosition, setBrushPosition] = useState({ x: 0, y: 0 });
+  const [noteData, setNoteData] = useState(null);
 
   useEffect(() => {
     if (!active) {
@@ -36,17 +46,34 @@ function MapNotes({ map, selectedToolSettings, active, gridSize }) {
     }
 
     function handleBrushDown() {
-      setBrushPosition(getBrushPosition());
+      const brushPosition = getBrushPosition();
+      setNoteData({
+        x: brushPosition.x,
+        y: brushPosition.y,
+        size: defaultNoteSize,
+        text: "",
+        id: shortid.generate(),
+        lastModified: Date.now(),
+        lastModifiedBy: userId,
+        visible: true,
+        locked: false,
+      });
       setIsBrushDown(true);
     }
 
     function handleBrushMove() {
-      setBrushPosition(getBrushPosition());
+      const brushPosition = getBrushPosition();
+      setNoteData((prev) => ({
+        ...prev,
+        x: brushPosition.x,
+        y: brushPosition.y,
+      }));
       setIsBrushDown(true);
     }
 
     function handleBrushUp() {
-      setBrushPosition({ x: 0, y: 0 });
+      onNoteAdd(noteData);
+      setNoteData(null);
       setIsBrushDown(false);
     }
 
@@ -61,25 +88,12 @@ function MapNotes({ map, selectedToolSettings, active, gridSize }) {
     };
   });
 
-  const noteWidth = map && (mapWidth / map.grid.size.x) * defaultNoteSize;
-  const noteHeight = map && (mapHeight / map.grid.size.y) * defaultNoteSize;
-
   return (
     <Group>
-      {isBrushDown && (
-        <Rect
-          x={brushPosition.x * mapWidth}
-          y={brushPosition.y * mapHeight}
-          width={noteWidth}
-          height={noteHeight}
-          offsetX={noteWidth / 2}
-          offsetY={noteHeight / 2}
-          fill="white"
-          shadowColor="rgba(0, 0, 0, 0.16)"
-          shadowOffset={{ x: 0, y: 3 }}
-          shadowBlur={6}
-        />
-      )}
+      {notes.map((note) => (
+        <MapNote note={note} map={map} key={note.id} />
+      ))}
+      {isBrushDown && noteData && <MapNote note={noteData} map={map} />}
     </Group>
   );
 }

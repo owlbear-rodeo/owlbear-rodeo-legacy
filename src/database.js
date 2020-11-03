@@ -268,6 +268,17 @@ function loadVersions(db) {
           token.height = tokenSizes[token.id].height;
         });
     });
+  // v1.7.0 - Added note tool
+  db.version(16)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          state.notes = {};
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

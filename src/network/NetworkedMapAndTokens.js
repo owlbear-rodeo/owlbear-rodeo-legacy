@@ -167,6 +167,17 @@ function NetworkedMapAndTokens({ session }) {
     session.send("mapFogIndex", index);
   }
 
+  function handleNoteAdd(note) {
+    setCurrentMapState((prevMapState) => ({
+      ...prevMapState,
+      notes: {
+        ...prevMapState.notes,
+        [note.id]: note,
+      },
+    }));
+    session.send("mapNoteAdd", note);
+  }
+
   /**
    * Token state
    */
@@ -395,6 +406,15 @@ function NetworkedMapAndTokens({ session }) {
           fogDrawActionIndex: data,
         }));
       }
+      if (id === "mapNoteAdd" && currentMapState) {
+        setCurrentMapState((prevMapState) => ({
+          ...prevMapState,
+          notes: {
+            ...prevMapState.notes,
+            [data.id]: data,
+          },
+        }));
+      }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
@@ -460,6 +480,7 @@ function NetworkedMapAndTokens({ session }) {
         onFogDraw={handleFogDraw}
         onFogDrawUndo={handleFogDrawUndo}
         onFogDrawRedo={handleFogDrawRedo}
+        onMapNoteAdd={handleNoteAdd}
         allowMapDrawing={canEditMapDrawing}
         allowFogDrawing={canEditFogDrawing}
         allowMapChange={canChangeMap}
