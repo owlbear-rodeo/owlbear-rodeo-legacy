@@ -135,6 +135,9 @@ function MapInteraction({
     if (event.key === "q" && !disabledControls.includes("pointer")) {
       onSelectedToolChange("pointer");
     }
+    if (event.key === "n" && !disabledControls.includes("note")) {
+      onSelectedToolChange("note");
+    }
   }
 
   function handleKeyUp(event) {
@@ -153,6 +156,10 @@ function MapInteraction({
         return "move";
       case "fog":
       case "drawing":
+      case "note":
+        return settings.settings[tool].type === "move"
+          ? "pointer"
+          : "crosshair";
       case "measure":
       case "pointer":
         return "crosshair";

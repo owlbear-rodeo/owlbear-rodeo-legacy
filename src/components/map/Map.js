@@ -10,6 +10,7 @@ import MapGrid from "./MapGrid";
 import MapMeasure from "./MapMeasure";
 import MapLoadingOverlay from "./MapLoadingOverlay";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
+import MapNotes from "./MapNotes";
 
 import TokenDataContext from "../../contexts/TokenDataContext";
 import SettingsContext from "../../contexts/SettingsContext";
@@ -133,6 +134,7 @@ function Map({
     disabledControls.push("pan");
     disabledControls.push("measure");
     disabledControls.push("pointer");
+    disabledControls.push("note");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
@@ -350,6 +352,15 @@ function Map({
     />
   );
 
+  const mapNotes = (
+    <MapNotes
+      map={map}
+      active={selectedToolId === "note"}
+      gridSize={gridSizeNormalized}
+      selectedToolSettings={settings[selectedToolId]}
+    />
+  );
+
   return (
     <MapInteraction
       map={map}
@@ -366,6 +377,7 @@ function Map({
       disabledControls={disabledControls}
     >
       {mapGrid}
+      {mapNotes}
       {mapDrawing}
       {mapTokens}
       {mapFog}

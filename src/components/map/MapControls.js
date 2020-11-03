@@ -9,6 +9,7 @@ import SelectMapButton from "./SelectMapButton";
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import MeasureToolSettings from "./controls/MeasureToolSettings";
+import NoteToolSettings from "./controls/NoteToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
@@ -18,6 +19,7 @@ import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import PointerToolIcon from "../../icons/PointerToolIcon";
 import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
+import NoteToolIcon from "../../icons/NoteToolIcon";
 
 import useSetting from "../../helpers/useSetting";
 
@@ -66,8 +68,14 @@ function MapContols({
       icon: <PointerToolIcon />,
       title: "Pointer Tool (Q)",
     },
+    note: {
+      id: "note",
+      icon: <NoteToolIcon />,
+      title: "Note Tool (N)",
+      SettingsComponent: NoteToolSettings,
+    },
   };
-  const tools = ["pan", "fog", "drawing", "measure", "pointer"];
+  const tools = ["pan", "fog", "drawing", "measure", "pointer", "note"];
 
   const sections = [
     {
