@@ -61,8 +61,8 @@ function MapFog({
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        toolId,
-        toolSettings,
+        map.snapToGrid && toolSettings.type === "polygon",
+        toolSettings.useEdgeSnapping,
         gridSize,
         shapes
       );

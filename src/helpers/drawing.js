@@ -8,21 +8,12 @@ const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
   map,
   brushPosition,
-  tool,
-  toolSettings,
+  useGridSnappning,
+  useEdgeSnapping,
   gridSize,
   shapes
 ) {
   let position = brushPosition;
-
-  const useGridSnappning =
-    map.snapToGrid &&
-    ((tool === "drawing" &&
-      (toolSettings.type === "line" ||
-        toolSettings.type === "rectangle" ||
-        toolSettings.type === "circle" ||
-        toolSettings.type === "triangle")) ||
-      (tool === "fog" && toolSettings.type === "polygon"));
 
   if (useGridSnappning) {
     // Snap to corners of grid
@@ -57,8 +48,6 @@ export function getBrushPositionForTool(
       position = centerSnap;
     }
   }
-
-  const useEdgeSnapping = tool === "fog" && toolSettings.useEdgeSnapping;
 
   if (useEdgeSnapping) {
     const minGrid = Vector2.min(gridSize);

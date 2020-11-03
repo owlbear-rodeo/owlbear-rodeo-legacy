@@ -55,8 +55,8 @@ function MapDrawing({
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        toolId,
-        toolSettings,
+        map.snapToGrid && isShape,
+        false,
         gridSize,
         shapes
       );

@@ -38,8 +38,8 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        "drawing",
-        { type: "line" },
+        map.snapToGrid,
+        false,
         gridSize,
         []
       );
