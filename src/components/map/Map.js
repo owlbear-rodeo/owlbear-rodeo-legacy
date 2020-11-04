@@ -19,6 +19,7 @@ import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
 
 import { drawActionsToShapes } from "../../helpers/drawing";
+import MapNoteMenu from "./MapNoteMenu";
 
 function Map({
   map,
@@ -33,7 +34,7 @@ function Map({
   onFogDraw,
   onFogDrawUndo,
   onFogDrawRedo,
-  onMapNoteAdd,
+  onMapNoteChange,
   allowMapDrawing,
   allowFogDrawing,
   allowMapChange,
@@ -351,15 +352,35 @@ function Map({
     />
   );
 
+  const [isNoteMenuOpen, setIsNoteMenuOpen] = useState(false);
+  const [noteMenuOptions, setNoteMenuOptions] = useState({});
+  function handleNoteMenuOpen(noteId, noteNode) {
+    setNoteMenuOptions({ noteId, noteNode });
+    setIsNoteMenuOpen(true);
+  }
+
   const mapNotes = (
     <MapNotes
       map={map}
       active={selectedToolId === "note"}
       gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
-      onNoteAdd={onMapNoteAdd}
+      onNoteAdd={onMapNoteChange}
+      onNoteChange={onMapNoteChange}
       // TODO: Sort by last modified
       notes={mapState ? Object.values(mapState.notes) : []}
+      onNoteMenuOpen={handleNoteMenuOpen}
+    />
+  );
+
+  const noteMenu = (
+    <MapNoteMenu
+      isOpen={isNoteMenuOpen}
+      onRequestClose={() => setIsNoteMenuOpen(false)}
+      onNoteChange={onMapNoteChange}
+      note={mapState && mapState.notes[noteMenuOptions.noteId]}
+      noteNode={noteMenuOptions.noteNode}
+      map={map}
     />
   );
 
@@ -370,6 +391,7 @@ function Map({
         <>
           {mapControls}
           {tokenMenu}
+          {noteMenu}
           {tokenDragOverlay}
           <MapLoadingOverlay />
         </>

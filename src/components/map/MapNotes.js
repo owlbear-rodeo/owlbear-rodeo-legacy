@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
 
@@ -19,13 +19,17 @@ function MapNotes({
   active,
   gridSize,
   onNoteAdd,
+  onNoteChange,
   notes,
+  onNoteMenuOpen,
 }) {
   const { interactionEmitter } = useContext(MapInteractionContext);
   const { userId } = useContext(AuthContext);
   const mapStageRef = useContext(MapStageContext);
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState(null);
+
+  const creatingNoteRef = useRef();
 
   useEffect(() => {
     if (!active) {
@@ -46,33 +50,41 @@ function MapNotes({
     }
 
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
-      setNoteData({
-        x: brushPosition.x,
-        y: brushPosition.y,
-        size: defaultNoteSize,
-        text: "",
-        id: shortid.generate(),
-        lastModified: Date.now(),
-        lastModifiedBy: userId,
-        visible: true,
-        locked: false,
-      });
-      setIsBrushDown(true);
+      if (selectedToolSettings.type === "add") {
+        const brushPosition = getBrushPosition();
+        setNoteData({
+          x: brushPosition.x,
+          y: brushPosition.y,
+          size: defaultNoteSize,
+          text: "",
+          id: shortid.generate(),
+          lastModified: Date.now(),
+          lastModifiedBy: userId,
+          visible: true,
+          locked: false,
+          color: "yellow",
+        });
+        setIsBrushDown(true);
+      }
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition();
-      setNoteData((prev) => ({
-        ...prev,
-        x: brushPosition.x,
-        y: brushPosition.y,
-      }));
-      setIsBrushDown(true);
+      if (selectedToolSettings.type === "add") {
+        const brushPosition = getBrushPosition();
+        setNoteData((prev) => ({
+          ...prev,
+          x: brushPosition.x,
+          y: brushPosition.y,
+        }));
+        setIsBrushDown(true);
+      }
     }
 
     function handleBrushUp() {
-      onNoteAdd(noteData);
+      if (selectedToolSettings.type === "add") {
+        onNoteAdd(noteData);
+        onNoteMenuOpen(noteData.id, creatingNoteRef.current);
+      }
       setNoteData(null);
       setIsBrushDown(false);
     }
@@ -91,9 +103,20 @@ function MapNotes({
   return (
     <Group>
       {notes.map((note) => (
-        <MapNote note={note} map={map} key={note.id} />
+        <MapNote
+          note={note}
+          map={map}
+          key={note.id}
+          onNoteMenuOpen={onNoteMenuOpen}
+          draggable={active && selectedToolSettings.type === "move"}
+          onNoteChange={onNoteChange}
+        />
       ))}
-      {isBrushDown && noteData && <MapNote note={noteData} map={map} />}
+      <Group ref={creatingNoteRef}>
+        {isBrushDown && noteData && (
+          <MapNote note={noteData} map={map} draggable={false} />
+        )}
+      </Group>
     </Group>
   );
 }
