@@ -20,6 +20,7 @@ const defaultMapState = {
   fogDrawActions: [],
   // Flags to determine what other people can edit
   editFlags: ["drawing", "tokens"],
+  notes: {},
 };
 
 export function MapDataProvider({ children }) {
