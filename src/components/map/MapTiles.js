@@ -39,7 +39,8 @@ function MapTiles({
     if (
       Object.values(state.tokens).length > 0 ||
       state.mapDrawActions.length > 0 ||
-      state.fogDrawActions.length > 0
+      state.fogDrawActions.length > 0 ||
+      Object.values(state.notes).length > 0
     ) {
       hasMapState = true;
       break;
