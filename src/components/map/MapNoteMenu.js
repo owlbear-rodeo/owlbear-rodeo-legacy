@@ -113,14 +113,6 @@ function MapNoteMenu({
           }}
           sx={{ alignItems: "center" }}
         >
-          <Text
-            as="label"
-            variant="body2"
-            sx={{ width: "45%", fontSize: "16px" }}
-            p={1}
-          >
-            Label:
-          </Text>
           <Input
             id="changeNoteText"
             onChange={handleTextChange}
