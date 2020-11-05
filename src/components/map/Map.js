@@ -40,6 +40,7 @@ function Map({
   allowMapDrawing,
   allowFogDrawing,
   allowMapChange,
+  allowNoteEditing,
   disabledTokens,
   session,
 }) {
@@ -138,13 +139,15 @@ function Map({
     disabledControls.push("pan");
     disabledControls.push("measure");
     disabledControls.push("pointer");
-    disabledControls.push("note");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");
   }
   if (!allowMapChange) {
     disabledControls.push("map");
+  }
+  if (!allowNoteEditing) {
+    disabledControls.push("note");
   }
 
   const disabledSettings = { fog: [], drawing: [] };
@@ -399,7 +402,10 @@ function Map({
           : []
       }
       onNoteMenuOpen={handleNoteMenuOpen}
-      draggable={selectedToolId === "note" || selectedToolId === "pan"}
+      draggable={
+        allowNoteEditing &&
+        (selectedToolId === "note" || selectedToolId === "pan")
+      }
       onNoteDragStart={(e, noteId) =>
         setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
       }

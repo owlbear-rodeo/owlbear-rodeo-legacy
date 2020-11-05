@@ -19,7 +19,7 @@ const defaultMapState = {
   fogDrawActionIndex: -1,
   fogDrawActions: [],
   // Flags to determine what other people can edit
-  editFlags: ["drawing", "tokens"],
+  editFlags: ["drawing", "tokens", "notes"],
   notes: {},
 };
 

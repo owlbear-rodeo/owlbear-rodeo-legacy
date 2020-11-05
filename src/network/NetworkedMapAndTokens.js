@@ -463,6 +463,12 @@ function NetworkedMapAndTokens({ session }) {
     currentMapState !== null &&
     (currentMapState.editFlags.includes("fog") || currentMap.owner === userId);
 
+  const canEditNotes =
+    currentMap !== null &&
+    currentMapState !== null &&
+    (currentMapState.editFlags.includes("notes") ||
+      currentMap.owner === userId);
+
   const disabledMapTokens = {};
   // If we have a map and state and have the token permission disabled
   // and are not the map owner
@@ -499,6 +505,7 @@ function NetworkedMapAndTokens({ session }) {
         allowMapDrawing={canEditMapDrawing}
         allowFogDrawing={canEditFogDrawing}
         allowMapChange={canChangeMap}
+        allowNoteEditing={canEditNotes}
         disabledTokens={disabledMapTokens}
         session={session}
       />

@@ -277,6 +277,7 @@ function loadVersions(db) {
         .toCollection()
         .modify((state) => {
           state.notes = {};
+          state.editFlags = [...state.editFlags, "notes"];
         });
     });
 }
