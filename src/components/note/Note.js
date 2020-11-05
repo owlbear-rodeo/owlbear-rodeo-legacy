@@ -29,13 +29,6 @@ function Note({
   const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
   const noteHeight = map && (mapHeight / map.grid.size.y) * note.size;
 
-  function handleClick(event) {
-    if (draggable) {
-      const noteNode = event.target;
-      onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode);
-    }
-  }
-
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
   }
@@ -90,15 +83,37 @@ function Note({
     setPreventMapInteraction(false);
   }
 
-  function handlePointerDown() {
+  function handleClick(event) {
     if (draggable) {
-      setPreventMapInteraction(true);
+      const noteNode = event.target;
+      onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode);
     }
   }
 
-  function handlePointerUp() {
+  // Store note pointer down time to check for a click when note is locked
+  const notePointerDownTimeRef = useRef();
+  function handlePointerDown(event) {
+    if (draggable) {
+      setPreventMapInteraction(true);
+    }
+    if (note.locked && map.owner === userId) {
+      notePointerDownTimeRef.current = event.evt.timeStamp;
+    }
+  }
+
+  function handlePointerUp(event) {
     if (draggable) {
       setPreventMapInteraction(false);
+    }
+    // Check note click when locked and we are the map owner
+    // We can't use onClick because that doesn't check pointer distance
+    if (note.locked && map.owner === userId) {
+      // If down and up time is small trigger a click
+      const delta = event.evt.timeStamp - notePointerDownTimeRef.current;
+      if (delta < 300) {
+        const noteNode = event.target;
+        onNoteMenuOpen(note.id, noteNode);
+      }
     }
   }
 

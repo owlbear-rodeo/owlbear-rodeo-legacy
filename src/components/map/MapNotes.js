@@ -106,7 +106,7 @@ function MapNotes({
           map={map}
           key={note.id}
           onNoteMenuOpen={onNoteMenuOpen}
-          draggable={draggable}
+          draggable={draggable && !note.locked}
           onNoteChange={onNoteChange}
           onNoteDragStart={onNoteDragStart}
           onNoteDragEnd={onNoteDragEnd}
