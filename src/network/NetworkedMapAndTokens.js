@@ -178,6 +178,14 @@ function NetworkedMapAndTokens({ session }) {
     session.send("mapNoteChange", note);
   }
 
+  function handleNoteRemove(noteId) {
+    setCurrentMapState((prevMapState) => ({
+      ...prevMapState,
+      notes: omit(prevMapState.notes, [noteId]),
+    }));
+    session.send("mapNoteRemove", noteId);
+  }
+
   /**
    * Token state
    */
@@ -415,6 +423,12 @@ function NetworkedMapAndTokens({ session }) {
           },
         }));
       }
+      if (id === "mapNoteRemove" && currentMapState) {
+        setCurrentMapState((prevMapState) => ({
+          ...prevMapState,
+          notes: omit(prevMapState.notes, [data]),
+        }));
+      }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
@@ -481,6 +495,7 @@ function NetworkedMapAndTokens({ session }) {
         onFogDrawUndo={handleFogDrawUndo}
         onFogDrawRedo={handleFogDrawRedo}
         onMapNoteChange={handleNoteChange}
+        onMapNoteRemove={handleNoteRemove}
         allowMapDrawing={canEditMapDrawing}
         allowFogDrawing={canEditFogDrawing}
         allowMapChange={canChangeMap}

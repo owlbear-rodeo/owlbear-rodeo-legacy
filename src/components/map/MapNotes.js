@@ -9,7 +9,7 @@ import AuthContext from "../../contexts/AuthContext";
 import { getBrushPositionForTool } from "../../helpers/drawing";
 import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 
-import MapNote from "./MapNote";
+import Note from "../note/Note";
 
 const defaultNoteSize = 2;
 
@@ -22,6 +22,8 @@ function MapNotes({
   notes,
   onNoteMenuOpen,
   draggable,
+  onNoteDragStart,
+  onNoteDragEnd,
 }) {
   const { interactionEmitter } = useContext(MapInteractionContext);
   const { userId } = useContext(AuthContext);
@@ -99,18 +101,20 @@ function MapNotes({
   return (
     <Group>
       {notes.map((note) => (
-        <MapNote
+        <Note
           note={note}
           map={map}
           key={note.id}
           onNoteMenuOpen={onNoteMenuOpen}
           draggable={draggable}
           onNoteChange={onNoteChange}
+          onNoteDragStart={onNoteDragStart}
+          onNoteDragEnd={onNoteDragEnd}
         />
       ))}
       <Group ref={creatingNoteRef}>
         {isBrushDown && noteData && (
-          <MapNote note={noteData} map={map} draggable={false} />
+          <Note note={noteData} map={map} draggable={false} />
         )}
       </Group>
     </Group>

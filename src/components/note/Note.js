@@ -10,7 +10,15 @@ import colors from "../../helpers/colors";
 const snappingThreshold = 1 / 5;
 const textPadding = 4;
 
-function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
+function Note({
+  note,
+  map,
+  onNoteChange,
+  onNoteMenuOpen,
+  draggable,
+  onNoteDragStart,
+  onNoteDragEnd,
+}) {
   const { userId } = useContext(AuthContext);
   const { mapWidth, mapHeight, setPreventMapInteraction } = useContext(
     MapInteractionContext
@@ -24,6 +32,10 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
       const noteNode = event.target;
       onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode);
     }
+  }
+
+  function handleDragStart(event) {
+    onNoteDragStart && onNoteDragStart(event, note.id);
   }
 
   function handleDragMove(event) {
@@ -72,15 +84,17 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
         lastModifiedBy: userId,
         lastModified: Date.now(),
       });
+    onNoteDragEnd && onNoteDragEnd(note.id);
+    setPreventMapInteraction(false);
   }
 
-  function handlePointerDown(event) {
+  function handlePointerDown() {
     if (draggable) {
       setPreventMapInteraction(true);
     }
   }
 
-  function handlePointerUp(event) {
+  function handlePointerUp() {
     if (draggable) {
       setPreventMapInteraction(false);
     }
@@ -123,6 +137,7 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
       offsetX={noteWidth / 2}
       offsetY={noteHeight / 2}
       draggable={draggable}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragMove={handleDragMove}
       onMouseDown={handlePointerDown}
@@ -157,4 +172,4 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
   );
 }
 
-export default MapNote;
+export default Note;

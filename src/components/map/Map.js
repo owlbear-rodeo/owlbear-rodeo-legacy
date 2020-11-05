@@ -17,9 +17,10 @@ import SettingsContext from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
+import NoteMenu from "../note/NoteMenu";
+import NoteDragOverlay from "../note/NoteDragOverlay";
 
 import { drawActionsToShapes } from "../../helpers/drawing";
-import MapNoteMenu from "./MapNoteMenu";
 
 function Map({
   map,
@@ -35,6 +36,7 @@ function Map({
   onFogDrawUndo,
   onFogDrawRedo,
   onMapNoteChange,
+  onMapNoteRemove,
   allowMapDrawing,
   allowFogDrawing,
   allowMapChange,
@@ -186,7 +188,7 @@ function Map({
 
   const [isTokenMenuOpen, setIsTokenMenuOpen] = useState(false);
   const [tokenMenuOptions, setTokenMenuOptions] = useState({});
-  const [draggingTokenOptions, setDraggingTokenOptions] = useState();
+  const [tokenDraggingOptions, setTokenDraggingOptions] = useState();
   function handleTokenMenuOpen(tokenStateId, tokenImage) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
@@ -245,7 +247,7 @@ function Map({
   const mapTokens = map && mapState && (
     <Group>
       {Object.values(mapState.tokens)
-        .sort((a, b) => sortMapTokenStates(a, b, draggingTokenOptions))
+        .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
         .map((tokenState) => (
           <MapToken
             key={tokenState.id}
@@ -255,15 +257,15 @@ function Map({
             onTokenStateChange={onMapTokenStateChange}
             onTokenMenuOpen={handleTokenMenuOpen}
             onTokenDragStart={(e) =>
-              setDraggingTokenOptions({
+              setTokenDraggingOptions({
                 dragging: true,
                 tokenState,
                 tokenGroup: e.target,
               })
             }
             onTokenDragEnd={() =>
-              setDraggingTokenOptions({
-                ...draggingTokenOptions,
+              setTokenDraggingOptions({
+                ...tokenDraggingOptions,
                 dragging: false,
               })
             }
@@ -291,17 +293,17 @@ function Map({
     />
   );
 
-  const tokenDragOverlay = draggingTokenOptions && (
+  const tokenDragOverlay = tokenDraggingOptions && (
     <TokenDragOverlay
       onTokenStateRemove={(state) => {
         onMapTokenStateRemove(state);
-        setDraggingTokenOptions(null);
+        setTokenDraggingOptions(null);
       }}
       onTokenStateChange={onMapTokenStateChange}
-      tokenState={draggingTokenOptions && draggingTokenOptions.tokenState}
-      tokenGroup={draggingTokenOptions && draggingTokenOptions.tokenGroup}
-      dragging={draggingTokenOptions && draggingTokenOptions.dragging}
-      token={tokensById[draggingTokenOptions.tokenState.tokenId]}
+      tokenState={tokenDraggingOptions && tokenDraggingOptions.tokenState}
+      tokenGroup={tokenDraggingOptions && tokenDraggingOptions.tokenGroup}
+      dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
+      token={tokensById[tokenDraggingOptions.tokenState.tokenId]}
       mapState={mapState}
     />
   );
@@ -354,6 +356,7 @@ function Map({
 
   const [isNoteMenuOpen, setIsNoteMenuOpen] = useState(false);
   const [noteMenuOptions, setNoteMenuOptions] = useState({});
+  const [noteDraggingOptions, setNoteDraggingOptions] = useState();
   function handleNoteMenuOpen(noteId, noteNode) {
     setNoteMenuOptions({ noteId, noteNode });
     setIsNoteMenuOpen(true);
@@ -371,17 +374,35 @@ function Map({
       notes={mapState ? Object.values(mapState.notes) : []}
       onNoteMenuOpen={handleNoteMenuOpen}
       draggable={selectedToolId === "note" || selectedToolId === "pan"}
+      onNoteDragStart={(e, noteId) =>
+        setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
+      }
+      onNoteDragEnd={() =>
+        setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false })
+      }
     />
   );
 
   const noteMenu = (
-    <MapNoteMenu
+    <NoteMenu
       isOpen={isNoteMenuOpen}
       onRequestClose={() => setIsNoteMenuOpen(false)}
       onNoteChange={onMapNoteChange}
       note={mapState && mapState.notes[noteMenuOptions.noteId]}
       noteNode={noteMenuOptions.noteNode}
       map={map}
+    />
+  );
+
+  const noteDragOverlay = (
+    <NoteDragOverlay
+      dragging={!!(noteDraggingOptions && noteDraggingOptions.dragging)}
+      noteGroup={noteDraggingOptions && noteDraggingOptions.noteGroup}
+      noteId={noteDraggingOptions && noteDraggingOptions.noteId}
+      onNoteRemove={(noteId) => {
+        onMapNoteRemove(noteId);
+        setNoteDraggingOptions(null);
+      }}
     />
   );
 
@@ -394,6 +415,7 @@ function Map({
           {tokenMenu}
           {noteMenu}
           {tokenDragOverlay}
+          {noteDragOverlay}
           <MapLoadingOverlay />
         </>
       }

@@ -16,7 +16,7 @@ import AuthContext from "../../contexts/AuthContext";
 
 const defaultNoteMaxSize = 6;
 
-function MapNoteMenu({
+function NoteMenu({
   isOpen,
   onRequestClose,
   note,
@@ -205,4 +205,4 @@ function MapNoteMenu({
   );
 }
 
-export default MapNoteMenu;
+export default NoteMenu;
