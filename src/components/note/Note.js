@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
-import { Group, Rect, Text } from "react-konva";
+import { Rect, Text } from "react-konva";
+import { useSpring, animated } from "react-spring/konva";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 import * as Vector2 from "../../helpers/vector2";
 import colors from "../../helpers/colors";
+import usePrevious from "../../helpers/usePrevious";
 
 const snappingThreshold = 1 / 5;
 const textPadding = 4;
@@ -103,6 +105,11 @@ function Note({
   const [fontSize, setFontSize] = useState(1);
   useEffect(() => {
     const text = textRef.current;
+
+    if (!text) {
+      return;
+    }
+
     function findFontSize() {
       // Create an array from 4 to 18 scaled to the note size
       const sizes = Array.from(
@@ -120,18 +127,34 @@ function Note({
         }
       });
     }
-
     setFontSize(findFontSize());
   }, [note, noteWidth]);
 
   const textRef = useRef();
 
+  // Animate to new note positions if edited by others
+  const noteX = note.x * mapWidth;
+  const noteY = note.y * mapHeight;
+  const previousWidth = usePrevious(mapWidth);
+  const previousHeight = usePrevious(mapHeight);
+  const resized = mapWidth !== previousWidth || mapHeight !== previousHeight;
+  const skipAnimation = note.lastModifiedBy === userId || resized;
+  const props = useSpring({
+    x: noteX,
+    y: noteY,
+    immediate: skipAnimation,
+  });
+
+  // When a note is hidden if you aren't the map owner hide it completely
+  if (map && !note.visible && map.owner !== userId) {
+    return null;
+  }
+
   return (
-    <Group
+    <animated.Group
+      {...props}
       onClick={handleClick}
       onTap={handleClick}
-      x={note.x * mapWidth}
-      y={note.y * mapHeight}
       width={noteWidth}
       height={noteHeight}
       offsetX={noteWidth / 2}
@@ -144,6 +167,7 @@ function Note({
       onMouseUp={handlePointerUp}
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
+      opacity={note.visible ? 1.0 : 0.5}
     >
       <Rect
         width={noteWidth}
@@ -172,7 +196,7 @@ function Note({
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />
-    </Group>
+    </animated.Group>
   );
 }
 
