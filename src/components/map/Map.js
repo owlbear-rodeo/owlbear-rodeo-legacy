@@ -208,7 +208,7 @@ function Map({
   }
 
   // Sort so vehicles render below other tokens
-  function sortMapTokenStates(a, b, draggingTokenOptions) {
+  function sortMapTokenStates(a, b, tokenDraggingOptions) {
     const tokenA = tokensById[a.tokenId];
     const tokenB = tokensById[b.tokenId];
     if (tokenA && tokenB) {
@@ -218,16 +218,16 @@ function Map({
         const bWeight = getMapTokenCategoryWeight(tokenB.category);
         return bWeight - aWeight;
       } else if (
-        draggingTokenOptions &&
-        draggingTokenOptions.dragging &&
-        draggingTokenOptions.tokenState.id === a.id
+        tokenDraggingOptions &&
+        tokenDraggingOptions.dragging &&
+        tokenDraggingOptions.tokenState.id === a.id
       ) {
         // If dragging token a move above
         return 1;
       } else if (
-        draggingTokenOptions &&
-        draggingTokenOptions.dragging &&
-        draggingTokenOptions.tokenState.id === b.id
+        tokenDraggingOptions &&
+        tokenDraggingOptions.dragging &&
+        tokenDraggingOptions.tokenState.id === b.id
       ) {
         // If dragging token b move above
         return -1;
@@ -362,6 +362,27 @@ function Map({
     setIsNoteMenuOpen(true);
   }
 
+  function sortNotes(a, b, noteDraggingOptions) {
+    if (
+      noteDraggingOptions &&
+      noteDraggingOptions.dragging &&
+      noteDraggingOptions.noteId === a.id
+    ) {
+      // If dragging token `a` move above
+      return 1;
+    } else if (
+      noteDraggingOptions &&
+      noteDraggingOptions.dragging &&
+      noteDraggingOptions.noteId === b.id
+    ) {
+      // If dragging token `b` move above
+      return -1;
+    } else {
+      // Else sort so last modified is on top
+      return a.lastModified - b.lastModified;
+    }
+  }
+
   const mapNotes = (
     <MapNotes
       map={map}
@@ -370,8 +391,13 @@ function Map({
       selectedToolSettings={settings[selectedToolId]}
       onNoteAdd={onMapNoteChange}
       onNoteChange={onMapNoteChange}
-      // TODO: Sort by last modified
-      notes={mapState ? Object.values(mapState.notes) : []}
+      notes={
+        mapState
+          ? Object.values(mapState.notes).sort((a, b) =>
+              sortNotes(a, b, noteDraggingOptions)
+            )
+          : []
+      }
       onNoteMenuOpen={handleNoteMenuOpen}
       draggable={selectedToolId === "note" || selectedToolId === "pan"}
       onNoteDragStart={(e, noteId) =>
