@@ -156,7 +156,11 @@ function Note({
       />
       <Text
         text={note.text}
-        fill="black"
+        fill={
+          note.color === "black" || note.color === "darkGray"
+            ? "white"
+            : "black"
+        }
         align="center"
         verticalAlign="middle"
         padding={textPadding}
