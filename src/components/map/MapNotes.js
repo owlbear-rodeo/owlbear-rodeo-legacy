@@ -15,13 +15,13 @@ const defaultNoteSize = 2;
 
 function MapNotes({
   map,
-  selectedToolSettings,
   active,
   gridSize,
   onNoteAdd,
   onNoteChange,
   notes,
   onNoteMenuOpen,
+  draggable,
 }) {
   const { interactionEmitter } = useContext(MapInteractionContext);
   const { userId } = useContext(AuthContext);
@@ -50,38 +50,34 @@ function MapNotes({
     }
 
     function handleBrushDown() {
-      if (selectedToolSettings.type === "add") {
-        const brushPosition = getBrushPosition();
-        setNoteData({
-          x: brushPosition.x,
-          y: brushPosition.y,
-          size: defaultNoteSize,
-          text: "",
-          id: shortid.generate(),
-          lastModified: Date.now(),
-          lastModifiedBy: userId,
-          visible: true,
-          locked: false,
-          color: "yellow",
-        });
-        setIsBrushDown(true);
-      }
+      const brushPosition = getBrushPosition();
+      setNoteData({
+        x: brushPosition.x,
+        y: brushPosition.y,
+        size: defaultNoteSize,
+        text: "",
+        id: shortid.generate(),
+        lastModified: Date.now(),
+        lastModifiedBy: userId,
+        visible: true,
+        locked: false,
+        color: "yellow",
+      });
+      setIsBrushDown(true);
     }
 
     function handleBrushMove() {
-      if (selectedToolSettings.type === "add") {
-        const brushPosition = getBrushPosition();
-        setNoteData((prev) => ({
-          ...prev,
-          x: brushPosition.x,
-          y: brushPosition.y,
-        }));
-        setIsBrushDown(true);
-      }
+      const brushPosition = getBrushPosition();
+      setNoteData((prev) => ({
+        ...prev,
+        x: brushPosition.x,
+        y: brushPosition.y,
+      }));
+      setIsBrushDown(true);
     }
 
     function handleBrushUp() {
-      if (selectedToolSettings.type === "add") {
+      if (noteData) {
         onNoteAdd(noteData);
         onNoteMenuOpen(noteData.id, creatingNoteRef.current);
       }
@@ -108,7 +104,7 @@ function MapNotes({
           map={map}
           key={note.id}
           onNoteMenuOpen={onNoteMenuOpen}
-          draggable={active && selectedToolSettings.type === "move"}
+          draggable={draggable}
           onNoteChange={onNoteChange}
         />
       ))}

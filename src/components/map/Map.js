@@ -370,6 +370,7 @@ function Map({
       // TODO: Sort by last modified
       notes={mapState ? Object.values(mapState.notes) : []}
       onNoteMenuOpen={handleNoteMenuOpen}
+      draggable={selectedToolId === "note" || selectedToolId === "pan"}
     />
   );
 

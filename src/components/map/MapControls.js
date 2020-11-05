@@ -9,7 +9,6 @@ import SelectMapButton from "./SelectMapButton";
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import MeasureToolSettings from "./controls/MeasureToolSettings";
-import NoteToolSettings from "./controls/NoteToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
@@ -72,7 +71,6 @@ function MapContols({
       id: "note",
       icon: <NoteToolIcon />,
       title: "Note Tool (N)",
-      SettingsComponent: NoteToolSettings,
     },
   };
   const tools = ["pan", "fog", "drawing", "measure", "pointer", "note"];

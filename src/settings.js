@@ -32,11 +32,6 @@ function loadVersions(settings) {
     ...prev,
     map: { fullScreen: false, labelSize: 1 },
   }));
-  // v1.7.0 - Added note tool
-  settings.version(3, (prev) => ({
-    ...prev,
-    note: { type: "add" },
-  }));
 }
 
 export function getSettings() {

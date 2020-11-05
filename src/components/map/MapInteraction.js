@@ -156,12 +156,12 @@ function MapInteraction({
         return "move";
       case "fog":
       case "drawing":
-      case "note":
         return settings.settings[tool].type === "move"
           ? "pointer"
           : "crosshair";
       case "measure":
       case "pointer":
+      case "note":
         return "crosshair";
       default:
         return "default";

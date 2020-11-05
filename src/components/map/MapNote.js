@@ -12,7 +12,9 @@ const textPadding = 4;
 
 function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
   const { userId } = useContext(AuthContext);
-  const { mapWidth, mapHeight } = useContext(MapInteractionContext);
+  const { mapWidth, mapHeight, setPreventMapInteraction } = useContext(
+    MapInteractionContext
+  );
 
   const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
   const noteHeight = map && (mapHeight / map.grid.size.y) * note.size;
@@ -72,6 +74,18 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
       });
   }
 
+  function handlePointerDown(event) {
+    if (draggable) {
+      setPreventMapInteraction(true);
+    }
+  }
+
+  function handlePointerUp(event) {
+    if (draggable) {
+      setPreventMapInteraction(false);
+    }
+  }
+
   const [fontSize, setFontSize] = useState(1);
   useEffect(() => {
     const text = textRef.current;
@@ -111,6 +125,10 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
       draggable={draggable}
       onDragEnd={handleDragEnd}
       onDragMove={handleDragMove}
+      onMouseDown={handlePointerDown}
+      onMouseUp={handlePointerUp}
+      onTouchStart={handlePointerDown}
+      onTouchEnd={handlePointerUp}
     >
       <Rect
         width={noteWidth}
@@ -131,6 +149,7 @@ function MapNote({ note, map, onNoteChange, onNoteMenuOpen, draggable }) {
         wrap="word"
         width={noteWidth}
         height={noteHeight}
+        ellipsis={true}
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />
