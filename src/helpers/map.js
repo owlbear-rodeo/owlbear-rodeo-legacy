@@ -1,4 +1,5 @@
 import GridSizeModel from "../ml/gridSize/GridSizeModel";
+import * as Vector2 from "./vector2";
 
 import { logError } from "./logging";
 
@@ -161,4 +162,65 @@ export function getMapMaxZoom(map) {
   }
   // Return max grid size / 2
   return Math.max(Math.min(map.grid.size.x, map.grid.size.y) / 2, 5);
+}
+
+export function snapNodeToMap(
+  map,
+  mapWidth,
+  mapHeight,
+  node,
+  snappingThreshold
+) {
+  const offset = Vector2.multiply(map.grid.inset.topLeft, {
+    x: mapWidth,
+    y: mapHeight,
+  });
+  const gridSize = {
+    x:
+      (mapWidth * (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
+      map.grid.size.x,
+    y:
+      (mapHeight * (map.grid.inset.bottomRight.y - map.grid.inset.topLeft.y)) /
+      map.grid.size.y,
+  };
+
+  const position = node.position();
+  const halfSize = Vector2.divide({ x: node.width(), y: node.height() }, 2);
+
+  // Offsets to tranform the centered position into the four corners
+  const cornerOffsets = [
+    halfSize,
+    { x: -halfSize.x, y: -halfSize.y },
+    { x: halfSize.x, y: -halfSize.y },
+    { x: -halfSize.x, y: halfSize.y },
+  ];
+
+  // Minimum distance from a corner to the grid
+  let minCornerGridDistance = Number.MAX_VALUE;
+  // Minimum component of the difference between the min corner and the grid
+  let minCornerMinComponent;
+  // Closest grid value
+  let minGridSnap;
+
+  // Find the closest corner to the grid
+  for (let cornerOffset of cornerOffsets) {
+    const corner = Vector2.add(position, cornerOffset);
+    // Transform into offset space, round, then transform back
+    const gridSnap = Vector2.add(
+      Vector2.roundTo(Vector2.subtract(corner, offset), gridSize),
+      offset
+    );
+    const gridDistance = Vector2.length(Vector2.subtract(gridSnap, corner));
+    const minComponent = Vector2.min(gridSize);
+    if (gridDistance < minCornerGridDistance) {
+      minCornerGridDistance = gridDistance;
+      minCornerMinComponent = minComponent;
+      // Move the grid value back to the center
+      minGridSnap = Vector2.subtract(gridSnap, cornerOffset);
+    }
+  }
+
+  if (minCornerGridDistance < minCornerMinComponent * snappingThreshold) {
+    node.position(minGridSnap);
+  }
 }

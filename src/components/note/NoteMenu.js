@@ -63,7 +63,7 @@ function NoteMenu({
   }
 
   function handleSizeChange(event) {
-    const newSize = parseInt(event.target.value);
+    const newSize = parseFloat(event.target.value);
     note && onNoteChange({ ...note, size: newSize });
   }
 
@@ -177,8 +177,8 @@ function NoteMenu({
           <Slider
             value={(note && note.size) || 1}
             onChange={handleSizeChange}
-            step={1}
-            min={1}
+            step={0.5}
+            min={0.5}
             max={noteMaxSize}
             mr={1}
           />

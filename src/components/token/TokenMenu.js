@@ -72,7 +72,7 @@ function TokenMenu({
   }
 
   function handleSizeChange(event) {
-    const newSize = parseInt(event.target.value);
+    const newSize = parseFloat(event.target.value);
     tokenState &&
       onTokenStateChange({ [tokenState.id]: { ...tokenState, size: newSize } });
   }
@@ -211,8 +211,8 @@ function TokenMenu({
           <Slider
             value={(tokenState && tokenState.size) || 1}
             onChange={handleSizeChange}
-            step={1}
-            min={1}
+            step={0.5}
+            min={0.5}
             max={tokenMaxSize}
             mr={1}
           />

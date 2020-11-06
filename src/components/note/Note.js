@@ -5,7 +5,7 @@ import { useSpring, animated } from "react-spring/konva";
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
-import * as Vector2 from "../../helpers/vector2";
+import { snapNodeToMap } from "../../helpers/map";
 import colors from "../../helpers/colors";
 import usePrevious from "../../helpers/usePrevious";
 
@@ -37,35 +37,7 @@ function Note({
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      const offset = Vector2.multiply(map.grid.inset.topLeft, {
-        x: mapWidth,
-        y: mapHeight,
-      });
-      const position = {
-        x: noteGroup.x() + noteGroup.width() / 2,
-        y: noteGroup.y() + noteGroup.height() / 2,
-      };
-      const gridSize = {
-        x:
-          (mapWidth *
-            (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
-          map.grid.size.x,
-        y:
-          (mapHeight *
-            (map.grid.inset.bottomRight.y - map.grid.inset.topLeft.y)) /
-          map.grid.size.y,
-      };
-      // Transform into offset space, round, then transform back
-      const gridSnap = Vector2.add(
-        Vector2.roundTo(Vector2.subtract(position, offset), gridSize),
-        offset
-      );
-      const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
-      const minGrid = Vector2.min(gridSize);
-      if (gridDistance < minGrid * snappingThreshold) {
-        noteGroup.x(gridSnap.x - noteGroup.width() / 2);
-        noteGroup.y(gridSnap.y - noteGroup.height() / 2);
-      }
+      snapNodeToMap(map, mapWidth, mapHeight, noteGroup, snappingThreshold);
     }
   }
 
