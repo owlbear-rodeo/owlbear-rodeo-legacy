@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Text, IconButton, Box, Slider, Flex } from "theme-ui";
+import { Text, IconButton, Box, Flex } from "theme-ui";
 
 import StreamMuteIcon from "../../icons/StreamMuteIcon";
 
 import Banner from "../Banner";
+import Slider from "../Slider";
 
 function Stream({ stream, nickname }) {
   const [streamVolume, setStreamVolume] = useState(1);

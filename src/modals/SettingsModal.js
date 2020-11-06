@@ -1,15 +1,8 @@
 import React, { useState, useContext } from "react";
-import {
-  Label,
-  Flex,
-  Button,
-  useColorMode,
-  Checkbox,
-  Slider,
-  Divider,
-} from "theme-ui";
+import { Label, Flex, Button, useColorMode, Checkbox, Divider } from "theme-ui";
 
 import Modal from "../components/Modal";
+import Slider from "../components/Slider";
 
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
@@ -86,6 +79,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               sx={{ width: "initial" }}
               value={labelSize}
               onChange={(e) => setLabelSize(parseFloat(e.target.value))}
+              labelFunc={(value) => `${value}x`}
             />
           </Label>
           <Divider bg="text" />

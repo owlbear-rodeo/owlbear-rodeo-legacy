@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Box, Input, Slider, Flex, Text, IconButton } from "theme-ui";
+import { Box, Input, Flex, Text, IconButton } from "theme-ui";
+
+import Slider from "../Slider";
 
 import MapMenu from "../map/MapMenu";
 
