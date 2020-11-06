@@ -10,7 +10,6 @@ import colors from "../../helpers/colors";
 import usePrevious from "../../helpers/usePrevious";
 
 const snappingThreshold = 1 / 5;
-const textPadding = 4;
 
 function Note({
   note,
@@ -28,6 +27,7 @@ function Note({
 
   const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
   const noteHeight = map && (mapHeight / map.grid.size.y) * note.size;
+  const notePadding = noteWidth / 10;
 
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
@@ -98,15 +98,15 @@ function Note({
     }
 
     function findFontSize() {
-      // Create an array from 4 to 18 scaled to the note size
+      // Create an array from 1 / 10 of the note height to the full note height
       const sizes = Array.from(
-        { length: 14 * note.size },
-        (_, i) => i + 4 * note.size
+        { length: Math.ceil(noteHeight - notePadding * 2) },
+        (_, i) => i + Math.ceil(noteHeight / 10)
       );
 
       return sizes.reduce((prev, curr) => {
         text.fontSize(curr);
-        const width = text.getTextWidth() + textPadding * 2;
+        const width = text.getTextWidth() + notePadding * 2;
         if (width < noteWidth) {
           return curr;
         } else {
@@ -115,7 +115,7 @@ function Note({
       });
     }
     setFontSize(findFontSize());
-  }, [note, noteWidth]);
+  }, [note, noteWidth, noteHeight, notePadding]);
 
   const textRef = useRef();
 
@@ -174,12 +174,11 @@ function Note({
         }
         align="center"
         verticalAlign="middle"
-        padding={textPadding}
+        padding={notePadding}
         fontSize={fontSize}
         wrap="word"
         width={noteWidth}
         height={noteHeight}
-        ellipsis={true}
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />
