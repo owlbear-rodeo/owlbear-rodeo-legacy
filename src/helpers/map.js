@@ -161,7 +161,7 @@ export function getMapMaxZoom(map) {
     return 10;
   }
   // Return max grid size / 2
-  return Math.max(Math.min(map.grid.size.x, map.grid.size.y) / 2, 5);
+  return Math.max(Math.max(map.grid.size.x, map.grid.size.y) / 2, 5);
 }
 
 export function snapNodeToMap(
