@@ -46,7 +46,7 @@ function TokenSettings({ token, onSettingsChange }) {
             name="tokenSize"
             value={`${(token && token.defaultSize) || 0}`}
             onChange={(e) =>
-              onSettingsChange("defaultSize", parseInt(e.target.value))
+              onSettingsChange("defaultSize", parseFloat(e.target.value))
             }
             disabled={tokenEmpty || token.type === "default"}
             min={1}

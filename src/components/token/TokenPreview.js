@@ -71,7 +71,7 @@ function TokenPreview({ token }) {
   const gridWidth = tokenWidth;
   const gridX = token.defaultSize;
   const gridSize = gridWidth / gridX;
-  const gridY = Math.ceil(tokenHeight / gridSize);
+  const gridY = Math.round(tokenHeight / gridSize);
   const gridHeight = gridY > 0 ? gridY * gridSize : tokenHeight;
   const borderWidth = Math.max(
     (Math.min(tokenWidth, gridHeight) / 200) * Math.max(1 / stageScale, 1),
