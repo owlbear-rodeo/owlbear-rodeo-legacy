@@ -91,14 +91,14 @@ function MapInteraction({
       onPinchEnd: () => {
         onSelectedToolChange(previousSelectedToolRef.current);
       },
-      onDrag: ({ first, last }) => {
-        if (first) {
-          interactionEmitter.emit("dragStart");
-        } else if (last) {
-          interactionEmitter.emit("dragEnd");
-        } else {
-          interactionEmitter.emit("drag");
-        }
+      onDragStart: () => {
+        interactionEmitter.emit("dragStart");
+      },
+      onDrag: () => {
+        interactionEmitter.emit("drag");
+      },
+      onDragEnd: () => {
+        interactionEmitter.emit("dragEnd");
       },
     }
   );
