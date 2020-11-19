@@ -21,11 +21,26 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
-  const toolScale =
-    active && selectedToolSettings.scale.match(/(\d*)([a-zA-Z]*)/);
-  const toolMultiplier =
-    active && !isNaN(parseInt(toolScale[1])) ? parseInt(toolScale[1]) : 1;
-  const toolUnit = active && toolScale[2];
+  function parseToolScale(scale) {
+    if (typeof scale === "string") {
+      const match = scale.match(/(\d*)(\.\d*)?([a-zA-Z]*)/);
+      const integer = parseFloat(match[1]);
+      const fractional = parseFloat(match[2]);
+      const unit = match[3] || "";
+      if (!isNaN(integer) && !isNaN(fractional)) {
+        return {
+          multiplier: integer + fractional,
+          unit: unit,
+          digits: match[2].length - 1,
+        };
+      } else if (!isNaN(integer) && isNaN(fractional)) {
+        return { multiplier: integer, unit: unit, digits: 0 };
+      }
+    }
+    return { multiplier: 1, unit: "", digits: 0 };
+  }
+
+  const measureScale = parseToolScale(active && selectedToolSettings.scale);
 
   useEffect(() => {
     if (!active) {
@@ -125,9 +140,9 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
         >
           <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
           <Text
-            text={`${(shapeData.length * toolMultiplier).toFixed(
-              2
-            )}${toolUnit}`}
+            text={`${(shapeData.length * measureScale.multiplier).toFixed(
+              measureScale.digits
+            )}${measureScale.unit}`}
             fill="white"
             fontSize={24}
             padding={4}
