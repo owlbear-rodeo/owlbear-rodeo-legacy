@@ -15,6 +15,7 @@
     "ammo.js": "kripken/ammo.js#aab297a4164779c3a9d8dc8d9da26958de3cb778",
     "case": "^1.6.3",
     "dexie": "^3.0.3",
+    "err-code": "^2.0.3",
     "fake-indexeddb": "^3.1.2",
     "fuse.js": "^6.4.1",
     "interactjs": "^1.9.7",
