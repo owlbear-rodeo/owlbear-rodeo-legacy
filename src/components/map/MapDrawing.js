@@ -137,10 +137,7 @@ function MapDrawing({
         onShapeAdd(drawingShape);
       }
 
-      if (erasingShapes.length > 0) {
-        onShapesRemove(erasingShapes.map((shape) => shape.id));
-        setErasingShapes([]);
-      }
+      eraseHoveredShapes();
 
       setDrawingShape(null);
       setIsBrushDown(false);
@@ -165,6 +162,13 @@ function MapDrawing({
     }
   }
 
+  function eraseHoveredShapes() {
+    if (erasingShapes.length > 0) {
+      onShapesRemove(erasingShapes.map((shape) => shape.id));
+      setErasingShapes([]);
+    }
+  }
+
   function renderShape(shape) {
     const defaultProps = {
       key: shape.id,
@@ -172,6 +176,8 @@ function MapDrawing({
       onTouchOver: () => handleShapeOver(shape, isBrushDown),
       onMouseDown: () => handleShapeOver(shape, true),
       onTouchStart: () => handleShapeOver(shape, true),
+      onMouseUp: eraseHoveredShapes,
+      onTouchEnd: eraseHoveredShapes,
       fill: colors[shape.color] || shape.color,
       opacity: shape.blend ? 0.5 : 1,
       id: shape.id,
