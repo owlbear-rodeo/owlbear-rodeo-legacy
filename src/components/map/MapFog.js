@@ -143,20 +143,7 @@ function MapFog({
         setDrawingShape(null);
       }
 
-      // Erase
-      if (editingShapes.length > 0) {
-        if (toolSettings.type === "remove") {
-          onShapesRemove(editingShapes.map((shape) => shape.id));
-        } else if (toolSettings.type === "toggle") {
-          onShapesEdit(
-            editingShapes.map((shape) => ({
-              ...shape,
-              visible: !shape.visible,
-            }))
-          );
-        }
-        setEditingShapes([]);
-      }
+      eraseHoveredShapes();
 
       setIsBrushDown(false);
     }
@@ -280,6 +267,23 @@ function MapFog({
 
   useKeyboard(handleKeyDown, handleKeyUp);
 
+  function eraseHoveredShapes() {
+    // Erase
+    if (editingShapes.length > 0) {
+      if (toolSettings.type === "remove") {
+        onShapesRemove(editingShapes.map((shape) => shape.id));
+      } else if (toolSettings.type === "toggle") {
+        onShapesEdit(
+          editingShapes.map((shape) => ({
+            ...shape,
+            visible: !shape.visible,
+          }))
+        );
+      }
+      setEditingShapes([]);
+    }
+  }
+
   function handleShapeOver(shape, isDown) {
     if (shouldHover && isDown) {
       if (editingShapes.findIndex((s) => s.id === shape.id) === -1) {
@@ -304,6 +308,8 @@ function MapFog({
         onTouchOver={() => handleShapeOver(shape, isBrushDown)}
         onMouseDown={() => handleShapeOver(shape, true)}
         onTouchStart={() => handleShapeOver(shape, true)}
+        onMouseUp={eraseHoveredShapes}
+        onTouchEnd={eraseHoveredShapes}
         points={points}
         stroke={colors[shape.color] || shape.color}
         fill={colors[shape.color] || shape.color}
