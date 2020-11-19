@@ -44,7 +44,7 @@ function MapPointer({
     }
 
     function handleBrushMove() {
-      onPointerMove && onPointerMove(getBrushPosition());
+      onPointerMove && visible && onPointerMove(getBrushPosition());
     }
 
     function handleBrushUp() {
