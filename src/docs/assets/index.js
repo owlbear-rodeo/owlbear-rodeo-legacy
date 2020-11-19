@@ -26,7 +26,7 @@ import filteringMaps from "./FilteringMaps.mp4";
 import groupAndRemovingTokens from "./GroupAndRemovingTokens.mp4";
 import filteringTokens from "./FilteringTokens.mp4";
 
-export default {
+const assets = {
   defaultMaps,
   customMaps,
   editingMapsAdvanced,
@@ -55,3 +55,5 @@ export default {
   groupAndRemovingTokens,
   filteringTokens,
 };
+
+export default assets;
