@@ -68,7 +68,7 @@ class Session extends EventEmitter {
     this.socket.on("signal", this._handleSignal.bind(this));
     this.socket.on("auth error", this._handleAuthError.bind(this));
     this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
-    this.socket.on("reconnect", this._handleSocketReconnect.bind(this));
+    this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
 
     this.peers = {};
 
