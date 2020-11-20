@@ -77,9 +77,11 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
           brushPosition,
           gridSize
         );
+        // Round the grid positions to the nearest 0.1 to aviod floating point issues
+        const precision = { x: 0.1, y: 0.1 };
         const length = Vector2.distance(
-          Vector2.divide(points[0], gridSize),
-          Vector2.divide(points[1], gridSize),
+          Vector2.roundTo(Vector2.divide(points[0], gridSize), precision),
+          Vector2.roundTo(Vector2.divide(points[1], gridSize), precision),
           selectedToolSettings.type
         );
         setDrawingShapeData({
