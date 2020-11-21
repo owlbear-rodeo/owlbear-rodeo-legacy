@@ -11,15 +11,15 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.css";
 
-if (process.env.NODE_ENV === "production") {
-  Sentry.init({
-    dsn:
-      "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
-    release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
-    // Ignore resize error as it is triggered by going fullscreen on slower computers
-    ignoreErrors: ["ResizeObserver loop limit exceeded"],
-  });
-}
+// if (process.env.NODE_ENV === "production") {
+//   Sentry.init({
+//     dsn:
+//       "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
+//     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
+//     // Ignore resize error as it is triggered by going fullscreen on slower computers
+//     ignoreErrors: ["ResizeObserver loop limit exceeded"],
+//   });
+// }
 
 Modal.setAppElement("#root");
 
