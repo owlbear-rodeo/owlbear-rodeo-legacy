@@ -58,7 +58,7 @@ class Session extends EventEmitter {
   constructor() {
     super();
     this.socket = io(process.env.REACT_APP_BROKER_URL, {
-      transports: ["websocket"]
+      transports: ["websocket"],
     });
 
     this.socket.on(
@@ -232,7 +232,7 @@ class Session extends EventEmitter {
   }
 
   _handleSignal(data) {
-    const { from, signal } = JSON.parse(data);
+    const { from, signal } = data;
     if (from in this.peers) {
       this.peers[from].connection.signal(signal);
     }
