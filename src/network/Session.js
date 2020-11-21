@@ -221,9 +221,10 @@ class Session extends EventEmitter {
   }
 
   _handleJoinedParty(otherIds) {
-    for (let [index, id] of otherIds.entries()) {
+    for (let i = 0; i < otherIds.length; i++) {
+      const id = otherIds[i];
       // Send a sync request to the first member of the party
-      const sync = index === 0;
+      const sync = i === 0;
       this._addPeer(id, true, sync);
     }
     this.emit("authenticationSuccess");
