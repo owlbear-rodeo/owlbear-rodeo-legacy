@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
+import Konva from "konva";
 
 import useDataSource from "../../helpers/useDataSource";
 import useDebounce from "../../helpers/useDebounce";
@@ -15,6 +16,9 @@ import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
+
+// Enable hit detection on drag to allow for vehicle tokens
+Konva.hitOnDragEnabled = true;
 
 const snappingThreshold = 1 / 7;
 
