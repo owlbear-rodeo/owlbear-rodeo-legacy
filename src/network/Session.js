@@ -74,7 +74,7 @@ class Session extends EventEmitter {
     try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
       if (!response.ok) {
-        throw Error();
+        throw Error("Unable to fetch ICE servers");
       }
       const data = await response.json();
       this._iceServers = data.iceServers;
