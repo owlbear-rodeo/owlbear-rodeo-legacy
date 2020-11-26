@@ -127,7 +127,7 @@ function Game() {
       <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
         <Box p={1}>
           <Text as="p" variant="body2">
-            Offline, refresh to reconnect.
+            Unable to connect to game, refresh to reconnect.
           </Text>
         </Box>
       </Banner>
