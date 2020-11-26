@@ -73,6 +73,9 @@ class Session extends EventEmitter {
   async connect() {
     try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      if (!response.ok) {
+        throw Error();
+      }
       const data = await response.json();
       this._iceServers = data.iceServers;
 
