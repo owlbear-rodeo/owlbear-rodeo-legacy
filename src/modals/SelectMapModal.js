@@ -95,7 +95,9 @@ function SelectMapModal({
       await handleImageUpload(file);
     }
     // Set file input to null to allow adding the same image 2 times in a row
-    fileInputRef.current.value = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
   async function handleImageUpload(file) {
