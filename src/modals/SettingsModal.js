@@ -1,5 +1,14 @@
-import React, { useState, useContext } from "react";
-import { Label, Flex, Button, useColorMode, Checkbox, Divider } from "theme-ui";
+import React, { useState, useContext, useEffect } from "react";
+import {
+  Label,
+  Flex,
+  Button,
+  useColorMode,
+  Checkbox,
+  Divider,
+  Text,
+} from "theme-ui";
+import prettyBytes from "pretty-bytes";
 
 import Modal from "../components/Modal";
 import Slider from "../components/Slider";
@@ -16,6 +25,16 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
+  const [storageEstimate, setStorageEstimate] = useState({
+    usage: 0,
+    quota: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      navigator.storage.estimate().then(setStorageEstimate);
+    }
+  }, [isOpen]);
 
   async function handleEraseAllData() {
     localStorage.clear();
@@ -95,6 +114,17 @@ function SettingsModal({ isOpen, onRequestClose }) {
             >
               Erase all content and reset
             </Button>
+          </Flex>
+          <Flex sx={{ justifyContent: "center" }}>
+            <Text variant="caption">
+              Storage Used: {prettyBytes(storageEstimate.usage)} of{" "}
+              {prettyBytes(storageEstimate.quota)} (
+              {Math.round(
+                (storageEstimate.usage / Math.max(storageEstimate.quota, 1)) *
+                  100
+              )}
+              %)
+            </Text>
           </Flex>
         </Flex>
       </Modal>
