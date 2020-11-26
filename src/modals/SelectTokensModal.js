@@ -10,6 +10,7 @@ import ConfirmModal from "./ConfirmModal";
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
@@ -20,9 +21,13 @@ import AuthContext from "../contexts/AuthContext";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, addToken, removeTokens, updateTokens } = useContext(
-    TokenDataContext
-  );
+  const {
+    ownedTokens,
+    addToken,
+    removeTokens,
+    updateTokens,
+    tokensLoading,
+  } = useContext(TokenDataContext);
 
   /**
    * Search
@@ -256,6 +261,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           </Button>
         </Flex>
       </ImageDrop>
+      {tokensLoading && <LoadingOverlay bg="overlay" />}
       <EditTokenModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}

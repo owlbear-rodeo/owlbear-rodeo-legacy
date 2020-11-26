@@ -53,6 +53,7 @@ function SelectMapModal({
     resetMap,
     updateMap,
     updateMaps,
+    mapsLoading,
   } = useContext(MapDataContext);
 
   /**
@@ -388,7 +389,7 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
-      {imageLoading && <LoadingOverlay bg="overlay" />}
+      {(imageLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}

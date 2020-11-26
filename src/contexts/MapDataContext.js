@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
+import * as Comlink from "comlink";
 
 import AuthContext from "./AuthContext";
 import DatabaseContext from "./DatabaseContext";
+
+import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 import { maps as defaultMaps } from "../maps";
 
@@ -29,6 +32,8 @@ export function MapDataProvider({ children }) {
 
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);
+  const [mapsLoading, setMapsLoading] = useState(true);
+
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
     if (!userId || !database || databaseStatus === "loading") {
@@ -60,15 +65,16 @@ export function MapDataProvider({ children }) {
     }
 
     async function loadMaps() {
-      let storedMaps = [];
-      // Use a cursor instead of toArray to prevent IPC max size error
-      await database.table("maps").each((map) => storedMaps.push(map));
+      const worker = Comlink.wrap(new DatabaseWorker());
+      await worker.loadData("maps");
+      const storedMaps = await worker.data;
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];
       setMaps(allMaps);
       const storedStates = await database.table("states").toArray();
       setMapStates(storedStates);
+      setMapsLoading(false);
     }
 
     loadMaps();
@@ -137,8 +143,10 @@ export function MapDataProvider({ children }) {
     try {
       await database.table("maps").update(id, update);
     } catch (error) {
+      // if (error.name !== "QuotaExceededError") {
       const map = (await getMapFromDB(id)) || {};
       await database.table("maps").put({ ...map, id, ...update });
+      // }
     }
     setMaps((prevMaps) => {
       const newMaps = [...prevMaps];
@@ -247,6 +255,7 @@ export function MapDataProvider({ children }) {
     putMap,
     getMap,
     getMapFromDB,
+    mapsLoading,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>
