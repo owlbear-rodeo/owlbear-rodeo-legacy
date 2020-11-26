@@ -27,13 +27,11 @@ function Game() {
   const { databaseStatus } = useContext(DatabaseContext);
 
   const [session] = useState(new Session());
-  const [offline, setOffline] = useState(false);
+  const [offline, setOffline] = useState();
   useEffect(() => {
     async function connect() {
       await session.connect();
-      if (session.state === "offline") {
-        setOffline(true);
-      }
+      setOffline(session.state === "offline");
     }
     connect();
   }, [session]);
@@ -96,7 +94,7 @@ function Game() {
     if (session.state === "online" && databaseStatus !== "loading") {
       session.joinParty(gameId, password);
     }
-  }, [gameId, password, databaseStatus, session]);
+  }, [gameId, password, databaseStatus, session, offline]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
