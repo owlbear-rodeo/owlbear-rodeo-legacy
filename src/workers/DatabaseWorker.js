@@ -6,10 +6,12 @@ import { getDatabase } from "../database";
 let obj = {
   data: [],
   async loadData(table) {
-    let db = getDatabase({});
     this.data = [];
-    // Use a cursor instead of toArray to prevent IPC max size error
-    await db.table(table).each((map) => this.data.push(map));
+    try {
+      let db = getDatabase({});
+      // Use a cursor instead of toArray to prevent IPC max size error
+      await db.table(table).each((map) => this.data.push(map));
+    } catch {}
   },
 };
 
