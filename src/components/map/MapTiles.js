@@ -87,6 +87,7 @@ function MapTiles({
         <Flex
           p={2}
           pb={4}
+          pt={databaseStatus === "disabled" ? 4 : 2}
           bg="muted"
           sx={{
             flexWrap: "wrap",
@@ -114,6 +115,7 @@ function MapTiles({
             left: 0,
             right: 0,
             textAlign: "center",
+            borderRadius: "2px",
           }}
           bg="highlight"
           p={1}
