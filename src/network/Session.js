@@ -27,8 +27,8 @@ import { logError } from "../helpers/logging";
  * - error
  * - authenticationSuccess
  * - authenticationError
- * - connected: You have connected
- * - disconnected: You have disconnected
+ * - connected: You have connected to the party
+ * - disconnected: You have disconnected from the party
  */
 class Session extends EventEmitter {
   /**
@@ -45,8 +45,15 @@ class Session extends EventEmitter {
    */
   peers;
 
+  /**
+   * The state of the session
+   *
+   * @type {('unknown'|'online'|'offline')}
+   */
+  state;
+
   get id() {
-    return this.socket.id;
+    return this.socket && this.socket.id;
   }
 
   _iceServers;
@@ -57,25 +64,41 @@ class Session extends EventEmitter {
 
   constructor() {
     super();
-    this.socket = io(process.env.REACT_APP_BROKER_URL, {
-      transports: ["websocket"],
-    });
-
-    this.socket.on(
-      "party member joined",
-      this._handlePartyMemberJoined.bind(this)
-    );
-    this.socket.on("party member left", this._handlePartyMemberLeft.bind(this));
-    this.socket.on("joined party", this._handleJoinedParty.bind(this));
-    this.socket.on("signal", this._handleSignal.bind(this));
-    this.socket.on("auth error", this._handleAuthError.bind(this));
-    this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
-    this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
-
     this.peers = {};
-
+    this.state = "unknown";
     // Signal connected peers of a closure on refresh
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
+  }
+
+  async connect() {
+    try {
+      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      const data = await response.json();
+      this._iceServers = data.iceServers;
+
+      this.socket = io(process.env.REACT_APP_BROKER_URL, {
+        transports: ["websocket"],
+      });
+
+      this.socket.on(
+        "party member joined",
+        this._handlePartyMemberJoined.bind(this)
+      );
+      this.socket.on(
+        "party member left",
+        this._handlePartyMemberLeft.bind(this)
+      );
+      this.socket.on("joined party", this._handleJoinedParty.bind(this));
+      this.socket.on("signal", this._handleSignal.bind(this));
+      this.socket.on("auth error", this._handleAuthError.bind(this));
+      this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
+      this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
+
+      this.state = "online";
+    } catch (error) {
+      logError(error);
+      this.state = "offline";
+    }
   }
 
   /**
@@ -104,21 +127,12 @@ class Session extends EventEmitter {
         partyId,
         password
       );
-      this.emit("disconnected");
       return;
     }
 
     this._partyId = partyId;
     this._password = password;
-    try {
-      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
-      const data = await response.json();
-      this._iceServers = data.iceServers;
-      this.socket.emit("join party", partyId, password);
-    } catch (error) {
-      logError(error);
-      this.emit("disconnected");
-    }
+    this.socket.emit("join party", partyId, password);
   }
 
   _addPeer(id, initiator, sync) {

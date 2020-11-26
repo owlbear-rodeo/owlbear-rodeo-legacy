@@ -17,8 +17,6 @@ import NetworkedParty from "../network/NetworkedParty";
 
 import Session from "../network/Session";
 
-const session = new Session();
-
 function Game() {
   const { id: gameId } = useParams();
   const {
@@ -27,6 +25,18 @@ function Game() {
     setAuthenticationStatus,
   } = useContext(AuthContext);
   const { databaseStatus } = useContext(DatabaseContext);
+
+  const [session] = useState(new Session());
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    async function connect() {
+      await session.connect();
+      if (session.state === "offline") {
+        setOffline(true);
+      }
+    }
+    connect();
+  }, [session]);
 
   // Handle authentication status
   useEffect(() => {
@@ -43,7 +53,7 @@ function Game() {
       session.off("authenticationSuccess", handleAuthSuccess);
       session.off("authenticationError", handleAuthError);
     };
-  }, [setAuthenticationStatus]);
+  }, [setAuthenticationStatus, session]);
 
   // Handle session errors
   const [peerError, setPeerError] = useState(null);
@@ -59,7 +69,7 @@ function Game() {
     return () => {
       session.off("error", handlePeerError);
     };
-  }, []);
+  }, [session]);
 
   // Handle connection
   const [connected, setConnected] = useState(false);
@@ -79,14 +89,14 @@ function Game() {
       session.off("connected", handleConnected);
       session.off("disconnected", handleDisconnected);
     };
-  }, []);
+  }, [session]);
 
   // Join game
   useEffect(() => {
-    if (databaseStatus !== "loading") {
+    if (session.state === "online" && databaseStatus !== "loading") {
       session.joinParty(gameId, password);
     }
-  }, [gameId, password, databaseStatus]);
+  }, [gameId, password, databaseStatus, session]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
@@ -114,6 +124,13 @@ function Game() {
           </Text>
         </Box>
       </Banner>
+      <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
+        <Box p={1}>
+          <Text as="p" variant="body2">
+            Offline, refresh to reconnect.
+          </Text>
+        </Box>
+      </Banner>
       <Banner
         isOpen={!connected && authenticationStatus === "authenticated"}
         onRequestClose={() => {}}
@@ -126,7 +143,7 @@ function Game() {
         </Box>
       </Banner>
       <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
-      {authenticationStatus === "unknown" && <LoadingOverlay />}
+      {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
     </MapStageProvider>
   );
 }
