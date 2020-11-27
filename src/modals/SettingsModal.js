@@ -25,13 +25,10 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
-  const [storageEstimate, setStorageEstimate] = useState({
-    usage: 0,
-    quota: 0,
-  });
+  const [storageEstimate, setStorageEstimate] = useState();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && navigator.storage) {
       navigator.storage.estimate().then(setStorageEstimate);
     }
   }, [isOpen]);
@@ -115,17 +112,19 @@ function SettingsModal({ isOpen, onRequestClose }) {
               Erase all content and reset
             </Button>
           </Flex>
-          <Flex sx={{ justifyContent: "center" }}>
-            <Text variant="caption">
-              Storage Used: {prettyBytes(storageEstimate.usage)} of{" "}
-              {prettyBytes(storageEstimate.quota)} (
-              {Math.round(
-                (storageEstimate.usage / Math.max(storageEstimate.quota, 1)) *
-                  100
-              )}
-              %)
-            </Text>
-          </Flex>
+          {storageEstimate && (
+            <Flex sx={{ justifyContent: "center" }}>
+              <Text variant="caption">
+                Storage Used: {prettyBytes(storageEstimate.usage)} of{" "}
+                {prettyBytes(storageEstimate.quota)} (
+                {Math.round(
+                  (storageEstimate.usage / Math.max(storageEstimate.quota, 1)) *
+                    100
+                )}
+                %)
+              </Text>
+            </Flex>
+          )}
         </Flex>
       </Modal>
       <ConfirmModal
