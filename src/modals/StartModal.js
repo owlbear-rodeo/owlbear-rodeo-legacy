@@ -49,7 +49,7 @@ function StartModal({ isOpen, onRequestClose }) {
         m={2}
       >
         <Box as="form" onSubmit={handleSubmit}>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Game Password</Label>
           <Input
             my={1}
             id="password"
