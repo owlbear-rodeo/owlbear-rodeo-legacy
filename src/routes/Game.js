@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
+import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 
@@ -142,6 +143,7 @@ function Game() {
       </Banner>
       <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
       {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
+      <MapLoadingOverlay />
     </MapStageProvider>
   );
 }

@@ -8,7 +8,6 @@ import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapGrid from "./MapGrid";
 import MapMeasure from "./MapMeasure";
-import MapLoadingOverlay from "./MapLoadingOverlay";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 import MapNotes from "./MapNotes";
 
@@ -448,7 +447,6 @@ function Map({
           {noteMenu}
           {tokenDragOverlay}
           {noteDragOverlay}
-          <MapLoadingOverlay />
         </>
       }
       selectedToolId={selectedToolId}
