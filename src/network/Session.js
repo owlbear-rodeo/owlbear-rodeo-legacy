@@ -73,7 +73,6 @@ class Session extends EventEmitter {
   async connect() {
     try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
-      response.headers.forEach(console.log);
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
       }
@@ -81,7 +80,6 @@ class Session extends EventEmitter {
       this._iceServers = data.iceServers;
 
       this.socket = io(process.env.REACT_APP_BROKER_URL, {
-        // transports: ["websocket"],
         withCredentials: true,
       });
 
