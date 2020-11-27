@@ -70,6 +70,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImagesUpload(files) {
+    if (navigator.storage) {
+      // Attempt to enable persistant storage
+      await navigator.storage.persist();
+    }
+
     for (let file of files) {
       await handleImageUpload(file);
     }

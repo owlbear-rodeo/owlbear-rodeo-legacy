@@ -91,6 +91,11 @@ function SelectMapModal({
   const [imageLoading, setImageLoading] = useState(false);
 
   async function handleImagesUpload(files) {
+    if (navigator.storage) {
+      // Attempt to enable persistant storage
+      await navigator.storage.persist();
+    }
+
     for (let file of files) {
       await handleImageUpload(file);
     }

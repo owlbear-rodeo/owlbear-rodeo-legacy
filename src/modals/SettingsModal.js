@@ -28,8 +28,21 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const [storageEstimate, setStorageEstimate] = useState();
 
   useEffect(() => {
+    async function estimateStorage() {
+      // Persisted data on firefox doesn't count towards the usage quota so ignore it
+      const persisted = await navigator.storage.persisted();
+      const isFirefox =
+        navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+      if (persisted && isFirefox) {
+        return;
+      }
+
+      const estimate = await navigator.storage.estimate();
+      setStorageEstimate(estimate);
+    }
+
     if (isOpen && navigator.storage) {
-      navigator.storage.estimate().then(setStorageEstimate);
+      estimateStorage();
     }
   }, [isOpen]);
 
