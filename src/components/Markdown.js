@@ -45,7 +45,7 @@ function Image(props) {
 }
 
 function ListItem(props) {
-  return <Text as="li" variant="body2" {...props} />;
+  return <Text as="li" variant="body2" my={1} {...props} />;
 }
 
 function Code({ children, value }) {
@@ -156,5 +156,9 @@ function Markdown({ source, assets }) {
     />
   );
 }
+
+Markdown.defaultProps = {
+  assets: {},
+};
 
 export default Markdown;
