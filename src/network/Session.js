@@ -73,7 +73,7 @@ class Session extends EventEmitter {
   async connect() {
     try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
-      console.log(response);
+      response.headers.forEach(console.log);
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
       }
