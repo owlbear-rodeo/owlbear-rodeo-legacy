@@ -82,6 +82,7 @@ class Session extends EventEmitter {
 
       this.socket = io(process.env.REACT_APP_BROKER_URL, {
         // transports: ["websocket"],
+        withCredentials: true,
       });
 
       this.socket.on(
