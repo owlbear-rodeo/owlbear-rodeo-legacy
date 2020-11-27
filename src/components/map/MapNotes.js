@@ -69,13 +69,15 @@ function MapNotes({
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition();
-      setNoteData((prev) => ({
-        ...prev,
-        x: brushPosition.x,
-        y: brushPosition.y,
-      }));
-      setIsBrushDown(true);
+      if (noteData) {
+        const brushPosition = getBrushPosition();
+        setNoteData((prev) => ({
+          ...prev,
+          x: brushPosition.x,
+          y: brushPosition.y,
+        }));
+        setIsBrushDown(true);
+      }
     }
 
     function handleBrushUp() {

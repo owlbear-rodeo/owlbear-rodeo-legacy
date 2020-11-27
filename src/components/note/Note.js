@@ -104,17 +104,22 @@ function Note({
         (_, i) => i + Math.ceil(noteHeight / 10)
       );
 
-      return sizes.reduce((prev, curr) => {
-        text.fontSize(curr);
-        const width = text.getTextWidth() + notePadding * 2;
-        if (width < noteWidth) {
-          return curr;
-        } else {
-          return prev;
-        }
-      });
+      if (sizes.length > 0) {
+        const size = sizes.reduce((prev, curr) => {
+          text.fontSize(curr);
+          const width = text.getTextWidth() + notePadding * 2;
+          if (width < noteWidth) {
+            return curr;
+          } else {
+            return prev;
+          }
+        });
+
+        setFontSize(size);
+      }
     }
-    setFontSize(findFontSize());
+
+    findFontSize();
   }, [note, noteWidth, noteHeight, notePadding]);
 
   const textRef = useRef();
