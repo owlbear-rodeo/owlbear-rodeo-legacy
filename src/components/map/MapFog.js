@@ -26,7 +26,7 @@ function MapFog({
   map,
   shapes,
   onShapeAdd,
-  onShapeSubtract,
+  onShapeCut,
   onShapesRemove,
   onShapesEdit,
   active,
@@ -77,7 +77,7 @@ function MapFog({
             holes: [],
           },
           strokeWidth: 0.5,
-          color: toolSettings.useFogSubtract ? "red" : "black",
+          color: toolSettings.useFogCut ? "red" : "black",
           blend: false,
           id: shortid.generate(),
           visible: true,
@@ -113,11 +113,10 @@ function MapFog({
 
     function handleBrushUp() {
       if (toolSettings.type === "brush" && drawingShape) {
-        const subtract = toolSettings.useFogSubtract;
-
+        const cut = toolSettings.useFogCut;
         if (drawingShape.data.points.length > 1) {
           let shapeData = {};
-          if (subtract) {
+          if (cut) {
             shapeData = { id: drawingShape.id, type: drawingShape.type };
           } else {
             shapeData = { ...drawingShape, color: "black" };
@@ -134,8 +133,8 @@ function MapFog({
               ),
             },
           };
-          if (subtract) {
-            onShapeSubtract(shape);
+          if (cut) {
+            onShapeCut(shape);
           } else {
             onShapeAdd(shape);
           }
@@ -168,7 +167,7 @@ function MapFog({
                 holes: [],
               },
               strokeWidth: 0.5,
-              color: toolSettings.useFogSubtract ? "red" : "black",
+              color: toolSettings.useFogCut ? "red" : "black",
               blend: false,
               id: shortid.generate(),
               visible: true,
@@ -215,14 +214,14 @@ function MapFog({
   });
 
   const finishDrawingPolygon = useCallback(() => {
-    const subtract = toolSettings.useFogSubtract;
+    const cut = toolSettings.useFogCut;
     const data = {
       ...drawingShape.data,
       // Remove the last point as it hasn't been placed yet
       points: drawingShape.data.points.slice(0, -1),
     };
-    if (subtract) {
-      onShapeSubtract({
+    if (cut) {
+      onShapeCut({
         id: drawingShape.id,
         type: drawingShape.type,
         data: data,
@@ -232,7 +231,7 @@ function MapFog({
     }
 
     setDrawingShape(null);
-  }, [toolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
+  }, [toolSettings, drawingShape, onShapeCut, onShapeAdd]);
 
   // Add keyboard shortcuts
   function handleKeyDown({ key }) {
@@ -242,30 +241,22 @@ function MapFog({
     if (key === "Escape" && drawingShape) {
       setDrawingShape(null);
     }
-    if (key === "Alt" && drawingShape) {
-      updateShapeColor();
-    }
   }
 
-  function handleKeyUp({ key }) {
-    if (key === "Alt" && drawingShape) {
-      updateShapeColor();
-    }
-  }
+  useKeyboard(handleKeyDown);
 
-  function updateShapeColor() {
+  // Update shape color when useFogCut changes
+  useEffect(() => {
     setDrawingShape((prevShape) => {
       if (!prevShape) {
         return;
       }
       return {
         ...prevShape,
-        color: toolSettings.useFogSubtract ? "black" : "red",
+        color: toolSettings.useFogCut ? "red" : "black",
       };
     });
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
+  }, [toolSettings.useFogCut]);
 
   function eraseHoveredShapes() {
     // Erase

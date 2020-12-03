@@ -6,13 +6,12 @@ import RadioIconButton from "../../RadioIconButton";
 
 import EdgeSnappingToggle from "./EdgeSnappingToggle";
 import FogPreviewToggle from "./FogPreviewToggle";
+import FogCutToggle from "./FogCutToggle";
 
 import FogBrushIcon from "../../../icons/FogBrushIcon";
 import FogPolygonIcon from "../../../icons/FogPolygonIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
-import FogAddIcon from "../../../icons/FogAddIcon";
-import FogSubtractIcon from "../../../icons/FogSubtractIcon";
 
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
@@ -31,7 +30,7 @@ function BrushToolSettings({
   // Keyboard shortcuts
   function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
     if (key === "Alt") {
-      onSettingChange({ useFogSubtract: !settings.useFogSubtract });
+      onSettingChange({ useFogCut: !settings.useFogCut });
     } else if (key === "p") {
       onSettingChange({ type: "polygon" });
     } else if (key === "b") {
@@ -44,6 +43,8 @@ function BrushToolSettings({
       onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
     } else if (key === "f") {
       onSettingChange({ preview: !settings.preview });
+    } else if (key === "c") {
+      onSettingChange({ useFogCut: !settings.useFogCut });
     } else if (
       (key === "z" || key === "Z") &&
       (ctrlKey || metaKey) &&
@@ -63,7 +64,7 @@ function BrushToolSettings({
 
   function handleKeyUp({ key }) {
     if (key === "Alt") {
-      onSettingChange({ useFogSubtract: !settings.useFogSubtract });
+      onSettingChange({ useFogCut: !settings.useFogCut });
     }
   }
 
@@ -82,21 +83,6 @@ function BrushToolSettings({
       title: "Fog Brush (B)",
       isSelected: settings.type === "brush",
       icon: <FogBrushIcon />,
-    },
-  ];
-
-  const modeTools = [
-    {
-      id: "add",
-      title: "Add Fog",
-      isSelected: !settings.useFogSubtract,
-      icon: <FogAddIcon />,
-    },
-    {
-      id: "subtract",
-      title: "Subtract Fog",
-      isSelected: settings.useFogSubtract,
-      icon: <FogSubtractIcon />,
     },
   ];
 
@@ -123,14 +109,10 @@ function BrushToolSettings({
         <FogRemoveIcon />
       </RadioIconButton>
       <Divider vertical />
-      <ToolSection
-        tools={modeTools}
-        onToolClick={(tool) =>
-          onSettingChange({ useFogSubtract: tool.id === "subtract" })
-        }
-        collapse={isSmallScreen}
+      <FogCutToggle
+        useFogCut={settings.useFogCut}
+        onFogCutChange={(useFogCut) => onSettingChange({ useFogCut })}
       />
-      <Divider vertical />
       <EdgeSnappingToggle
         useEdgeSnapping={settings.useEdgeSnapping}
         onEdgeSnappingChange={(useEdgeSnapping) =>

@@ -105,8 +105,8 @@ function Map({
     onFogDraw({ type: "add", shapes: [shape] });
   }
 
-  function handleFogShapeSubtract(shape) {
-    onFogDraw({ type: "subtract", shapes: [shape] });
+  function handleFogShapeCut(shape) {
+    onFogDraw({ type: "cut", shapes: [shape] });
   }
 
   function handleFogShapesRemove(shapeIds) {
@@ -327,7 +327,7 @@ function Map({
       map={map}
       shapes={fogShapes}
       onShapeAdd={handleFogShapeAdd}
-      onShapeSubtract={handleFogShapeSubtract}
+      onShapeCut={handleFogShapeCut}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
