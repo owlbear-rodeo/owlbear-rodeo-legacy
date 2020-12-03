@@ -11,6 +11,8 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.css";
 
+console.log(process.env.NODE_ENV);
+
 // if (process.env.NODE_ENV === "production") {
 //   Sentry.init({
 //     dsn:
