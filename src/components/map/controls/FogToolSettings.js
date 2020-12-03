@@ -37,7 +37,7 @@ function BrushToolSettings({
       onSettingChange({ type: "brush" });
     } else if (key === "t") {
       onSettingChange({ type: "toggle" });
-    } else if (key === "r") {
+    } else if (key === "e") {
       onSettingChange({ type: "remove" });
     } else if (key === "s") {
       onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
@@ -102,7 +102,7 @@ function BrushToolSettings({
         <FogToggleIcon />
       </RadioIconButton>
       <RadioIconButton
-        title="Remove Fog (R)"
+        title="Erase Fog (E)"
         onClick={() => onSettingChange({ type: "remove" })}
         isSelected={settings.type === "remove"}
       >
