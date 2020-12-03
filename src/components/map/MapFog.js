@@ -60,7 +60,9 @@ function MapFog({
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid && toolSettings.type === "polygon",
+        map.snapToGrid &&
+          (toolSettings.type === "polygon" ||
+            toolSettings.type === "rectangle"),
         toolSettings.useEdgeSnapping,
         gridSize,
         shapes
@@ -74,6 +76,25 @@ function MapFog({
           type: "fog",
           data: {
             points: [brushPosition],
+            holes: [],
+          },
+          strokeWidth: 0.5,
+          color: toolSettings.useFogCut ? "red" : "black",
+          blend: false,
+          id: shortid.generate(),
+          visible: true,
+        });
+      }
+      if (toolSettings.type === "rectangle") {
+        setDrawingShape({
+          type: "fog",
+          data: {
+            points: [
+              brushPosition,
+              brushPosition,
+              brushPosition,
+              brushPosition,
+            ],
             holes: [],
           },
           strokeWidth: 0.5,
@@ -109,10 +130,31 @@ function MapFog({
           };
         });
       }
+      if (toolSettings.type === "rectangle" && isBrushDown && drawingShape) {
+        const brushPosition = getBrushPosition();
+        setDrawingShape((prevShape) => {
+          const prevPoints = prevShape.data.points;
+          return {
+            ...prevShape,
+            data: {
+              ...prevShape.data,
+              points: [
+                prevPoints[0],
+                { x: brushPosition.x, y: prevPoints[1].y },
+                brushPosition,
+                { x: prevPoints[3].x, y: brushPosition.y },
+              ],
+            },
+          };
+        });
+      }
     }
 
     function handleBrushUp() {
-      if (toolSettings.type === "brush" && drawingShape) {
+      if (
+        toolSettings.type === "brush" ||
+        (toolSettings.type === "rectangle" && drawingShape)
+      ) {
         const cut = toolSettings.useFogCut;
         if (drawingShape.data.points.length > 1) {
           let shapeData = {};

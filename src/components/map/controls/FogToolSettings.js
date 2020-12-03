@@ -12,6 +12,7 @@ import FogBrushIcon from "../../../icons/FogBrushIcon";
 import FogPolygonIcon from "../../../icons/FogPolygonIcon";
 import FogRemoveIcon from "../../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../../icons/FogToggleIcon";
+import FogRectangleIcon from "../../../icons/FogRectangleIcon";
 
 import UndoButton from "./UndoButton";
 import RedoButton from "./RedoButton";
@@ -45,6 +46,8 @@ function BrushToolSettings({
       onSettingChange({ preview: !settings.preview });
     } else if (key === "c") {
       onSettingChange({ useFogCut: !settings.useFogCut });
+    } else if (key === "r") {
+      onSettingChange({ type: "rectangle" });
     } else if (
       (key === "z" || key === "Z") &&
       (ctrlKey || metaKey) &&
@@ -77,6 +80,12 @@ function BrushToolSettings({
       title: "Fog Polygon (P)",
       isSelected: settings.type === "polygon",
       icon: <FogPolygonIcon />,
+    },
+    {
+      id: "rectangle",
+      title: "Fog Rectangle (R)",
+      isSelected: settings.type === "rectangle",
+      icon: <FogRectangleIcon />,
     },
     {
       id: "brush",
