@@ -93,7 +93,7 @@ function Game() {
   // Join game
   useEffect(() => {
     if (session.state === "online" && databaseStatus !== "loading") {
-      session.joinParty(gameId, password);
+      session.joinGame(gameId, password);
     }
   }, [gameId, password, databaseStatus, session, offline]);
 

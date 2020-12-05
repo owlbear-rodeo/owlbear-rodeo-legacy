@@ -8,6 +8,7 @@ import DatabaseContext from "../contexts/DatabaseContext";
 
 import { omit } from "../helpers/shared";
 import useDebounce from "../helpers/useDebounce";
+import useNetworkedState from "../helpers/useNetworkedState";
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "./Session";
@@ -38,7 +39,11 @@ function NetworkedMapAndTokens({ session }) {
   );
 
   const [currentMap, setCurrentMap] = useState(null);
-  const [currentMapState, setCurrentMapState] = useState(null);
+  const [currentMapState, setCurrentMapState] = useNetworkedState(
+    null,
+    session,
+    "map_state"
+  );
 
   /**
    * Map state
@@ -69,7 +74,6 @@ function NetworkedMapAndTokens({ session }) {
       return;
     }
 
-    session.send("mapState", newMapState);
     session.send("map", getMapDataToSend(newMap), "map");
     const tokensToSend = getMapTokensToSend(newMapState);
     for (let token of tokensToSend) {
@@ -90,7 +94,6 @@ function NetworkedMapAndTokens({ session }) {
 
   function handleMapStateChange(newMapState) {
     setCurrentMapState(newMapState);
-    session.send("mapState", newMapState);
   }
 
   function addMapDrawActions(actions, indexKey, actionsKey) {
@@ -123,48 +126,26 @@ function NetworkedMapAndTokens({ session }) {
 
   function handleMapDraw(action) {
     addMapDrawActions([action], "mapDrawActionIndex", "mapDrawActions");
-    session.send("mapDraw", [action]);
   }
 
   function handleMapDrawUndo() {
-    const index = updateDrawActionIndex(
-      -1,
-      "mapDrawActionIndex",
-      "mapDrawActions"
-    );
-    session.send("mapDrawIndex", index);
+    updateDrawActionIndex(-1, "mapDrawActionIndex", "mapDrawActions");
   }
 
   function handleMapDrawRedo() {
-    const index = updateDrawActionIndex(
-      1,
-      "mapDrawActionIndex",
-      "mapDrawActions"
-    );
-    session.send("mapDrawIndex", index);
+    updateDrawActionIndex(1, "mapDrawActionIndex", "mapDrawActions");
   }
 
   function handleFogDraw(action) {
     addMapDrawActions([action], "fogDrawActionIndex", "fogDrawActions");
-    session.send("mapFog", [action]);
   }
 
   function handleFogDrawUndo() {
-    const index = updateDrawActionIndex(
-      -1,
-      "fogDrawActionIndex",
-      "fogDrawActions"
-    );
-    session.send("mapFogIndex", index);
+    updateDrawActionIndex(-1, "fogDrawActionIndex", "fogDrawActions");
   }
 
   function handleFogDrawRedo() {
-    const index = updateDrawActionIndex(
-      1,
-      "fogDrawActionIndex",
-      "fogDrawActions"
-    );
-    session.send("mapFogIndex", index);
+    updateDrawActionIndex(1, "fogDrawActionIndex", "fogDrawActions");
   }
 
   function handleNoteChange(note) {
@@ -175,7 +156,6 @@ function NetworkedMapAndTokens({ session }) {
         [note.id]: note,
       },
     }));
-    session.send("mapNoteChange", note);
   }
 
   function handleNoteRemove(noteId) {
@@ -183,7 +163,6 @@ function NetworkedMapAndTokens({ session }) {
       ...prevMapState,
       notes: omit(prevMapState.notes, [noteId]),
     }));
-    session.send("mapNoteRemove", noteId);
   }
 
   /**
@@ -234,7 +213,6 @@ function NetworkedMapAndTokens({ session }) {
         ...change,
       },
     }));
-    session.send("tokenStateEdit", change);
   }
 
   function handleMapTokenStateRemove(tokenState) {
@@ -242,14 +220,12 @@ function NetworkedMapAndTokens({ session }) {
       const { [tokenState.id]: old, ...rest } = prevMapState.tokens;
       return { ...prevMapState, tokens: rest };
     });
-    session.send("tokenStateRemove", { [tokenState.id]: tokenState });
   }
 
   useEffect(() => {
     async function handlePeerData({ id, data, reply }) {
       if (id === "sync") {
         if (currentMapState) {
-          reply("mapState", currentMapState);
           const tokensToSend = getMapTokensToSend(currentMapState);
           for (let token of tokensToSend) {
             reply("token", token, "token");
@@ -354,9 +330,6 @@ function NetworkedMapAndTokens({ session }) {
         const updatedMap = await getMapFromDB(data.id);
         setCurrentMap(updatedMap);
       }
-      if (id === "mapState") {
-        setCurrentMapState(data);
-      }
       if (id === "token") {
         const newToken = data;
         if (newToken && newToken.type === "file") {
@@ -384,51 +357,6 @@ function NetworkedMapAndTokens({ session }) {
           putToken(newToken);
         }
       }
-      if (id === "tokenStateEdit" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          tokens: { ...prevMapState.tokens, ...data },
-        }));
-      }
-      if (id === "tokenStateRemove" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          tokens: omit(prevMapState.tokens, Object.keys(data)),
-        }));
-      }
-      if (id === "mapDraw" && currentMapState) {
-        addMapDrawActions(data, "mapDrawActionIndex", "mapDrawActions");
-      }
-      if (id === "mapDrawIndex" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          mapDrawActionIndex: data,
-        }));
-      }
-      if (id === "mapFog" && currentMapState) {
-        addMapDrawActions(data, "fogDrawActionIndex", "fogDrawActions");
-      }
-      if (id === "mapFogIndex" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          fogDrawActionIndex: data,
-        }));
-      }
-      if (id === "mapNoteChange" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          notes: {
-            ...prevMapState.notes,
-            [data.id]: data,
-          },
-        }));
-      }
-      if (id === "mapNoteRemove" && currentMapState) {
-        setCurrentMapState((prevMapState) => ({
-          ...prevMapState,
-          notes: omit(prevMapState.notes, [data]),
-        }));
-      }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
@@ -441,12 +369,22 @@ function NetworkedMapAndTokens({ session }) {
       assetProgressUpdate({ id, total, count });
     }
 
+    function handleSocketMapState(mapState) {
+      setCurrentMapState(mapState, false);
+    }
+
     session.on("data", handlePeerData);
     session.on("dataProgress", handlePeerDataProgress);
+    if (session.socket) {
+      session.socket.on("map_state", handleSocketMapState);
+    }
 
     return () => {
       session.off("data", handlePeerData);
       session.off("dataProgress", handlePeerDataProgress);
+      if (session.socket) {
+        session.socket.off("map_state", handleSocketMapState);
+      }
     };
   });
 

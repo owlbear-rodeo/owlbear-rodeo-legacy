@@ -59,7 +59,7 @@ class Session extends EventEmitter {
   _iceServers;
 
   // Store party id and password for reconnect
-  _partyId;
+  _gameId;
   _password;
 
   constructor() {
@@ -83,17 +83,11 @@ class Session extends EventEmitter {
         withCredentials: true,
       });
 
-      this.socket.on(
-        "party member joined",
-        this._handlePartyMemberJoined.bind(this)
-      );
-      this.socket.on(
-        "party member left",
-        this._handlePartyMemberLeft.bind(this)
-      );
-      this.socket.on("joined party", this._handleJoinedParty.bind(this));
+      this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
+      this.socket.on("player_left", this._handlePlayerLeft.bind(this));
+      this.socket.on("joined_game", this._handleJoinedGame.bind(this));
       this.socket.on("signal", this._handleSignal.bind(this));
-      this.socket.on("auth error", this._handleAuthError.bind(this));
+      this.socket.on("auth_error", this._handleAuthError.bind(this));
       this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
       this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
 
@@ -120,22 +114,22 @@ class Session extends EventEmitter {
   /**
    * Join a party
    *
-   * @param {string} partyId - the id of the party to join
+   * @param {string} gameId - the id of the party to join
    * @param {string} password - the password of the party
    */
-  async joinParty(partyId, password) {
-    if (typeof partyId !== "string" || typeof password !== "string") {
+  async joinGame(gameId, password) {
+    if (typeof gameId !== "string" || typeof password !== "string") {
       console.error(
-        "Unable to join party: invalid party ID or password",
-        partyId,
+        "Unable to join game: invalid game ID or password",
+        gameId,
         password
       );
       return;
     }
 
-    this._partyId = partyId;
+    this._gameId = gameId;
     this._password = password;
-    this.socket.emit("join party", partyId, password);
+    this.socket.emit("join_game", gameId, password);
   }
 
   _addPeer(id, initiator, sync) {
@@ -226,18 +220,7 @@ class Session extends EventEmitter {
     }
   }
 
-  _handlePartyMemberJoined(id) {
-    this._addPeer(id, false, false);
-  }
-
-  _handlePartyMemberLeft(id) {
-    if (id in this.peers) {
-      this.peers[id].connection.destroy();
-      delete this.peers[id];
-    }
-  }
-
-  _handleJoinedParty(otherIds) {
+  _handleJoinedGame(otherIds) {
     for (let i = 0; i < otherIds.length; i++) {
       const id = otherIds[i];
       // Send a sync request to the first member of the party
@@ -246,6 +229,17 @@ class Session extends EventEmitter {
     }
     this.emit("authenticationSuccess");
     this.emit("connected");
+  }
+
+  _handlePlayerJoined(id) {
+    this._addPeer(id, false, false);
+  }
+
+  _handlePlayerLeft(id) {
+    if (id in this.peers) {
+      this.peers[id].connection.destroy();
+      delete this.peers[id];
+    }
   }
 
   _handleSignal(data) {
@@ -273,8 +267,8 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
-    if (this._partyId) {
-      this.joinParty(this._partyId, this._password);
+    if (this._gameId) {
+      this.joinGame(this._gameId, this._password);
     }
   }
 }
