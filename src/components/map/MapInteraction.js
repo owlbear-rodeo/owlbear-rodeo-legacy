@@ -51,8 +51,10 @@ function MapInteraction({
   const mapImageRef = useRef();
 
   function handleResize(width, height) {
-    setStageWidth(width);
-    setStageHeight(height);
+    if (width > 0 && height > 0) {
+      setStageWidth(width);
+      setStageHeight(height);
+    }
   }
 
   const containerRef = useRef();
