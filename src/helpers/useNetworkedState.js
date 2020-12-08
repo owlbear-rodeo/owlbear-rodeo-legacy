@@ -1,22 +1,22 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 function useNetworkedState(defaultState, session, eventName) {
   const [state, _setState] = useState(defaultState);
   // Used to control whether the state needs to be sent to the socket
-  const dirtyRef = useRef(false);
+  const [dirty, setDirty] = useState(false);
 
   // Update dirty at the same time as state
   function setState(update, sync = true) {
-    dirtyRef.current = sync;
     _setState(update);
+    setDirty(sync);
   }
 
   useEffect(() => {
-    if (dirtyRef.current) {
+    if (session.socket && dirty) {
       session.socket.emit(eventName, state);
-      dirtyRef.current = false;
+      setDirty(false);
     }
-  }, [state, eventName]);
+  }, [session.socket, dirty, eventName, state]);
 
   return [state, setState];
 }

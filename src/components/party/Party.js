@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
+import { useToasts } from "react-toast-notifications";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
@@ -13,26 +14,76 @@ import DiceTrayButton from "./DiceTrayButton";
 
 import useSetting from "../../helpers/useSetting";
 
-function Party({
-  nickname,
-  partyNicknames,
-  gameId,
-  onNicknameChange,
-  stream,
-  partyStreams,
-  onStreamStart,
-  onStreamEnd,
-  timer,
-  partyTimers,
-  onTimerStart,
-  onTimerStop,
-  shareDice,
-  onShareDiceChage,
-  diceRolls,
-  onDiceRollsChange,
-  partyDiceRolls,
-}) {
+import PlayerContext from "../../contexts/PlayerContext";
+
+function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
+  const { playerState, setPlayerState, partyState } = useContext(PlayerContext);
+
   const [fullScreen] = useSetting("map.fullScreen");
+  const [shareDice, setShareDice] = useSetting("dice.shareDice");
+
+  const { addToast } = useToasts();
+
+  function handleTimerStart(newTimer) {
+    setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
+  }
+
+  function handleTimerStop() {
+    setPlayerState((prevState) => ({ ...prevState, timer: null }));
+  }
+
+  useEffect(() => {
+    let prevTime = performance.now();
+    let request = requestAnimationFrame(update);
+    let counter = 0;
+    function update(time) {
+      request = requestAnimationFrame(update);
+      const deltaTime = time - prevTime;
+      prevTime = time;
+
+      if (playerState.timer) {
+        counter += deltaTime;
+        // Update timer every second
+        if (counter > 1000) {
+          const newTimer = {
+            ...playerState.timer,
+            current: playerState.timer.current - counter,
+          };
+          if (newTimer.current < 0) {
+            setPlayerState((prevState) => ({ ...prevState, timer: null }));
+          } else {
+            setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
+          }
+          counter = 0;
+        }
+      }
+    }
+    return () => {
+      cancelAnimationFrame(request);
+    };
+  }, [playerState, setPlayerState]);
+
+  function handleNicknameChange(newNickname) {
+    setPlayerState((prevState) => ({ ...prevState, nickname: newNickname }));
+  }
+
+  function handleDiceRollsChange(newDiceRolls) {
+    setPlayerState(
+      (prevState) => ({
+        ...prevState,
+        dice: { share: shareDice, rolls: newDiceRolls },
+      }),
+      shareDice
+    );
+  }
+
+  function handleShareDiceChange(newShareDice) {
+    setShareDice(newShareDice);
+    setPlayerState((prevState) => ({
+      ...prevState,
+      dice: { ...prevState.dice, share: newShareDice },
+    }));
+  }
 
   return (
     <Box
@@ -74,31 +125,33 @@ function Party({
           }}
         >
           <Nickname
-            nickname={`${nickname} (you)`}
-            diceRolls={shareDice && diceRolls}
+            nickname={`${playerState.nickname} (you)`}
+            diceRolls={shareDice && playerState.dice.rolls}
           />
-          {Object.entries(partyNicknames).map(([id, partyNickname]) => (
+          {Object.entries(partyState).map(([id, { nickname, dice }]) => (
             <Nickname
-              nickname={partyNickname}
+              nickname={nickname}
               key={id}
               stream={partyStreams[id]}
-              diceRolls={partyDiceRolls[id]}
+              diceRolls={dice.share && dice.rolls}
             />
           ))}
-          {timer && <Timer timer={timer} index={0} />}
-          {Object.entries(partyTimers).map(([id, partyTimer], index) => (
-            <Timer
-              timer={partyTimer}
-              key={id}
-              // Put party timers above your timer if there is one
-              index={timer ? index + 1 : index}
-            />
-          ))}
+          {playerState.timer && <Timer timer={playerState.timer} index={0} />}
+          {Object.entries(partyState)
+            .filter(([_, { timer }]) => timer)
+            .map(([id, { timer }], index) => (
+              <Timer
+                timer={timer}
+                key={id}
+                // Put party timers above your timer if there is one
+                index={playerState.timer ? index + 1 : index}
+              />
+            ))}
         </SimpleBar>
         <Flex sx={{ flexDirection: "column" }}>
           <ChangeNicknameButton
-            nickname={nickname}
-            onChange={onNicknameChange}
+            nickname={playerState.nickname}
+            onChange={handleNicknameChange}
           />
           <AddPartyMemberButton gameId={gameId} />
           <StartStreamButton
@@ -107,18 +160,18 @@ function Party({
             stream={stream}
           />
           <StartTimerButton
-            onTimerStart={onTimerStart}
-            onTimerStop={onTimerStop}
-            timer={timer}
+            onTimerStart={handleTimerStart}
+            onTimerStop={handleTimerStop}
+            timer={playerState.timer}
           />
           <SettingsButton />
         </Flex>
       </Box>
       <DiceTrayButton
         shareDice={shareDice}
-        onShareDiceChage={onShareDiceChage}
-        diceRolls={diceRolls}
-        onDiceRollsChange={onDiceRollsChange}
+        onShareDiceChage={handleShareDiceChange}
+        diceRolls={(playerState.dice && playerState.dice.rolls) || []}
+        onDiceRollsChange={handleDiceRollsChange}
       />
     </Box>
   );

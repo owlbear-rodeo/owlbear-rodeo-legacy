@@ -3,7 +3,6 @@ import shortid from "shortid";
 
 import DatabaseContext from "./DatabaseContext";
 
-import { getRandomMonster } from "../helpers/monsters";
 import FakeStorage from "../helpers/FakeStorage";
 
 const AuthContext = React.createContext();
@@ -48,39 +47,8 @@ export function AuthProvider({ children }) {
     loadUserId();
   }, [database, databaseStatus]);
 
-  const [nickname, setNickname] = useState("");
-  useEffect(() => {
-    if (!database || databaseStatus === "loading") {
-      return;
-    }
-    async function loadNickname() {
-      const storedNickname = await database.table("user").get("nickname");
-      if (storedNickname) {
-        setNickname(storedNickname.value);
-      } else {
-        const name = getRandomMonster();
-        setNickname(name);
-        database.table("user").add({ key: "nickname", value: name });
-      }
-    }
-
-    loadNickname();
-  }, [database, databaseStatus]);
-
-  useEffect(() => {
-    if (
-      nickname !== undefined &&
-      database !== undefined &&
-      databaseStatus !== "loading"
-    ) {
-      database.table("user").update("nickname", { value: nickname });
-    }
-  }, [nickname, database, databaseStatus]);
-
   const value = {
     userId,
-    nickname,
-    setNickname,
     password,
     setPassword,
     authenticationStatus,
