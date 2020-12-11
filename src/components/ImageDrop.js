@@ -15,11 +15,32 @@ function ImageDrop({ onDrop, dropText, children }) {
     setDragging(false);
   }
 
-  function handleImageDrop(event) {
+  async function handleImageDrop(event) {
     event.preventDefault();
     event.stopPropagation();
-    const files = event.dataTransfer.files;
     let imageFiles = [];
+
+    // Check if the dropped image is from a URL
+    const html = event.dataTransfer.getData("text/html");
+    if (html) {
+      try {
+        const urlMatch = html.match(/src="?([^"\s]+)"?\s*/);
+        const url = urlMatch[1];
+        let name = "";
+        const altMatch = html.match(/alt="?([^"]+)"?\s*/);
+        if (altMatch && altMatch.length > 1) {
+          name = altMatch[1];
+        }
+        const response = await fetch(url);
+        if (response.ok) {
+          const file = await response.blob();
+          file.name = name;
+          imageFiles.push(file);
+        }
+      } catch {}
+    }
+
+    const files = event.dataTransfer.files;
     for (let file of files) {
       if (file.type.startsWith("image")) {
         imageFiles.push(file);

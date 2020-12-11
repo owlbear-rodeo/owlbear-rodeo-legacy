@@ -85,7 +85,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImageUpload(file) {
-    let name = "Unknown Map";
+    let name = "Unknown Token";
     if (file.name) {
       // Remove file extension
       name = file.name.replace(/\.[^/.]+$/, "");
