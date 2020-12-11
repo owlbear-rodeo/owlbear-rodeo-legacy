@@ -112,6 +112,25 @@ class Session extends EventEmitter {
   }
 
   /**
+   * Send data to a single peer
+   *
+   * @param {string} sessionId - the socket id of the player to send to
+   * @param {string} eventId - the id of the event to send
+   * @param {object} data
+   * @param {string} channel
+   */
+  sendTo(sessionId, eventId, data, channel) {
+    if (!(sessionId in this.peers)) {
+      this._addPeer(sessionId, true);
+      this.peers[sessionId].connection.once("connect", () => {
+        this.peers[sessionId].connection.send({ id: eventId, data }, channel);
+      });
+    } else {
+      this.peers[sessionId].connection.send({ id: eventId, data }, channel);
+    }
+  }
+
+  /**
    * Join a party
    *
    * @param {string} gameId - the id of the party to join
@@ -132,7 +151,7 @@ class Session extends EventEmitter {
     this.socket.emit("join_game", gameId, password);
   }
 
-  _addPeer(id, initiator, sync) {
+  _addPeer(id, initiator) {
     try {
       const connection = new Connection({
         initiator,
@@ -143,7 +162,7 @@ class Session extends EventEmitter {
         connection.createDataChannel("map", { iceServers: this._iceServers });
         connection.createDataChannel("token", { iceServers: this._iceServers });
       }
-      const peer = { id, connection, initiator, sync };
+      const peer = { id, connection, initiator };
 
       function sendPeer(id, data, channel) {
         peer.connection.send({ id, data }, channel);
@@ -155,9 +174,6 @@ class Session extends EventEmitter {
 
       function handleConnect() {
         this.emit("connect", { peer, reply: sendPeer });
-        if (peer.sync) {
-          peer.connection.send({ id: "sync" });
-        }
       }
 
       function handleDataComplete(data) {
@@ -220,22 +236,17 @@ class Session extends EventEmitter {
     }
   }
 
-  _handleJoinedGame(otherIds) {
-    for (let i = 0; i < otherIds.length; i++) {
-      const id = otherIds[i];
-      // Send a sync request to the first member of the party
-      const sync = i === 0;
-      this._addPeer(id, true, sync);
-    }
+  _handleJoinedGame() {
     this.emit("authenticationSuccess");
     this.emit("connected");
   }
 
   _handlePlayerJoined(id) {
-    this._addPeer(id, false, false);
+    this.emit("playerJoined", id);
   }
 
   _handlePlayerLeft(id) {
+    this.emit("playerLeft", id);
     if (id in this.peers) {
       this.peers[id].connection.destroy();
       delete this.peers[id];
@@ -244,9 +255,10 @@ class Session extends EventEmitter {
 
   _handleSignal(data) {
     const { from, signal } = data;
-    if (from in this.peers) {
-      this.peers[from].connection.signal(signal);
+    if (!(from in this.peers)) {
+      this._addPeer(from, false);
     }
+    this.peers[from].connection.signal(signal);
   }
 
   _handleAuthError() {

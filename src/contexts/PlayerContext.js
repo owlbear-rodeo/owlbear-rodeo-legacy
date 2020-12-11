@@ -2,12 +2,14 @@ import React, { useState, useEffect, useContext } from "react";
 
 import useNetworkedState from "../helpers/useNetworkedState";
 import DatabaseContext from "./DatabaseContext";
+import AuthContext from "./AuthContext";
 
 import { getRandomMonster } from "../helpers/monsters";
 
 const PlayerContext = React.createContext();
 
 export function PlayerProvider({ session, children }) {
+  const { userId } = useContext(AuthContext);
   const { database, databaseStatus } = useContext(DatabaseContext);
 
   const [playerState, setPlayerState] = useNetworkedState(
@@ -16,6 +18,8 @@ export function PlayerProvider({ session, children }) {
       timer: null,
       dice: { share: false, rolls: [] },
       pointer: {},
+      sessionId: null,
+      userId,
     },
     session,
     "player_state"
@@ -56,9 +60,16 @@ export function PlayerProvider({ session, children }) {
   }, [playerState, database, databaseStatus]);
 
   useEffect(() => {
-    function handleConnected() {
+    setPlayerState((prevState) => ({
+      ...prevState,
+      userId,
+    }));
+  }, [userId]);
+
+  useEffect(() => {
+    function handleSocketConnect() {
       // Set the player state to trigger a sync
-      setPlayerState(playerState);
+      setPlayerState({ ...playerState, sessionId: session.id });
     }
 
     function handleSocketPartyState(partyState) {
@@ -70,14 +81,20 @@ export function PlayerProvider({ session, children }) {
       }
     }
 
+    session.on("connected", handleSocketConnect);
+
     if (session.socket) {
-      session.on("connected", handleConnected);
+      session.socket.on("connect", handleSocketConnect);
+      session.socket.on("reconnect", handleSocketConnect);
       session.socket.on("party_state", handleSocketPartyState);
     }
 
     return () => {
+      session.off("connected", handleSocketConnect);
+
       if (session.socket) {
-        session.off("connected", handleConnected);
+        session.socket.off("connect", handleSocketConnect);
+        session.socket.off("reconnect", handleSocketConnect);
         session.socket.off("party_state", handleSocketPartyState);
       }
     };

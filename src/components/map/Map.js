@@ -440,6 +440,7 @@ function Map({
   return (
     <MapInteraction
       map={map}
+      mapState={mapState}
       controls={
         <>
           {mapControls}

@@ -21,6 +21,7 @@ import KeyboardContext from "../../contexts/KeyboardContext";
 
 function MapInteraction({
   map,
+  mapState,
   children,
   controls,
   selectedToolId,
@@ -32,12 +33,16 @@ function MapInteraction({
   // Map loaded taking in to account different resolutions
   const [mapLoaded, setMapLoaded] = useState(false);
   useEffect(() => {
-    if (map === null) {
+    if (
+      !map ||
+      (map.type === "file" && !map.file && !map.resolutions) ||
+      mapState.mapId !== map.id
+    ) {
       setMapLoaded(false);
     } else if (mapImageSourceStatus === "loaded") {
       setMapLoaded(true);
     }
-  }, [mapImageSourceStatus, map]);
+  }, [mapImageSourceStatus, map, mapState]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);

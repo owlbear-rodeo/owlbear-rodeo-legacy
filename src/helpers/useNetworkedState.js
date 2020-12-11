@@ -18,6 +18,21 @@ function useNetworkedState(defaultState, session, eventName) {
     }
   }, [session.socket, dirty, eventName, state]);
 
+  useEffect(() => {
+    function handleSocketEvent(data) {
+      _setState(data);
+    }
+
+    if (session.socket) {
+      session.socket.on(eventName, handleSocketEvent);
+    }
+    return () => {
+      if (session.socket) {
+        session.socket.off(eventName, handleSocketEvent);
+      }
+    };
+  }, [session.socket]);
+
   return [state, setState];
 }
 
