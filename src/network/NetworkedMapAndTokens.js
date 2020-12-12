@@ -131,11 +131,21 @@ function NetworkedMapAndTokens({ session }) {
           } else {
             session.sendTo(owner.sessionId, "mapRequest", asset.id, "map");
           }
+        } else if (asset.type === "token") {
+          const cachedToken = getToken(asset.id);
+          if (cachedToken && cachedToken.lastModified >= asset.lastModified) {
+            // Update last used for cache invalidation
+            const lastUsed = Date.now();
+            await updateToken(cachedToken.id, { lastUsed });
+          } else {
+            session.sendTo(owner.sessionId, "tokenRequest", asset.id, "token");
+          }
         }
       }
     }
 
     requestAssetsIfNeeded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetManifest, partyState, session]);
 
   /**
@@ -355,22 +365,6 @@ function NetworkedMapAndTokens({ session }) {
         setCurrentMap(newMap);
       }
 
-      if (id === "token") {
-        const newToken = data;
-        if (newToken && newToken.type === "file") {
-          const cachedToken = getToken(newToken.id);
-          if (
-            cachedToken &&
-            cachedToken.lastModified >= newToken.lastModified
-          ) {
-            // Update last used for cache invalidation
-            const lastUsed = Date.now();
-            await updateToken(cachedToken.id, { lastUsed });
-          } else {
-            reply("tokenRequest", newToken.id, "token");
-          }
-        }
-      }
       if (id === "tokenRequest") {
         const token = getToken(data);
         // Add a last used property for cache invalidation
@@ -378,9 +372,7 @@ function NetworkedMapAndTokens({ session }) {
       }
       if (id === "tokenResponse") {
         const newToken = data;
-        if (newToken && newToken.type === "file") {
-          putToken(newToken);
-        }
+        await putToken(newToken);
       }
     }
 
