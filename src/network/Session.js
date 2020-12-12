@@ -11,6 +11,7 @@ import { logError } from "../helpers/logging";
  * @property {string} id - The socket id of the peer
  * @property {Connection} connection - The actual peer connection
  * @property {boolean} initiator - Is this peer the initiator of the connection
+ * @property {boolean} ready - Ready for data to be sent
  */
 
 /**
@@ -119,6 +120,9 @@ class Session extends EventEmitter {
   sendTo(sessionId, eventId, data, channel) {
     if (!(sessionId in this.peers)) {
       this._addPeer(sessionId, true);
+    }
+
+    if (!this.peers[sessionId].ready) {
       this.peers[sessionId].connection.once("connect", () => {
         this.peers[sessionId].connection.send({ id: eventId, data }, channel);
       });
@@ -137,6 +141,9 @@ class Session extends EventEmitter {
   startStreamTo(sessionId, track, stream) {
     if (!(sessionId in this.peers)) {
       this._addPeer(sessionId, true);
+    }
+
+    if (!this.peers[sessionId].ready) {
       this.peers[sessionId].connection.once("connect", () => {
         this.peers[sessionId].connection.addTrack(track, stream);
       });
@@ -190,7 +197,7 @@ class Session extends EventEmitter {
         connection.createDataChannel("map", { iceServers: this._iceServers });
         connection.createDataChannel("token", { iceServers: this._iceServers });
       }
-      const peer = { id, connection, initiator };
+      const peer = { id, connection, initiator, ready: false };
 
       function sendPeer(id, data, channel) {
         peer.connection.send({ id, data }, channel);
@@ -201,6 +208,9 @@ class Session extends EventEmitter {
       }
 
       function handleConnect() {
+        if (peer.id in this.peers) {
+          this.peers[peer.id].ready = true;
+        }
         /**
          * Peer Connect Event - A peer has connected
          *
