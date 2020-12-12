@@ -5,6 +5,8 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 import Session from "./Session";
 import { isStreamStopped, omit } from "../helpers/shared";
 
+import PlayerContext from "../contexts/PlayerContext";
+
 import Party from "../components/party/Party";
 
 /**
@@ -17,6 +19,7 @@ import Party from "../components/party/Party";
  * @param {NetworkedPartyProps} props
  */
 function NetworkedParty({ gameId, session }) {
+  const { partyState } = useContext(PlayerContext);
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
 
@@ -26,8 +29,8 @@ function NetworkedParty({ gameId, session }) {
     for (let track of tracks) {
       // Only add the audio track of the stream to the remote peer
       if (track.kind === "audio") {
-        for (let peer of Object.values(session.peers)) {
-          peer.connection.addTrack(track, localStream);
+        for (let player of Object.values(partyState)) {
+          session.startStreamTo(player.sessionId, track, localStream);
         }
       }
     }
@@ -41,19 +44,24 @@ function NetworkedParty({ gameId, session }) {
         track.stop();
         // Only sending audio so only remove the audio track
         if (track.kind === "audio") {
-          for (let peer of Object.values(session.peers)) {
-            peer.connection.removeTrack(track, localStream);
+          for (let player of Object.values(partyState)) {
+            session.endStreamTo(player.sessionId, track, localStream);
           }
         }
       }
     },
-    [session]
+    [session, partyState]
   );
 
   useEffect(() => {
-    function handlePeerConnect({ peer }) {
+    function handlePlayerJoined(sessionId) {
       if (stream) {
-        peer.connection.addStream(stream);
+        const tracks = stream.getTracks();
+        for (let track of tracks) {
+          if (track.kind === "audio") {
+            session.startStreamTo(sessionId, track, stream);
+          }
+        }
       }
     }
 
@@ -75,12 +83,12 @@ function NetworkedParty({ gameId, session }) {
       }
     }
 
-    session.on("peerConnect", handlePeerConnect);
+    session.on("playerJoined", handlePlayerJoined);
     session.on("peerTrackAdded", handlePeerTrackAdded);
     session.on("peerTrackRemoved", handlePeerTrackRemoved);
 
     return () => {
-      session.off("peerConnect", handlePeerConnect);
+      session.off("playerJoined", handlePlayerJoined);
       session.off("peerTrackAdded", handlePeerTrackAdded);
       session.off("peerTrackRemoved", handlePeerTrackRemoved);
     };

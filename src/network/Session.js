@@ -109,23 +109,10 @@ class Session extends EventEmitter {
   }
 
   /**
-   * Send data to all connected peers
-   *
-   * @param {string} id - the id of the event to send
-   * @param {object} data
-   * @param {string} channel
-   */
-  send(id, data, channel) {
-    for (let peer of Object.values(this.peers)) {
-      peer.connection.send({ id, data }, channel);
-    }
-  }
-
-  /**
    * Send data to a single peer
    *
-   * @param {string} sessionId - the socket id of the player to send to
-   * @param {string} eventId - the id of the event to send
+   * @param {string} sessionId - The socket id of the player to send to
+   * @param {string} eventId - The id of the event to send
    * @param {object} data
    * @param {string} channel
    */
@@ -137,6 +124,37 @@ class Session extends EventEmitter {
       });
     } else {
       this.peers[sessionId].connection.send({ id: eventId, data }, channel);
+    }
+  }
+
+  /**
+   * Start streaming to a peer
+   *
+   * @param {string} sessionId - The socket id of the player to stream to
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  startStreamTo(sessionId, track, stream) {
+    if (!(sessionId in this.peers)) {
+      this._addPeer(sessionId, true);
+      this.peers[sessionId].connection.once("connect", () => {
+        this.peers[sessionId].connection.addTrack(track, stream);
+      });
+    } else {
+      this.peers[sessionId].connection.addTrack(track, stream);
+    }
+  }
+
+  /**
+   * End streaming to a peer
+   *
+   * @param {string} sessionId - The socket id of the player to stream to
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  endStreamTo(sessionId, track, stream) {
+    if (sessionId in this.peers) {
+      this.peers[sessionId].connection.removeTrack(track, stream);
     }
   }
 
