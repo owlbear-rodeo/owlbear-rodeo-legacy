@@ -51,7 +51,7 @@ function NetworkedParty({ gameId, session }) {
   );
 
   useEffect(() => {
-    function handlePeerConnect({ peer, reply }) {
+    function handlePeerConnect({ peer }) {
       if (stream) {
         peer.connection.addStream(stream);
       }
@@ -75,14 +75,14 @@ function NetworkedParty({ gameId, session }) {
       }
     }
 
-    session.on("connect", handlePeerConnect);
-    session.on("trackAdded", handlePeerTrackAdded);
-    session.on("trackRemoved", handlePeerTrackRemoved);
+    session.on("peerConnect", handlePeerConnect);
+    session.on("peerTrackAdded", handlePeerTrackAdded);
+    session.on("peerTrackRemoved", handlePeerTrackRemoved);
 
     return () => {
-      session.off("connect", handlePeerConnect);
-      session.off("trackAdded", handlePeerTrackAdded);
-      session.off("trackRemoved", handlePeerTrackRemoved);
+      session.off("peerConnect", handlePeerConnect);
+      session.off("peerTrackAdded", handlePeerTrackAdded);
+      session.off("peerTrackRemoved", handlePeerTrackRemoved);
     };
   });
 

@@ -102,10 +102,10 @@ function NetworkedMapPointer({ session, active, gridSize }) {
       }
     }
 
-    session.on("data", handlePeerData);
+    session.on("peerData", handlePeerData);
 
     return () => {
-      session.off("data", handlePeerData);
+      session.off("peerData", handlePeerData);
     };
   });
 

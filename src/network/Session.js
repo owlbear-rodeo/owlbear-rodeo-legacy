@@ -11,24 +11,31 @@ import { logError } from "../helpers/logging";
  * @property {string} id - The socket id of the peer
  * @property {Connection} connection - The actual peer connection
  * @property {boolean} initiator - Is this peer the initiator of the connection
- * @property {boolean} sync - Should this connection sync other connections
+ */
+
+/**
+ * @callback peerReply
+ * @param {string} id - The id of the event
+ * @param {object} data - The data to send
+ * @param {string} channel - The channel to send to
  */
 
 /**
  *
  * Handles connections to multiple peers
  *
- * Events:
- * - connect: A party member has connected
- * - data
- * - trackAdded
- * - trackRemoved
- * - disconnect: A party member has disconnected
- * - error
- * - authenticationSuccess
- * - authenticationError
- * - connected: You have connected to the party
- * - disconnected: You have disconnected from the party
+ * @fires Session#peerConnect
+ * @fires Session#peerData
+ * @fires Session#peerTrackAdded
+ * @fires Session#peerTrackRemoved
+ * @fires Session#peerDisconnect
+ * @fires Session#peerError
+ * @fires Session#authenticationSuccess
+ * @fires Session#authenticationError
+ * @fires Session#connected
+ * @fires Session#disconnected
+ * @fires Session#playerJoined
+ * @fires Session#playerLeft
  */
 class Session extends EventEmitter {
   /**
@@ -70,6 +77,9 @@ class Session extends EventEmitter {
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
   }
 
+  /**
+   * Connect to the websocket
+   */
   async connect() {
     try {
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
@@ -173,7 +183,15 @@ class Session extends EventEmitter {
       }
 
       function handleConnect() {
-        this.emit("connect", { peer, reply: sendPeer });
+        /**
+         * Peer Connect Event - A peer has connected
+         *
+         * @event Session#peerConnect
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {peerReply} reply
+         */
+        this.emit("peerConnect", { peer, reply: sendPeer });
       }
 
       function handleDataComplete(data) {
@@ -181,7 +199,17 @@ class Session extends EventEmitter {
           // Close connection when signaled to close
           peer.connection.destroy();
         }
-        this.emit("data", {
+        /**
+         * Peer Data Event - Data received by a peer
+         *
+         * @event Session#peerData
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {string} id
+         * @property {object} data
+         * @property {peerReply} reply
+         */
+        this.emit("peerData", {
           peer,
           id: data.id,
           data: data.data,
@@ -194,14 +222,39 @@ class Session extends EventEmitter {
       }
 
       function handleTrack(track, stream) {
-        this.emit("trackAdded", { peer, track, stream });
+        /**
+         * Peer Track Added Event - A `MediaStreamTrack` was added by a peer
+         *
+         * @event Session#peerTrackAdded
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {MediaStreamTrack} track
+         * @property {MediaStream} stream
+         */
+        this.emit("peerTrackAdded", { peer, track, stream });
         track.addEventListener("mute", () => {
-          this.emit("trackRemoved", { peer, track, stream });
+          /**
+           * Peer Track Removed Event - A `MediaStreamTrack` was removed by a peer
+           *
+           * @event Session#peerTrackRemoved
+           * @type {object}
+           * @property {SessionPeer} peer
+           * @property {MediaStreamTrack} track
+           * @property {MediaStream} stream
+           */
+          this.emit("peerTrackRemoved", { peer, track, stream });
         });
       }
 
       function handleClose() {
-        this.emit("disconnect", { peer });
+        /**
+         * Peer Disconnect Event - A peer has disconnected
+         *
+         * @event Session#peerDisconnect
+         * @type {object}
+         * @property {SessionPeer} peer
+         */
+        this.emit("peerDisconnect", { peer });
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
@@ -210,7 +263,15 @@ class Session extends EventEmitter {
 
       function handleError(error) {
         console.error(error);
-        this.emit("error", { peer, error });
+        /**
+         * Peer Error Event - An error occured with a peer connection
+         *
+         * @event Session#peerError
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {Error} error
+         */
+        this.emit("peerError", { peer, error });
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
@@ -228,7 +289,7 @@ class Session extends EventEmitter {
       this.peers[id] = peer;
     } catch (error) {
       logError(error);
-      this.emit("error", { error });
+      this.emit("peerError", { error });
       this.emit("disconnected");
       for (let peer of Object.values(this.peers)) {
         peer.connection && peer.connection.destroy();
@@ -237,15 +298,37 @@ class Session extends EventEmitter {
   }
 
   _handleJoinedGame() {
+    /**
+     * Authentication Success Event - Successfully authenticated when joining a game
+     *
+     * @event Session#authenticationSuccess
+     */
     this.emit("authenticationSuccess");
+    /**
+     * Connected Event - You have connected to the game
+     *
+     * @event Session#connected
+     */
     this.emit("connected");
   }
 
   _handlePlayerJoined(id) {
+    /**
+     * Player Joined Event - A player has joined the game
+     *
+     * @event Session#playerJoined
+     * @property {string} id
+     */
     this.emit("playerJoined", id);
   }
 
   _handlePlayerLeft(id) {
+    /**
+     * Player Left Event - A player has left the game
+     *
+     * @event Session#playerLeft
+     * @property {string} id
+     */
     this.emit("playerLeft", id);
     if (id in this.peers) {
       this.peers[id].connection.destroy();
@@ -262,6 +345,11 @@ class Session extends EventEmitter {
   }
 
   _handleAuthError() {
+    /**
+     * Authentication Error Event - Unsuccessfully authenticated when joining a game
+     *
+     * @event Session#authenticationError
+     */
     this.emit("authenticationError");
   }
 
@@ -272,6 +360,11 @@ class Session extends EventEmitter {
   }
 
   _handleSocketDisconnect() {
+    /**
+     * Disconnected Event - You have disconnected from the party
+     *
+     * @event Session#disconnected
+     */
     this.emit("disconnected");
     for (let peer of Object.values(this.peers)) {
       peer.connection && peer.connection.destroy();

@@ -393,16 +393,15 @@ function NetworkedMapAndTokens({ session }) {
         setCurrentMap(null);
       }
     }
-
-    session.on("data", handlePeerData);
-    session.on("dataProgress", handlePeerDataProgress);
+    session.on("peerData", handlePeerData);
+    session.on("peerDataProgress", handlePeerDataProgress);
     if (session.socket) {
       session.socket.on("map", handleSocketMap);
     }
 
     return () => {
-      session.off("data", handlePeerData);
-      session.off("dataProgress", handlePeerDataProgress);
+      session.off("peerData", handlePeerData);
+      session.off("peerDataProgress", handlePeerDataProgress);
       if (session.socket) {
         session.socket.off("map", handleSocketMap);
       }
