@@ -5,7 +5,7 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 import Session from "./Session";
 import { isStreamStopped, omit } from "../helpers/shared";
 
-import PlayerContext from "../contexts/PlayerContext";
+import PartyContext from "../contexts/PartyContext";
 
 import Party from "../components/party/Party";
 
@@ -19,7 +19,7 @@ import Party from "../components/party/Party";
  * @param {NetworkedPartyProps} props
  */
 function NetworkedParty({ gameId, session }) {
-  const { partyState } = useContext(PlayerContext);
+  const partyState = useContext(PartyContext);
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
 

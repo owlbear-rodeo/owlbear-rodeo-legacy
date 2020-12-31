@@ -14,10 +14,16 @@ import DiceTrayButton from "./DiceTrayButton";
 
 import useSetting from "../../helpers/useSetting";
 
-import PlayerContext from "../../contexts/PlayerContext";
+import PartyContext from "../../contexts/PartyContext";
+import {
+  PlayerUpdaterContext,
+  PlayerStateWithoutPointerContext,
+} from "../../contexts/PlayerContext";
 
 function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
-  const { playerState, setPlayerState, partyState } = useContext(PlayerContext);
+  const setPlayerState = useContext(PlayerUpdaterContext);
+  const playerState = useContext(PlayerStateWithoutPointerContext);
+  const partyState = useContext(PartyContext);
 
   const [fullScreen] = useSetting("map.fullScreen");
   const [shareDice, setShareDice] = useSetting("dice.shareDice");

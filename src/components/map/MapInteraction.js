@@ -18,6 +18,8 @@ import MapStageContext, {
 import AuthContext from "../../contexts/AuthContext";
 import SettingsContext from "../../contexts/SettingsContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import { PlayerUpdaterContext } from "../../contexts/PlayerContext";
+import PartyContext from "../../contexts/PartyContext";
 
 function MapInteraction({
   map,
@@ -35,6 +37,7 @@ function MapInteraction({
   useEffect(() => {
     if (
       !map ||
+      !mapState ||
       (map.type === "file" && !map.file && !map.resolutions) ||
       mapState.mapId !== map.id
     ) {
@@ -177,6 +180,8 @@ function MapInteraction({
 
   const auth = useContext(AuthContext);
   const settings = useContext(SettingsContext);
+  const player = useContext(PlayerUpdaterContext);
+  const party = useContext(PartyContext);
 
   const mapInteraction = {
     stageScale,
@@ -218,15 +223,19 @@ function MapInteraction({
             />
             {/* Forward auth context to konva elements */}
             <AuthContext.Provider value={auth}>
-              <SettingsContext.Provider value={settings}>
-                <KeyboardContext.Provider value={keyboardValue}>
-                  <MapInteractionProvider value={mapInteraction}>
-                    <MapStageProvider value={mapStageRef}>
-                      {mapLoaded && children}
-                    </MapStageProvider>
-                  </MapInteractionProvider>
-                </KeyboardContext.Provider>
-              </SettingsContext.Provider>
+              <PlayerUpdaterContext.Provider value={player}>
+                <PartyContext.Provider value={party}>
+                  <SettingsContext.Provider value={settings}>
+                    <KeyboardContext.Provider value={keyboardValue}>
+                      <MapInteractionProvider value={mapInteraction}>
+                        <MapStageProvider value={mapStageRef}>
+                          {mapLoaded && children}
+                        </MapStageProvider>
+                      </MapInteractionProvider>
+                    </KeyboardContext.Provider>
+                  </SettingsContext.Provider>
+                </PartyContext.Provider>
+              </PlayerUpdaterContext.Provider>
             </AuthContext.Provider>
           </Layer>
         </Stage>

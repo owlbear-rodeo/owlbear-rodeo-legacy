@@ -5,7 +5,7 @@ import MapDataContext from "../contexts/MapDataContext";
 import MapLoadingContext from "../contexts/MapLoadingContext";
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
-import PlayerContext from "../contexts/PlayerContext";
+import PartyContext from "../contexts/PartyContext";
 
 import { omit } from "../helpers/shared";
 import useDebounce from "../helpers/useDebounce";
@@ -27,7 +27,7 @@ import Tokens from "../components/token/Tokens";
  */
 function NetworkedMapAndTokens({ session }) {
   const { userId } = useContext(AuthContext);
-  const { partyState } = useContext(PlayerContext);
+  const partyState = useContext(PartyContext);
   const {
     assetLoadStart,
     assetLoadFinish,

@@ -2,29 +2,31 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
 import AuthContext from "../contexts/AuthContext";
+import PartyContext from "../contexts/PartyContext";
+import { PlayerUpdaterContext } from "../contexts/PlayerContext";
 
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
-import { lerp } from "../helpers/vector2";
+import { lerp, compare } from "../helpers/vector2";
 
 // Send pointer updates every 33ms
-const sendTickRate = 33;
+const sendTickRate = 100;
 
-function NetworkedMapPointer({ session, active, gridSize }) {
+let t = 0;
+
+function NetworkedMapPointer({ active, gridSize }) {
   const { userId } = useContext(AuthContext);
-  const [pointerState, setPointerState] = useState({});
+  const setPlayerState = useContext(PlayerUpdaterContext);
+  const partyState = useContext(PartyContext);
+  const [localPointerState, setLocalPointerState] = useState({});
+
   useEffect(() => {
-    if (userId && !(userId in pointerState)) {
-      setPointerState({
+    if (userId && !(userId in localPointerState)) {
+      setLocalPointerState({
         [userId]: { position: { x: 0, y: 0 }, visible: false, id: userId },
       });
     }
-  }, [userId, pointerState]);
-
-  const sessionRef = useRef(session);
-  useEffect(() => {
-    sessionRef.current = session;
-  }, [session]);
+  }, [userId, localPointerState]);
 
   // Send pointer updates every sendTickRate to peers to save on bandwidth
   // We use requestAnimationFrame as setInterval was being blocked during
@@ -42,8 +44,14 @@ function NetworkedMapPointer({ session, active, gridSize }) {
 
       if (counter > sendTickRate) {
         counter -= sendTickRate;
-        if (ownPointerUpdateRef.current && sessionRef.current) {
-          sessionRef.current.send("pointer", ownPointerUpdateRef.current);
+        if (ownPointerUpdateRef.current) {
+          const { position, visible } = ownPointerUpdateRef.current;
+          console.log("send time", performance.now() - t);
+          t = performance.now();
+          setPlayerState((prev) => ({
+            ...prev,
+            pointer: { position, visible },
+          }));
           ownPointerUpdateRef.current = null;
         }
       }
@@ -55,7 +63,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
   }, []);
 
   function updateOwnPointerState(position, visible) {
-    setPointerState((prev) => ({
+    setLocalPointerState((prev) => ({
       ...prev,
       [userId]: { position, visible, id: userId },
     }));
@@ -75,39 +83,43 @@ function NetworkedMapPointer({ session, active, gridSize }) {
   }
 
   // Handle pointer data receive
-  const syncedPointerStateRef = useRef({});
+  const interpolationsRef = useRef({});
   useEffect(() => {
-    function handlePeerData({ id, data }) {
-      if (id === "pointer") {
-        // Setup an interpolation to the current pointer data when receiving a pointer event
-        if (syncedPointerStateRef.current[data.id]) {
-          const from = syncedPointerStateRef.current[data.id].to;
-          syncedPointerStateRef.current[data.id] = {
-            id: data.id,
-            from: {
-              ...from,
-              time: performance.now(),
-            },
-            to: {
-              ...data,
-              time: performance.now() + sendTickRate,
-            },
-          };
-        } else {
-          syncedPointerStateRef.current[data.id] = {
-            from: null,
-            to: { ...data, time: performance.now() + sendTickRate },
-          };
-        }
+    // TODO: Handle player disconnect while pointer visible
+    const interpolations = interpolationsRef.current;
+    for (let player of Object.values(partyState)) {
+      const id = player.userId;
+      const pointer = player.pointer;
+      if (!id) {
+        continue;
+      }
+      if (!(id in interpolations)) {
+        interpolations[id] = {
+          id,
+          from: null,
+          to: { ...pointer, time: performance.now() + sendTickRate },
+        };
+      } else if (
+        !compare(interpolations[id].to.position, pointer.position, 0.0001) ||
+        interpolations[id].to.visible !== pointer.visible
+      ) {
+        console.log("receive time", performance.now() - t, pointer.position);
+        t = performance.now();
+        const from = interpolations[id].to;
+        interpolations[id] = {
+          id,
+          from: {
+            ...from,
+            time: performance.now(),
+          },
+          to: {
+            ...pointer,
+            time: performance.now() + sendTickRate,
+          },
+        };
       }
     }
-
-    session.on("peerData", handlePeerData);
-
-    return () => {
-      session.off("peerData", handlePeerData);
-    };
-  });
+  }, [partyState]);
 
   // Animate to the peer pointer positions
   useEffect(() => {
@@ -116,36 +128,32 @@ function NetworkedMapPointer({ session, active, gridSize }) {
     function animate(time) {
       request = requestAnimationFrame(animate);
       let interpolatedPointerState = {};
-      for (let syncState of Object.values(syncedPointerStateRef.current)) {
-        if (!syncState.from || !syncState.to) {
+      for (let interp of Object.values(interpolationsRef.current)) {
+        if (!interp.from || !interp.to) {
           continue;
         }
-        const totalInterpTime = syncState.to.time - syncState.from.time;
-        const currentInterpTime = time - syncState.from.time;
+        const totalInterpTime = interp.to.time - interp.from.time;
+        const currentInterpTime = time - interp.from.time;
         const alpha = currentInterpTime / totalInterpTime;
 
         if (alpha >= 0 && alpha <= 1) {
-          interpolatedPointerState[syncState.id] = {
-            id: syncState.to.id,
-            visible: syncState.from.visible,
-            position: lerp(
-              syncState.from.position,
-              syncState.to.position,
-              alpha
-            ),
+          interpolatedPointerState[interp.id] = {
+            id: interp.id,
+            visible: interp.from.visible,
+            position: lerp(interp.from.position, interp.to.position, alpha),
           };
         }
-        if (alpha > 1 && !syncState.to.visible) {
-          interpolatedPointerState[syncState.id] = {
-            id: syncState.id,
-            visible: syncState.to.visible,
-            position: syncState.to.position,
+        if (alpha > 1 && !interp.to.visible) {
+          interpolatedPointerState[interp.id] = {
+            id: interp.id,
+            visible: interp.to.visible,
+            position: interp.to.position,
           };
-          delete syncedPointerStateRef.current[syncState.to.id];
+          delete interpolationsRef.current[interp.id];
         }
       }
       if (!isEmpty(interpolatedPointerState)) {
-        setPointerState((prev) => ({
+        setLocalPointerState((prev) => ({
           ...prev,
           ...interpolatedPointerState,
         }));
@@ -159,7 +167,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
 
   return (
     <Group>
-      {Object.values(pointerState).map((pointer) => (
+      {Object.values(localPointerState).map((pointer) => (
         <MapPointer
           key={pointer.id}
           gridSize={gridSize}

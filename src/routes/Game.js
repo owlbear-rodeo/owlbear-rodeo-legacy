@@ -13,6 +13,7 @@ import AuthContext from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 import { PlayerProvider } from "../contexts/PlayerContext";
+import { PartyProvider } from "../contexts/PartyContext";
 
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
@@ -104,49 +105,54 @@ function Game() {
 
   return (
     <PlayerProvider session={session}>
-      <MapStageProvider value={mapStageRef}>
-        <Flex sx={{ flexDirection: "column", height: "100%" }}>
-          <Flex
-            sx={{
-              justifyContent: "space-between",
-              flexGrow: 1,
-              height: "100%",
-            }}
-          >
-            <NetworkedParty session={session} gameId={gameId} />
-            <NetworkedMapAndTokens session={session} />
+      <PartyProvider session={session}>
+        <MapStageProvider value={mapStageRef}>
+          <Flex sx={{ flexDirection: "column", height: "100%" }}>
+            <Flex
+              sx={{
+                justifyContent: "space-between",
+                flexGrow: 1,
+                height: "100%",
+              }}
+            >
+              <NetworkedParty session={session} gameId={gameId} />
+              <NetworkedMapAndTokens session={session} />
+            </Flex>
           </Flex>
-        </Flex>
-        <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              {peerError} See <Link to="/faq#connection">FAQ</Link> for more
-              information.
-            </Text>
-          </Box>
-        </Banner>
-        <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              Unable to connect to game, refresh to reconnect.
-            </Text>
-          </Box>
-        </Banner>
-        <Banner
-          isOpen={!connected && authenticationStatus === "authenticated"}
-          onRequestClose={() => {}}
-          allowClose={false}
-        >
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              Disconnected. Attempting to reconnect...
-            </Text>
-          </Box>
-        </Banner>
-        <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
-        {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
-        <MapLoadingOverlay />
-      </MapStageProvider>
+          <Banner
+            isOpen={!!peerError}
+            onRequestClose={() => setPeerError(null)}
+          >
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                {peerError} See <Link to="/faq#connection">FAQ</Link> for more
+                information.
+              </Text>
+            </Box>
+          </Banner>
+          <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                Unable to connect to game, refresh to reconnect.
+              </Text>
+            </Box>
+          </Banner>
+          <Banner
+            isOpen={!connected && authenticationStatus === "authenticated"}
+            onRequestClose={() => {}}
+            allowClose={false}
+          >
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                Disconnected. Attempting to reconnect...
+              </Text>
+            </Box>
+          </Banner>
+          <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
+          {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
+          <MapLoadingOverlay />
+        </MapStageProvider>
+      </PartyProvider>
     </PlayerProvider>
   );
 }

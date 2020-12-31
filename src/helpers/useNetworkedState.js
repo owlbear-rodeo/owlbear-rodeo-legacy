@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 function useNetworkedState(defaultState, session, eventName) {
   const [state, _setState] = useState(defaultState);
@@ -6,10 +6,10 @@ function useNetworkedState(defaultState, session, eventName) {
   const [dirty, setDirty] = useState(false);
 
   // Update dirty at the same time as state
-  function setState(update, sync = true) {
+  const setState = useCallback((update, sync = true) => {
     _setState(update);
     setDirty(sync);
-  }
+  }, []);
 
   useEffect(() => {
     if (session.socket && dirty) {
@@ -31,7 +31,7 @@ function useNetworkedState(defaultState, session, eventName) {
         session.socket.off(eventName, handleSocketEvent);
       }
     };
-  }, [session.socket]);
+  }, [session.socket, eventName]);
 
   return [state, setState];
 }

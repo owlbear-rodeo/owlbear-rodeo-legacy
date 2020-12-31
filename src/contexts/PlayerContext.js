@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
+import compare from "fast-deep-equal";
 
 import useNetworkedState from "../helpers/useNetworkedState";
 import DatabaseContext from "./DatabaseContext";
@@ -6,7 +7,12 @@ import AuthContext from "./AuthContext";
 
 import { getRandomMonster } from "../helpers/monsters";
 
-const PlayerContext = React.createContext();
+export const PlayerStateContext = React.createContext();
+export const PlayerUpdaterContext = React.createContext(() => {});
+/**
+ * Store the player state without the pointer data to prevent unnecessary updates
+ */
+export const PlayerStateWithoutPointerContext = React.createContext();
 
 export function PlayerProvider({ session, children }) {
   const { userId } = useContext(AuthContext);
@@ -17,14 +23,13 @@ export function PlayerProvider({ session, children }) {
       nickname: "",
       timer: null,
       dice: { share: false, rolls: [] },
-      pointer: {},
+      pointer: { position: { x: 0, y: 0 }, visible: false },
       sessionId: null,
       userId,
     },
     session,
     "player_state"
   );
-  const [partyState, setPartyState] = useState({});
 
   useEffect(() => {
     if (!database || databaseStatus === "loading") {
@@ -45,7 +50,7 @@ export function PlayerProvider({ session, children }) {
     }
 
     loadNickname();
-  }, [database, databaseStatus]);
+  }, [database, databaseStatus, setPlayerState]);
 
   useEffect(() => {
     if (
@@ -64,7 +69,7 @@ export function PlayerProvider({ session, children }) {
       ...prevState,
       userId,
     }));
-  }, [userId]);
+  }, [userId, setPlayerState]);
 
   useEffect(() => {
     function handleSocketConnect() {
@@ -72,21 +77,11 @@ export function PlayerProvider({ session, children }) {
       setPlayerState({ ...playerState, sessionId: session.id });
     }
 
-    function handleSocketPartyState(partyState) {
-      if (partyState) {
-        const { [session.id]: _, ...otherMembersState } = partyState;
-        setPartyState(otherMembersState);
-      } else {
-        setPartyState({});
-      }
-    }
-
     session.on("connected", handleSocketConnect);
 
     if (session.socket) {
       session.socket.on("connect", handleSocketConnect);
       session.socket.on("reconnect", handleSocketConnect);
-      session.socket.on("party_state", handleSocketPartyState);
     }
 
     return () => {
@@ -95,19 +90,32 @@ export function PlayerProvider({ session, children }) {
       if (session.socket) {
         session.socket.off("connect", handleSocketConnect);
         session.socket.off("reconnect", handleSocketConnect);
-        session.socket.off("party_state", handleSocketPartyState);
       }
     };
   });
 
-  const value = {
-    playerState,
-    setPlayerState,
-    partyState,
-  };
+  const [playerStateWithoutPointer, setPlayerStateWithoutPointer] = useState(
+    playerState
+  );
+  useEffect(() => {
+    const { pointer, ...state } = playerState;
+    if (
+      !playerStateWithoutPointer ||
+      !compare(playerStateWithoutPointer, state)
+    ) {
+      setPlayerStateWithoutPointer(state);
+    }
+  }, [playerState, playerStateWithoutPointer]);
+
   return (
-    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
+    <PlayerStateContext.Provider value={playerState}>
+      <PlayerUpdaterContext.Provider value={setPlayerState}>
+        <PlayerStateWithoutPointerContext.Provider
+          value={playerStateWithoutPointer}
+        >
+          {children}
+        </PlayerStateWithoutPointerContext.Provider>
+      </PlayerUpdaterContext.Provider>
+    </PlayerStateContext.Provider>
   );
 }
-
-export default PlayerContext;
