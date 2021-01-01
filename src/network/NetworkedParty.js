@@ -1,9 +1,16 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { useToasts } from "react-toast-notifications";
 
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "./Session";
-import { isStreamStopped, omit } from "../helpers/shared";
+import { isStreamStopped, omit, difference } from "../helpers/shared";
 
 import PartyContext from "../contexts/PartyContext";
 
@@ -22,6 +29,8 @@ function NetworkedParty({ gameId, session }) {
   const partyState = useContext(PartyContext);
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
+
+  const { addToast } = useToasts();
 
   function handleStreamStart(localStream) {
     setStream(localStream);
@@ -53,6 +62,19 @@ function NetworkedParty({ gameId, session }) {
     [session, partyState]
   );
 
+  // Keep a reference to players who have just joined to show the joined notification
+  const joinedPlayersRef = useRef([]);
+  useEffect(() => {
+    if (joinedPlayersRef.current.length > 0) {
+      for (let id of joinedPlayersRef.current) {
+        if (partyState[id]) {
+          addToast(`${partyState[id].nickname} joined the party`);
+        }
+      }
+      joinedPlayersRef.current = [];
+    }
+  }, [partyState]);
+
   useEffect(() => {
     function handlePlayerJoined(sessionId) {
       if (stream) {
@@ -62,6 +84,15 @@ function NetworkedParty({ gameId, session }) {
             session.startStreamTo(sessionId, track, stream);
           }
         }
+      }
+      // Add player to join notification list
+      // Can't just show the notification here as the partyState data isn't populated at this point
+      joinedPlayersRef.current.push(sessionId);
+    }
+
+    function handlePlayerLeft(sessionId) {
+      if (partyState[sessionId]) {
+        addToast(`${partyState[sessionId].nickname} left the party`);
       }
     }
 
@@ -84,11 +115,13 @@ function NetworkedParty({ gameId, session }) {
     }
 
     session.on("playerJoined", handlePlayerJoined);
+    session.on("playerLeft", handlePlayerLeft);
     session.on("peerTrackAdded", handlePeerTrackAdded);
     session.on("peerTrackRemoved", handlePeerTrackRemoved);
 
     return () => {
       session.off("playerJoined", handlePlayerJoined);
+      session.off("playerLeft", handlePlayerLeft);
       session.off("peerTrackAdded", handlePeerTrackAdded);
       session.off("peerTrackRemoved", handlePeerTrackRemoved);
     };

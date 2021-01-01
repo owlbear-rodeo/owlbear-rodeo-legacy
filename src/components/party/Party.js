@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { useToasts } from "react-toast-notifications";
 
 import AddPartyMemberButton from "./AddPartyMemberButton";
 import Nickname from "./Nickname";
@@ -27,8 +26,6 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
 
   const [fullScreen] = useSetting("map.fullScreen");
   const [shareDice, setShareDice] = useSetting("dice.shareDice");
-
-  const { addToast } = useToasts();
 
   function handleTimerStart(newTimer) {
     setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
