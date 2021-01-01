@@ -17,9 +17,6 @@ import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
-// Enable hit detection on drag to allow for vehicle tokens
-Konva.hitOnDragEnabled = true;
-
 const snappingThreshold = 1 / 7;
 
 function MapToken({
@@ -58,6 +55,9 @@ function MapToken({
     const tokenImage = imageRef.current;
 
     if (token && token.category === "vehicle") {
+      // Enable hit detection for .intersects() function
+      Konva.hitOnDragEnabled = true;
+
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
       const tokens = layer.find(".character");
@@ -95,6 +95,8 @@ function MapToken({
 
     const mountChanges = {};
     if (token && token.category === "vehicle") {
+      Konva.hitOnDragEnabled = false;
+
       const parent = tokenGroup.getParent();
       const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
