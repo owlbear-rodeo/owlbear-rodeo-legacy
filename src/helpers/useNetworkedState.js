@@ -14,8 +14,8 @@ function useNetworkedState(
 
   // Update dirty at the same time as state
   const setState = useCallback((update, sync = true) => {
-    _setState(update);
     dirtyRef.current = sync;
+    _setState(update);
   }, []);
 
   const eventNameRef = useRef(eventName);
