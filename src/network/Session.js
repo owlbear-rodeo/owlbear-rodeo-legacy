@@ -246,7 +246,13 @@ class Session extends EventEmitter {
       }
 
       function handleDataProgress({ id, count, total }) {
-        this.emit("dataProgress", { peer, id, count, total, reply: sendPeer });
+        this.emit("peerDataProgress", {
+          peer,
+          id,
+          count,
+          total,
+          reply: sendPeer,
+        });
       }
 
       function handleTrack(track, stream) {
