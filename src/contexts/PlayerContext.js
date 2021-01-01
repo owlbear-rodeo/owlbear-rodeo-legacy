@@ -9,10 +9,6 @@ import { getRandomMonster } from "../helpers/monsters";
 
 export const PlayerStateContext = React.createContext();
 export const PlayerUpdaterContext = React.createContext(() => {});
-/**
- * Store the player state without the pointer data to prevent unnecessary updates
- */
-export const PlayerStateWithoutPointerContext = React.createContext();
 
 export function PlayerProvider({ session, children }) {
   const { userId } = useContext(AuthContext);
@@ -23,7 +19,6 @@ export function PlayerProvider({ session, children }) {
       nickname: "",
       timer: null,
       dice: { share: false, rolls: [] },
-      pointer: { position: { x: 0, y: 0 }, visible: false },
       sessionId: null,
       userId,
     },
@@ -94,27 +89,10 @@ export function PlayerProvider({ session, children }) {
     };
   });
 
-  const [playerStateWithoutPointer, setPlayerStateWithoutPointer] = useState(
-    playerState
-  );
-  useEffect(() => {
-    const { pointer, ...state } = playerState;
-    if (
-      !playerStateWithoutPointer ||
-      !compare(playerStateWithoutPointer, state)
-    ) {
-      setPlayerStateWithoutPointer(state);
-    }
-  }, [playerState, playerStateWithoutPointer]);
-
   return (
     <PlayerStateContext.Provider value={playerState}>
       <PlayerUpdaterContext.Provider value={setPlayerState}>
-        <PlayerStateWithoutPointerContext.Provider
-          value={playerStateWithoutPointer}
-        >
-          {children}
-        </PlayerStateWithoutPointerContext.Provider>
+        {children}
       </PlayerUpdaterContext.Provider>
     </PlayerStateContext.Provider>
   );

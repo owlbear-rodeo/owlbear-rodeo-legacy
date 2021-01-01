@@ -17,12 +17,12 @@ import useSetting from "../../helpers/useSetting";
 import PartyContext from "../../contexts/PartyContext";
 import {
   PlayerUpdaterContext,
-  PlayerStateWithoutPointerContext,
+  PlayerStateContext,
 } from "../../contexts/PlayerContext";
 
 function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
   const setPlayerState = useContext(PlayerUpdaterContext);
-  const playerState = useContext(PlayerStateWithoutPointerContext);
+  const playerState = useContext(PlayerStateContext);
   const partyState = useContext(PartyContext);
 
   const [fullScreen] = useSetting("map.fullScreen");
