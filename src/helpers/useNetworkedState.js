@@ -1,22 +1,35 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
-function useNetworkedState(defaultState, session, eventName) {
+import useDebounce from "./useDebounce";
+
+function useNetworkedState(
+  defaultState,
+  session,
+  eventName,
+  debounceRate = 100
+) {
   const [state, _setState] = useState(defaultState);
   // Used to control whether the state needs to be sent to the socket
-  const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
 
   // Update dirty at the same time as state
   const setState = useCallback((update, sync = true) => {
     _setState(update);
-    setDirty(sync);
+    dirtyRef.current = sync;
   }, []);
 
+  const eventNameRef = useRef(eventName);
   useEffect(() => {
-    if (session.socket && dirty) {
-      session.socket.emit(eventName, state);
-      setDirty(false);
+    eventNameRef.current = eventName;
+  }, [eventName]);
+
+  const debouncedState = useDebounce(state, debounceRate);
+  useEffect(() => {
+    if (session.socket && dirtyRef.current) {
+      session.socket.emit(eventName, debouncedState);
+      dirtyRef.current = false;
     }
-  }, [session.socket, dirty, eventName, state]);
+  }, [session.socket, eventName, debouncedState]);
 
   useEffect(() => {
     function handleSocketEvent(data) {
