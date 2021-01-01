@@ -32,6 +32,11 @@ function loadVersions(settings) {
     ...prev,
     map: { fullScreen: false, labelSize: 1 },
   }));
+  // v1.7.0 - Added game password
+  settings.version(3, (prev) => ({
+    ...prev,
+    game: { usePassword: true },
+  }));
 }
 
 export function getSettings() {
