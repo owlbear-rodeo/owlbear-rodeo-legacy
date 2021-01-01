@@ -183,6 +183,9 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
+    const canvas = image.getCanvas();
+    const pixelRatio = canvas.pixelRatio || 1;
+
     if (
       image &&
       tokenSourceStatus === "loaded" &&
@@ -190,7 +193,7 @@ function MapToken({
       tokenHeight > 0
     ) {
       image.cache({
-        pixelRatio: debouncedStageScale * window.devicePixelRatio,
+        pixelRatio: debouncedStageScale * pixelRatio,
       });
       image.drawHitFromCache();
       // Force redraw
