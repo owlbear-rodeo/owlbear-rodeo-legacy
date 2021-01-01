@@ -386,13 +386,20 @@ function NetworkedMapAndTokens({ session }) {
       assetProgressUpdate({ id, total, count });
     }
 
-    function handleSocketMap(map) {
+    async function handleSocketMap(map) {
       if (map) {
-        setCurrentMap(map);
+        // If we're the owner get the full map from the database
+        if (map.type === "file" && map.owner === userId) {
+          const fullMap = await getMapFromDB(map.id);
+          setCurrentMap(fullMap);
+        } else {
+          setCurrentMap(map);
+        }
       } else {
         setCurrentMap(null);
       }
     }
+
     session.on("peerData", handlePeerData);
     session.on("peerDataProgress", handlePeerDataProgress);
     session.socket?.on("map", handleSocketMap);
