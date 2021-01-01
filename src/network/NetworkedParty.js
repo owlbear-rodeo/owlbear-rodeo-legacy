@@ -10,7 +10,7 @@ import { useToasts } from "react-toast-notifications";
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "./Session";
-import { isStreamStopped, omit, difference } from "../helpers/shared";
+import { isStreamStopped, omit } from "../helpers/shared";
 
 import PartyContext from "../contexts/PartyContext";
 
@@ -73,7 +73,7 @@ function NetworkedParty({ gameId, session }) {
       }
       joinedPlayersRef.current = [];
     }
-  }, [partyState]);
+  }, [partyState, addToast]);
 
   useEffect(() => {
     function handlePlayerJoined(sessionId) {

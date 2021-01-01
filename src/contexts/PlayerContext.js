@@ -1,5 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
-import compare from "fast-deep-equal";
+import React, { useEffect, useContext } from "react";
 
 import useNetworkedState from "../helpers/useNetworkedState";
 import DatabaseContext from "./DatabaseContext";
