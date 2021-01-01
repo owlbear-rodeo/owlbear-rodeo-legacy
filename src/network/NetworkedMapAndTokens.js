@@ -174,9 +174,9 @@ function NetworkedMapAndTokens({ session }) {
 
     if (newMap && newMap.type === "file") {
       const { file, resolutions, ...rest } = newMap;
-      session.socket.emit("map", rest);
+      session.socket?.emit("map", rest);
     } else {
-      session.socket.emit("map", newMap);
+      session.socket?.emit("map", newMap);
     }
 
     if (!newMap || !newMapState) {
@@ -395,16 +395,12 @@ function NetworkedMapAndTokens({ session }) {
     }
     session.on("peerData", handlePeerData);
     session.on("peerDataProgress", handlePeerDataProgress);
-    if (session.socket) {
-      session.socket.on("map", handleSocketMap);
-    }
+    session.socket?.on("map", handleSocketMap);
 
     return () => {
       session.off("peerData", handlePeerData);
       session.off("peerDataProgress", handlePeerDataProgress);
-      if (session.socket) {
-        session.socket.off("map", handleSocketMap);
-      }
+      session.socket?.off("map", handleSocketMap);
     };
   });
 

@@ -73,19 +73,13 @@ export function PlayerProvider({ session, children }) {
     }
 
     session.on("connected", handleSocketConnect);
-
-    if (session.socket) {
-      session.socket.on("connect", handleSocketConnect);
-      session.socket.on("reconnect", handleSocketConnect);
-    }
+    session.socket?.on("connect", handleSocketConnect);
+    session.socket?.on("reconnect", handleSocketConnect);
 
     return () => {
       session.off("connected", handleSocketConnect);
-
-      if (session.socket) {
-        session.socket.off("connect", handleSocketConnect);
-        session.socket.off("reconnect", handleSocketConnect);
-      }
+      session.socket?.off("connect", handleSocketConnect);
+      session.socket?.off("reconnect", handleSocketConnect);
     };
   });
 

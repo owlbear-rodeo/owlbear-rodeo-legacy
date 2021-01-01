@@ -23,13 +23,9 @@ function useNetworkedState(defaultState, session, eventName) {
       _setState(data);
     }
 
-    if (session.socket) {
-      session.socket.on(eventName, handleSocketEvent);
-    }
+    session.socket?.on(eventName, handleSocketEvent);
     return () => {
-      if (session.socket) {
-        session.socket.off(eventName, handleSocketEvent);
-      }
+      session.socket?.off(eventName, handleSocketEvent);
     };
   }, [session.socket, eventName]);
 

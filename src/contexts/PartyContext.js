@@ -15,14 +15,10 @@ export function PartyProvider({ session, children }) {
       }
     }
 
-    if (session.socket) {
-      session.socket.on("party_state", handleSocketPartyState);
-    }
+    session.socket?.on("party_state", handleSocketPartyState);
 
     return () => {
-      if (session.socket) {
-        session.socket.off("party_state", handleSocketPartyState);
-      }
+      session.socket?.off("party_state", handleSocketPartyState);
     };
   });
 
