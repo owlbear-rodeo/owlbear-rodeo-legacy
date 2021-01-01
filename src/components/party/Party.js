@@ -64,7 +64,7 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
     return () => {
       cancelAnimationFrame(request);
     };
-  }, [playerState, setPlayerState]);
+  }, [playerState.timer, setPlayerState]);
 
   function handleNicknameChange(newNickname) {
     setPlayerState((prevState) => ({ ...prevState, nickname: newNickname }));
