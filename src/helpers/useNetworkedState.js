@@ -42,7 +42,7 @@ function useNetworkedState(
     function handleSocketEvent(data) {
       const uncommittedChanges = uncommittedChangesRef.current || [];
       for (let change of uncommittedChanges) {
-        applyChange(data, undefined, change);
+        applyChange(data, true, change);
       }
       _setState(data);
     }
