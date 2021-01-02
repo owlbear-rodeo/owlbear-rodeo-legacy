@@ -428,11 +428,21 @@ function MapFog({
     const canvas = fogGroup.getChildren()[0].getCanvas();
     const pixelRatio = canvas.pixelRatio || 1;
 
+    // Constrain fog buffer to the map resolution
+    const fogRect = fogGroup.getClientRect();
+    const maxMapSize = Math.max(map.width, map.height);
+    const maxFogSize =
+      Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
+    const maxPixelRatio = maxMapSize / maxFogSize;
+
     fogGroup.cache({
-      pixelRatio: Math.min(debouncedStageScale * pixelRatio, 20),
+      pixelRatio: Math.min(
+        Math.max(debouncedStageScale * pixelRatio, 1),
+        maxPixelRatio
+      ),
     });
     fogGroup.getLayer().draw();
-  }, [fogShapes, editable, active, debouncedStageScale, mapWidth]);
+  }, [fogShapes, editable, active, debouncedStageScale, mapWidth, map]);
 
   return (
     <Group>

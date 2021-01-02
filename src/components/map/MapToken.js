@@ -192,14 +192,22 @@ function MapToken({
       tokenWidth > 0 &&
       tokenHeight > 0
     ) {
+      const maxImageSize = Math.max(token.width, token.height);
+      const maxTokenSize = Math.max(tokenWidth, tokenHeight);
+      // Constrain image buffer to original image size
+      const maxRatio = maxImageSize / maxTokenSize;
+
       image.cache({
-        pixelRatio: debouncedStageScale * pixelRatio,
+        pixelRatio: Math.min(
+          Math.max(debouncedStageScale * pixelRatio, 1),
+          maxRatio
+        ),
       });
       image.drawHitFromCache();
       // Force redraw
       image.getLayer().draw();
     }
-  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
+  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
 
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;
