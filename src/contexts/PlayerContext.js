@@ -22,7 +22,9 @@ export function PlayerProvider({ session, children }) {
       userId,
     },
     session,
-    "player_state"
+    "player_state",
+    100,
+    false
   );
 
   useEffect(() => {

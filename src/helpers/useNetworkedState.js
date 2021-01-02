@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { applyChange, diff } from "deep-diff";
 
 import useDebounce from "./useDebounce";
+import { diff, applyChanges } from "./diff";
 
 function useNetworkedState(
   defaultState,
   session,
   eventName,
-  debounceRate = 100
+  debounceRate = 100,
+  partialUpdates = true
 ) {
   const [state, _setState] = useState(defaultState);
   // Used to control whether the state needs to be sent to the socket
@@ -25,31 +26,43 @@ function useNetworkedState(
   }, [eventName]);
 
   const debouncedState = useDebounce(state, debounceRate);
+  const lastSyncedStateRef = useRef();
   useEffect(() => {
     if (session.socket && dirtyRef.current) {
-      session.socket.emit(eventName, debouncedState);
+      // If partial updates enabled, send just the changes to the socket
+      if (lastSyncedStateRef.current && debouncedState && partialUpdates) {
+        const changes = diff(lastSyncedStateRef.current, debouncedState);
+        if (changes) {
+          session.socket.emit(`${eventName}_update`, changes);
+        }
+      } else {
+        session.socket.emit(eventName, debouncedState);
+      }
       dirtyRef.current = false;
+      lastSyncedStateRef.current = debouncedState;
     }
-  }, [session.socket, eventName, debouncedState]);
-
-  // Store the uncommitted changes so we can re-apply them when receiving new data
-  const uncommittedChangesRef = useRef();
-  useEffect(() => {
-    uncommittedChangesRef.current = diff(debouncedState, state);
-  }, [state, debouncedState]);
+  }, [session.socket, eventName, debouncedState, partialUpdates]);
 
   useEffect(() => {
     function handleSocketEvent(data) {
-      const uncommittedChanges = uncommittedChangesRef.current || [];
-      for (let change of uncommittedChanges) {
-        applyChange(data, true, change);
-      }
       _setState(data);
+      lastSyncedStateRef.current = data;
+    }
+
+    function handleSocketUpdateEvent(changes) {
+      _setState((prevState) => {
+        let newState = { ...prevState };
+        applyChanges(newState, changes);
+        lastSyncedStateRef.current = newState;
+        return newState;
+      });
     }
 
     session.socket?.on(eventName, handleSocketEvent);
+    session.socket?.on(`${eventName}_update`, handleSocketUpdateEvent);
     return () => {
       session.socket?.off(eventName, handleSocketEvent);
+      session.socket?.off(`${eventName}_update`, handleSocketUpdateEvent);
     };
   }, [session.socket, eventName]);
 
