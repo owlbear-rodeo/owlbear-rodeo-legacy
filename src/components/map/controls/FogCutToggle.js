@@ -4,7 +4,7 @@ import { IconButton } from "theme-ui";
 import CutOnIcon from "../../../icons/FogCutOnIcon";
 import CutOffIcon from "../../../icons/FogCutOffIcon";
 
-function FogCutToggle({ useFogCut, onFogCutChange }) {
+function FogCutToggle({ useFogCut, onFogCutChange, disabled }) {
   return (
     <IconButton
       aria-label={
@@ -12,6 +12,7 @@ function FogCutToggle({ useFogCut, onFogCutChange }) {
       }
       title={useFogCut ? "Disable Fog Cutting (C)" : "Enable Fog Cutting (C)"}
       onClick={() => onFogCutChange(!useFogCut)}
+      disabled={disabled}
     >
       {useFogCut ? <CutOnIcon /> : <CutOffIcon />}
     </IconButton>

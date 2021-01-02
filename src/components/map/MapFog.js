@@ -1,6 +1,12 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import shortid from "shortid";
-import { Group } from "react-konva";
+import { Group, Rect } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -13,6 +19,7 @@ import {
   getBrushPositionForTool,
   simplifyPoints,
   getStrokeWidth,
+  mergeShapes,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import {
@@ -21,6 +28,7 @@ import {
   Tick,
 } from "../../helpers/konva";
 import useKeyboard from "../../helpers/useKeyboard";
+import useDebounce from "../../helpers/useDebounce";
 
 function MapFog({
   map,
@@ -32,7 +40,7 @@ function MapFog({
   active,
   toolSettings,
   gridSize,
-  transparent,
+  editable,
 }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
@@ -44,12 +52,13 @@ function MapFog({
 
   const shouldHover =
     active &&
+    editable &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
   const [patternImage] = useImage(diagonalPattern);
 
   useEffect(() => {
-    if (!active) {
+    if (!active || !editable) {
       return;
     }
 
@@ -80,7 +89,6 @@ function MapFog({
           },
           strokeWidth: 0.5,
           color: toolSettings.useFogCut ? "red" : "black",
-          blend: false,
           id: shortid.generate(),
           visible: true,
         });
@@ -99,7 +107,6 @@ function MapFog({
           },
           strokeWidth: 0.5,
           color: toolSettings.useFogCut ? "red" : "black",
-          blend: false,
           id: shortid.generate(),
           visible: true,
         });
@@ -210,7 +217,6 @@ function MapFog({
               },
               strokeWidth: 0.5,
               color: toolSettings.useFogCut ? "red" : "black",
-              blend: false,
               id: shortid.generate(),
               visible: true,
             };
@@ -355,14 +361,16 @@ function MapFog({
           mapWidth,
           mapHeight
         )}
-        visible={(active && !toolSettings.preview) || shape.visible}
-        opacity={transparent ? 0.5 : 1}
+        opacity={editable ? 0.5 : 1}
         fillPatternImage={patternImage}
         fillPriority={active && !shape.visible ? "pattern" : "color"}
         holes={holes}
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
-        hitFunc={transparent && !active ? () => {} : undefined}
+        hitFunc={editable && !active ? () => {} : undefined}
+        shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 0.33)"}
+        shadowOffset={{ x: 0, y: 5 }}
+        shadowBlur={10}
       />
     );
   }
@@ -398,9 +406,41 @@ function MapFog({
     );
   }
 
+  const [fogShapes, setFogShapes] = useState(shapes);
+  useEffect(() => {
+    function shapeVisible(shape) {
+      return (active && !toolSettings.preview) || shape.visible;
+    }
+
+    if (editable) {
+      setFogShapes(shapes.filter(shapeVisible));
+    } else {
+      setFogShapes(mergeShapes(shapes));
+    }
+  }, [shapes, editable, active, toolSettings]);
+
+  const fogGroupRef = useRef();
+  const debouncedStageScale = useDebounce(stageScale, 50);
+
+  useEffect(() => {
+    const fogGroup = fogGroupRef.current;
+
+    const canvas = fogGroup.getChildren()[0].getCanvas();
+    const pixelRatio = canvas.pixelRatio || 1;
+
+    fogGroup.cache({
+      pixelRatio: Math.min(debouncedStageScale * pixelRatio, 20),
+    });
+    fogGroup.getLayer().draw();
+  }, [fogShapes, editable, active, debouncedStageScale, mapWidth]);
+
   return (
     <Group>
-      {shapes.map(renderShape)}
+      <Group ref={fogGroupRef}>
+        {/* Render a blank shape so cache works with no fog shapes */}
+        <Rect width={1} height={1} />
+        {fogShapes.map(renderShape)}
+      </Group>
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
         toolSettings &&

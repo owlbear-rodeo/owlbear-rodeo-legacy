@@ -80,18 +80,21 @@ function BrushToolSettings({
       title: "Fog Polygon (P)",
       isSelected: settings.type === "polygon",
       icon: <FogPolygonIcon />,
+      disabled: settings.preview,
     },
     {
       id: "rectangle",
       title: "Fog Rectangle (R)",
       isSelected: settings.type === "rectangle",
       icon: <FogRectangleIcon />,
+      disabled: settings.preview,
     },
     {
       id: "brush",
       title: "Fog Brush (B)",
       isSelected: settings.type === "brush",
       icon: <FogBrushIcon />,
+      disabled: settings.preview,
     },
   ];
 
@@ -107,6 +110,7 @@ function BrushToolSettings({
         title="Toggle Fog (T)"
         onClick={() => onSettingChange({ type: "toggle" })}
         isSelected={settings.type === "toggle"}
+        disabled={settings.preview}
       >
         <FogToggleIcon />
       </RadioIconButton>
@@ -114,6 +118,7 @@ function BrushToolSettings({
         title="Erase Fog (E)"
         onClick={() => onSettingChange({ type: "remove" })}
         isSelected={settings.type === "remove"}
+        disabled={settings.preview}
       >
         <FogRemoveIcon />
       </RadioIconButton>
@@ -121,12 +126,14 @@ function BrushToolSettings({
       <FogCutToggle
         useFogCut={settings.useFogCut}
         onFogCutChange={(useFogCut) => onSettingChange({ useFogCut })}
+        disabled={settings.preview}
       />
       <EdgeSnappingToggle
         useEdgeSnapping={settings.useEdgeSnapping}
         onEdgeSnappingChange={(useEdgeSnapping) =>
           onSettingChange({ useEdgeSnapping })
         }
+        disabled={settings.preview}
       />
       <FogPreviewToggle
         useFogPreview={settings.preview}

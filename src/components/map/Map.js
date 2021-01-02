@@ -333,7 +333,7 @@ function Map({
       active={selectedToolId === "fog"}
       toolSettings={settings.fog}
       gridSize={gridSizeNormalized}
-      transparent={allowFogDrawing && !settings.fog.preview}
+      editable={allowFogDrawing && !settings.fog.preview}
     />
   );
 

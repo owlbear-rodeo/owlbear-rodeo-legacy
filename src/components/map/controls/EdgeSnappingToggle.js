@@ -4,7 +4,11 @@ import { IconButton } from "theme-ui";
 import SnappingOnIcon from "../../../icons/SnappingOnIcon";
 import SnappingOffIcon from "../../../icons/SnappingOffIcon";
 
-function EdgeSnappingToggle({ useEdgeSnapping, onEdgeSnappingChange }) {
+function EdgeSnappingToggle({
+  useEdgeSnapping,
+  onEdgeSnappingChange,
+  disabled,
+}) {
   return (
     <IconButton
       aria-label={
@@ -18,6 +22,7 @@ function EdgeSnappingToggle({ useEdgeSnapping, onEdgeSnappingChange }) {
           : "Enable Edge Snapping (S)"
       }
       onClick={() => onEdgeSnappingChange(!useEdgeSnapping)}
+      disabled={disabled}
     >
       {useEdgeSnapping ? <SnappingOnIcon /> : <SnappingOffIcon />}
     </IconButton>

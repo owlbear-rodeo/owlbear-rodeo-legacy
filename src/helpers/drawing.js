@@ -294,3 +294,40 @@ function addPolygonIntersectionToShapes(shape, intersection, shapes) {
     };
   }
 }
+
+export function mergeShapes(shapes) {
+  if (shapes.length === 0) {
+    return shapes;
+  }
+  let geometries = [];
+  for (let shape of shapes) {
+    if (!shape.visible) {
+      continue;
+    }
+    const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+    const shapeHoles = shape.data.holes.map((hole) =>
+      hole.map(({ x, y }) => [x, y])
+    );
+    let shapeGeom = [[shapePoints, ...shapeHoles]];
+    geometries.push(shapeGeom);
+  }
+  let union = polygonClipping.union(...geometries);
+  let merged = [];
+  for (let i = 0; i < union.length; i++) {
+    let holes = [];
+    if (union[i].length > 1) {
+      for (let j = 1; j < union[i].length; j++) {
+        holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+      }
+    }
+    merged.push({
+      ...shapes[0],
+      id: `merged-${i}`,
+      data: {
+        points: union[i][0].map(([x, y]) => ({ x, y })),
+        holes,
+      },
+    });
+  }
+  return merged;
+}
