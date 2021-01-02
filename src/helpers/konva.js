@@ -243,3 +243,17 @@ export function getRelativePointerPositionNormalized(node) {
     y: relativePosition.y / node.height(),
   };
 }
+
+/**
+ * Converts points from alternating array form to vector array form
+ * @param {number[]} points points in an x, y alternating array
+ * @returns {Vector2[]} a `Vector2` array
+ */
+export function convertPointArray(points) {
+  return points.reduce((acc, _, i, arr) => {
+    if (i % 2 === 0) {
+      acc.push({ x: arr[i], y: arr[i + 1] });
+    }
+    return acc;
+  }, []);
+}
