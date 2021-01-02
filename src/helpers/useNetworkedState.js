@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { applyChange, diff } from "deep-diff";
 
 import useDebounce from "./useDebounce";
 
@@ -31,8 +32,18 @@ function useNetworkedState(
     }
   }, [session.socket, eventName, debouncedState]);
 
+  // Store the uncommitted changes so we can re-apply them when receiving new data
+  const uncommittedChangesRef = useRef();
+  useEffect(() => {
+    uncommittedChangesRef.current = diff(debouncedState, state);
+  }, [state, debouncedState]);
+
   useEffect(() => {
     function handleSocketEvent(data) {
+      const uncommittedChanges = uncommittedChangesRef.current || [];
+      for (let change of uncommittedChanges) {
+        applyChange(data, undefined, change);
+      }
       _setState(data);
     }
 
