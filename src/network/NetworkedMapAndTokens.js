@@ -44,7 +44,10 @@ function NetworkedMapAndTokens({ session }) {
   const [currentMapState, setCurrentMapState] = useNetworkedState(
     null,
     session,
-    "map_state"
+    "map_state",
+    100,
+    true,
+    "mapId"
   );
   const [assetManifest, setAssetManifest] = useNetworkedState(
     [],

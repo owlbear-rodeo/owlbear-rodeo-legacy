@@ -3,14 +3,34 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import useDebounce from "./useDebounce";
 import { diff, applyChanges } from "./diff";
 
+/**
+ * @callback setNetworkedState
+ * @param {any} update The updated state or a state function passed into setState
+ * @param {boolean} sync Whether to sync the update with the session
+ * @param {boolean} force Whether to force a full update, usefull when partialUpdates is enabled
+ */
+
+/**
+ * Helper to sync a react state to a `Session`
+ *
+ * @param {any} initialState
+ * @param {Session} session `Session` instance
+ * @param {string} eventName Name of the event to send to the session
+ * @param {number} debounceRate Amount to debounce before sending to the session (ms)
+ * @param {boolean} partialUpdates Allow sending of partial updates to the session
+ * @param {string} partialUpdatesKey Key to lookup in the state to identify a partial update
+ *
+ * @returns {[any, setNetworkedState]}
+ */
 function useNetworkedState(
-  defaultState,
+  initialState,
   session,
   eventName,
   debounceRate = 100,
-  partialUpdates = true
+  partialUpdates = true,
+  partialUpdatesKey = "id"
 ) {
-  const [state, _setState] = useState(defaultState);
+  const [state, _setState] = useState(initialState);
   // Used to control whether the state needs to be sent to the socket
   const dirtyRef = useRef(false);
 
@@ -42,7 +62,8 @@ function useNetworkedState(
       ) {
         const changes = diff(lastSyncedStateRef.current, debouncedState);
         if (changes) {
-          session.socket.emit(`${eventName}_update`, changes);
+          const update = { id: debouncedState[partialUpdatesKey], changes };
+          session.socket.emit(`${eventName}_update`, update);
         }
       } else {
         session.socket.emit(eventName, debouncedState);
@@ -51,7 +72,13 @@ function useNetworkedState(
       forceUpdateRef.current = false;
       lastSyncedStateRef.current = debouncedState;
     }
-  }, [session.socket, eventName, debouncedState, partialUpdates]);
+  }, [
+    session.socket,
+    eventName,
+    debouncedState,
+    partialUpdates,
+    partialUpdatesKey,
+  ]);
 
   useEffect(() => {
     function handleSocketEvent(data) {
@@ -59,12 +86,16 @@ function useNetworkedState(
       lastSyncedStateRef.current = data;
     }
 
-    function handleSocketUpdateEvent(changes) {
+    function handleSocketUpdateEvent(update) {
       _setState((prevState) => {
-        let newState = { ...prevState };
-        applyChanges(newState, changes);
-        lastSyncedStateRef.current = newState;
-        return newState;
+        if (prevState[partialUpdatesKey] === update.id) {
+          let newState = { ...prevState };
+          applyChanges(newState, update.changes);
+          lastSyncedStateRef.current = newState;
+          return newState;
+        } else {
+          return prevState;
+        }
       });
     }
 
@@ -74,7 +105,7 @@ function useNetworkedState(
       session.socket?.off(eventName, handleSocketEvent);
       session.socket?.off(`${eventName}_update`, handleSocketUpdateEvent);
     };
-  }, [session.socket, eventName]);
+  }, [session.socket, eventName, partialUpdatesKey]);
 
   return [state, setState];
 }
