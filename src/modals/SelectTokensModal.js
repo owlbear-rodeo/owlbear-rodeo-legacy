@@ -15,6 +15,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -221,11 +222,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     };
   }, []);
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input

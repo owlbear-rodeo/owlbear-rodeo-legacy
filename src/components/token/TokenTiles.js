@@ -15,6 +15,8 @@ import FilterBar from "../FilterBar";
 
 import DatabaseContext from "../../contexts/DatabaseContext";
 
+import useResponsiveLayout from "../../helpers/useResponsiveLayout";
+
 function TokenTiles({
   tokens,
   groups,
@@ -31,7 +33,7 @@ function TokenTiles({
   onTokensHide,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
-  const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
+  const layout = useResponsiveLayout();
 
   let hasSelectedDefaultToken = selectedTokens.some(
     (token) => token.type === "default"
@@ -47,7 +49,7 @@ function TokenTiles({
         isSelected={isSelected}
         onTokenSelect={onTokenSelect}
         onTokenEdit={onTokenEdit}
-        large={isSmallScreen}
+        size={layout.tileSize}
         canEdit={
           isSelected &&
           token.type !== "default" &&
@@ -87,7 +89,9 @@ function TokenTiles({
         onAdd={onTokenAdd}
         addTitle="Add Token"
       />
-      <SimpleBar style={{ height: "400px" }}>
+      <SimpleBar
+        style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
+      >
         <Flex
           p={2}
           pb={4}
@@ -96,7 +100,7 @@ function TokenTiles({
           sx={{
             flexWrap: "wrap",
             borderRadius: "4px",
-            minHeight: "400px",
+            minHeight: layout.screenSize === "large" ? "600px" : "400px",
             alignContent: "flex-start",
           }}
           onClick={() => onTokenSelect()}

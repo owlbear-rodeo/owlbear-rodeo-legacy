@@ -17,6 +17,7 @@ import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -346,11 +347,13 @@ function SelectMapModal({
     };
   }, []);
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input

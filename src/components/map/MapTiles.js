@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { useMedia } from "react-media";
 import Case from "case";
 
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
@@ -13,6 +12,8 @@ import Link from "../Link";
 import FilterBar from "../FilterBar";
 
 import DatabaseContext from "../../contexts/DatabaseContext";
+
+import useResponsiveLayout from "../../helpers/useResponsiveLayout";
 
 function MapTiles({
   maps,
@@ -32,7 +33,7 @@ function MapTiles({
   onMapsGroup,
 }) {
   const { databaseStatus } = useContext(DatabaseContext);
-  const isSmallScreen = useMedia({ query: "(max-width: 500px)" });
+  const layout = useResponsiveLayout();
 
   let hasMapState = false;
   for (let state of selectedMapStates) {
@@ -61,7 +62,7 @@ function MapTiles({
         onMapSelect={onMapSelect}
         onMapEdit={onMapEdit}
         onDone={onDone}
-        large={isSmallScreen}
+        size={layout.tileSize}
         canEdit={
           isSelected && selectMode === "single" && selectedMaps.length === 1
         }
@@ -83,7 +84,9 @@ function MapTiles({
         onAdd={onMapAdd}
         addTitle="Add Map"
       />
-      <SimpleBar style={{ height: "400px" }}>
+      <SimpleBar
+        style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
+      >
         <Flex
           p={2}
           pb={4}
@@ -92,7 +95,7 @@ function MapTiles({
           sx={{
             flexWrap: "wrap",
             borderRadius: "4px",
-            minHeight: "400px",
+            minHeight: layout.screenSize === "large" ? "600px" : "400px",
             alignContent: "flex-start",
           }}
           onClick={() => onMapSelect()}
