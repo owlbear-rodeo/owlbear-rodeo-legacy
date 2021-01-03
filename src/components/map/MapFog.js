@@ -430,7 +430,7 @@ function MapFog({
 
     // Constrain fog buffer to the map resolution
     const fogRect = fogGroup.getClientRect();
-    const maxMapSize = Math.max(map.width, map.height);
+    const maxMapSize = map ? Math.max(map.width, map.height) : 4096; // Default to 4096
     const maxFogSize =
       Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
     const maxPixelRatio = maxMapSize / maxFogSize;

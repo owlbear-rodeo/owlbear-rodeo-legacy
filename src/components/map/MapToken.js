@@ -192,7 +192,7 @@ function MapToken({
       tokenWidth > 0 &&
       tokenHeight > 0
     ) {
-      const maxImageSize = Math.max(token.width, token.height);
+      const maxImageSize = token ? Math.max(token.width, token.height) : 512; // Default to 512px
       const maxTokenSize = Math.max(tokenWidth, tokenHeight);
       // Constrain image buffer to original image size
       const maxRatio = maxImageSize / maxTokenSize;
