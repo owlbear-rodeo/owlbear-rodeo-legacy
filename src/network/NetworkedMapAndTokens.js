@@ -174,6 +174,10 @@ function NetworkedMapAndTokens({ session }) {
   }, [currentMap, debouncedMapState, userId, database]);
 
   function handleMapChange(newMap, newMapState) {
+    // Clear map before sending new one
+    setCurrentMap(null);
+    session.socket?.emit("map", null);
+
     setCurrentMapState(newMapState, true, true);
     setCurrentMap(newMap);
 
