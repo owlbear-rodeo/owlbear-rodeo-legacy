@@ -18,6 +18,7 @@ import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
 import useResponsiveLayout from "../helpers/useResponsiveLayout";
+import * as Vector2 from "../helpers/vector2";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -31,10 +32,14 @@ const defaultMapProps = {
 };
 
 const mapResolutions = [
-  { size: 512, quality: 0.5, id: "low" },
-  { size: 1024, quality: 0.6, id: "medium" },
-  { size: 2048, quality: 0.7, id: "high" },
-  { size: 4096, quality: 0.8, id: "ultra" },
+  {
+    size: 30, // Pixels per grid
+    quality: 0.5, // JPEG compression quality
+    id: "low",
+  },
+  { size: 70, quality: 0.6, id: "medium" },
+  { size: 140, quality: 0.7, id: "high" },
+  { size: 300, quality: 0.8, id: "ultra" },
 ];
 
 function SelectMapModal({
@@ -160,10 +165,17 @@ function SelectMapModal({
         // Create resolutions
         const resolutions = {};
         for (let resolution of mapResolutions) {
-          if (Math.max(image.width, image.height) > resolution.size) {
+          const resolutionPixelSize = Vector2.multiply(
+            gridSize,
+            resolution.size
+          );
+          if (
+            image.width >= resolutionPixelSize.x &&
+            image.height >= resolutionPixelSize.y
+          ) {
             const resized = await resizeImage(
               image,
-              resolution.size,
+              Vector2.max(resolutionPixelSize),
               file.type,
               resolution.quality
             );
