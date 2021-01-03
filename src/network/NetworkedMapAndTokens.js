@@ -49,7 +49,9 @@ function NetworkedMapAndTokens({ session }) {
   const [assetManifest, setAssetManifest] = useNetworkedState(
     [],
     session,
-    "manifest"
+    "manifest",
+    100,
+    false
   );
 
   function loadAssetManifestFromMap(map, mapState) {
