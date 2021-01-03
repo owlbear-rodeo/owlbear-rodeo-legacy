@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { useMedia } from "react-media";
 import Case from "case";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
