@@ -223,10 +223,6 @@ class Session extends EventEmitter {
       }
 
       function handleDataComplete(data) {
-        if (data.id === "close") {
-          // Close connection when signaled to close
-          peer.connection.destroy();
-        }
         /**
          * Peer Data Event - Data received by a peer
          *
@@ -296,7 +292,6 @@ class Session extends EventEmitter {
       }
 
       function handleError(error) {
-        console.error(error);
         /**
          * Peer Error Event - An error occured with a peer connection
          *
@@ -389,7 +384,7 @@ class Session extends EventEmitter {
 
   _handleUnload() {
     for (let peer of Object.values(this.peers)) {
-      peer.connection.send({ id: "close" });
+      peer.connection && peer.connection.destroy();
     }
   }
 
