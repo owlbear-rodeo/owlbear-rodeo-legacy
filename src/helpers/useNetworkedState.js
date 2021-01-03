@@ -14,9 +14,13 @@ function useNetworkedState(
   // Used to control whether the state needs to be sent to the socket
   const dirtyRef = useRef(false);
 
+  // Used to force a full update
+  const forceUpdateRef = useRef(false);
+
   // Update dirty at the same time as state
-  const setState = useCallback((update, sync = true) => {
+  const setState = useCallback((update, sync = true, force = false) => {
     dirtyRef.current = sync;
+    forceUpdateRef.current = force;
     _setState(update);
   }, []);
 
@@ -30,7 +34,12 @@ function useNetworkedState(
   useEffect(() => {
     if (session.socket && dirtyRef.current) {
       // If partial updates enabled, send just the changes to the socket
-      if (lastSyncedStateRef.current && debouncedState && partialUpdates) {
+      if (
+        lastSyncedStateRef.current &&
+        debouncedState &&
+        partialUpdates &&
+        !forceUpdateRef.current
+      ) {
         const changes = diff(lastSyncedStateRef.current, debouncedState);
         if (changes) {
           session.socket.emit(`${eventName}_update`, changes);
@@ -39,6 +48,7 @@ function useNetworkedState(
         session.socket.emit(eventName, debouncedState);
       }
       dirtyRef.current = false;
+      forceUpdateRef.current = false;
       lastSyncedStateRef.current = debouncedState;
     }
   }, [session.socket, eventName, debouncedState, partialUpdates]);

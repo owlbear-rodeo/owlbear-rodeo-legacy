@@ -171,7 +171,7 @@ function NetworkedMapAndTokens({ session }) {
   }, [currentMap, debouncedMapState, userId, database]);
 
   function handleMapChange(newMap, newMapState) {
-    setCurrentMapState(newMapState);
+    setCurrentMapState(newMapState, true, true);
     setCurrentMap(newMap);
 
     if (newMap && newMap.type === "file") {
@@ -189,7 +189,7 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   function handleMapStateChange(newMapState) {
-    setCurrentMapState(newMapState);
+    setCurrentMapState(newMapState, true, true);
   }
 
   function addMapDrawActions(actions, indexKey, actionsKey) {
