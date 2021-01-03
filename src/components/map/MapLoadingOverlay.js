@@ -51,7 +51,7 @@ function MapLoadingOverlay() {
           max={1}
           value={0}
           m={0}
-          sx={{ width: "100%", borderRadius: 0, height: "2px" }}
+          sx={{ width: "100%", borderRadius: 0, height: "4px" }}
           color="primary"
         />
       </Box>
