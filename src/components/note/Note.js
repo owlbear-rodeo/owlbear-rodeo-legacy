@@ -26,7 +26,7 @@ function Note({
   );
 
   const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
-  const noteHeight = map && (mapHeight / map.grid.size.y) * note.size;
+  const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 
   function handleDragStart(event) {
