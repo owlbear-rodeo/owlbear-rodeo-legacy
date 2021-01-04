@@ -15,11 +15,13 @@ class Connection extends SimplePeer {
     this.dataChannels = {};
     this.on("data", this.handleData);
     this.on("datachannel", this.handleDataChannel);
+    super._debug = console.log;
   }
 
   // Intercept the data event with decoding and chunking support
   handleData(packed) {
     const unpacked = decode(packed);
+    console.log("data", unpacked);
     // If the special property __chunked is set and true
     // The data is a partial chunk of the a larger file
     // So wait until all chunks are collected and assembled
@@ -62,6 +64,7 @@ class Connection extends SimplePeer {
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
         const chunks = this.chunk(packedData);
         for (let chunk of chunks) {
+          console.log("sending", chunk);
           if (this.dataChannels[channel]) {
             // Write to the stream to allow for buffer / backpressure handling
             this.dataChannels[channel].write(encode(chunk));
@@ -95,6 +98,7 @@ class Connection extends SimplePeer {
     this.dataChannels[channelName] = channel;
     channel.on("data", this.handleData.bind(this));
     channel.on("error", (error) => {
+      console.error("error", error);
       this.emit("error", error);
     });
   }
