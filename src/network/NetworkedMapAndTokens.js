@@ -134,7 +134,7 @@ function NetworkedMapAndTokens({ session }) {
             await updateMap(cachedMap.id, { lastUsed });
             setCurrentMap({ ...cachedMap, lastUsed });
           } else {
-            session.sendTo(owner.sessionId, "mapRequest", asset.id, "map");
+            session.sendTo(owner.sessionId, "mapRequest", asset.id);
           }
         } else if (asset.type === "token") {
           const cachedToken = getToken(asset.id);
@@ -143,7 +143,7 @@ function NetworkedMapAndTokens({ session }) {
             const lastUsed = Date.now();
             await updateToken(cachedToken.id, { lastUsed });
           } else {
-            session.sendTo(owner.sessionId, "tokenRequest", asset.id, "token");
+            session.sendTo(owner.sessionId, "tokenRequest", asset.id);
           }
         }
       }

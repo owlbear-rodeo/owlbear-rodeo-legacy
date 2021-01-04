@@ -193,10 +193,10 @@ class Session extends EventEmitter {
         trickle: true,
         config: { iceServers: this._iceServers },
       });
-      if (initiator) {
-        connection.createDataChannel("map", { iceServers: this._iceServers });
-        connection.createDataChannel("token", { iceServers: this._iceServers });
-      }
+      // if (initiator) {
+      //   connection.createDataChannel("map", { iceServers: this._iceServers });
+      //   connection.createDataChannel("token", { iceServers: this._iceServers });
+      // }
       const peer = { id, connection, initiator, ready: false };
 
       function sendPeer(id, data, channel) {
