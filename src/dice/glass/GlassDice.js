@@ -26,9 +26,9 @@ class GlassDice extends Dice {
     pbr.metallic = 0;
     pbr.subSurface.isRefractionEnabled = true;
     pbr.subSurface.indexOfRefraction = 2.0;
-    pbr.subSurface.refractionIntensity = 1.2;
+    pbr.subSurface.refractionIntensity = 1.0;
     pbr.subSurface.isTranslucencyEnabled = true;
-    pbr.subSurface.translucencyIntensity = 2.5;
+    pbr.subSurface.translucencyIntensity = 0.5;
     pbr.subSurface.minimumThickness = 10;
     pbr.subSurface.maximumThickness = 10;
     pbr.subSurface.tintColor = new Color3(43 / 255, 1, 115 / 255);
