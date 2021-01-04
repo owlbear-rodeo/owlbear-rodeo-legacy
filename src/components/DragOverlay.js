@@ -16,8 +16,11 @@ function DragOverlay({ dragging, node, onRemove }) {
       if (!node || !dragging || !removeTokenRef.current) {
         return;
       }
-
-      const pointerPosition = node.getStage().getPointerPosition();
+      const stage = node.getStage();
+      if (!stage) {
+        return;
+      }
+      const pointerPosition = stage.getPointerPosition();
       const screenSpacePointerPosition = {
         x: pointerPosition.x + mapRect.left,
         y: pointerPosition.y + mapRect.top,
