@@ -17,9 +17,12 @@ if (process.env.REACT_APP_LOGGING === "true") {
       "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
     // Ignore resize error as it is triggered by going fullscreen on slower computers
+    // Ignore quota error
+    // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
-      "AbortError: QuotaExceededError",
+      "QuotaExceededError",
+      "XDR encoding failure",
     ],
   });
 }
