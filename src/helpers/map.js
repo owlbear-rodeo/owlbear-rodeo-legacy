@@ -139,7 +139,6 @@ export async function getGridSize(image) {
   let prediction;
 
   // Try and use ML grid detection
-  // TODO: Fix possible error on Android
   try {
     prediction = await gridSizeML(image, candidates);
   } catch (error) {
