@@ -13,6 +13,7 @@ import RedditIcon from "../icons/SocialRedditIcon";
 import TwitterIcon from "../icons/SocialTwitterIcon";
 import YouTubeIcon from "../icons/SocialYouTubeIcon";
 import DonateIcon from "../icons/DonateIcon";
+import PatreonIcon from "../icons/SocialPatreonIcon";
 
 import owlington from "../images/Owlington.png";
 
@@ -61,8 +62,23 @@ function Home() {
         </Text>
         <Button
           as="a"
+          href="https://patreon.com/owlbearrodeo"
+          mt={4}
+          mx={2}
+          mb={2}
+          sx={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+          }}
+        >
+          Patreon <PatreonIcon />
+        </Button>
+        <Button
+          as="a"
           href="/donate"
-          my={4}
+          mt={2}
+          mb={4}
           mx={2}
           onClick={(e) => {
             e.preventDefault();
