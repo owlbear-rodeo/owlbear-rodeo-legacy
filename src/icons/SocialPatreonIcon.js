@@ -1,6 +1,6 @@
 import React from "react";
 
-function SocialRedditIcon() {
+function SocialPatreonIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -16,4 +16,4 @@ function SocialRedditIcon() {
   );
 }
 
-export default SocialRedditIcon;
+export default SocialPatreonIcon;
