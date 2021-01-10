@@ -183,15 +183,14 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
+    if (!image) {
+      return;
+    }
+
     const canvas = image.getCanvas();
     const pixelRatio = canvas.pixelRatio || 1;
 
-    if (
-      image &&
-      tokenSourceStatus === "loaded" &&
-      tokenWidth > 0 &&
-      tokenHeight > 0
-    ) {
+    if (tokenSourceStatus === "loaded" && tokenWidth > 0 && tokenHeight > 0) {
       const maxImageSize = token ? Math.max(token.width, token.height) : 512; // Default to 512px
       const maxTokenSize = Math.max(tokenWidth, tokenHeight);
       // Constrain image buffer to original image size
