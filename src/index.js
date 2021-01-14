@@ -19,10 +19,12 @@ if (process.env.REACT_APP_LOGGING === "true") {
     // Ignore resize error as it is triggered by going fullscreen on slower computers
     // Ignore quota error
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
+    // Ignore LastPass extension text error
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "QuotaExceededError",
       "XDR encoding failure",
+      "Assertion failed: Input argument is not an HTMLInputElement",
     ],
   });
 }
