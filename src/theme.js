@@ -187,6 +187,9 @@ const theme = {
         opacity: 0.5,
       },
     },
+    textarea: {
+      fontFamily: "body2",
+    },
   },
   buttons: {
     primary: {

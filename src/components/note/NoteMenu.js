@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Box, Input, Flex, Text, IconButton } from "theme-ui";
+import { Box, Flex, Text, IconButton, Textarea } from "theme-ui";
 
 import Slider from "../Slider";
 
@@ -98,6 +98,13 @@ function NoteMenu({
     }
   }
 
+  function handleTextKeyPress(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      onRequestClose();
+    }
+  }
+
   return (
     <MapMenu
       isOpen={isOpen}
@@ -115,7 +122,7 @@ function NoteMenu({
           }}
           sx={{ alignItems: "center" }}
         >
-          <Input
+          <Textarea
             id="changeNoteText"
             onChange={handleTextChange}
             value={(note && note.text) || ""}
@@ -125,8 +132,10 @@ function NoteMenu({
               ":focus": {
                 outline: "none",
               },
+              resize: "none",
             }}
-            autoComplete="off"
+            rows={3}
+            onKeyPress={handleTextKeyPress}
           />
         </Flex>
         <Box
