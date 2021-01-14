@@ -134,7 +134,7 @@ function NoteMenu({
               },
               resize: "none",
             }}
-            rows={3}
+            rows={1}
             onKeyPress={handleTextKeyPress}
           />
         </Flex>
