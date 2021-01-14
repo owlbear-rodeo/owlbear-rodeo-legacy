@@ -25,6 +25,7 @@ import mapEditor from "./MapEditor.mp4";
 import filteringMaps from "./FilteringMaps.mp4";
 import groupAndRemovingTokens from "./GroupAndRemovingTokens.mp4";
 import filteringTokens from "./FilteringTokens.mp4";
+import usingNotes from "./UsingNotes.mp4";
 
 const assets = {
   defaultMaps,
@@ -54,6 +55,7 @@ const assets = {
   filteringMaps,
   groupAndRemovingTokens,
   filteringTokens,
+  usingNotes,
 };
 
 export default assets;
