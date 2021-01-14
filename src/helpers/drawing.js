@@ -311,6 +311,9 @@ export function mergeShapes(shapes) {
     let shapeGeom = [[shapePoints, ...shapeHoles]];
     geometries.push(shapeGeom);
   }
+  if (geometries.length === 0) {
+    return geometries;
+  }
   let union = polygonClipping.union(...geometries);
   let merged = [];
   for (let i = 0; i < union.length; i++) {
@@ -321,7 +324,8 @@ export function mergeShapes(shapes) {
       }
     }
     merged.push({
-      ...shapes[0],
+      // Use the data of the first visible shape as the merge
+      ...shapes.find((shape) => shape.visible),
       id: `merged-${i}`,
       data: {
         points: union[i][0].map(([x, y]) => ({ x, y })),
