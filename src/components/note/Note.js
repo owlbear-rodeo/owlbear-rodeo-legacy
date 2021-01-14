@@ -108,7 +108,8 @@ function Note({
         const size = sizes.reduce((prev, curr) => {
           text.fontSize(curr);
           const width = text.getTextWidth() + notePadding * 2;
-          if (width < noteWidth) {
+          const height = text.height() + notePadding * 2;
+          if (width < noteWidth && height < noteHeight) {
             return curr;
           } else {
             return prev;
