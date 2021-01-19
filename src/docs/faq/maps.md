@@ -16,9 +16,13 @@ Owlbear Rodeo doesn't impose a limit on map sizes but keep in mind the larger th
 
 Your maps are stored on your local device. This means that clearing your cache will delete your maps, so please only do so if you have no other options. 
 
+### Why am I being prompted for a password when I didn't set one?
+
+If you're game link is over 24hrs old then this could be why you are being prompted for a password. Creating a new game won't affect any maps you have used or prepared previously. See 'How long does a game I create last?' in our faqs.
+
 ### How long does a game I create last?
 
-We encourage users to create games every 24hrs. Any maps you have added or made edits to will not be effected and will still be available when you create another game.
+We encourage users to create games every 24hrs. Any maps you have added or made edits to will not be affected and will still be available when you create another game.
 
 ### I can join my game but the spinner is constantly loading, why?
 
