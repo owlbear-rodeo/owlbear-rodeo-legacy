@@ -7,8 +7,9 @@ import Markdown from "../components/Markdown";
 
 import assets from "../docs/assets";
 
-const connection = raw("../docs/faq/connection.md");
-const saving = raw("../docs/faq/saving.md");
+const database = raw("../docs/faq/database.md");
+const maps = raw("../docs/faq/maps.md");
+const audioSharing = raw("../docs/faq/audio-sharing.md");
 
 function FAQ() {
   return (
@@ -31,11 +32,14 @@ function FAQ() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Frequently Asked Questions
         </Text>
-        <div id="connection">
-          <Markdown source={connection} assets={assets} />
+        <div id="database">
+          <Markdown source={database} assets={assets} />
         </div>
-        <div id="saving">
-          <Markdown source={saving} assets={assets} />
+        <div id="maps">
+          <Markdown source={maps} assets={assets} />
+        </div>
+        <div id="audio-sharing">
+          <Markdown source={audioSharing} assets={assets} />
         </div>
       </Flex>
       <Footer />
