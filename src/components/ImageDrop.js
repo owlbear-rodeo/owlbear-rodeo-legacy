@@ -25,7 +25,7 @@ function ImageDrop({ onDrop, dropText, children }) {
     if (html) {
       try {
         const urlMatch = html.match(/src="?([^"\s]+)"?\s*/);
-        const url = urlMatch[1];
+        const url = urlMatch[1].replace("&amp;", "&"); // Reverse html encoding of url parameters
         let name = "";
         const altMatch = html.match(/alt="?([^"]+)"?\s*/);
         if (altMatch && altMatch.length > 1) {
