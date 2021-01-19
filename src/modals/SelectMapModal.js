@@ -127,7 +127,7 @@ function SelectMapModal({
     return new Promise((resolve, reject) => {
       image.onload = async function () {
         // Find name and grid size
-        let gridSize;
+        let gridSize = { x: 22, y: 22 };
         let name = "Unknown Map";
         if (file.name) {
           if (file.name.matchAll) {
