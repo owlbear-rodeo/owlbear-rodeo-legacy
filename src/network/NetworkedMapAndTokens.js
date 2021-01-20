@@ -102,7 +102,7 @@ function NetworkedMapAndTokens({ session }) {
     );
     if (!exists || needsUpdate) {
       setAssetManifest((prevAssets) => [
-        ...prevAssets.filter((prevAsset) => compareAssets(prevAsset, asset)),
+        ...prevAssets.filter((prevAsset) => !compareAssets(prevAsset, asset)),
         asset,
       ]);
     }
