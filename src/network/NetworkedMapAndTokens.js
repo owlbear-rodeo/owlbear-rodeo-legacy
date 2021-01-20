@@ -389,6 +389,7 @@ function NetworkedMapAndTokens({ session }) {
 
     function handlePeerDataProgress({ id, total, count }) {
       if (count === 1) {
+        // Corresponding asset load finished called in token and map response
         assetLoadStart();
       }
       assetProgressUpdate({ id, total, count });
