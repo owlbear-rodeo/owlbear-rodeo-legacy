@@ -23,6 +23,7 @@ const v152 = raw("../docs/releaseNotes/v1.5.2.md");
 const v160 = raw("../docs/releaseNotes/v1.6.0.md");
 const v161 = raw("../docs/releaseNotes/v1.6.1.md");
 const v162 = raw("../docs/releaseNotes/v1.6.2.md");
+const v170 = raw("../docs/releaseNotes/v1.7.0.md");
 
 function ReleaseNotes() {
   const location = useLocation();
@@ -47,18 +48,23 @@ function ReleaseNotes() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
+        <div id="v170">
+          <Accordion heading="v1.7.0" defaultOpen>
+            <Markdown source={v170} />
+          </Accordion>
+        </div>
         <div id="v162">
-          <Accordion heading="v1.6.2" defaultOpen>
+          <Accordion heading="v1.6.2" defaultOpen={location.hash === "#v162"}>
             <Markdown source={v162} />
           </Accordion>
         </div>
         <div id="v161">
-          <Accordion heading="v1.6.1" defaultOpen>
+          <Accordion heading="v1.6.1" defaultOpen={location.hash === "#v161"}>
             <Markdown source={v161} />
           </Accordion>
         </div>
         <div id="v160">
-          <Accordion heading="v1.6.0" defaultOpen>
+          <Accordion heading="v1.6.0" defaultOpen={location.hash === "#v160"}>
             <Markdown source={v160} />
           </Accordion>
         </div>

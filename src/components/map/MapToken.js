@@ -7,7 +7,7 @@ import Konva from "konva";
 import useDataSource from "../../helpers/useDataSource";
 import useDebounce from "../../helpers/useDebounce";
 import usePrevious from "../../helpers/usePrevious";
-import * as Vector2 from "../../helpers/vector2";
+import { snapNodeToMap } from "../../helpers/map";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
@@ -16,9 +16,6 @@ import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
-
-// Enable hit detection on drag to allow for vehicle tokens
-Konva.hitOnDragEnabled = true;
 
 const snappingThreshold = 1 / 7;
 
@@ -58,6 +55,9 @@ function MapToken({
     const tokenImage = imageRef.current;
 
     if (token && token.category === "vehicle") {
+      // Enable hit detection for .intersects() function
+      Konva.hitOnDragEnabled = true;
+
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
       const tokens = layer.find(".character");
@@ -86,35 +86,7 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      const offset = Vector2.multiply(map.grid.inset.topLeft, {
-        x: mapWidth,
-        y: mapHeight,
-      });
-      const position = {
-        x: tokenGroup.x() + tokenGroup.width() / 2,
-        y: tokenGroup.y() + tokenGroup.height() / 2,
-      };
-      const gridSize = {
-        x:
-          (mapWidth *
-            (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
-          map.grid.size.x,
-        y:
-          (mapHeight *
-            (map.grid.inset.bottomRight.y - map.grid.inset.topLeft.y)) /
-          map.grid.size.y,
-      };
-      // Transform into offset space, round, then transform back
-      const gridSnap = Vector2.add(
-        Vector2.roundTo(Vector2.subtract(position, offset), gridSize),
-        offset
-      );
-      const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
-      const minGrid = Vector2.min(gridSize);
-      if (gridDistance < minGrid * snappingThreshold) {
-        tokenGroup.x(gridSnap.x - tokenGroup.width() / 2);
-        tokenGroup.y(gridSnap.y - tokenGroup.height() / 2);
-      }
+      snapNodeToMap(map, mapWidth, mapHeight, tokenGroup, snappingThreshold);
     }
   }
 
@@ -123,6 +95,8 @@ function MapToken({
 
     const mountChanges = {};
     if (token && token.category === "vehicle") {
+      Konva.hitOnDragEnabled = false;
+
       const parent = tokenGroup.getParent();
       const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
@@ -209,20 +183,30 @@ function MapToken({
   const imageRef = useRef();
   useEffect(() => {
     const image = imageRef.current;
-    if (
-      image &&
-      tokenSourceStatus === "loaded" &&
-      tokenWidth > 0 &&
-      tokenHeight > 0
-    ) {
+    if (!image) {
+      return;
+    }
+
+    const canvas = image.getCanvas();
+    const pixelRatio = canvas.pixelRatio || 1;
+
+    if (tokenSourceStatus === "loaded" && tokenWidth > 0 && tokenHeight > 0) {
+      const maxImageSize = token ? Math.max(token.width, token.height) : 512; // Default to 512px
+      const maxTokenSize = Math.max(tokenWidth, tokenHeight);
+      // Constrain image buffer to original image size
+      const maxRatio = maxImageSize / maxTokenSize;
+
       image.cache({
-        pixelRatio: debouncedStageScale * window.devicePixelRatio,
+        pixelRatio: Math.min(
+          Math.max(debouncedStageScale * pixelRatio, 1),
+          maxRatio
+        ),
       });
       image.drawHitFromCache();
       // Force redraw
       image.getLayer().draw();
     }
-  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus]);
+  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
 
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;

@@ -11,7 +11,7 @@ function MapTile({
   onMapSelect,
   onMapEdit,
   onDone,
-  large,
+  size,
   canEdit,
   badges,
 }) {
@@ -34,7 +34,7 @@ function MapTile({
       onSelect={() => onMapSelect(map)}
       onEdit={() => onMapEdit(map.id)}
       onDoubleClick={onDone}
-      large={large}
+      size={size}
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Map"

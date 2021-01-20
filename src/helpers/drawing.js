@@ -8,21 +8,12 @@ const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
   map,
   brushPosition,
-  tool,
-  toolSettings,
+  useGridSnappning,
+  useEdgeSnapping,
   gridSize,
   shapes
 ) {
   let position = brushPosition;
-
-  const useGridSnappning =
-    map.snapToGrid &&
-    ((tool === "drawing" &&
-      (toolSettings.type === "line" ||
-        toolSettings.type === "rectangle" ||
-        toolSettings.type === "circle" ||
-        toolSettings.type === "triangle")) ||
-      (tool === "fog" && toolSettings.type === "polygon"));
 
   if (useGridSnappning) {
     // Snap to corners of grid
@@ -57,8 +48,6 @@ export function getBrushPositionForTool(
       position = centerSnap;
     }
   }
-
-  const useEdgeSnapping = tool === "fog" && toolSettings.useEdgeSnapping;
 
   if (useEdgeSnapping) {
     const minGrid = Vector2.min(gridSize);
@@ -239,28 +228,110 @@ export function drawActionsToShapes(actions, actionIndex) {
         );
         let shapeGeom = [[shapePoints, ...shapeHoles]];
         const difference = polygonClipping.difference(shapeGeom, actionGeom);
-        for (let i = 0; i < difference.length; i++) {
-          let newId = difference.length > 1 ? `${shape.id}-${i}` : shape.id;
-          // Holes detected
-          let holes = [];
-          if (difference[i].length > 1) {
-            for (let j = 1; j < difference[i].length; j++) {
-              holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
-            }
-          }
-
-          subtractedShapes[newId] = {
-            ...shape,
-            id: newId,
-            data: {
-              points: difference[i][0].map(([x, y]) => ({ x, y })),
-              holes,
-            },
-          };
-        }
+        addPolygonDifferenceToShapes(shape, difference, subtractedShapes);
       }
       shapesById = subtractedShapes;
     }
+    if (action.type === "cut") {
+      const actionGeom = action.shapes.map((actionShape) => [
+        actionShape.data.points.map(({ x, y }) => [x, y]),
+      ]);
+      let cutShapes = {};
+      for (let shape of Object.values(shapesById)) {
+        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+        const shapeHoles = shape.data.holes.map((hole) =>
+          hole.map(({ x, y }) => [x, y])
+        );
+        let shapeGeom = [[shapePoints, ...shapeHoles]];
+        const difference = polygonClipping.difference(shapeGeom, actionGeom);
+        const intersection = polygonClipping.intersection(
+          shapeGeom,
+          actionGeom
+        );
+        addPolygonDifferenceToShapes(shape, difference, cutShapes);
+        addPolygonIntersectionToShapes(shape, intersection, cutShapes);
+      }
+      shapesById = cutShapes;
+    }
   }
   return Object.values(shapesById);
+}
+
+function addPolygonDifferenceToShapes(shape, difference, shapes) {
+  for (let i = 0; i < difference.length; i++) {
+    let newId = `${shape.id}-dif-${i}`;
+    // Holes detected
+    let holes = [];
+    if (difference[i].length > 1) {
+      for (let j = 1; j < difference[i].length; j++) {
+        holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
+      }
+    }
+
+    shapes[newId] = {
+      ...shape,
+      id: newId,
+      data: {
+        points: difference[i][0].map(([x, y]) => ({ x, y })),
+        holes,
+      },
+    };
+  }
+}
+
+function addPolygonIntersectionToShapes(shape, intersection, shapes) {
+  for (let i = 0; i < intersection.length; i++) {
+    let newId = `${shape.id}-int-${i}`;
+    shapes[newId] = {
+      ...shape,
+      id: newId,
+      data: {
+        points: intersection[i][0].map(([x, y]) => ({ x, y })),
+        holes: [],
+      },
+      // Default intersection visibility to false
+      visible: false,
+    };
+  }
+}
+
+export function mergeShapes(shapes) {
+  if (shapes.length === 0) {
+    return shapes;
+  }
+  let geometries = [];
+  for (let shape of shapes) {
+    if (!shape.visible) {
+      continue;
+    }
+    const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+    const shapeHoles = shape.data.holes.map((hole) =>
+      hole.map(({ x, y }) => [x, y])
+    );
+    let shapeGeom = [[shapePoints, ...shapeHoles]];
+    geometries.push(shapeGeom);
+  }
+  if (geometries.length === 0) {
+    return geometries;
+  }
+  let union = polygonClipping.union(...geometries);
+  let merged = [];
+  for (let i = 0; i < union.length; i++) {
+    let holes = [];
+    if (union[i].length > 1) {
+      for (let j = 1; j < union[i].length; j++) {
+        holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+      }
+    }
+    merged.push({
+      // Use the data of the first visible shape as the merge
+      ...shapes.find((shape) => shape.visible),
+      id: `merged-${i}`,
+      data: {
+        points: union[i][0].map(([x, y]) => ({ x, y })),
+        holes,
+      },
+    });
+  }
+  return merged;
 }

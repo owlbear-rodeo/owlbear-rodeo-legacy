@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Box, Input, Slider, Flex, Text, IconButton } from "theme-ui";
+import { Box, Input, Flex, Text, IconButton } from "theme-ui";
+
+import Slider from "../Slider";
 
 import MapMenu from "../map/MapMenu";
 
@@ -48,7 +50,7 @@ function TokenMenu({
   }, [isOpen, tokenState, wasOpen, tokenImage]);
 
   function handleLabelChange(event) {
-    const label = event.target.value;
+    const label = event.target.value.substring(0, 144);
     tokenState &&
       onTokenStateChange({ [tokenState.id]: { ...tokenState, label: label } });
   }
@@ -70,7 +72,7 @@ function TokenMenu({
   }
 
   function handleSizeChange(event) {
-    const newSize = parseInt(event.target.value);
+    const newSize = parseFloat(event.target.value);
     tokenState &&
       onTokenStateChange({ [tokenState.id]: { ...tokenState, size: newSize } });
   }
@@ -209,8 +211,8 @@ function TokenMenu({
           <Slider
             value={(tokenState && tokenState.size) || 1}
             onChange={handleSizeChange}
-            step={1}
-            min={1}
+            step={0.5}
+            min={0.5}
             max={tokenMaxSize}
             mr={1}
           />

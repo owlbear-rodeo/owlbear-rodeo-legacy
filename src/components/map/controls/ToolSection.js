@@ -36,6 +36,7 @@ function ToolSection({ collapse, tools, onToolClick }) {
         onClick={() => handleToolClick(tool)}
         key={tool.id}
         isSelected={tool.isSelected}
+        disabled={tool.disabled}
       >
         {tool.icon}
       </RadioIconButton>
@@ -90,6 +91,7 @@ function ToolSection({ collapse, tools, onToolClick }) {
         onClick={() => handleToolClick(tool)}
         key={tool.id}
         isSelected={tool.isSelected}
+        disabled={tool.disabled}
       >
         {tool.icon}
       </RadioIconButton>

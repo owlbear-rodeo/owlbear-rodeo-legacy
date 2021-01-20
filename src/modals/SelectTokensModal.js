@@ -10,19 +10,25 @@ import ConfirmModal from "./ConfirmModal";
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
 import useKeyboard from "../helpers/useKeyboard";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 import AuthContext from "../contexts/AuthContext";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
-  const { ownedTokens, addToken, removeTokens, updateTokens } = useContext(
-    TokenDataContext
-  );
+  const {
+    ownedTokens,
+    addToken,
+    removeTokens,
+    updateTokens,
+    tokensLoading,
+  } = useContext(TokenDataContext);
 
   /**
    * Search
@@ -65,15 +71,22 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImagesUpload(files) {
+    if (navigator.storage) {
+      // Attempt to enable persistant storage
+      await navigator.storage.persist();
+    }
+
     for (let file of files) {
       await handleImageUpload(file);
     }
     // Set file input to null to allow adding the same image 2 times in a row
-    fileInputRef.current.value = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
   async function handleImageUpload(file) {
-    let name = "Unknown Map";
+    let name = "Unknown Token";
     if (file.name) {
       // Remove file extension
       name = file.name.replace(/\.[^/.]+$/, "");
@@ -209,11 +222,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     };
   }, []);
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
@@ -256,6 +271,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           </Button>
         </Flex>
       </ImageDrop>
+      {tokensLoading && <LoadingOverlay bg="overlay" />}
       <EditTokenModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}

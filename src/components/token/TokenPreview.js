@@ -8,6 +8,7 @@ import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
 import useDataSource from "../../helpers/useDataSource";
 import useImageCenter from "../../helpers/useImageCenter";
+import useResponsiveLayout from "../../helpers/useResponsiveLayout";
 
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
@@ -71,18 +72,20 @@ function TokenPreview({ token }) {
   const gridWidth = tokenWidth;
   const gridX = token.defaultSize;
   const gridSize = gridWidth / gridX;
-  const gridY = Math.ceil(tokenHeight / gridSize);
+  const gridY = Math.round(tokenHeight / gridSize);
   const gridHeight = gridY > 0 ? gridY * gridSize : tokenHeight;
   const borderWidth = Math.max(
     (Math.min(tokenWidth, gridHeight) / 200) * Math.max(1 / stageScale, 1),
     1
   );
 
+  const layout = useResponsiveLayout();
+
   return (
     <Box
       sx={{
         width: "100%",
-        height: "300px",
+        height: layout.screenSize === "large" ? "500px" : "300px",
         cursor: "move",
         touchAction: "none",
         outline: "none",

@@ -27,7 +27,7 @@ function useStageInteraction(
       onWheelStart: (props) => {
         const { event } = props;
         isInteractingWithCanvas.current =
-          event.target === layer.getCanvas()._canvas;
+          layer && event.target === layer.getCanvas()._canvas;
         gesture.onWheelStart && gesture.onWheelStart(props);
       },
       onWheel: (props) => {
@@ -62,7 +62,7 @@ function useStageInteraction(
       onPinchStart: (props) => {
         const { event } = props;
         isInteractingWithCanvas.current =
-          event.target === layer.getCanvas()._canvas;
+          layer && event.target === layer.getCanvas()._canvas;
         const { da, origin } = props;
         const [distance] = da;
         const [originX, originY] = origin;
@@ -124,7 +124,7 @@ function useStageInteraction(
       onDragStart: (props) => {
         const { event } = props;
         isInteractingWithCanvas.current =
-          event.target === layer.getCanvas()._canvas;
+          layer && event.target === layer.getCanvas()._canvas;
         gesture.onDragStart && gesture.onDragStart(props);
       },
       onDrag: (props) => {

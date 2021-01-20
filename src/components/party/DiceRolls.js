@@ -36,7 +36,6 @@ function DiceRolls({ rolls }) {
         </Flex>
         {expanded && (
           <Flex
-            bg="overlay"
             sx={{
               flexDirection: "column",
             }}

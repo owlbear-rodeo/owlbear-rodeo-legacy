@@ -1,15 +1,17 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Label,
   Flex,
   Button,
   useColorMode,
   Checkbox,
-  Slider,
   Divider,
+  Text,
 } from "theme-ui";
+import prettyBytes from "pretty-bytes";
 
 import Modal from "../components/Modal";
+import Slider from "../components/Slider";
 
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
@@ -23,6 +25,26 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
+  const [storageEstimate, setStorageEstimate] = useState();
+
+  useEffect(() => {
+    async function estimateStorage() {
+      // Persisted data on firefox doesn't count towards the usage quota so ignore it
+      const persisted = await navigator.storage.persisted();
+      const isFirefox =
+        navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+      if (persisted && isFirefox) {
+        return;
+      }
+
+      const estimate = await navigator.storage.estimate();
+      setStorageEstimate(estimate);
+    }
+
+    if (isOpen && navigator.storage) {
+      estimateStorage();
+    }
+  }, [isOpen]);
 
   async function handleEraseAllData() {
     localStorage.clear();
@@ -86,6 +108,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               sx={{ width: "initial" }}
               value={labelSize}
               onChange={(e) => setLabelSize(parseFloat(e.target.value))}
+              labelFunc={(value) => `${value}x`}
             />
           </Label>
           <Divider bg="text" />
@@ -102,6 +125,19 @@ function SettingsModal({ isOpen, onRequestClose }) {
               Erase all content and reset
             </Button>
           </Flex>
+          {storageEstimate && (
+            <Flex sx={{ justifyContent: "center" }}>
+              <Text variant="caption">
+                Storage Used: {prettyBytes(storageEstimate.usage)} of{" "}
+                {prettyBytes(storageEstimate.quota)} (
+                {Math.round(
+                  (storageEstimate.usage / Math.max(storageEstimate.quota, 1)) *
+                    100
+                )}
+                %)
+              </Text>
+            </Flex>
+          )}
         </Flex>
       </Modal>
       <ConfirmModal

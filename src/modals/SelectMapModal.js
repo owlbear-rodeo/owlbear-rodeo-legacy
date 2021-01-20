@@ -17,6 +17,8 @@ import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
+import * as Vector2 from "../helpers/vector2";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
@@ -30,10 +32,14 @@ const defaultMapProps = {
 };
 
 const mapResolutions = [
-  { size: 512, quality: 0.5, id: "low" },
-  { size: 1024, quality: 0.6, id: "medium" },
-  { size: 2048, quality: 0.7, id: "high" },
-  { size: 4096, quality: 0.8, id: "ultra" },
+  {
+    size: 30, // Pixels per grid
+    quality: 0.5, // JPEG compression quality
+    id: "low",
+  },
+  { size: 70, quality: 0.6, id: "medium" },
+  { size: 140, quality: 0.7, id: "high" },
+  { size: 300, quality: 0.8, id: "ultra" },
 ];
 
 function SelectMapModal({
@@ -53,6 +59,7 @@ function SelectMapModal({
     resetMap,
     updateMap,
     updateMaps,
+    mapsLoading,
   } = useContext(MapDataContext);
 
   /**
@@ -90,11 +97,18 @@ function SelectMapModal({
   const [imageLoading, setImageLoading] = useState(false);
 
   async function handleImagesUpload(files) {
+    if (navigator.storage) {
+      // Attempt to enable persistant storage
+      await navigator.storage.persist();
+    }
+
     for (let file of files) {
       await handleImageUpload(file);
     }
     // Set file input to null to allow adding the same image 2 times in a row
-    fileInputRef.current.value = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
   async function handleImageUpload(file) {
@@ -148,13 +162,24 @@ function SelectMapModal({
           name = Case.capital(name);
         }
 
+        if (!gridSize) {
+          gridSize = { x: 22, y: 22 };
+        }
+
         // Create resolutions
         const resolutions = {};
         for (let resolution of mapResolutions) {
-          if (Math.max(image.width, image.height) > resolution.size) {
+          const resolutionPixelSize = Vector2.multiply(
+            gridSize,
+            resolution.size
+          );
+          if (
+            image.width >= resolutionPixelSize.x &&
+            image.height >= resolutionPixelSize.y
+          ) {
             const resized = await resizeImage(
               image,
-              resolution.size,
+              Vector2.max(resolutionPixelSize),
               file.type,
               resolution.quality
             );
@@ -338,11 +363,13 @@ function SelectMapModal({
     };
   }, []);
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
@@ -388,7 +415,7 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
-      {imageLoading && <LoadingOverlay bg="overlay" />}
+      {(imageLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}

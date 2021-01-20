@@ -5,6 +5,7 @@ import ToolSection from "./ToolSection";
 import MeasureChebyshevIcon from "../../../icons/MeasureChebyshevIcon";
 import MeasureEuclideanIcon from "../../../icons/MeasureEuclideanIcon";
 import MeasureManhattanIcon from "../../../icons/MeasureManhattanIcon";
+import MeasureAlternatingIcon from "../../../icons/MeasureAlternatingIcon";
 
 import Divider from "../../Divider";
 
@@ -19,6 +20,8 @@ function MeasureToolSettings({ settings, onSettingChange }) {
       onSettingChange({ type: "euclidean" });
     } else if (key === "c") {
       onSettingChange({ type: "manhattan" });
+    } else if (key === "a") {
+      onSettingChange({ type: "alternating" });
     }
   }
 
@@ -30,6 +33,12 @@ function MeasureToolSettings({ settings, onSettingChange }) {
       title: "Grid Distance (G)",
       isSelected: settings.type === "chebyshev",
       icon: <MeasureChebyshevIcon />,
+    },
+    {
+      id: "alternating",
+      title: "Alternating Diagonal Distance (A)",
+      isSelected: settings.type === "alternating",
+      icon: <MeasureAlternatingIcon />,
     },
     {
       id: "euclidean",

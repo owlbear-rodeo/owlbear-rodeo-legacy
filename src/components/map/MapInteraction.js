@@ -21,6 +21,7 @@ import KeyboardContext from "../../contexts/KeyboardContext";
 
 function MapInteraction({
   map,
+  mapState,
   children,
   controls,
   selectedToolId,
@@ -32,12 +33,17 @@ function MapInteraction({
   // Map loaded taking in to account different resolutions
   const [mapLoaded, setMapLoaded] = useState(false);
   useEffect(() => {
-    if (map === null) {
+    if (
+      !map ||
+      !mapState ||
+      (map.type === "file" && !map.file && !map.resolutions) ||
+      mapState.mapId !== map.id
+    ) {
       setMapLoaded(false);
     } else if (mapImageSourceStatus === "loaded") {
       setMapLoaded(true);
     }
-  }, [mapImageSourceStatus, map]);
+  }, [mapImageSourceStatus, map, mapState]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -51,8 +57,10 @@ function MapInteraction({
   const mapImageRef = useRef();
 
   function handleResize(width, height) {
-    setStageWidth(width);
-    setStageHeight(height);
+    if (width > 0 && height > 0) {
+      setStageWidth(width);
+      setStageHeight(height);
+    }
   }
 
   const containerRef = useRef();
@@ -135,6 +143,9 @@ function MapInteraction({
     if (event.key === "q" && !disabledControls.includes("pointer")) {
       onSelectedToolChange("pointer");
     }
+    if (event.key === "n" && !disabledControls.includes("note")) {
+      onSelectedToolChange("note");
+    }
   }
 
   function handleKeyUp(event) {
@@ -153,8 +164,12 @@ function MapInteraction({
         return "move";
       case "fog":
       case "drawing":
+        return settings.settings[tool].type === "move"
+          ? "pointer"
+          : "crosshair";
       case "measure":
       case "pointer":
+      case "note":
         return "crosshair";
       default:
         return "default";

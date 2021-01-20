@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
+import * as Comlink from "comlink";
 
 import AuthContext from "./AuthContext";
 import DatabaseContext from "./DatabaseContext";
+
+import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 import { tokens as defaultTokens } from "../tokens";
 
@@ -14,6 +17,7 @@ export function TokenDataProvider({ children }) {
   const { userId } = useContext(AuthContext);
 
   const [tokens, setTokens] = useState([]);
+  const [tokensLoading, setTokensLoading] = useState(true);
 
   useEffect(() => {
     if (!userId || !database || databaseStatus === "loading") {
@@ -33,13 +37,14 @@ export function TokenDataProvider({ children }) {
     }
 
     async function loadTokens() {
-      let storedTokens = [];
-      // Use a cursor instead of toArray to prevent IPC max size error
-      await database.table("tokens").each((token) => storedTokens.push(token));
+      const worker = Comlink.wrap(new DatabaseWorker());
+      await worker.loadData("tokens");
+      const storedTokens = await worker.data;
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
       const defaultTokensWithIds = getDefaultTokes();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];
       setTokens(allTokens);
+      setTokensLoading(false);
     }
 
     loadTokens();
@@ -160,6 +165,7 @@ export function TokenDataProvider({ children }) {
     putToken,
     getToken,
     tokensById,
+    tokensLoading,
   };
 
   return (

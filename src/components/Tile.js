@@ -10,18 +10,37 @@ function Tile({
   onSelect,
   onEdit,
   onDoubleClick,
-  large,
+  size,
   canEdit,
   badges,
   editTitle,
 }) {
+  let width;
+  let margin;
+  switch (size) {
+    case "small":
+      width = "24%";
+      margin = "0.5%";
+      break;
+    case "medium":
+      width = "32%";
+      margin = `${2 / 3}%`;
+      break;
+    case "large":
+      width = "48%";
+      margin = "1%";
+      break;
+    default:
+      width = "32%";
+      margin = `${2 / 3}%`;
+  }
   return (
     <Flex
       sx={{
         position: "relative",
-        width: large ? "48%" : "32%",
+        width: width,
         height: "0",
-        paddingTop: large ? "48%" : "32%",
+        paddingTop: width,
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
@@ -30,7 +49,7 @@ function Tile({
         userSelect: "none",
       }}
       my={1}
-      mx={`${large ? 1 : 2 / 3}%`}
+      mx={margin}
       bg="muted"
       onClick={(e) => {
         e.stopPropagation();
@@ -126,7 +145,7 @@ Tile.defaultProps = {
   onSelect: () => {},
   onEdit: () => {},
   onDoubleClick: () => {},
-  large: false,
+  size: "medium",
   canEdit: false,
   badges: [],
   editTitle: "Edit",

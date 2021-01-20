@@ -8,7 +8,7 @@ const colors = {
   green: "rgb(133, 255, 102)",
   pink: "rgb(235, 138, 255)",
   teal: "rgb(68, 224, 241)",
-  black: "rgb(0, 0, 0)",
+  black: "rgb(34, 34, 34)",
   darkGray: "rgb(90, 90, 90)",
   lightGray: "rgb(179, 179, 179)",
   white: "rgb(255, 255, 255)",

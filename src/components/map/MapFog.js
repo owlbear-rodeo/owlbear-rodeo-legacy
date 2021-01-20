@@ -1,6 +1,12 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import shortid from "shortid";
-import { Group } from "react-konva";
+import { Group, Rect } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -13,6 +19,7 @@ import {
   getBrushPositionForTool,
   simplifyPoints,
   getStrokeWidth,
+  mergeShapes,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import {
@@ -21,19 +28,19 @@ import {
   Tick,
 } from "../../helpers/konva";
 import useKeyboard from "../../helpers/useKeyboard";
+import useDebounce from "../../helpers/useDebounce";
 
 function MapFog({
   map,
   shapes,
   onShapeAdd,
-  onShapeSubtract,
+  onShapeCut,
   onShapesRemove,
   onShapesEdit,
   active,
-  toolId,
   toolSettings,
   gridSize,
-  transparent,
+  editable,
 }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
@@ -45,12 +52,13 @@ function MapFog({
 
   const shouldHover =
     active &&
+    editable &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
   const [patternImage] = useImage(diagonalPattern);
 
   useEffect(() => {
-    if (!active) {
+    if (!active || !editable) {
       return;
     }
 
@@ -61,8 +69,10 @@ function MapFog({
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        toolId,
-        toolSettings,
+        map.snapToGrid &&
+          (toolSettings.type === "polygon" ||
+            toolSettings.type === "rectangle"),
+        toolSettings.useEdgeSnapping,
         gridSize,
         shapes
       );
@@ -78,8 +88,25 @@ function MapFog({
             holes: [],
           },
           strokeWidth: 0.5,
-          color: toolSettings.useFogSubtract ? "red" : "black",
-          blend: false,
+          color: toolSettings.useFogCut ? "red" : "black",
+          id: shortid.generate(),
+          visible: true,
+        });
+      }
+      if (toolSettings.type === "rectangle") {
+        setDrawingShape({
+          type: "fog",
+          data: {
+            points: [
+              brushPosition,
+              brushPosition,
+              brushPosition,
+              brushPosition,
+            ],
+            holes: [],
+          },
+          strokeWidth: 0.5,
+          color: toolSettings.useFogCut ? "red" : "black",
           id: shortid.generate(),
           visible: true,
         });
@@ -110,15 +137,35 @@ function MapFog({
           };
         });
       }
+      if (toolSettings.type === "rectangle" && isBrushDown && drawingShape) {
+        const brushPosition = getBrushPosition();
+        setDrawingShape((prevShape) => {
+          const prevPoints = prevShape.data.points;
+          return {
+            ...prevShape,
+            data: {
+              ...prevShape.data,
+              points: [
+                prevPoints[0],
+                { x: brushPosition.x, y: prevPoints[1].y },
+                brushPosition,
+                { x: prevPoints[3].x, y: brushPosition.y },
+              ],
+            },
+          };
+        });
+      }
     }
 
     function handleBrushUp() {
-      if (toolSettings.type === "brush" && drawingShape) {
-        const subtract = toolSettings.useFogSubtract;
-
+      if (
+        toolSettings.type === "brush" ||
+        (toolSettings.type === "rectangle" && drawingShape)
+      ) {
+        const cut = toolSettings.useFogCut;
         if (drawingShape.data.points.length > 1) {
           let shapeData = {};
-          if (subtract) {
+          if (cut) {
             shapeData = { id: drawingShape.id, type: drawingShape.type };
           } else {
             shapeData = { ...drawingShape, color: "black" };
@@ -135,8 +182,8 @@ function MapFog({
               ),
             },
           };
-          if (subtract) {
-            onShapeSubtract(shape);
+          if (cut) {
+            onShapeCut(shape);
           } else {
             onShapeAdd(shape);
           }
@@ -169,8 +216,7 @@ function MapFog({
                 holes: [],
               },
               strokeWidth: 0.5,
-              color: toolSettings.useFogSubtract ? "red" : "black",
-              blend: false,
+              color: toolSettings.useFogCut ? "red" : "black",
               id: shortid.generate(),
               visible: true,
             };
@@ -216,14 +262,14 @@ function MapFog({
   });
 
   const finishDrawingPolygon = useCallback(() => {
-    const subtract = toolSettings.useFogSubtract;
+    const cut = toolSettings.useFogCut;
     const data = {
       ...drawingShape.data,
       // Remove the last point as it hasn't been placed yet
       points: drawingShape.data.points.slice(0, -1),
     };
-    if (subtract) {
-      onShapeSubtract({
+    if (cut) {
+      onShapeCut({
         id: drawingShape.id,
         type: drawingShape.type,
         data: data,
@@ -233,7 +279,7 @@ function MapFog({
     }
 
     setDrawingShape(null);
-  }, [toolSettings, drawingShape, onShapeSubtract, onShapeAdd]);
+  }, [toolSettings, drawingShape, onShapeCut, onShapeAdd]);
 
   // Add keyboard shortcuts
   function handleKeyDown({ key }) {
@@ -243,30 +289,22 @@ function MapFog({
     if (key === "Escape" && drawingShape) {
       setDrawingShape(null);
     }
-    if (key === "Alt" && drawingShape) {
-      updateShapeColor();
-    }
   }
 
-  function handleKeyUp({ key }) {
-    if (key === "Alt" && drawingShape) {
-      updateShapeColor();
-    }
-  }
+  useKeyboard(handleKeyDown);
 
-  function updateShapeColor() {
+  // Update shape color when useFogCut changes
+  useEffect(() => {
     setDrawingShape((prevShape) => {
       if (!prevShape) {
         return;
       }
       return {
         ...prevShape,
-        color: toolSettings.useFogSubtract ? "black" : "red",
+        color: toolSettings.useFogCut ? "red" : "black",
       };
     });
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
+  }, [toolSettings.useFogCut]);
 
   function eraseHoveredShapes() {
     // Erase
@@ -323,14 +361,16 @@ function MapFog({
           mapWidth,
           mapHeight
         )}
-        visible={(active && !toolSettings.preview) || shape.visible}
-        opacity={transparent ? 0.5 : 1}
+        opacity={editable ? 0.5 : 1}
         fillPatternImage={patternImage}
         fillPriority={active && !shape.visible ? "pattern" : "color"}
         holes={holes}
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
-        hitFunc={transparent && !active ? () => {} : undefined}
+        hitFunc={editable && !active ? () => {} : undefined}
+        shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 0.33)"}
+        shadowOffset={{ x: 0, y: 5 }}
+        shadowBlur={10}
       />
     );
   }
@@ -366,9 +406,51 @@ function MapFog({
     );
   }
 
+  const [fogShapes, setFogShapes] = useState(shapes);
+  useEffect(() => {
+    function shapeVisible(shape) {
+      return (active && !toolSettings.preview) || shape.visible;
+    }
+
+    if (editable) {
+      setFogShapes(shapes.filter(shapeVisible));
+    } else {
+      setFogShapes(mergeShapes(shapes));
+    }
+  }, [shapes, editable, active, toolSettings]);
+
+  const fogGroupRef = useRef();
+  const debouncedStageScale = useDebounce(stageScale, 50);
+
+  useEffect(() => {
+    const fogGroup = fogGroupRef.current;
+
+    const canvas = fogGroup.getChildren()[0].getCanvas();
+    const pixelRatio = canvas.pixelRatio || 1;
+
+    // Constrain fog buffer to the map resolution
+    const fogRect = fogGroup.getClientRect();
+    const maxMapSize = map ? Math.max(map.width, map.height) : 4096; // Default to 4096
+    const maxFogSize =
+      Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
+    const maxPixelRatio = maxMapSize / maxFogSize;
+
+    fogGroup.cache({
+      pixelRatio: Math.min(
+        Math.max(debouncedStageScale * pixelRatio, 1),
+        maxPixelRatio
+      ),
+    });
+    fogGroup.getLayer().draw();
+  }, [fogShapes, editable, active, debouncedStageScale, mapWidth, map]);
+
   return (
     <Group>
-      {shapes.map(renderShape)}
+      <Group ref={fogGroupRef}>
+        {/* Render a blank shape so cache works with no fog shapes */}
+        <Rect width={1} height={1} />
+        {fogShapes.map(renderShape)}
+      </Group>
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
         toolSettings &&

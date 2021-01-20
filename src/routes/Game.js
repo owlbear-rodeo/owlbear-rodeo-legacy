@@ -5,19 +5,20 @@ import { useParams } from "react-router-dom";
 import Banner from "../components/Banner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
+import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 
 import AuthContext from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
 import DatabaseContext from "../contexts/DatabaseContext";
+import { PlayerProvider } from "../contexts/PlayerContext";
+import { PartyProvider } from "../contexts/PartyContext";
 
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
 import Session from "../network/Session";
-
-const session = new Session();
 
 function Game() {
   const { id: gameId } = useParams();
@@ -27,6 +28,16 @@ function Game() {
     setAuthenticationStatus,
   } = useContext(AuthContext);
   const { databaseStatus } = useContext(DatabaseContext);
+
+  const [session] = useState(new Session());
+  const [offline, setOffline] = useState();
+  useEffect(() => {
+    async function connect() {
+      await session.connect();
+      setOffline(session.state === "offline");
+    }
+    connect();
+  }, [session]);
 
   // Handle authentication status
   useEffect(() => {
@@ -43,7 +54,7 @@ function Game() {
       session.off("authenticationSuccess", handleAuthSuccess);
       session.off("authenticationError", handleAuthError);
     };
-  }, [setAuthenticationStatus]);
+  }, [setAuthenticationStatus, session]);
 
   // Handle session errors
   const [peerError, setPeerError] = useState(null);
@@ -59,7 +70,7 @@ function Game() {
     return () => {
       session.off("error", handlePeerError);
     };
-  }, []);
+  }, [session]);
 
   // Handle connection
   const [connected, setConnected] = useState(false);
@@ -79,55 +90,70 @@ function Game() {
       session.off("connected", handleConnected);
       session.off("disconnected", handleDisconnected);
     };
-  }, []);
+  }, [session]);
 
   // Join game
   useEffect(() => {
-    if (databaseStatus !== "loading") {
-      session.joinParty(gameId, password);
+    if (session.state === "online" && databaseStatus !== "loading") {
+      session.joinGame(gameId, password);
     }
-  }, [gameId, password, databaseStatus]);
+  }, [gameId, password, databaseStatus, session, offline]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
   const mapStageRef = useRef();
 
   return (
-    <MapStageProvider value={mapStageRef}>
-      <Flex sx={{ flexDirection: "column", height: "100%" }}>
-        <Flex
-          sx={{
-            justifyContent: "space-between",
-            flexGrow: 1,
-            height: "100%",
-          }}
-        >
-          <NetworkedParty session={session} gameId={gameId} />
-          <NetworkedMapAndTokens session={session} />
-        </Flex>
-      </Flex>
-      <Banner isOpen={!!peerError} onRequestClose={() => setPeerError(null)}>
-        <Box p={1}>
-          <Text as="p" variant="body2">
-            {peerError} See <Link to="/faq#connection">FAQ</Link> for more
-            information.
-          </Text>
-        </Box>
-      </Banner>
-      <Banner
-        isOpen={!connected && authenticationStatus === "authenticated"}
-        onRequestClose={() => {}}
-        allowClose={false}
-      >
-        <Box p={1}>
-          <Text as="p" variant="body2">
-            Disconnected. Attempting to reconnect...
-          </Text>
-        </Box>
-      </Banner>
-      <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
-      {authenticationStatus === "unknown" && <LoadingOverlay />}
-    </MapStageProvider>
+    <PlayerProvider session={session}>
+      <PartyProvider session={session}>
+        <MapStageProvider value={mapStageRef}>
+          <Flex sx={{ flexDirection: "column", height: "100%" }}>
+            <Flex
+              sx={{
+                justifyContent: "space-between",
+                flexGrow: 1,
+                height: "100%",
+              }}
+            >
+              <NetworkedParty session={session} gameId={gameId} />
+              <NetworkedMapAndTokens session={session} />
+            </Flex>
+          </Flex>
+          <Banner
+            isOpen={!!peerError}
+            onRequestClose={() => setPeerError(null)}
+          >
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                {peerError} See <Link to="/faq#connection">FAQ</Link> for more
+                information.
+              </Text>
+            </Box>
+          </Banner>
+          <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                Unable to connect to game, refresh to reconnect.
+              </Text>
+            </Box>
+          </Banner>
+          <Banner
+            isOpen={!connected && authenticationStatus === "authenticated"}
+            onRequestClose={() => {}}
+            allowClose={false}
+          >
+            <Box p={1}>
+              <Text as="p" variant="body2">
+                Disconnected. Attempting to reconnect...
+              </Text>
+            </Box>
+          </Banner>
+          <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
+          {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
+          <MapLoadingOverlay />
+        </MapStageProvider>
+      </PartyProvider>
+    </PlayerProvider>
   );
 }
 

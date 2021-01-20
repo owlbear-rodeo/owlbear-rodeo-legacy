@@ -11,7 +11,7 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.css";
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn:
       "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
@@ -19,10 +19,12 @@ if (process.env.NODE_ENV === "production") {
     // Ignore resize error as it is triggered by going fullscreen on slower computers
     // Ignore quota error
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
+    // Ignore LastPass extension text error
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "QuotaExceededError",
       "XDR encoding failure",
+      "Assertion failed: Input argument is not an HTMLInputElement",
     ],
   });
 }

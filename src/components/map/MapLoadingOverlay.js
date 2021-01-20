@@ -38,10 +38,10 @@ function MapLoadingOverlay() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          left: "8px",
-          bottom: "8px",
+          top: 0,
+          left: 0,
+          right: 0,
           flexDirection: "column",
-          borderRadius: "28px",
           zIndex: 2,
         }}
         bg="overlay"
@@ -50,8 +50,9 @@ function MapLoadingOverlay() {
           ref={progressBarRef}
           max={1}
           value={0}
-          m={2}
-          sx={{ width: "32px" }}
+          m={0}
+          sx={{ width: "100%", borderRadius: 0, height: "4px" }}
+          color="primary"
         />
       </Box>
     )

@@ -9,6 +9,7 @@ import MapDataContext from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
 import { getMapDefaultInset } from "../helpers/map";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
 function EditMapModal({ isOpen, onDone, map, mapState }) {
   const { updateMap, updateMapState } = useContext(MapDataContext);
@@ -98,11 +99,13 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
 
   const [showMoreSettings, setShowMoreSettings] = useState(true);
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <Flex
         sx={{

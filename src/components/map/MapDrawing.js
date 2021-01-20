@@ -23,7 +23,6 @@ function MapDrawing({
   onShapeAdd,
   onShapesRemove,
   active,
-  toolId,
   toolSettings,
   gridSize,
 }) {
@@ -35,7 +34,7 @@ function MapDrawing({
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [erasingShapes, setErasingShapes] = useState([]);
 
-  const shouldHover = toolSettings.type === "erase";
+  const shouldHover = toolSettings.type === "erase" && active;
   const isBrush =
     toolSettings.type === "brush" || toolSettings.type === "paint";
   const isShape =
@@ -55,8 +54,8 @@ function MapDrawing({
       return getBrushPositionForTool(
         map,
         getRelativePointerPositionNormalized(mapImage),
-        toolId,
-        toolSettings,
+        map.snapToGrid && isShape,
+        false,
         gridSize,
         shapes
       );

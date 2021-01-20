@@ -8,6 +8,7 @@ import TokenPreview from "../components/token/TokenPreview";
 import TokenDataContext from "../contexts/TokenDataContext";
 
 import { isEmpty } from "../helpers/shared";
+import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
 function EditTokenModal({ isOpen, onDone, token }) {
   const { updateToken } = useContext(TokenDataContext);
@@ -46,12 +47,14 @@ function EditTokenModal({ isOpen, onDone, token }) {
     ...tokenSettingChanges,
   };
 
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
       style={{
-        maxWidth: "542px",
+        maxWidth: layout.modalSize,
         width: "calc(100% - 16px)",
       }}
     >

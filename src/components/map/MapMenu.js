@@ -22,32 +22,28 @@ function MapMenu({
 
   useEffect(() => {
     // Close modal if interacting with any other element
-    function handlePointerDown(event) {
+    function handleInteraction(event) {
       const path = event.composedPath();
       if (
         !path.includes(modalContentNode) &&
-        !(excludeNode && path.includes(excludeNode))
+        !(excludeNode && path.includes(excludeNode)) &&
+        !(event.target instanceof HTMLTextAreaElement)
       ) {
         onRequestClose();
-        document.body.removeEventListener("pointerdown", handlePointerDown);
+        document.body.removeEventListener("pointerdown", handleInteraction);
+        document.body.removeEventListener("wheel", handleInteraction);
       }
     }
 
     if (modalContentNode) {
-      document.body.addEventListener("pointerdown", handlePointerDown);
+      document.body.addEventListener("pointerdown", handleInteraction);
       // Check for wheel event to close modal as well
-      document.body.addEventListener(
-        "wheel",
-        () => {
-          onRequestClose();
-        },
-        { once: true }
-      );
+      document.body.addEventListener("wheel", handleInteraction);
     }
 
     return () => {
       if (modalContentNode) {
-        document.body.removeEventListener("pointerdown", handlePointerDown);
+        document.body.removeEventListener("pointerdown", handleInteraction);
       }
     };
   }, [modalContentNode, excludeNode, onRequestClose]);

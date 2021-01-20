@@ -1,9 +1,11 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useContext, useRef } from "react";
 import { Box, Label, Input, Button, Flex, Checkbox } from "theme-ui";
 import { useHistory } from "react-router-dom";
 import shortid from "shortid";
 
 import AuthContext from "../contexts/AuthContext";
+
+import useSetting from "../helpers/useSetting";
 
 import Modal from "../components/Modal";
 
@@ -15,7 +17,7 @@ function StartModal({ isOpen, onRequestClose }) {
     setPassword(event.target.value);
   }
 
-  const [usePassword, setUsePassword] = useState(true);
+  const [usePassword, setUsePassword] = useSetting("game.usePassword");
   function handleUsePasswordChange(event) {
     setUsePassword(event.target.checked);
   }
@@ -49,7 +51,7 @@ function StartModal({ isOpen, onRequestClose }) {
         m={2}
       >
         <Box as="form" onSubmit={handleSubmit}>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Game Password</Label>
           <Input
             my={1}
             id="password"

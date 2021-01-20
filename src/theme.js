@@ -40,6 +40,7 @@ const theme = {
   },
   lineHeights: {
     body: 1.3,
+    body2: 1.5,
     display: 1.1,
     heading: 1.25,
   },
@@ -68,6 +69,7 @@ const theme = {
       fontFamily: "body2",
       fontSize: 0,
       fontWeight: "body",
+      lineHeight: "body2",
     },
   },
   styles: {
@@ -184,6 +186,9 @@ const theme = {
       "&:disabled": {
         opacity: 0.5,
       },
+    },
+    textarea: {
+      fontFamily: "body2",
     },
   },
   buttons: {

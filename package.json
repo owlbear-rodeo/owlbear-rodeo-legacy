@@ -1,6 +1,6 @@
 {
   "name": "owlbear-rodeo",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "private": true,
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
@@ -14,6 +14,8 @@
     "@testing-library/user-event": "^12.2.2",
     "ammo.js": "kripken/ammo.js#aab297a4164779c3a9d8dc8d9da26958de3cb778",
     "case": "^1.6.3",
+    "comlink": "^4.3.0",
+    "deep-diff": "^1.0.2",
     "dexie": "^3.0.3",
     "err-code": "^2.0.3",
     "fake-indexeddb": "^3.1.2",
@@ -24,6 +26,7 @@
     "lodash.set": "^4.3.2",
     "normalize-wheel": "^1.0.1",
     "polygon-clipping": "^0.15.1",
+    "pretty-bytes": "^5.4.1",
     "raw.macro": "^0.4.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -43,7 +46,7 @@
     "simple-peer": "feross/simple-peer#694/head",
     "simplebar-react": "^2.1.0",
     "simplify-js": "^1.2.4",
-    "socket.io-client": "^2.3.0",
+    "socket.io-client": "^3.0.3",
     "source-map-explorer": "^2.4.2",
     "theme-ui": "^0.3.1",
     "use-image": "^1.0.5",
@@ -52,7 +55,7 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -70,5 +73,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "worker-loader": "^3.0.5"
   }
 }

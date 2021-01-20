@@ -11,24 +11,32 @@ import { logError } from "../helpers/logging";
  * @property {string} id - The socket id of the peer
  * @property {Connection} connection - The actual peer connection
  * @property {boolean} initiator - Is this peer the initiator of the connection
- * @property {boolean} sync - Should this connection sync other connections
+ * @property {boolean} ready - Ready for data to be sent
+ */
+
+/**
+ * @callback peerReply
+ * @param {string} id - The id of the event
+ * @param {object} data - The data to send
+ * @param {string} channel - The channel to send to
  */
 
 /**
  *
  * Handles connections to multiple peers
  *
- * Events:
- * - connect: A party member has connected
- * - data
- * - trackAdded
- * - trackRemoved
- * - disconnect: A party member has disconnected
- * - error
- * - authenticationSuccess
- * - authenticationError
- * - connected: You have connected
- * - disconnected: You have disconnected
+ * @fires Session#peerConnect
+ * @fires Session#peerData
+ * @fires Session#peerTrackAdded
+ * @fires Session#peerTrackRemoved
+ * @fires Session#peerDisconnect
+ * @fires Session#peerError
+ * @fires Session#authenticationSuccess
+ * @fires Session#authenticationError
+ * @fires Session#connected
+ * @fires Session#disconnected
+ * @fires Session#playerJoined
+ * @fires Session#playerLeft
  */
 class Session extends EventEmitter {
   /**
@@ -45,95 +53,160 @@ class Session extends EventEmitter {
    */
   peers;
 
+  /**
+   * The state of the session
+   *
+   * @type {('unknown'|'online'|'offline')}
+   */
+  state;
+
   get id() {
-    return this.socket.id;
+    return this.socket && this.socket.id;
   }
 
   _iceServers;
 
   // Store party id and password for reconnect
-  _partyId;
+  _gameId;
   _password;
 
   constructor() {
     super();
-    this.socket = io(process.env.REACT_APP_BROKER_URL);
-
-    this.socket.on(
-      "party member joined",
-      this._handlePartyMemberJoined.bind(this)
-    );
-    this.socket.on("party member left", this._handlePartyMemberLeft.bind(this));
-    this.socket.on("joined party", this._handleJoinedParty.bind(this));
-    this.socket.on("signal", this._handleSignal.bind(this));
-    this.socket.on("auth error", this._handleAuthError.bind(this));
-    this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
-    this.socket.on("reconnect", this._handleSocketReconnect.bind(this));
-
     this.peers = {};
-
+    this.state = "unknown";
     // Signal connected peers of a closure on refresh
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
   }
 
   /**
-   * Send data to all connected peers
+   * Connect to the websocket
+   */
+  async connect() {
+    try {
+      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      if (!response.ok) {
+        throw Error("Unable to fetch ICE servers");
+      }
+      const data = await response.json();
+      this._iceServers = data.iceServers;
+
+      this.socket = io(process.env.REACT_APP_BROKER_URL, {
+        withCredentials: true,
+      });
+
+      this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
+      this.socket.on("player_left", this._handlePlayerLeft.bind(this));
+      this.socket.on("joined_game", this._handleJoinedGame.bind(this));
+      this.socket.on("signal", this._handleSignal.bind(this));
+      this.socket.on("auth_error", this._handleAuthError.bind(this));
+      this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
+      this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
+
+      this.state = "online";
+    } catch (error) {
+      logError(error);
+      this.state = "offline";
+    }
+  }
+
+  /**
+   * Send data to a single peer
    *
-   * @param {string} id - the id of the event to send
+   * @param {string} sessionId - The socket id of the player to send to
+   * @param {string} eventId - The id of the event to send
    * @param {object} data
    * @param {string} channel
    */
-  send(id, data, channel) {
-    for (let peer of Object.values(this.peers)) {
-      peer.connection.send({ id, data }, channel);
+  sendTo(sessionId, eventId, data, channel) {
+    if (!(sessionId in this.peers)) {
+      this._addPeer(sessionId, true);
+    }
+
+    if (!this.peers[sessionId].ready) {
+      this.peers[sessionId].connection.once("connect", () => {
+        this.peers[sessionId].connection.sendObject(
+          { id: eventId, data },
+          channel
+        );
+      });
+    } else {
+      this.peers[sessionId].connection.sendObject(
+        { id: eventId, data },
+        channel
+      );
+    }
+  }
+
+  /**
+   * Start streaming to a peer
+   *
+   * @param {string} sessionId - The socket id of the player to stream to
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  startStreamTo(sessionId, track, stream) {
+    if (!(sessionId in this.peers)) {
+      this._addPeer(sessionId, true);
+    }
+
+    if (!this.peers[sessionId].ready) {
+      this.peers[sessionId].connection.once("connect", () => {
+        this.peers[sessionId].connection.addTrack(track, stream);
+      });
+    } else {
+      this.peers[sessionId].connection.addTrack(track, stream);
+    }
+  }
+
+  /**
+   * End streaming to a peer
+   *
+   * @param {string} sessionId - The socket id of the player to stream to
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  endStreamTo(sessionId, track, stream) {
+    if (sessionId in this.peers) {
+      this.peers[sessionId].connection.removeTrack(track, stream);
     }
   }
 
   /**
    * Join a party
    *
-   * @param {string} partyId - the id of the party to join
+   * @param {string} gameId - the id of the party to join
    * @param {string} password - the password of the party
    */
-  async joinParty(partyId, password) {
-    if (typeof partyId !== "string" || typeof password !== "string") {
+  async joinGame(gameId, password) {
+    if (typeof gameId !== "string" || typeof password !== "string") {
       console.error(
-        "Unable to join party: invalid party ID or password",
-        partyId,
+        "Unable to join game: invalid game ID or password",
+        gameId,
         password
       );
-      this.emit("disconnected");
       return;
     }
 
-    this._partyId = partyId;
+    this._gameId = gameId;
     this._password = password;
-    try {
-      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
-      const data = await response.json();
-      this._iceServers = data.iceServers;
-      this.socket.emit("join party", partyId, password);
-    } catch (error) {
-      logError(error);
-      this.emit("disconnected");
-    }
+    this.socket.emit("join_game", gameId, password);
   }
 
-  _addPeer(id, initiator, sync) {
+  _addPeer(id, initiator) {
     try {
       const connection = new Connection({
         initiator,
         trickle: true,
         config: { iceServers: this._iceServers },
       });
-      if (initiator) {
-        connection.createDataChannel("map", { iceServers: this._iceServers });
-        connection.createDataChannel("token", { iceServers: this._iceServers });
-      }
-      const peer = { id, connection, initiator, sync };
+
+      // Up max listeners to 100 to account for up to 100 tokens on load
+      connection.setMaxListeners && connection.setMaxListeners(100);
+
+      const peer = { id, connection, initiator, ready: false };
 
       function sendPeer(id, data, channel) {
-        peer.connection.send({ id, data }, channel);
+        peer.connection.sendObject({ id, data }, channel);
       }
 
       function handleSignal(signal) {
@@ -141,18 +214,32 @@ class Session extends EventEmitter {
       }
 
       function handleConnect() {
-        this.emit("connect", { peer, reply: sendPeer });
-        if (peer.sync) {
-          peer.connection.send({ id: "sync" });
+        if (peer.id in this.peers) {
+          this.peers[peer.id].ready = true;
         }
+        /**
+         * Peer Connect Event - A peer has connected
+         *
+         * @event Session#peerConnect
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {peerReply} reply
+         */
+        this.emit("peerConnect", { peer, reply: sendPeer });
       }
 
       function handleDataComplete(data) {
-        if (data.id === "close") {
-          // Close connection when signaled to close
-          peer.connection.destroy();
-        }
-        this.emit("data", {
+        /**
+         * Peer Data Event - Data received by a peer
+         *
+         * @event Session#peerData
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {string} id
+         * @property {object} data
+         * @property {peerReply} reply
+         */
+        this.emit("peerData", {
           peer,
           id: data.id,
           data: data.data,
@@ -161,18 +248,49 @@ class Session extends EventEmitter {
       }
 
       function handleDataProgress({ id, count, total }) {
-        this.emit("dataProgress", { peer, id, count, total, reply: sendPeer });
+        this.emit("peerDataProgress", {
+          peer,
+          id,
+          count,
+          total,
+          reply: sendPeer,
+        });
       }
 
       function handleTrack(track, stream) {
-        this.emit("trackAdded", { peer, track, stream });
+        /**
+         * Peer Track Added Event - A `MediaStreamTrack` was added by a peer
+         *
+         * @event Session#peerTrackAdded
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {MediaStreamTrack} track
+         * @property {MediaStream} stream
+         */
+        this.emit("peerTrackAdded", { peer, track, stream });
         track.addEventListener("mute", () => {
-          this.emit("trackRemoved", { peer, track, stream });
+          /**
+           * Peer Track Removed Event - A `MediaStreamTrack` was removed by a peer
+           *
+           * @event Session#peerTrackRemoved
+           * @type {object}
+           * @property {SessionPeer} peer
+           * @property {MediaStreamTrack} track
+           * @property {MediaStream} stream
+           */
+          this.emit("peerTrackRemoved", { peer, track, stream });
         });
       }
 
       function handleClose() {
-        this.emit("disconnect", { peer });
+        /**
+         * Peer Disconnect Event - A peer has disconnected
+         *
+         * @event Session#peerDisconnect
+         * @type {object}
+         * @property {SessionPeer} peer
+         */
+        this.emit("peerDisconnect", { peer });
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
@@ -180,8 +298,15 @@ class Session extends EventEmitter {
       }
 
       function handleError(error) {
-        console.error(error);
-        this.emit("error", { peer, error });
+        /**
+         * Peer Error Event - An error occured with a peer connection
+         *
+         * @event Session#peerError
+         * @type {object}
+         * @property {SessionPeer} peer
+         * @property {Error} error
+         */
+        this.emit("peerError", { peer, error });
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
@@ -199,7 +324,7 @@ class Session extends EventEmitter {
       this.peers[id] = peer;
     } catch (error) {
       logError(error);
-      this.emit("error", { error });
+      this.emit("peerError", { error });
       this.emit("disconnected");
       for (let peer of Object.values(this.peers)) {
         peer.connection && peer.connection.destroy();
@@ -207,45 +332,74 @@ class Session extends EventEmitter {
     }
   }
 
-  _handlePartyMemberJoined(id) {
-    this._addPeer(id, false, false);
+  _handleJoinedGame() {
+    /**
+     * Authentication Success Event - Successfully authenticated when joining a game
+     *
+     * @event Session#authenticationSuccess
+     */
+    this.emit("authenticationSuccess");
+    /**
+     * Connected Event - You have connected to the game
+     *
+     * @event Session#connected
+     */
+    this.emit("connected");
   }
 
-  _handlePartyMemberLeft(id) {
+  _handlePlayerJoined(id) {
+    /**
+     * Player Joined Event - A player has joined the game
+     *
+     * @event Session#playerJoined
+     * @property {string} id
+     */
+    this.emit("playerJoined", id);
+  }
+
+  _handlePlayerLeft(id) {
+    /**
+     * Player Left Event - A player has left the game
+     *
+     * @event Session#playerLeft
+     * @property {string} id
+     */
+    this.emit("playerLeft", id);
     if (id in this.peers) {
       this.peers[id].connection.destroy();
       delete this.peers[id];
     }
   }
 
-  _handleJoinedParty(otherIds) {
-    for (let [index, id] of otherIds.entries()) {
-      // Send a sync request to the first member of the party
-      const sync = index === 0;
-      this._addPeer(id, true, sync);
-    }
-    this.emit("authenticationSuccess");
-    this.emit("connected");
-  }
-
   _handleSignal(data) {
-    const { from, signal } = JSON.parse(data);
-    if (from in this.peers) {
-      this.peers[from].connection.signal(signal);
+    const { from, signal } = data;
+    if (!(from in this.peers)) {
+      this._addPeer(from, false);
     }
+    this.peers[from].connection.signal(signal);
   }
 
   _handleAuthError() {
+    /**
+     * Authentication Error Event - Unsuccessfully authenticated when joining a game
+     *
+     * @event Session#authenticationError
+     */
     this.emit("authenticationError");
   }
 
   _handleUnload() {
     for (let peer of Object.values(this.peers)) {
-      peer.connection.send({ id: "close" });
+      peer.connection && peer.connection.destroy();
     }
   }
 
   _handleSocketDisconnect() {
+    /**
+     * Disconnected Event - You have disconnected from the party
+     *
+     * @event Session#disconnected
+     */
     this.emit("disconnected");
     for (let peer of Object.values(this.peers)) {
       peer.connection && peer.connection.destroy();
@@ -253,8 +407,8 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
-    if (this._partyId) {
-      this.joinParty(this._partyId, this._password);
+    if (this._gameId) {
+      this.joinGame(this._gameId, this._password);
     }
   }
 }

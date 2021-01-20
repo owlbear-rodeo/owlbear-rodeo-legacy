@@ -1,7 +1,7 @@
 import FakeStorage from "./FakeStorage";
 
 /**
- * An interface to a local storage back settings store with a versioning mechanism
+ * An interface to a local storage backed settings store with a versioning mechanism
  */
 class Settings {
   name;

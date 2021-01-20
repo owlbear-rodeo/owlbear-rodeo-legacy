@@ -18,6 +18,7 @@ import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 import PointerToolIcon from "../../icons/PointerToolIcon";
 import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
+import NoteToolIcon from "../../icons/NoteToolIcon";
 
 import useSetting from "../../helpers/useSetting";
 
@@ -66,8 +67,13 @@ function MapContols({
       icon: <PointerToolIcon />,
       title: "Pointer Tool (Q)",
     },
+    note: {
+      id: "note",
+      icon: <NoteToolIcon />,
+      title: "Note Tool (N)",
+    },
   };
-  const tools = ["pan", "fog", "drawing", "measure", "pointer"];
+  const tools = ["pan", "fog", "drawing", "measure", "pointer", "note"];
 
   const sections = [
     {

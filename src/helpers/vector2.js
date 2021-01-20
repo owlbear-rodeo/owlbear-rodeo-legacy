@@ -363,7 +363,7 @@ export function compare(a, b, threshold) {
  * Returns the distance between two vectors
  * @param {Vector2} a
  * @param {Vector2} b
- * @param {string} type - `chebyshev | euclidean | manhattan`
+ * @param {string} type - `chebyshev | euclidean | manhattan | alternating`
  */
 export function distance(a, b, type) {
   switch (type) {
@@ -373,6 +373,12 @@ export function distance(a, b, type) {
       return length(subtract(a, b));
     case "manhattan":
       return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    case "alternating":
+      // Alternating diagonal distance like D&D 3.5 and Pathfinder
+      const delta = abs(subtract(a, b));
+      const ma = max(delta);
+      const mi = min(delta);
+      return ma - mi + Math.floor(1.5 * mi);
     default:
       return length(subtract(a, b));
   }

@@ -8,6 +8,7 @@ import usePreventOverscroll from "../../helpers/usePreventOverscroll";
 import useStageInteraction from "../../helpers/useStageInteraction";
 import useImageCenter from "../../helpers/useImageCenter";
 import { getMapDefaultInset, getMapMaxZoom } from "../../helpers/map";
+import useResponsiveLayout from "../../helpers/useResponsiveLayout";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
@@ -104,11 +105,14 @@ function MapEditor({ map, onSettingsChange }) {
     map.grid.inset.topLeft.y !== defaultInset.topLeft.y ||
     map.grid.inset.bottomRight.x !== defaultInset.bottomRight.x ||
     map.grid.inset.bottomRight.y !== defaultInset.bottomRight.y;
+
+  const layout = useResponsiveLayout();
+
   return (
     <Box
       sx={{
         width: "100%",
-        height: "300px",
+        height: layout.screenSize === "large" ? "500px" : "300px",
         cursor: "move",
         touchAction: "none",
         outline: "none",

@@ -28,7 +28,7 @@ class GemstoneDice extends Dice {
     pbr.useMetallnessFromMetallicTextureBlue = true;
 
     pbr.subSurface.isTranslucencyEnabled = true;
-    pbr.subSurface.translucencyIntensity = 1.0;
+    pbr.subSurface.translucencyIntensity = 0.2;
     pbr.subSurface.minimumThickness = 5;
     pbr.subSurface.maximumThickness = 10;
     pbr.subSurface.tintColor = new Color3(190 / 255, 0, 220 / 255);

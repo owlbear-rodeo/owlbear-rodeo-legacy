@@ -8,7 +8,10 @@ export function KeyboardProvider({ children }) {
   useEffect(() => {
     function handleKeyDown(event) {
       // Ignore text input
-      if (event.target instanceof HTMLInputElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
       keyEmitter.emit("keyDown", event);
@@ -16,7 +19,10 @@ export function KeyboardProvider({ children }) {
 
     function handleKeyUp(event) {
       // Ignore text input
-      if (event.target instanceof HTMLInputElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
       keyEmitter.emit("keyUp", event);

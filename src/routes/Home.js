@@ -6,6 +6,9 @@ import Footer from "../components/Footer";
 
 import StartModal from "../modals/StartModal";
 import JoinModal from "../modals/JoinModal";
+import GettingStartedModal from "../modals/GettingStartedModal";
+
+import HelpIcon from "../icons/HelpIcon";
 
 import AuthContext from "../contexts/AuthContext";
 
@@ -20,6 +23,9 @@ import owlington from "../images/Owlington.png";
 function Home() {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isGettingStartedModalOpen, setIsGettingStartedModalOpen] = useState(
+    false
+  );
 
   // Reset password on visiting home
   const { setPassword } = useContext(AuthContext);
@@ -51,6 +57,18 @@ function Home() {
           Owlbear Rodeo
         </Text>
         <Image src={owlington} m={2} />
+        <Button
+          variant="secondary"
+          m={2}
+          onClick={() => setIsGettingStartedModalOpen(true)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          Getting Started <HelpIcon />
+        </Button>
         <Button m={2} onClick={() => setIsStartModalOpen(true)}>
           Start Game
         </Button>
@@ -116,6 +134,10 @@ function Home() {
         <StartModal
           isOpen={isStartModalOpen}
           onRequestClose={() => setIsStartModalOpen(false)}
+        />
+        <GettingStartedModal
+          isOpen={isGettingStartedModalOpen}
+          onRequestClose={() => setIsGettingStartedModalOpen(false)}
         />
       </Flex>
       <Footer />
