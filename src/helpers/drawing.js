@@ -208,6 +208,9 @@ export function drawActionsToShapes(actions, actionIndex) {
   let shapesById = {};
   for (let i = 0; i <= actionIndex; i++) {
     const action = actions[i];
+    if (!action) {
+      continue;
+    }
     if (action.type === "add" || action.type === "edit") {
       for (let shape of action.shapes) {
         shapesById[shape.id] = shape;
