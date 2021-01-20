@@ -370,8 +370,9 @@ function NetworkedMapAndTokens({ session }) {
 
       if (id === "mapResponse") {
         const newMap = data;
-        await putMap(newMap);
         setCurrentMap(newMap);
+        await putMap(newMap);
+        assetLoadFinish();
       }
 
       if (id === "tokenRequest") {
@@ -382,15 +383,13 @@ function NetworkedMapAndTokens({ session }) {
       if (id === "tokenResponse") {
         const newToken = data;
         await putToken(newToken);
+        assetLoadFinish();
       }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
       if (count === 1) {
         assetLoadStart();
-      }
-      if (total === count) {
-        assetLoadFinish();
       }
       assetProgressUpdate({ id, total, count });
     }
