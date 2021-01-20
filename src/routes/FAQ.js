@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, Text } from "theme-ui";
+import { Flex, Text, Box } from "theme-ui";
 import raw from "raw.macro";
 
 import Footer from "../components/Footer";
@@ -10,6 +10,7 @@ import assets from "../docs/assets";
 const database = raw("../docs/faq/database.md");
 const maps = raw("../docs/faq/maps.md");
 const audioSharing = raw("../docs/faq/audio-sharing.md");
+const general = raw("../docs/faq/general.md");
 
 function FAQ() {
   return (
@@ -32,15 +33,18 @@ function FAQ() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Frequently Asked Questions
         </Text>
-        <div id="database">
-          <Markdown source={database} assets={assets} />
-        </div>
-        <div id="maps">
+        <Box my={1} id="general">
+          <Markdown source={general} assets={assets} />
+        </Box>
+        <Box my={1} id="maps">
           <Markdown source={maps} assets={assets} />
-        </div>
-        <div id="audio-sharing">
+        </Box>
+        <Box my={1} id="audio-sharing">
           <Markdown source={audioSharing} assets={assets} />
-        </div>
+        </Box>
+        <Box my={1} id="database">
+          <Markdown source={database} assets={assets} />
+        </Box>
       </Flex>
       <Footer />
     </Flex>
