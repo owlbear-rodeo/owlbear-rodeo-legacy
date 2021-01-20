@@ -119,7 +119,9 @@ class Session extends EventEmitter {
    */
   sendTo(sessionId, eventId, data, channel) {
     if (!(sessionId in this.peers)) {
-      this._addPeer(sessionId, true);
+      if (!this._addPeer(sessionId, true)) {
+        return;
+      }
     }
 
     if (!this.peers[sessionId].ready) {
@@ -146,7 +148,9 @@ class Session extends EventEmitter {
    */
   startStreamTo(sessionId, track, stream) {
     if (!(sessionId in this.peers)) {
-      this._addPeer(sessionId, true);
+      if (!this._addPeer(sessionId, true)) {
+        return;
+      }
     }
 
     if (!this.peers[sessionId].ready) {
@@ -192,6 +196,12 @@ class Session extends EventEmitter {
     this.socket.emit("join_game", gameId, password);
   }
 
+  /**
+   * Add a new peer connection
+   * @param {string} id
+   * @param {boolean} initiator
+   * @returns {boolean} True if peer was added successfully
+   */
   _addPeer(id, initiator) {
     try {
       const connection = new Connection({
@@ -322,13 +332,15 @@ class Session extends EventEmitter {
       peer.connection.on("error", handleError.bind(this));
 
       this.peers[id] = peer;
+
+      return true;
     } catch (error) {
       logError(error);
       this.emit("peerError", { error });
-      this.emit("disconnected");
       for (let peer of Object.values(this.peers)) {
         peer.connection && peer.connection.destroy();
       }
+      return false;
     }
   }
 
@@ -374,7 +386,9 @@ class Session extends EventEmitter {
   _handleSignal(data) {
     const { from, signal } = data;
     if (!(from in this.peers)) {
-      this._addPeer(from, false);
+      if (!this._addPeer(from, false)) {
+        return;
+      }
     }
     this.peers[from].connection.signal(signal);
   }
