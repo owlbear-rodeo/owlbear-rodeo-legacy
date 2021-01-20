@@ -127,7 +127,7 @@ function SelectMapModal({
     return new Promise((resolve, reject) => {
       image.onload = async function () {
         // Find name and grid size
-        let gridSize = { x: 22, y: 22 };
+        let gridSize;
         let name = "Unknown Map";
         if (file.name) {
           if (file.name.matchAll) {
@@ -160,6 +160,10 @@ function SelectMapModal({
           name = name.trim();
           // Capitalize and remove underscores
           name = Case.capital(name);
+        }
+
+        if (!gridSize) {
+          gridSize = { x: 22, y: 22 };
         }
 
         // Create resolutions
