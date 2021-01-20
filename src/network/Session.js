@@ -124,10 +124,16 @@ class Session extends EventEmitter {
 
     if (!this.peers[sessionId].ready) {
       this.peers[sessionId].connection.once("connect", () => {
-        this.peers[sessionId].connection.send({ id: eventId, data }, channel);
+        this.peers[sessionId].connection.sendObject(
+          { id: eventId, data },
+          channel
+        );
       });
     } else {
-      this.peers[sessionId].connection.send({ id: eventId, data }, channel);
+      this.peers[sessionId].connection.sendObject(
+        { id: eventId, data },
+        channel
+      );
     }
   }
 
@@ -193,10 +199,14 @@ class Session extends EventEmitter {
         trickle: true,
         config: { iceServers: this._iceServers },
       });
+
+      // Up max listeners to 100 to account for up to 100 tokens on load
+      connection.setMaxListeners && connection.setMaxListeners(100);
+
       const peer = { id, connection, initiator, ready: false };
 
       function sendPeer(id, data, channel) {
-        peer.connection.send({ id, data }, channel);
+        peer.connection.sendObject({ id, data }, channel);
       }
 
       function handleSignal(signal) {

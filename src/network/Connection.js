@@ -55,26 +55,26 @@ class Connection extends SimplePeer {
     }
   }
 
-  // Override the send function with encoding, chunking and data channel support
-  send(data, channel) {
+  // Custom send function with encoding, chunking and data channel support
+  // Uses `write` to send the data to allow for buffer / backpressure handling
+  sendObject(object, channel) {
     try {
-      const packedData = encode(data);
+      const packedData = encode(object);
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
         const chunks = this.chunk(packedData);
         for (let chunk of chunks) {
           if (this.dataChannels[channel]) {
-            // Write to the stream to allow for buffer / backpressure handling
             this.dataChannels[channel].write(encode(chunk));
           } else {
-            super.send(encode(chunk));
+            this.write(encode(chunk));
           }
         }
         return;
       } else {
         if (this.dataChannels[channel]) {
-          this.dataChannels[channel].send(packedData);
+          this.dataChannels[channel].write(packedData);
         } else {
-          super.send(packedData);
+          this.write(packedData);
         }
       }
     } catch (error) {
