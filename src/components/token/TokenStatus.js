@@ -4,9 +4,11 @@ import { Circle, Group } from "react-konva";
 import colors from "../../helpers/colors";
 
 function TokenStatus({ tokenState, width, height }) {
+  // Ensure statuses is an array and filter empty values
+  const statuses = [...new Set((tokenState?.statuses || []).filter((s) => s))];
   return (
     <Group x={width} y={height} offsetX={width / 2} offsetY={height / 2}>
-      {tokenState.statuses.map((status, index) => (
+      {statuses.map((status, index) => (
         <Circle
           key={status}
           width={width}
