@@ -45,7 +45,7 @@ function NetworkedMapAndTokens({ session }) {
     null,
     session,
     "map_state",
-    100,
+    500,
     true,
     "mapId"
   );
@@ -53,7 +53,7 @@ function NetworkedMapAndTokens({ session }) {
     null,
     session,
     "manifest",
-    100,
+    500,
     false
   );
 
