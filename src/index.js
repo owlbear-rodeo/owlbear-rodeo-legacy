@@ -25,6 +25,7 @@ if (process.env.REACT_APP_LOGGING === "true") {
       "QuotaExceededError",
       "XDR encoding failure",
       "Assertion failed: Input argument is not an HTMLInputElement",
+      "ERR_WEBRTC_SUPPORT",
     ],
   });
 }
