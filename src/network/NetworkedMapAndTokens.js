@@ -273,6 +273,9 @@ function NetworkedMapAndTokens({ session }) {
    */
 
   async function handleMapTokenStateCreate(tokenState) {
+    if (!currentMap || !currentMapState) {
+      return;
+    }
     // If file type token send the token to the other peers
     const token = getToken(tokenState.tokenId);
     if (token && token.type === "file") {
