@@ -2,15 +2,15 @@
 
 ---
 
-### I’ve added a map to my game, why can’t my players see it? 
+### I’ve added a map to my game, why can’t my players see it?
 
 This could be because it’s taking a while to upload. Ensure that your players can see a loading bar at the top of the site. Owlbear Rodeo will do its best to load a lower quality map, before continuing to load in higher quality. See 'How big can my maps be?' in our faqs.
 
-If your players do not see a loading bar at the top of their screen ensure that you don't have an extension that is blocking WebRTC connections. Some VPN extensions can causes this.
+If your players do not see a loading bar at the top of their screen ensure that you don't have an extension that is blocking WebRTC connections. Some VPN extensions can cause this.
 
 ### Why do some of my tokens have a question mark on them?
 
-This means that the token hasn’t loaded in just yet. If they still haven’t loaded in after some time, try giving the page a refresh. You should see load progress on the loading bar at the top of the website. 
+This means that the token hasn’t loaded in just yet. If they still haven’t loaded in after some time, try giving the page a refresh. You should see load progress on the loading bar at the top of the website.
 
 ### How big can my maps be?
 
@@ -18,7 +18,7 @@ Owlbear Rodeo doesn't impose a limit on map sizes but keep in mind the larger th
 
 ### Where are my maps stored?
 
-Your maps are stored on your local device. This means that clearing your site data will delete your maps, so please only do so if you have no other options. 
+Your maps are stored on your local device. This means that clearing your site data will delete your maps, so please only do so if you have no other options.
 
 ### Why am I being prompted for a password when I didn't set one?
 
@@ -30,4 +30,4 @@ We encourage users to create games every 24hrs. Any maps you have added or made 
 
 ### I can join my game but the spinner is constantly loading, why?
 
-This could mean that the service is currently down. Please visit us on Twitter or Reddit and let us know. 
+This could mean that the service is currently down. Please visit us on Twitter or Reddit and let us know.

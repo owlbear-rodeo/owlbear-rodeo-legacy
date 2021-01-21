@@ -50,7 +50,7 @@ function NetworkedMapAndTokens({ session }) {
     "mapId"
   );
   const [assetManifest, setAssetManifest] = useNetworkedState(
-    [],
+    null,
     session,
     "manifest",
     100,
@@ -94,15 +94,17 @@ function NetworkedMapAndTokens({ session }) {
 
   function addAssetIfNeeded(asset) {
     // Asset needs updating
-    const exists = assetManifest.some((oldAsset) =>
+    const exists = assetManifest?.some((oldAsset) =>
       compareAssets(oldAsset, asset)
     );
-    const needsUpdate = assetManifest.some((oldAsset) =>
+    const needsUpdate = assetManifest?.some((oldAsset) =>
       assetNeedsUpdate(oldAsset, asset)
     );
     if (!exists || needsUpdate) {
       setAssetManifest((prevAssets) => [
-        ...prevAssets.filter((prevAsset) => !compareAssets(prevAsset, asset)),
+        ...(prevAssets || []).filter(
+          (prevAsset) => !compareAssets(prevAsset, asset)
+        ),
         asset,
       ]);
     }
@@ -273,6 +275,9 @@ function NetworkedMapAndTokens({ session }) {
    */
 
   async function handleMapTokenStateCreate(tokenState) {
+    if (!currentMap || !currentMapState) {
+      return;
+    }
     // If file type token send the token to the other peers
     const token = getToken(tokenState.tokenId);
     if (token && token.type === "file") {
@@ -283,7 +288,7 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   function handleMapTokenStateChange(change) {
-    if (currentMapState === null) {
+    if (!currentMapState) {
       return;
     }
     setCurrentMapState((prevMapState) => ({

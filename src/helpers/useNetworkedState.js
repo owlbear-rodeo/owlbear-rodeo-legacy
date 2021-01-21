@@ -88,7 +88,7 @@ function useNetworkedState(
 
     function handleSocketUpdateEvent(update) {
       _setState((prevState) => {
-        if (prevState[partialUpdatesKey] === update.id) {
+        if (prevState && prevState[partialUpdatesKey] === update.id) {
           let newState = { ...prevState };
           applyChanges(newState, update.changes);
           lastSyncedStateRef.current = newState;

@@ -66,9 +66,9 @@ function Game() {
         setPeerError("Unable to connect to party.");
       }
     }
-    session.on("error", handlePeerError);
+    session.on("peerError", handlePeerError);
     return () => {
-      session.off("error", handlePeerError);
+      session.off("peerError", handlePeerError);
     };
   }, [session]);
 

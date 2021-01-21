@@ -11,6 +11,7 @@ const database = raw("../docs/faq/database.md");
 const maps = raw("../docs/faq/maps.md");
 const audioSharing = raw("../docs/faq/audio-sharing.md");
 const general = raw("../docs/faq/general.md");
+const connection = raw("../docs/faq/connection.md");
 
 function FAQ() {
   return (
@@ -44,6 +45,9 @@ function FAQ() {
         </Box>
         <Box my={1} id="database">
           <Markdown source={database} assets={assets} />
+        </Box>
+        <Box my={1} id="connection">
+          <Markdown source={connection} assets={assets} />
         </Box>
       </Flex>
       <Footer />
