@@ -113,7 +113,7 @@ function NoteMenu({
       left={`${menuLeft}px`}
       onModalContent={handleModalContent}
     >
-      <Box sx={{ width: "156px" }} p={1}>
+      <Box sx={{ width: "156px", overflow: "hidden" }} p={1}>
         <Flex
           as="form"
           onSubmit={(e) => {
