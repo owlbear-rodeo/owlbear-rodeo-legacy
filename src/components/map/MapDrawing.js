@@ -7,13 +7,12 @@ import MapStageContext from "../../contexts/MapStageContext";
 
 import { compare as comparePoints } from "../../helpers/vector2";
 import {
-  getBrushPositionForTool,
+  getBrushPosition,
   getDefaultShapeData,
   getUpdatedShapeData,
   simplifyPoints,
   getStrokeWidth,
 } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 
 import colors from "../../helpers/colors";
 
@@ -49,20 +48,13 @@ function MapDrawing({
     }
     const mapStage = mapStageRef.current;
 
-    function getBrushPosition() {
-      const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid && isShape,
-        false,
-        gridSize,
-        shapes
-      );
-    }
-
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getBrushPosition(
+        map,
+        mapStage,
+        map.snapToGrid && isShape,
+        gridSize
+      );
       const commonShapeData = {
         color: toolSettings.color,
         blend: toolSettings.useBlending,
@@ -89,7 +81,12 @@ function MapDrawing({
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getBrushPosition(
+        map,
+        mapStage,
+        map.snapToGrid && isShape,
+        gridSize
+      );
       if (isBrushDown && drawingShape) {
         if (isBrush) {
           setDrawingShape((prevShape) => {

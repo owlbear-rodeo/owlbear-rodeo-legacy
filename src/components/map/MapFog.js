@@ -16,17 +16,13 @@ import MapStageContext from "../../contexts/MapStageContext";
 
 import { compare as comparePoints } from "../../helpers/vector2";
 import {
-  getBrushPositionForTool,
+  getFogBrushPosition,
   simplifyPoints,
   getStrokeWidth,
   mergeShapes,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
-import {
-  HoleyLine,
-  getRelativePointerPositionNormalized,
-  Tick,
-} from "../../helpers/konva";
+import { HoleyLine, Tick } from "../../helpers/konva";
 import useKeyboard from "../../helpers/useKeyboard";
 import useDebounce from "../../helpers/useDebounce";
 
@@ -64,22 +60,19 @@ function MapFog({
 
     const mapStage = mapStageRef.current;
 
-    function getBrushPosition() {
-      const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid &&
-          (toolSettings.type === "polygon" ||
-            toolSettings.type === "rectangle"),
-        toolSettings.useEdgeSnapping,
-        gridSize,
-        shapes
-      );
-    }
+    const useGridSnapping =
+      map.snapToGrid &&
+      (toolSettings.type === "polygon" || toolSettings.type === "rectangle");
 
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getFogBrushPosition(
+        map,
+        mapStage,
+        useGridSnapping,
+        gridSize,
+        toolSettings.useEdgeSnapping,
+        shapes
+      );
       if (toolSettings.type === "brush") {
         setDrawingShape({
           type: "fog",
@@ -116,7 +109,14 @@ function MapFog({
 
     function handleBrushMove() {
       if (toolSettings.type === "brush" && isBrushDown && drawingShape) {
-        const brushPosition = getBrushPosition();
+        const brushPosition = getFogBrushPosition(
+          map,
+          mapStage,
+          useGridSnapping,
+          gridSize,
+          toolSettings.useEdgeSnapping,
+          shapes
+        );
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
           if (
@@ -138,9 +138,17 @@ function MapFog({
         });
       }
       if (toolSettings.type === "rectangle" && isBrushDown && drawingShape) {
-        const brushPosition = getBrushPosition();
+        const prevPoints = drawingShape.data.points;
+        const brushPosition = getFogBrushPosition(
+          map,
+          mapStage,
+          useGridSnapping,
+          gridSize,
+          toolSettings.useEdgeSnapping,
+          shapes,
+          prevPoints
+        );
         setDrawingShape((prevShape) => {
-          const prevPoints = prevShape.data.points;
           return {
             ...prevShape,
             data: {
@@ -198,7 +206,14 @@ function MapFog({
 
     function handlePolygonClick() {
       if (toolSettings.type === "polygon") {
-        const brushPosition = getBrushPosition();
+        const brushPosition = getFogBrushPosition(
+          map,
+          mapStage,
+          useGridSnapping,
+          gridSize,
+          toolSettings.useEdgeSnapping,
+          shapes
+        );
         setDrawingShape((prevDrawingShape) => {
           if (prevDrawingShape) {
             return {
@@ -227,7 +242,14 @@ function MapFog({
 
     function handlePolygonMove() {
       if (toolSettings.type === "polygon" && drawingShape) {
-        const brushPosition = getBrushPosition();
+        const brushPosition = getFogBrushPosition(
+          map,
+          mapStage,
+          useGridSnapping,
+          gridSize,
+          toolSettings.useEdgeSnapping,
+          shapes
+        );
         setDrawingShape((prevShape) => {
           if (!prevShape) {
             return;
@@ -350,7 +372,7 @@ function MapFog({
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
         points={points}
-        stroke={colors[shape.color] || shape.color}
+        stroke={editable ? colors.white : colors[shape.color] || shape.color}
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
@@ -425,22 +447,27 @@ function MapFog({
   useEffect(() => {
     const fogGroup = fogGroupRef.current;
 
-    const canvas = fogGroup.getChildren()[0].getCanvas();
-    const pixelRatio = canvas.pixelRatio || 1;
+    if (!editable) {
+      const canvas = fogGroup.getChildren()[0].getCanvas();
+      const pixelRatio = canvas.pixelRatio || 1;
 
-    // Constrain fog buffer to the map resolution
-    const fogRect = fogGroup.getClientRect();
-    const maxMapSize = map ? Math.max(map.width, map.height) : 4096; // Default to 4096
-    const maxFogSize =
-      Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
-    const maxPixelRatio = maxMapSize / maxFogSize;
+      // Constrain fog buffer to the map resolution
+      const fogRect = fogGroup.getClientRect();
+      const maxMapSize = map ? Math.max(map.width, map.height) : 4096; // Default to 4096
+      const maxFogSize =
+        Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
+      const maxPixelRatio = maxMapSize / maxFogSize;
 
-    fogGroup.cache({
-      pixelRatio: Math.min(
-        Math.max(debouncedStageScale * pixelRatio, 1),
-        maxPixelRatio
-      ),
-    });
+      fogGroup.cache({
+        pixelRatio: Math.min(
+          Math.max(debouncedStageScale * pixelRatio, 1),
+          maxPixelRatio
+        ),
+      });
+    } else {
+      fogGroup.clearCache();
+    }
+
     fogGroup.getLayer().draw();
   }, [fogShapes, editable, active, debouncedStageScale, mapWidth, map]);
 

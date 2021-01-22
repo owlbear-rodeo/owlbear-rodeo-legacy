@@ -5,7 +5,7 @@ import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 
 import {
-  getBrushPositionForTool,
+  getBrushPosition,
   getDefaultShapeData,
   getUpdatedShapeData,
   getStrokeWidth,
@@ -48,20 +48,13 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
     }
     const mapStage = mapStageRef.current;
 
-    function getBrushPosition() {
-      const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid,
-        false,
-        gridSize,
-        []
-      );
-    }
-
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getBrushPosition(
+        map,
+        mapStage,
+        map.snapToGrid,
+        gridSize
+      );
       const { points } = getDefaultShapeData("line", brushPosition);
       const length = 0;
       setDrawingShapeData({ length, points });
@@ -69,7 +62,12 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getBrushPosition(
+        map,
+        mapStage,
+        map.snapToGrid,
+        gridSize
+      );
       if (isBrushDown && drawingShapeData) {
         const { points } = getUpdatedShapeData(
           "line",

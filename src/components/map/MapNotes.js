@@ -6,7 +6,7 @@ import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
-import { getBrushPositionForTool } from "../../helpers/drawing";
+import { getBrushPosition } from "../../helpers/drawing";
 import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 
 import Note from "../note/Note";
@@ -39,20 +39,13 @@ function MapNotes({
     }
     const mapStage = mapStageRef.current;
 
-    function getBrushPosition() {
-      const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid,
-        false,
-        gridSize,
-        []
-      );
-    }
-
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
+      const brushPosition = getBrushPosition(
+        map,
+        mapStage,
+        map.snapToGrid,
+        gridSize
+      );
       setNoteData({
         x: brushPosition.x,
         y: brushPosition.y,
@@ -70,7 +63,12 @@ function MapNotes({
 
     function handleBrushMove() {
       if (noteData) {
-        const brushPosition = getBrushPosition();
+        const brushPosition = getBrushPosition(
+          map,
+          mapStage,
+          map.snapToGrid,
+          gridSize
+        );
         setNoteData((prev) => ({
           ...prev,
           x: brushPosition.x,

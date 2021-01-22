@@ -3,17 +3,12 @@ import polygonClipping from "polygon-clipping";
 
 import * as Vector2 from "./vector2";
 import { toDegrees, omit } from "./shared";
+import { getRelativePointerPositionNormalized } from "./konva";
 
 const snappingThreshold = 1 / 5;
-export function getBrushPositionForTool(
-  map,
-  brushPosition,
-  useGridSnappning,
-  useEdgeSnapping,
-  gridSize,
-  shapes
-) {
-  let position = brushPosition;
+export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
+  const mapImage = mapStage.findOne("#mapImage");
+  let position = getRelativePointerPositionNormalized(mapImage);
 
   if (useGridSnappning) {
     // Snap to corners of grid
@@ -48,53 +43,72 @@ export function getBrushPositionForTool(
       position = centerSnap;
     }
   }
+  return position;
+}
 
+export function getFogBrushPosition(
+  map,
+  mapStage,
+  useGridSnappning,
+  gridSize,
+  useEdgeSnapping,
+  fogShapes,
+  rectPoints
+) {
+  let position = getBrushPosition(map, mapStage, useGridSnappning, gridSize);
   if (useEdgeSnapping) {
     const minGrid = Vector2.min(gridSize);
     let closestDistance = Number.MAX_VALUE;
     let closestPosition = position;
     // Find the closest point on all fog shapes
-    for (let shape of shapes) {
-      if (shape.type === "fog") {
-        // Include shape points and holes
-        let pointArray = [shape.data.points, ...shape.data.holes];
+    for (let shape of fogShapes) {
+      // Include shape points and holes
+      let pointArray = [shape.data.points, ...shape.data.holes];
 
-        // Check whether the position is in the shape but not any holes
-        let isInShape = Vector2.pointInPolygon(position, shape.data.points);
-        if (shape.data.holes.length > 0) {
-          for (let hole of shape.data.holes) {
-            if (Vector2.pointInPolygon(position, hole)) {
-              isInShape = false;
+      for (let points of pointArray) {
+        // Find the closest point to each line of the shape
+        for (let i = 0; i < points.length; i++) {
+          const a = points[i];
+          // Wrap around points to the start to account for closed shape
+          const b = points[(i + 1) % points.length];
+
+          let {
+            distance: distanceToLine,
+            point: pointOnLine,
+          } = Vector2.distanceToLine(position, a, b);
+
+          if (rectPoints) {
+            const { distance: d1, point: p1 } = Vector2.distanceToLine(
+              { x: position.x, y: rectPoints[1].y },
+              a,
+              b
+            );
+            const { distance: d3, point: p3 } = Vector2.distanceToLine(
+              { x: rectPoints[3].x, y: position.y },
+              a,
+              b
+            );
+
+            if (d1 < minGrid * snappingThreshold) {
+              distanceToLine = d1;
+              pointOnLine.x = p1.x;
+            }
+            if (d3 < minGrid * snappingThreshold) {
+              distanceToLine = d3;
+              pointOnLine.y = p3.y;
             }
           }
-        }
 
-        for (let points of pointArray) {
-          // Find the closest point to each line of the shape
-          for (let i = 0; i < points.length; i++) {
-            const a = points[i];
-            // Wrap around points to the start to account for closed shape
-            const b = points[(i + 1) % points.length];
-
-            const {
-              distance: distanceToLine,
-              point: pointOnLine,
-            } = Vector2.distanceToLine(position, a, b);
-            const isCloseToShape = distanceToLine < minGrid * snappingThreshold;
-            if (
-              (isInShape || isCloseToShape) &&
-              distanceToLine < closestDistance
-            ) {
-              closestPosition = pointOnLine;
-              closestDistance = distanceToLine;
-            }
+          const isCloseToShape = distanceToLine < minGrid * snappingThreshold;
+          if (isCloseToShape && distanceToLine < closestDistance) {
+            closestPosition = pointOnLine;
+            closestDistance = distanceToLine;
           }
         }
       }
     }
     position = closestPosition;
   }
-
   return position;
 }
 
