@@ -428,19 +428,19 @@ function NetworkedMapAndTokens({ session }) {
   const canChangeMap = !isLoading;
 
   const canEditMapDrawing =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("drawing") ||
       currentMap.owner === userId);
 
   const canEditFogDrawing =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("fog") || currentMap.owner === userId);
 
   const canEditNotes =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("notes") ||
       currentMap.owner === userId);
 
@@ -448,8 +448,8 @@ function NetworkedMapAndTokens({ session }) {
   // If we have a map and state and have the token permission disabled
   // and are not the map owner
   if (
-    currentMapState !== null &&
-    currentMap !== null &&
+    currentMapState &&
+    currentMap &&
     !currentMapState.editFlags.includes("tokens") &&
     currentMap.owner !== userId
   ) {
