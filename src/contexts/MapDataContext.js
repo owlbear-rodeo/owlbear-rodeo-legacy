@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import * as Comlink from "comlink";
 
 import AuthContext from "./AuthContext";
@@ -25,6 +31,8 @@ const defaultMapState = {
   editFlags: ["drawing", "tokens", "notes"],
   notes: {},
 };
+
+const worker = Comlink.wrap(new DatabaseWorker());
 
 export function MapDataProvider({ children }) {
   const { database, databaseStatus } = useContext(DatabaseContext);
@@ -65,7 +73,6 @@ export function MapDataProvider({ children }) {
     }
 
     async function loadMaps() {
-      const worker = Comlink.wrap(new DatabaseWorker());
       await worker.loadData("maps");
       const storedMaps = await worker.data;
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
@@ -80,139 +87,28 @@ export function MapDataProvider({ children }) {
     loadMaps();
   }, [userId, database, databaseStatus]);
 
-  /**
-   * Adds a map to the database, also adds an assosiated state for that map
-   * @param {Object} map map to add
-   */
-  async function addMap(map) {
-    await database.table("maps").add(map);
-    const state = { ...defaultMapState, mapId: map.id };
-    await database.table("states").add(state);
-    setMaps((prevMaps) => [map, ...prevMaps]);
-    setMapStates((prevStates) => [state, ...prevStates]);
-    if (map.owner !== userId) {
-      await updateCache();
-    }
-  }
+  const mapsRef = useRef(maps);
+  useEffect(() => {
+    mapsRef.current = maps;
+  }, [maps]);
 
-  async function removeMap(id) {
-    await database.table("maps").delete(id);
-    await database.table("states").delete(id);
-    setMaps((prevMaps) => {
-      const filtered = prevMaps.filter((map) => map.id !== id);
-      return filtered;
-    });
-    setMapStates((prevMapsStates) => {
-      const filtered = prevMapsStates.filter((state) => state.mapId !== id);
-      return filtered;
-    });
-  }
+  const getMap = useCallback((mapId) => {
+    return mapsRef.current.find((map) => map.id === mapId);
+  }, []);
 
-  async function removeMaps(ids) {
-    await database.table("maps").bulkDelete(ids);
-    await database.table("states").bulkDelete(ids);
-    setMaps((prevMaps) => {
-      const filtered = prevMaps.filter((map) => !ids.includes(map.id));
-      return filtered;
-    });
-    setMapStates((prevMapsStates) => {
-      const filtered = prevMapsStates.filter(
-        (state) => !ids.includes(state.mapId)
-      );
-      return filtered;
-    });
-  }
-
-  async function resetMap(id) {
-    const state = { ...defaultMapState, mapId: id };
-    await database.table("states").put(state);
-    setMapStates((prevMapStates) => {
-      const newStates = [...prevMapStates];
-      const i = newStates.findIndex((state) => state.mapId === id);
-      if (i > -1) {
-        newStates[i] = state;
-      }
-      return newStates;
-    });
-    return state;
-  }
-
-  async function updateMap(id, update) {
-    // fake-indexeddb throws an error when updating maps in production.
-    // Catch that error and use put when it fails
-    try {
-      await database.table("maps").update(id, update);
-    } catch (error) {
-      // if (error.name !== "QuotaExceededError") {
-      const map = (await getMapFromDB(id)) || {};
-      await database.table("maps").put({ ...map, id, ...update });
-      // }
-    }
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((map) => map.id === id);
-      if (i > -1) {
-        newMaps[i] = { ...newMaps[i], ...update };
-      }
-      return newMaps;
-    });
-  }
-
-  async function updateMaps(ids, update) {
-    await Promise.all(
-      ids.map((id) => database.table("maps").update(id, update))
-    );
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      for (let id of ids) {
-        const i = newMaps.findIndex((map) => map.id === id);
-        if (i > -1) {
-          newMaps[i] = { ...newMaps[i], ...update };
-        }
-      }
-      return newMaps;
-    });
-  }
-
-  async function updateMapState(id, update) {
-    await database.table("states").update(id, update);
-    setMapStates((prevMapStates) => {
-      const newStates = [...prevMapStates];
-      const i = newStates.findIndex((state) => state.mapId === id);
-      if (i > -1) {
-        newStates[i] = { ...newStates[i], ...update };
-      }
-      return newStates;
-    });
-  }
-
-  /**
-   * Adds a map to the database if none exists or replaces a map if it already exists
-   * Note: this does not add a map state to do that use AddMap
-   * @param {Object} map the map to put
-   */
-  async function putMap(map) {
-    await database.table("maps").put(map);
-    setMaps((prevMaps) => {
-      const newMaps = [...prevMaps];
-      const i = newMaps.findIndex((m) => m.id === map.id);
-      if (i > -1) {
-        newMaps[i] = { ...newMaps[i], ...map };
-      } else {
-        newMaps.unshift(map);
-      }
-      return newMaps;
-    });
-    if (map.owner !== userId) {
-      await updateCache();
-    }
-  }
+  const getMapFromDB = useCallback(
+    async (mapId) => {
+      let map = await database.table("maps").get(mapId);
+      return map;
+    },
+    [database]
+  );
 
   /**
    * Keep up to cachedMapMax amount of maps that you don't own
    * Sorted by when they we're last used
    */
-  async function updateCache() {
+  const updateCache = useCallback(async () => {
     const cachedMaps = await database
       .table("maps")
       .where("owner")
@@ -228,16 +124,157 @@ export function MapDataProvider({ children }) {
         return prevMaps.filter((map) => !idsToDelete.includes(map.id));
       });
     }
-  }
+  }, [database, userId]);
 
-  function getMap(mapId) {
-    return maps.find((map) => map.id === mapId);
-  }
+  /**
+   * Adds a map to the database, also adds an assosiated state for that map
+   * @param {Object} map map to add
+   */
+  const addMap = useCallback(
+    async (map) => {
+      await database.table("maps").add(map);
+      const state = { ...defaultMapState, mapId: map.id };
+      await database.table("states").add(state);
+      setMaps((prevMaps) => [map, ...prevMaps]);
+      setMapStates((prevStates) => [state, ...prevStates]);
+      if (map.owner !== userId) {
+        await updateCache();
+      }
+    },
+    [database, updateCache, userId]
+  );
 
-  async function getMapFromDB(mapId) {
-    let map = await database.table("maps").get(mapId);
-    return map;
-  }
+  const removeMap = useCallback(
+    async (id) => {
+      await database.table("maps").delete(id);
+      await database.table("states").delete(id);
+      setMaps((prevMaps) => {
+        const filtered = prevMaps.filter((map) => map.id !== id);
+        return filtered;
+      });
+      setMapStates((prevMapsStates) => {
+        const filtered = prevMapsStates.filter((state) => state.mapId !== id);
+        return filtered;
+      });
+    },
+    [database]
+  );
+
+  const removeMaps = useCallback(
+    async (ids) => {
+      await database.table("maps").bulkDelete(ids);
+      await database.table("states").bulkDelete(ids);
+      setMaps((prevMaps) => {
+        const filtered = prevMaps.filter((map) => !ids.includes(map.id));
+        return filtered;
+      });
+      setMapStates((prevMapsStates) => {
+        const filtered = prevMapsStates.filter(
+          (state) => !ids.includes(state.mapId)
+        );
+        return filtered;
+      });
+    },
+    [database]
+  );
+
+  const resetMap = useCallback(
+    async (id) => {
+      const state = { ...defaultMapState, mapId: id };
+      await database.table("states").put(state);
+      setMapStates((prevMapStates) => {
+        const newStates = [...prevMapStates];
+        const i = newStates.findIndex((state) => state.mapId === id);
+        if (i > -1) {
+          newStates[i] = state;
+        }
+        return newStates;
+      });
+      return state;
+    },
+    [database]
+  );
+
+  const updateMap = useCallback(
+    async (id, update) => {
+      // fake-indexeddb throws an error when updating maps in production.
+      // Catch that error and use put when it fails
+      try {
+        await database.table("maps").update(id, update);
+      } catch (error) {
+        const map = (await getMapFromDB(id)) || {};
+        await database.table("maps").put({ ...map, id, ...update });
+      }
+      setMaps((prevMaps) => {
+        const newMaps = [...prevMaps];
+        const i = newMaps.findIndex((map) => map.id === id);
+        if (i > -1) {
+          newMaps[i] = { ...newMaps[i], ...update };
+        }
+        return newMaps;
+      });
+    },
+    [database, getMapFromDB]
+  );
+
+  const updateMaps = useCallback(
+    async (ids, update) => {
+      await Promise.all(
+        ids.map((id) => database.table("maps").update(id, update))
+      );
+      setMaps((prevMaps) => {
+        const newMaps = [...prevMaps];
+        for (let id of ids) {
+          const i = newMaps.findIndex((map) => map.id === id);
+          if (i > -1) {
+            newMaps[i] = { ...newMaps[i], ...update };
+          }
+        }
+        return newMaps;
+      });
+    },
+    [database]
+  );
+
+  const updateMapState = useCallback(
+    async (id, update) => {
+      await database.table("states").update(id, update);
+      setMapStates((prevMapStates) => {
+        const newStates = [...prevMapStates];
+        const i = newStates.findIndex((state) => state.mapId === id);
+        if (i > -1) {
+          newStates[i] = { ...newStates[i], ...update };
+        }
+        return newStates;
+      });
+    },
+    [database]
+  );
+
+  /**
+   * Adds a map to the database if none exists or replaces a map if it already exists
+   * Note: this does not add a map state to do that use AddMap
+   * @param {Object} map the map to put
+   */
+  const putMap = useCallback(
+    async (map) => {
+      await database.table("maps").put(map);
+      setMaps((prevMaps) => {
+        const newMaps = [...prevMaps];
+        const i = newMaps.findIndex((m) => m.id === map.id);
+        if (i > -1) {
+          newMaps[i] = { ...newMaps[i], ...map };
+        } else {
+          newMaps.unshift(map);
+        }
+        return newMaps;
+      });
+      if (map.owner !== userId) {
+        await updateCache();
+      }
+    },
+    [database, updateCache, userId]
+  );
 
   const ownedMaps = maps.filter((map) => map.owner === userId);
 

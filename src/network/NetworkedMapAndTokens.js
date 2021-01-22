@@ -36,9 +36,13 @@ function NetworkedMapAndTokens({ session }) {
   } = useContext(MapLoadingContext);
 
   const { putToken, getToken, updateToken } = useContext(TokenDataContext);
-  const { putMap, updateMap, getMapFromDB, updateMapState } = useContext(
-    MapDataContext
-  );
+  const {
+    putMap,
+    updateMap,
+    getMap,
+    getMapFromDB,
+    updateMapState,
+  } = useContext(MapDataContext);
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useNetworkedState(
@@ -129,8 +133,10 @@ function NetworkedMapAndTokens({ session }) {
         }
 
         if (asset.type === "map") {
-          const cachedMap = await getMapFromDB(asset.id);
-          if (cachedMap && cachedMap.lastModified >= asset.lastModified) {
+          const cachedMap = getMap(asset.id);
+          if (cachedMap && cachedMap.lastModified === asset.lastModified) {
+            continue;
+          } else if (cachedMap && cachedMap.lastModified > asset.lastModified) {
             // Update last used for cache invalidation
             const lastUsed = Date.now();
             await updateMap(cachedMap.id, { lastUsed });
@@ -140,7 +146,12 @@ function NetworkedMapAndTokens({ session }) {
           }
         } else if (asset.type === "token") {
           const cachedToken = getToken(asset.id);
-          if (cachedToken && cachedToken.lastModified >= asset.lastModified) {
+          if (cachedToken && cachedToken.lastModified === asset.lastModified) {
+            continue;
+          } else if (
+            cachedToken &&
+            cachedToken.lastModified > asset.lastModified
+          ) {
             // Update last used for cache invalidation
             const lastUsed = Date.now();
             await updateToken(cachedToken.id, { lastUsed });
@@ -152,8 +163,16 @@ function NetworkedMapAndTokens({ session }) {
     }
 
     requestAssetsIfNeeded();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetManifest, partyState, session]);
+  }, [
+    assetManifest,
+    partyState,
+    session,
+    getMap,
+    getToken,
+    updateMap,
+    updateToken,
+    userId,
+  ]);
 
   /**
    * Map state
@@ -172,8 +191,7 @@ function NetworkedMapAndTokens({ session }) {
     ) {
       updateMapState(debouncedMapState.mapId, debouncedMapState);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentMap, debouncedMapState, userId, database]);
+  }, [currentMap, debouncedMapState, userId, database, updateMapState]);
 
   function handleMapChange(newMap, newMapState) {
     // Clear map before sending new one
@@ -402,10 +420,9 @@ function NetworkedMapAndTokens({ session }) {
 
     async function handleSocketMap(map) {
       if (map) {
-        // If we're the owner get the full map from the database
-        if (map.type === "file" && map.owner === userId) {
+        if (map.type === "file") {
           const fullMap = await getMapFromDB(map.id);
-          setCurrentMap(fullMap);
+          setCurrentMap(fullMap || map);
         } else {
           setCurrentMap(map);
         }
@@ -428,19 +445,19 @@ function NetworkedMapAndTokens({ session }) {
   const canChangeMap = !isLoading;
 
   const canEditMapDrawing =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("drawing") ||
       currentMap.owner === userId);
 
   const canEditFogDrawing =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("fog") || currentMap.owner === userId);
 
   const canEditNotes =
-    currentMap !== null &&
-    currentMapState !== null &&
+    currentMap &&
+    currentMapState &&
     (currentMapState.editFlags.includes("notes") ||
       currentMap.owner === userId);
 
@@ -448,8 +465,8 @@ function NetworkedMapAndTokens({ session }) {
   // If we have a map and state and have the token permission disabled
   // and are not the map owner
   if (
-    currentMapState !== null &&
-    currentMap !== null &&
+    currentMapState &&
+    currentMap &&
     !currentMapState.editFlags.includes("tokens") &&
     currentMap.owner !== userId
   ) {
