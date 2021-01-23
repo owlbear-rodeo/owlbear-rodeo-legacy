@@ -280,6 +280,30 @@ function loadVersions(db) {
           state.editFlags = [...state.editFlags, "notes"];
         });
     });
+
+  // 1.7.0 (hotfix) - Optimized fog shape edits to only include needed data
+  db.version(17)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let i = 0; i < state.fogDrawActions.length; i++) {
+            const action = state.fogDrawActions[i];
+            if (action && action.type === "edit") {
+              for (let j = 0; j < action.shapes.length; j++) {
+                const shape = action.shapes[j];
+                const temp = { ...shape };
+                state.fogDrawActions[i].shapes[j] = {
+                  id: temp.id,
+                  visible: temp.visible,
+                };
+              }
+            }
+          }
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext

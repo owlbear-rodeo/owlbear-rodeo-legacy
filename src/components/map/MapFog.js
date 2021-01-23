@@ -314,7 +314,7 @@ function MapFog({
       } else if (toolSettings.type === "toggle") {
         onShapesEdit(
           editingShapes.map((shape) => ({
-            ...shape,
+            id: shape.id,
             visible: !shape.visible,
           }))
         );
