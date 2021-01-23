@@ -7,6 +7,7 @@ import DatabaseContext from "./DatabaseContext";
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 import { tokens as defaultTokens } from "../tokens";
+import { logError } from "../helpers/logging";
 
 const TokenDataContext = React.createContext();
 
@@ -105,7 +106,17 @@ export function TokenDataProvider({ children }) {
   }
 
   async function putToken(token) {
-    await database.table("tokens").put(token);
+    console.log(token);
+    try {
+      await database.table("tokens").put(token);
+    } catch {
+      if (token?.file) {
+        const { file, ...rest } = token;
+        logError(`Unable to save token ${JSON.stringify(rest)}`);
+      } else {
+        logError(`Unable to save token ${token}`);
+      }
+    }
     setTokens((prevTokens) => {
       const newTokens = [...prevTokens];
       const i = newTokens.findIndex((t) => t.id === token.id);
