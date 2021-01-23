@@ -106,7 +106,6 @@ export function TokenDataProvider({ children }) {
   }
 
   async function putToken(token) {
-    console.log(token);
     try {
       await database.table("tokens").put(token);
     } catch {
