@@ -26,7 +26,7 @@ function useNetworkedState(
   initialState,
   session,
   eventName,
-  debounceRate = 100,
+  debounceRate = 500,
   partialUpdates = true,
   partialUpdatesKey = "id"
 ) {

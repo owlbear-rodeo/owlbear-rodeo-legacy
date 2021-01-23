@@ -59,15 +59,14 @@ function TokenMenu({
     if (!tokenState) {
       return;
     }
-    const statuses = tokenState.statuses;
-    let newStatuses = [];
-    if (statuses.includes(status)) {
-      newStatuses = statuses.filter((s) => s !== status);
+    const statuses = new Set(tokenState.statuses.filter((s) => s));
+    if (statuses.has(status)) {
+      statuses.delete(status);
     } else {
-      newStatuses = [...statuses, status];
+      statuses.add(status);
     }
     onTokenStateChange({
-      [tokenState.id]: { ...tokenState, statuses: newStatuses },
+      [tokenState.id]: { ...tokenState, statuses: [...statuses] },
     });
   }
 
@@ -130,7 +129,7 @@ function TokenMenu({
       left={`${menuLeft}px`}
       onModalContent={handleModalContent}
     >
-      <Box sx={{ width: "156px" }} p={1}>
+      <Box sx={{ width: "156px", overflow: "hidden" }} p={1}>
         <Flex
           as="form"
           onSubmit={(e) => {

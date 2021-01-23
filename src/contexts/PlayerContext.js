@@ -23,7 +23,7 @@ export function PlayerProvider({ session, children }) {
     },
     session,
     "player_state",
-    100,
+    500,
     false
   );
 
