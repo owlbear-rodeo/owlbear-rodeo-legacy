@@ -113,7 +113,7 @@ export function TokenDataProvider({ children }) {
         const { file, ...rest } = token;
         logError(`Unable to save token ${JSON.stringify(rest)}`);
       } else {
-        logError(`Unable to save token ${token}`);
+        logError(`Unable to save token ${JSON.stringify(token)}`);
       }
     }
     setTokens((prevTokens) => {
