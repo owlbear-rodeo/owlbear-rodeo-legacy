@@ -332,6 +332,10 @@ function SelectMapModal({
         selectedMapIds.length > 0 &&
         !selectedMaps.some((map) => map.type === "default")
       ) {
+        // Ensure all other modals are closed
+        setIsGroupModalOpen(false);
+        setIsEditModalOpen(false);
+        setIsMapsResetModalOpen(false);
         setIsMapsRemoveModalOpen(true);
       }
     }

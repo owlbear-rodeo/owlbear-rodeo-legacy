@@ -191,6 +191,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         selectedTokenIds.length > 0 &&
         !selectedTokens.some((token) => token.type === "default")
       ) {
+        // Ensure all other modals are closed
+        setIsEditModalOpen(false);
+        setIsGroupModalOpen(false);
         setIsTokensRemoveModalOpen(true);
       }
     }
