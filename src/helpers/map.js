@@ -188,6 +188,7 @@ export function snapNodeToMap(
 
   // Offsets to tranform the centered position into the four corners
   const cornerOffsets = [
+    { x: 0, y: 0 },
     halfSize,
     { x: -halfSize.x, y: -halfSize.y },
     { x: halfSize.x, y: -halfSize.y },
@@ -219,7 +220,24 @@ export function snapNodeToMap(
     }
   }
 
+  // Snap to center of grid
+  // Subtract offset and half grid size to transform it into offset half space then transform it back
+  const halfGridSize = Vector2.multiply(gridSize, 0.5);
+  const centerSnap = Vector2.add(
+    Vector2.add(
+      Vector2.roundTo(
+        Vector2.subtract(Vector2.subtract(position, offset), halfGridSize),
+        gridSize
+      ),
+      halfGridSize
+    ),
+    offset
+  );
+  const centerDistance = Vector2.length(Vector2.subtract(centerSnap, position));
+
   if (minCornerGridDistance < minCornerMinComponent * snappingThreshold) {
     node.position(minGridSnap);
+  } else if (centerDistance < Vector2.min(gridSize) * snappingThreshold) {
+    node.position(centerSnap);
   }
 }
