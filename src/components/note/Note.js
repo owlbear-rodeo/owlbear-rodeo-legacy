@@ -149,7 +149,7 @@ function Note({
       onClick={handleClick}
       onTap={handleClick}
       width={noteWidth}
-      height={noteHeight}
+      height={note.textOnly ? undefined : noteHeight}
       offsetX={noteWidth / 2}
       offsetY={noteHeight / 2}
       draggable={draggable}
@@ -162,19 +162,23 @@ function Note({
       onTouchEnd={handlePointerUp}
       opacity={note.visible ? 1.0 : 0.5}
     >
-      <Rect
-        width={noteWidth}
-        height={noteHeight}
-        shadowColor="rgba(0, 0, 0, 0.16)"
-        shadowOffset={{ x: 0, y: 3 }}
-        shadowBlur={6}
-        cornerRadius={0.25}
-        fill={colors[note.color]}
-      />
+      {!note.textOnly && (
+        <Rect
+          width={noteWidth}
+          height={noteHeight}
+          shadowColor="rgba(0, 0, 0, 0.16)"
+          shadowOffset={{ x: 0, y: 3 }}
+          shadowBlur={6}
+          cornerRadius={0.25}
+          fill={colors[note.color]}
+        />
+      )}
       <Text
         text={note.text}
         fill={
-          note.color === "black" || note.color === "darkGray"
+          note.textOnly
+            ? colors[note.color]
+            : note.color === "black" || note.color === "darkGray"
             ? "white"
             : "black"
         }
@@ -184,7 +188,7 @@ function Note({
         fontSize={fontSize}
         wrap="word"
         width={noteWidth}
-        height={noteHeight}
+        height={note.textOnly ? undefined : noteHeight}
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />

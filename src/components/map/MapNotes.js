@@ -57,6 +57,7 @@ function MapNotes({
         visible: true,
         locked: false,
         color: "yellow",
+        textOnly: false,
       });
       setIsBrushDown(true);
     }

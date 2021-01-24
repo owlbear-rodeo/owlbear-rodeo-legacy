@@ -13,6 +13,8 @@ import LockIcon from "../../icons/TokenLockIcon";
 import UnlockIcon from "../../icons/TokenUnlockIcon";
 import ShowIcon from "../../icons/TokenShowIcon";
 import HideIcon from "../../icons/TokenHideIcon";
+import NoteIcon from "../../icons/NoteToolIcon";
+import TextIcon from "../../icons/NoteTextIcon";
 
 import AuthContext from "../../contexts/AuthContext";
 
@@ -73,6 +75,10 @@ function NoteMenu({
 
   function handleLockChange() {
     note && onNoteChange({ ...note, locked: !note.locked });
+  }
+
+  function handleModeChange() {
+    note && onNoteChange({ ...note, textOnly: !note.textOnly });
   }
 
   function handleModalContent(node) {
@@ -208,6 +214,13 @@ function NoteMenu({
               aria-label={note && note.locked ? "Unlock Note" : "Lock Note"}
             >
               {note && note.locked ? <LockIcon /> : <UnlockIcon />}
+            </IconButton>
+            <IconButton
+              onClick={handleModeChange}
+              title={note && note.textOnly ? "Note Mode" : "Text Mode"}
+              aria-label={note && note.textOnly ? "Note Mode" : "Text Mode"}
+            >
+              {note && note.textOnly ? <TextIcon /> : <NoteIcon />}
             </IconButton>
           </Flex>
         )}

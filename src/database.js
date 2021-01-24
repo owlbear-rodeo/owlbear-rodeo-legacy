@@ -304,6 +304,20 @@ function loadVersions(db) {
           }
         });
     });
+
+  // 1.7.1 - Added note text only mode
+  db.version(18)
+    .stores({})
+    .upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.notes) {
+            state.notes[id].textOnly = false;
+          }
+        });
+    });
 }
 
 // Get the dexie database used in DatabaseContext
