@@ -185,6 +185,11 @@ export function TokenDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
+  async function getTokenFromDB(tokenId) {
+    let token = await database.table("tokens").get(tokenId);
+    return token;
+  }
+
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 
   const tokensById = tokens.reduce((obj, token) => {
