@@ -35,7 +35,9 @@ function NetworkedMapAndTokens({ session }) {
     isLoading,
   } = useContext(MapLoadingContext);
 
-  const { putToken, getToken, updateToken } = useContext(TokenDataContext);
+  const { putToken, getToken, updateToken, getTokenFromDB } = useContext(
+    TokenDataContext
+  );
   const { putMap, updateMap, getMapFromDB, updateMapState } = useContext(
     MapDataContext
   );
@@ -311,7 +313,6 @@ function NetworkedMapAndTokens({ session }) {
     async function handlePeerData({ id, data, reply }) {
       if (id === "mapRequest") {
         const map = await getMapFromDB(data);
-
         function replyWithMap(preview, resolution) {
           let response = {
             ...map,
@@ -375,19 +376,23 @@ function NetworkedMapAndTokens({ session }) {
 
       if (id === "mapResponse") {
         const newMap = data;
-        setCurrentMap(newMap);
-        await putMap(newMap);
+        if (newMap?.id) {
+          setCurrentMap(newMap);
+          await putMap(newMap);
+        }
         assetLoadFinish();
       }
 
       if (id === "tokenRequest") {
-        const token = getToken(data);
+        const token = await getTokenFromDB(data);
         // Add a last used property for cache invalidation
         reply("tokenResponse", { ...token, lastUsed: Date.now() }, "token");
       }
       if (id === "tokenResponse") {
         const newToken = data;
-        await putToken(newToken);
+        if (newToken?.id) {
+          await putToken(newToken);
+        }
         assetLoadFinish();
       }
     }
