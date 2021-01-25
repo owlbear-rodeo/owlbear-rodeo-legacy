@@ -333,24 +333,29 @@ export function mergeShapes(shapes) {
   if (geometries.length === 0) {
     return geometries;
   }
-  let union = polygonClipping.union(...geometries);
-  let merged = [];
-  for (let i = 0; i < union.length; i++) {
-    let holes = [];
-    if (union[i].length > 1) {
-      for (let j = 1; j < union[i].length; j++) {
-        holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+  try {
+    let union = polygonClipping.union(...geometries);
+    let merged = [];
+    for (let i = 0; i < union.length; i++) {
+      let holes = [];
+      if (union[i].length > 1) {
+        for (let j = 1; j < union[i].length; j++) {
+          holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+        }
       }
+      merged.push({
+        // Use the data of the first visible shape as the merge
+        ...shapes.find((shape) => shape.visible),
+        id: `merged-${i}`,
+        data: {
+          points: union[i][0].map(([x, y]) => ({ x, y })),
+          holes,
+        },
+      });
     }
-    merged.push({
-      // Use the data of the first visible shape as the merge
-      ...shapes.find((shape) => shape.visible),
-      id: `merged-${i}`,
-      data: {
-        points: union[i][0].map(([x, y]) => ({ x, y })),
-        holes,
-      },
-    });
+    return merged;
+  } catch {
+    logError(new Error(`Unable to merge shapes ${JSON.stringify(shapes)}`));
+    return shapes;
   }
-  return merged;
 }
