@@ -3,6 +3,7 @@ import polygonClipping from "polygon-clipping";
 
 import * as Vector2 from "./vector2";
 import { toDegrees, omit } from "./shared";
+import { logError } from "./logging";
 
 const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
@@ -251,13 +252,23 @@ export function drawActionsToShapes(actions, actionIndex) {
           hole.map(({ x, y }) => [x, y])
         );
         let shapeGeom = [[shapePoints, ...shapeHoles]];
-        const difference = polygonClipping.difference(shapeGeom, actionGeom);
-        const intersection = polygonClipping.intersection(
-          shapeGeom,
-          actionGeom
-        );
-        addPolygonDifferenceToShapes(shape, difference, cutShapes);
-        addPolygonIntersectionToShapes(shape, intersection, cutShapes);
+        try {
+          const difference = polygonClipping.difference(shapeGeom, actionGeom);
+          const intersection = polygonClipping.intersection(
+            shapeGeom,
+            actionGeom
+          );
+          addPolygonDifferenceToShapes(shape, difference, cutShapes);
+          addPolygonIntersectionToShapes(shape, intersection, cutShapes);
+        } catch {
+          logError(
+            new Error(
+              `Unable to find segment for shapes ${JSON.stringify(
+                shape
+              )} and ${JSON.stringify(action)}`
+            )
+          );
+        }
       }
       shapesById = cutShapes;
     }
