@@ -219,7 +219,9 @@ export function drawActionsToShapes(actions, actionIndex) {
     }
     if (action.type === "edit") {
       for (let edit of action.shapes) {
-        shapesById[edit.id] = { ...shapesById[edit.id], ...edit };
+        if (edit.id in shapesById) {
+          shapesById[edit.id] = { ...shapesById[edit.id], ...edit };
+        }
       }
     }
     if (action.type === "remove") {
