@@ -17,6 +17,7 @@
     "comlink": "^4.3.0",
     "deep-diff": "^1.0.2",
     "dexie": "^3.0.3",
+    "dexie-export-import": "^1.0.0",
     "err-code": "^2.0.3",
     "fake-indexeddb": "^3.1.2",
     "fuse.js": "^6.4.1",
@@ -48,6 +49,7 @@
     "simplify-js": "^1.2.4",
     "socket.io-client": "^3.0.3",
     "source-map-explorer": "^2.4.2",
+    "streamsaver": "^2.0.5",
     "theme-ui": "^0.3.1",
     "use-image": "^1.0.5",
     "webrtc-adapter": "^7.5.1"

@@ -4532,7 +4532,14 @@ detect-port-alt@1.1.6:
     address "^1.0.1"
     debug "^2.6.0"
 
-dexie@^3.0.3:
+dexie-export-import@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/dexie-export-import/-/dexie-export-import-1.0.0.tgz#2e2cc375a416f540c89d2a39f623d297077221a4"
+  integrity sha512-mqtREaI+/tSEfpwOZeYNyX+FfCxTYt0RB4BIevX4wFGMQL1mQ0cWfIGXBpoRGEnHdiHbf3QNK2+0Ras3dNJfIQ==
+  dependencies:
+    dexie "^3.0.0-alpha.5 || ^2.0.4"
+
+"dexie@^3.0.0-alpha.5 || ^2.0.4", dexie@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.0.3.tgz#ede63849dfe5f07e13e99bb72a040e8ac1d29dab"
   integrity sha512-BSFhGpngnCl1DOr+8YNwBDobRMH0ziJs2vts69VilwetHYOtEDcLqo7d/XiIphM0tJZ2rPPyAGd31lgH2Ln3nw==
@@ -10946,7 +10953,6 @@ simple-peer@feross/simple-peer#694/head:
   resolved "https://codeload.github.com/feross/simple-peer/tar.gz/0d08d07b83ff3b8c60401688d80642d24dfeffe2"
   dependencies:
     debug "^4.0.1"
-    err-code "^2.0.3"
     get-browser-rtc "^1.0.0"
     queue-microtask "^1.1.0"
     randombytes "^2.0.3"
@@ -11324,6 +11330,11 @@ stream-shift@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/stream-shift/-/stream-shift-1.0.1.tgz#d7088281559ab2778424279b0877da3c392d5a3d"
   integrity sha512-AiisoFqQ0vbGcZgQPY1cdP2I76glaVA/RauYR4G4thNFgkTqr90yXTo4LYX60Jl+sIlPNHHdGSwo01AvbKUSVQ==
+
+streamsaver@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/streamsaver/-/streamsaver-2.0.5.tgz#3212f0e908fcece5b3a65591094475cf87850d00"
+  integrity sha512-KIWtBvi8A6FiFZGNSyuIZRZM6C8AvnWTiCx/TYa7so420vC5sQwcBKkdqInuGWoWMfeWy/P+/cRqMtWVf4RW9w==
 
 strict-uri-encode@^1.0.0:
   version "1.1.0"

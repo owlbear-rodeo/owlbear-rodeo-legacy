@@ -19,6 +19,7 @@ import DatabaseContext from "../contexts/DatabaseContext";
 import useSetting from "../helpers/useSetting";
 
 import ConfirmModal from "./ConfirmModal";
+import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
   const { database } = useContext(DatabaseContext);
@@ -26,6 +27,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
   const [storageEstimate, setStorageEstimate] = useState();
+  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
   useEffect(() => {
     async function estimateStorage() {
@@ -125,6 +127,14 @@ function SettingsModal({ isOpen, onRequestClose }) {
               Erase all content and reset
             </Button>
           </Flex>
+          <Flex py={2}>
+            <Button
+              sx={{ flexGrow: 1 }}
+              onClick={() => setIsImportExportModalOpen(true)}
+            >
+              Import / Export Database
+            </Button>
+          </Flex>
           {storageEstimate && (
             <Flex sx={{ justifyContent: "center" }}>
               <Text variant="caption">
@@ -147,6 +157,10 @@ function SettingsModal({ isOpen, onRequestClose }) {
         label="Erase All Content?"
         description="This will remove all data including saved maps and tokens."
         confirmText="Erase"
+      />
+      <ImportExportModal
+        isOpen={isImportExportModalOpen}
+        onRequestClose={() => setIsImportExportModalOpen(false)}
       />
     </>
   );
