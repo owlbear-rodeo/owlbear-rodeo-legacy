@@ -4,6 +4,7 @@ import polygonClipping from "polygon-clipping";
 import * as Vector2 from "./vector2";
 import { toDegrees, omit } from "./shared";
 import { getRelativePointerPositionNormalized } from "./konva";
+import { logError } from "./logging";
 
 const snappingThreshold = 1 / 5;
 export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
@@ -232,7 +233,9 @@ export function drawActionsToShapes(actions, actionIndex) {
     }
     if (action.type === "edit") {
       for (let edit of action.shapes) {
-        shapesById[edit.id] = { ...shapesById[edit.id], ...edit };
+        if (edit.id in shapesById) {
+          shapesById[edit.id] = { ...shapesById[edit.id], ...edit };
+        }
       }
     }
     if (action.type === "remove") {
@@ -265,13 +268,23 @@ export function drawActionsToShapes(actions, actionIndex) {
           hole.map(({ x, y }) => [x, y])
         );
         let shapeGeom = [[shapePoints, ...shapeHoles]];
-        const difference = polygonClipping.difference(shapeGeom, actionGeom);
-        const intersection = polygonClipping.intersection(
-          shapeGeom,
-          actionGeom
-        );
-        addPolygonDifferenceToShapes(shape, difference, cutShapes);
-        addPolygonIntersectionToShapes(shape, intersection, cutShapes);
+        try {
+          const difference = polygonClipping.difference(shapeGeom, actionGeom);
+          const intersection = polygonClipping.intersection(
+            shapeGeom,
+            actionGeom
+          );
+          addPolygonDifferenceToShapes(shape, difference, cutShapes);
+          addPolygonIntersectionToShapes(shape, intersection, cutShapes);
+        } catch {
+          logError(
+            new Error(
+              `Unable to find segment for shapes ${JSON.stringify(
+                shape
+              )} and ${JSON.stringify(action)}`
+            )
+          );
+        }
       }
       shapesById = cutShapes;
     }
@@ -336,24 +349,29 @@ export function mergeShapes(shapes) {
   if (geometries.length === 0) {
     return geometries;
   }
-  let union = polygonClipping.union(...geometries);
-  let merged = [];
-  for (let i = 0; i < union.length; i++) {
-    let holes = [];
-    if (union[i].length > 1) {
-      for (let j = 1; j < union[i].length; j++) {
-        holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+  try {
+    let union = polygonClipping.union(...geometries);
+    let merged = [];
+    for (let i = 0; i < union.length; i++) {
+      let holes = [];
+      if (union[i].length > 1) {
+        for (let j = 1; j < union[i].length; j++) {
+          holes.push(union[i][j].map(([x, y]) => ({ x, y })));
+        }
       }
+      merged.push({
+        // Use the data of the first visible shape as the merge
+        ...shapes.find((shape) => shape.visible),
+        id: `merged-${i}`,
+        data: {
+          points: union[i][0].map(([x, y]) => ({ x, y })),
+          holes,
+        },
+      });
     }
-    merged.push({
-      // Use the data of the first visible shape as the merge
-      ...shapes.find((shape) => shape.visible),
-      id: `merged-${i}`,
-      data: {
-        points: union[i][0].map(([x, y]) => ({ x, y })),
-        holes,
-      },
-    });
+    return merged;
+  } catch {
+    logError(new Error(`Unable to merge shapes ${JSON.stringify(shapes)}`));
+    return shapes;
   }
-  return merged;
 }

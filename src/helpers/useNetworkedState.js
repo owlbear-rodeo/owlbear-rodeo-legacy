@@ -91,7 +91,9 @@ function useNetworkedState(
         if (prevState && prevState[partialUpdatesKey] === update.id) {
           let newState = { ...prevState };
           applyChanges(newState, update.changes);
-          lastSyncedStateRef.current = newState;
+          if (lastSyncedStateRef.current) {
+            applyChanges(lastSyncedStateRef.current, update.changes);
+          }
           return newState;
         } else {
           return prevState;
