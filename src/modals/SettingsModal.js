@@ -22,7 +22,7 @@ import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
-  const { database } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useContext(DatabaseContext);
   const { userId } = useContext(AuthContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
@@ -131,6 +131,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
             <Button
               sx={{ flexGrow: 1 }}
               onClick={() => setIsImportExportModalOpen(true)}
+              disabled={databaseStatus !== "loaded"}
             >
               Import / Export Database
             </Button>
