@@ -1,4 +1,5 @@
 import * as Comlink from "comlink";
+import { importDB, exportDB } from "dexie-export-import";
 
 import { getDatabase } from "../database";
 
@@ -22,6 +23,31 @@ let obj = {
         // Use a cursor instead of toArray to prevent IPC max size error
         await db.table(table).each((item) => this.data.push(item));
       }
+    } catch {}
+  },
+
+  /**
+   * Export current database
+   * @param {function} progressCallback
+   */
+  async exportData(progressCallback) {
+    try {
+      let db = getDatabase({});
+      this.data = await exportDB(db, {
+        progressCallback,
+        numRowsPerChunk: 1,
+      });
+    } catch {}
+  },
+
+  /**
+   * Import into current database
+   * @param {Blob} data
+   * @param {function} progressCallback
+   */
+  async importData(data, progressCallback) {
+    try {
+      await importDB(data, { progressCallback });
     } catch {}
   },
 };

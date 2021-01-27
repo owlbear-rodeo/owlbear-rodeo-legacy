@@ -1,7 +1,7 @@
 import React, { useRef, useState, useContext, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
-import { importDB, exportDB } from "dexie-export-import";
 import streamSaver from "streamsaver";
+import * as Comlink from "comlink";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -9,10 +9,15 @@ import LoadingBar from "../components/LoadingBar";
 
 import DatabaseContext from "../contexts/DatabaseContext";
 
+import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
+
+const worker = Comlink.wrap(new DatabaseWorker());
+
 function ImportDatabaseModal({ isOpen, onRequestClose }) {
   const { database } = useContext(DatabaseContext);
   const [isLoading, setIsLoading] = useState(false);
 
+  const backgroundTaskRunningRef = useRef(false);
   const fileInputRef = useRef();
 
   function openFileDialog() {
@@ -29,9 +34,11 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
 
   async function handleImportDatabase(file) {
     setIsLoading(true);
+    backgroundTaskRunningRef.current = true;
     await database.delete();
-    await importDB(file, { progressCallback: handleDBProgress });
+    await worker.importData(file, Comlink.proxy(handleDBProgress));
     setIsLoading(false);
+    backgroundTaskRunningRef.current = false;
     window.location.reload();
   }
 
@@ -39,9 +46,13 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
 
   async function handleExportDatabase() {
     setIsLoading(true);
-    const blob = await exportDB(database, {
-      progressCallback: handleDBProgress,
-    });
+    backgroundTaskRunningRef.current = true;
+
+    await worker.exportData(Comlink.proxy(handleDBProgress));
+    const blob = await worker.data;
+
+    setIsLoading(false);
+
     const fileStream = streamSaver.createWriteStream(
       `${new Date().toISOString()}.db`,
       {
@@ -53,7 +64,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
     const readableStream = blob.stream();
     if (window.WritableStream && readableStream.pipeTo) {
       await readableStream.pipeTo(fileStream);
-      setIsLoading(false);
+      backgroundTaskRunningRef.current = false;
     } else {
       const writer = fileStream.getWriter();
       const reader = readableStream.getReader();
@@ -66,7 +77,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
         }
       }
       await pump();
-      setIsLoading(false);
+      backgroundTaskRunningRef.current = false;
     }
     fileStreamRef.current = null;
   }
@@ -80,7 +91,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
 
   useEffect(() => {
     function handleBeforeUnload(event) {
-      if (isLoading) {
+      if (backgroundTaskRunningRef.current) {
         event.returnValue =
           "Database is still processing, are you sure you want to leave?";
       }
@@ -98,7 +109,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("unload", handleUnload);
     };
-  }, [isLoading]);
+  }, []);
 
   return (
     <Modal isOpen={isOpen} onRequestClose={handleClose} allowClose={!isLoading}>
