@@ -54,7 +54,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
     setIsLoading(false);
 
     const fileStream = streamSaver.createWriteStream(
-      `${new Date().toISOString()}.db`,
+      `${new Date().toISOString()}.owlbear`,
       {
         size: blob.size,
       }
@@ -130,7 +130,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
           <input
             onChange={(event) => handleImportDatabase(event.target.files[0])}
             type="file"
-            accept=".db"
+            accept=".owlbear"
             style={{ display: "none" }}
             ref={fileInputRef}
           />
