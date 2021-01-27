@@ -47,10 +47,7 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
   async function handleExportDatabase() {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
-
-    await worker.exportData(Comlink.proxy(handleDBProgress));
-    const blob = await worker.data;
-
+    const blob = await worker.exportData(Comlink.proxy(handleDBProgress));
     setIsLoading(false);
 
     const fileStream = streamSaver.createWriteStream(

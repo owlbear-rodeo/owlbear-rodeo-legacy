@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import * as Comlink from "comlink";
+import { decode } from "@msgpack/msgpack";
 
 import AuthContext from "./AuthContext";
 import DatabaseContext from "./DatabaseContext";
@@ -73,8 +74,15 @@ export function MapDataProvider({ children }) {
     }
 
     async function loadMaps() {
-      await worker.loadData("maps");
-      const storedMaps = await worker.data;
+      let storedMaps = [];
+      // Try to load maps with worker, fallback to database if failed
+      const packedMaps = await worker.loadData("maps");
+      if (packedMaps) {
+        storedMaps = decode(packedMaps);
+      } else {
+        console.warn("Unable to load maps with worker, loading may be slow");
+        await database.table("maps").each((map) => storedMaps.push(map));
+      }
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();
       const allMaps = [...sortedMaps, ...defaultMapsWithIds];

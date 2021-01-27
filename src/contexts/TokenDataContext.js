@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import * as Comlink from "comlink";
+import { decode } from "@msgpack/msgpack";
 
 import AuthContext from "./AuthContext";
 import DatabaseContext from "./DatabaseContext";
@@ -45,8 +46,17 @@ export function TokenDataProvider({ children }) {
     }
 
     async function loadTokens() {
-      await worker.loadData("tokens");
-      const storedTokens = await worker.data;
+      let storedTokens = [];
+      // Try to load tokens with worker, fallback to database if failed
+      const packedTokens = await worker.loadData("tokens");
+      if (packedTokens) {
+        storedTokens = decode(packedTokens);
+      } else {
+        console.warn("Unable to load tokens with worker, loading may be slow");
+        await database
+          .table("tokens")
+          .each((token) => storedTokens.push(token));
+      }
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
       const defaultTokensWithIds = getDefaultTokes();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];

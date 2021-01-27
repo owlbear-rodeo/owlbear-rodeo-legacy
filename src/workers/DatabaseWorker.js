@@ -1,11 +1,11 @@
 import * as Comlink from "comlink";
 import { importDB, exportDB } from "dexie-export-import";
+import { encode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
 
 // Worker to load large amounts of database data on a separate thread
-let obj = {
-  data: null,
+let service = {
   /**
    * Load either a whole table or individual item from the DB
    * @param {string} table Table to load from
@@ -16,12 +16,16 @@ let obj = {
       let db = getDatabase({});
       if (key) {
         // Load specific item
-        this.data = await db.table(table).get(key);
+        return await db.table(table).get(key);
       } else {
         // Load entire table
-        this.data = [];
+        let items = [];
         // Use a cursor instead of toArray to prevent IPC max size error
-        await db.table(table).each((item) => this.data.push(item));
+        await db.table(table).each((item) => items.push(item));
+
+        // Pack data with msgpack so we can use transfer to avoid memory issues
+        const packed = encode(items);
+        return Comlink.transfer(packed, [packed.buffer]);
       }
     } catch {}
   },
@@ -33,7 +37,7 @@ let obj = {
   async exportData(progressCallback) {
     try {
       let db = getDatabase({});
-      this.data = await exportDB(db, {
+      return await exportDB(db, {
         progressCallback,
         numRowsPerChunk: 1,
       });
@@ -52,4 +56,4 @@ let obj = {
   },
 };
 
-Comlink.expose(obj);
+Comlink.expose(service);
