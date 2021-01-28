@@ -19,6 +19,7 @@ function Note({
   draggable,
   onNoteDragStart,
   onNoteDragEnd,
+  fadeOnHover,
 }) {
   const { userId } = useContext(AuthContext);
   const { mapWidth, mapHeight, setPreventMapInteraction } = useContext(
@@ -86,6 +87,19 @@ function Note({
         const noteNode = event.target;
         onNoteMenuOpen(note.id, noteNode);
       }
+    }
+  }
+
+  const [noteOpacity, setNoteOpacity] = useState(1);
+  function handlePointerEnter() {
+    if (fadeOnHover) {
+      setNoteOpacity(0.5);
+    }
+  }
+
+  function handlePointerLeave() {
+    if (noteOpacity !== 1.0) {
+      setNoteOpacity(1.0);
     }
   }
 
@@ -160,7 +174,9 @@ function Note({
       onMouseUp={handlePointerUp}
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
-      opacity={note.visible ? 1.0 : 0.5}
+      onMouseEnter={handlePointerEnter}
+      onMouseLeave={handlePointerLeave}
+      opacity={note.visible ? noteOpacity : 0.5}
     >
       {!note.textOnly && (
         <Rect

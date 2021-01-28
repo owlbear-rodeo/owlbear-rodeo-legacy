@@ -7,7 +7,6 @@ import MapStageContext from "../../contexts/MapStageContext";
 import AuthContext from "../../contexts/AuthContext";
 
 import { getBrushPosition } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 
 import Note from "../note/Note";
 
@@ -24,6 +23,7 @@ function MapNotes({
   draggable,
   onNoteDragStart,
   onNoteDragEnd,
+  fadeOnHover,
 }) {
   const { interactionEmitter } = useContext(MapInteractionContext);
   const { userId } = useContext(AuthContext);
@@ -111,6 +111,7 @@ function MapNotes({
           onNoteChange={onNoteChange}
           onNoteDragStart={onNoteDragStart}
           onNoteDragEnd={onNoteDragEnd}
+          fadeOnHover={fadeOnHover}
         />
       ))}
       <Group ref={creatingNoteRef}>

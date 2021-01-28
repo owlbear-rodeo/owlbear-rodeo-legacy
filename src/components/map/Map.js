@@ -411,6 +411,7 @@ function Map({
       onNoteDragEnd={() =>
         setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false })
       }
+      fadeOnHover={selectedToolId === "drawing"}
     />
   );
 
@@ -455,8 +456,8 @@ function Map({
       disabledControls={disabledControls}
     >
       {mapGrid}
-      {mapNotes}
       {mapDrawing}
+      {mapNotes}
       {mapTokens}
       {mapFog}
       {mapPointer}

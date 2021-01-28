@@ -10,7 +10,6 @@ import {
   getUpdatedShapeData,
   getStrokeWidth,
 } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import * as Vector2 from "../../helpers/vector2";
 
 function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
