@@ -37,6 +37,11 @@ function loadVersions(settings) {
     ...prev,
     game: { usePassword: true },
   }));
+  // v1.7.1 - Added pointer color
+  settings.version(4, (prev) => ({
+    ...prev,
+    pointer: { color: "red" },
+  }));
 }
 
 export function getSettings() {

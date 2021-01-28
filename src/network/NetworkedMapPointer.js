@@ -6,6 +6,7 @@ import AuthContext from "../contexts/AuthContext";
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
 import { lerp, compare } from "../helpers/vector2";
+import useSetting from "../helpers/useSetting";
 
 // Send pointer updates every 50ms (20fps)
 const sendTickRate = 50;
@@ -13,6 +14,7 @@ const sendTickRate = 50;
 function NetworkedMapPointer({ session, active, gridSize }) {
   const { userId } = useContext(AuthContext);
   const [localPointerState, setLocalPointerState] = useState({});
+  const [pointerColor] = useSetting("pointer.color");
 
   const sessionRef = useRef(session);
   useEffect(() => {
@@ -22,10 +24,15 @@ function NetworkedMapPointer({ session, active, gridSize }) {
   useEffect(() => {
     if (userId && !(userId in localPointerState)) {
       setLocalPointerState({
-        [userId]: { position: { x: 0, y: 0 }, visible: false, id: userId },
+        [userId]: {
+          position: { x: 0, y: 0 },
+          visible: false,
+          id: userId,
+          color: pointerColor,
+        },
       });
     }
-  }, [userId, localPointerState]);
+  }, [userId, localPointerState, pointerColor]);
 
   // Send pointer updates every sendTickRate to peers to save on bandwidth
   // We use requestAnimationFrame as setInterval was being blocked during
@@ -65,9 +72,14 @@ function NetworkedMapPointer({ session, active, gridSize }) {
   function updateOwnPointerState(position, visible) {
     setLocalPointerState((prev) => ({
       ...prev,
-      [userId]: { position, visible, id: userId },
+      [userId]: { position, visible, id: userId, color: pointerColor },
     }));
-    ownPointerUpdateRef.current = { position, visible, id: userId };
+    ownPointerUpdateRef.current = {
+      position,
+      visible,
+      id: userId,
+      color: pointerColor,
+    };
   }
 
   function handleOwnPointerDown(position) {
@@ -142,6 +154,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
             id: interp.id,
             visible: interp.from.visible,
             position: lerp(interp.from.position, interp.to.position, alpha),
+            color: interp.from.color,
           };
         }
         if (alpha > 1 && !interp.to.visible) {
@@ -149,6 +162,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
             id: interp.id,
             visible: interp.to.visible,
             position: interp.to.position,
+            color: interp.to.color,
           };
           delete interpolationsRef.current[interp.id];
         }
@@ -178,6 +192,7 @@ function NetworkedMapPointer({ session, active, gridSize }) {
           onPointerDown={pointer.id === userId && handleOwnPointerDown}
           onPointerMove={pointer.id === userId && handleOwnPointerMove}
           onPointerUp={pointer.id === userId && handleOwnPointerUp}
+          color={pointer.color}
         />
       ))}
     </Group>

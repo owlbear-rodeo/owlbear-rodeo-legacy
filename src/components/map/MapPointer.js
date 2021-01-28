@@ -21,6 +21,7 @@ function MapPointer({
   onPointerMove,
   onPointerUp,
   visible,
+  color,
 }) {
   const { mapWidth, mapHeight, interactionEmitter } = useContext(
     MapInteractionContext
@@ -69,7 +70,7 @@ function MapPointer({
       {visible && (
         <Trail
           position={multiply(position, { x: mapWidth, y: mapHeight })}
-          color={colors.red}
+          color={colors[color]}
           size={size}
           duration={200}
         />
@@ -77,5 +78,9 @@ function MapPointer({
     </Group>
   );
 }
+
+MapPointer.defaultProps = {
+  color: "red",
+};
 
 export default MapPointer;

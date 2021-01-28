@@ -34,7 +34,7 @@ function ColorCircle({ color, selected, onClick, sx }) {
   );
 }
 
-function ColorControl({ color, onColorChange }) {
+function ColorControl({ color, onColorChange, exclude }) {
   const [showColorMenu, setShowColorMenu] = useState(false);
   const [colorMenuOptions, setColorMenuOptions] = useState({});
 
@@ -74,19 +74,21 @@ function ColorControl({ color, onColorChange }) {
         }}
         p={1}
       >
-        {colorOptions.map((c) => (
-          <ColorCircle
-            key={c}
-            color={c}
-            selected={c === color}
-            onClick={() => {
-              onColorChange(c);
-              setShowColorMenu(false);
-              setColorMenuOptions({});
-            }}
-            sx={{ width: "25%", paddingTop: "25%" }}
-          />
-        ))}
+        {colorOptions
+          .filter((color) => !exclude.includes(color))
+          .map((c) => (
+            <ColorCircle
+              key={c}
+              color={c}
+              selected={c === color}
+              onClick={() => {
+                onColorChange(c);
+                setShowColorMenu(false);
+                setColorMenuOptions({});
+              }}
+              sx={{ width: "25%", paddingTop: "25%" }}
+            />
+          ))}
       </Box>
     </MapMenu>
   );
@@ -103,5 +105,9 @@ function ColorControl({ color, onColorChange }) {
     </>
   );
 }
+
+ColorControl.defaultProps = {
+  exclude: [],
+};
 
 export default ColorControl;

@@ -9,6 +9,7 @@ import SelectMapButton from "./SelectMapButton";
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import MeasureToolSettings from "./controls/MeasureToolSettings";
+import PointerToolSettings from "./controls/PointerToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
@@ -66,6 +67,7 @@ function MapContols({
       id: "pointer",
       icon: <PointerToolIcon />,
       title: "Pointer Tool (Q)",
+      SettingsComponent: PointerToolSettings,
     },
     note: {
       id: "note",

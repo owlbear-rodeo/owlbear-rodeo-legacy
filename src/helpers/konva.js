@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Line, Group, Path, Circle } from "react-konva";
-import { lerp } from "./shared";
+import Color from "color";
 import * as Vector2 from "./vector2";
 
 // Holes should be wound in the opposite direction as the containing points array
@@ -142,10 +142,27 @@ export function Tick({ x, y, scale, onClick, cross }) {
   );
 }
 
-export function Trail({ position, size, duration, segments }) {
+export function Trail({ position, size, duration, segments, color }) {
   const trailRef = useRef();
   const pointsRef = useRef([]);
   const prevPositionRef = useRef(position);
+  const positionRef = useRef(position);
+  const circleRef = useRef();
+  // Color of the end of the trial
+  const transparentColorRef = useRef(
+    Color(color).lighten(0.5).alpha(0).string()
+  );
+
+  useEffect(() => {
+    // Lighten color to give it a `glow` effect
+    transparentColorRef.current = Color(color).lighten(0.5).alpha(0).string();
+  }, [color]);
+
+  // Keep track of position so we can use it in the trail animation
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
   // Add a new point every time position is changed
   useEffect(() => {
     if (Vector2.compare(position, prevPositionRef.current, 0.0001)) {
@@ -178,6 +195,13 @@ export function Trail({ position, size, duration, segments }) {
       if (expired > 0) {
         pointsRef.current = pointsRef.current.slice(expired);
       }
+
+      // Update the circle position to keep it in sync with the trail
+      if (circleRef.current) {
+        circleRef.current.x(positionRef.current.x);
+        circleRef.current.y(positionRef.current.y);
+      }
+
       if (trailRef.current) {
         trailRef.current.getLayer().draw();
       }
@@ -192,20 +216,57 @@ export function Trail({ position, size, duration, segments }) {
   function sceneFunc(context) {
     // Resample points to ensure a smooth trail
     const resampledPoints = Vector2.resample(pointsRef.current, segments);
+    if (resampledPoints.length === 0) {
+      return;
+    }
+    // Draws a line offset in the direction perpendicular to its travel direction
+    const drawOffsetLine = (from, to, alpha) => {
+      const forward = Vector2.normalize(Vector2.subtract(from, to));
+      // Rotate the forward vector 90 degrees based off of the direction
+      const side = { x: forward.y, y: -forward.x };
+
+      // Offset the `to` position by the size of the point and in the side direction
+      const toSize = (alpha * size) / 2;
+      const toOffset = Vector2.add(to, Vector2.multiply(side, toSize));
+
+      context.lineTo(toOffset.x, toOffset.y);
+    };
+    context.beginPath();
+    // Sample the points starting from the tail then traverse counter clockwise drawing each point
+    // offset to make a taper, stops at the base of the trail
+    context.moveTo(resampledPoints[0].x, resampledPoints[0].y);
     for (let i = 1; i < resampledPoints.length; i++) {
       const from = resampledPoints[i - 1];
       const to = resampledPoints[i];
-      const alpha = i / resampledPoints.length;
-      context.beginPath();
-      context.lineJoin = "round";
-      context.lineCap = "round";
-      context.lineWidth = alpha * size;
-      context.strokeStyle = `hsl(0, 63%, ${lerp(90, 50, alpha)}%)`;
-      context.moveTo(from.x, from.y);
-      context.lineTo(to.x, to.y);
-      context.stroke();
-      context.closePath();
+      drawOffsetLine(from, to, i / resampledPoints.length);
     }
+    // Start from the base of the trail and continue drawing down back to the end of the tail
+    for (let i = resampledPoints.length - 2; i >= 0; i--) {
+      const from = resampledPoints[i + 1];
+      const to = resampledPoints[i];
+      drawOffsetLine(from, to, i / resampledPoints.length);
+    }
+    context.lineTo(resampledPoints[0].x, resampledPoints[0].y);
+    context.closePath();
+
+    // Create a radial gradient from the center of the trail to the tail
+    const gradientCenter = resampledPoints[resampledPoints.length - 1];
+    const gradientEnd = resampledPoints[0];
+    const gradientRadius = Vector2.length(
+      Vector2.subtract(gradientCenter, gradientEnd)
+    );
+    let gradient = context.createRadialGradient(
+      gradientCenter.x,
+      gradientCenter.y,
+      0,
+      gradientCenter.x,
+      gradientCenter.y,
+      gradientRadius
+    );
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, transparentColorRef.current);
+    context.fillStyle = gradient;
+    context.fill();
   }
 
   return (
@@ -214,9 +275,10 @@ export function Trail({ position, size, duration, segments }) {
       <Circle
         x={position.x}
         y={position.y}
-        fill="hsl(0, 63%, 50%)"
+        fill={color}
         width={size}
         height={size}
+        ref={circleRef}
       />
     </Group>
   );
