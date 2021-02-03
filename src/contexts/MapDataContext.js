@@ -22,12 +22,8 @@ const cachedMapMax = 15;
 
 const defaultMapState = {
   tokens: {},
-  // An index into the draw actions array to which only actions before the
-  // index will be performed (used in undo and redo)
-  mapDrawActionIndex: -1,
-  mapDrawActions: [],
-  fogDrawActionIndex: -1,
-  fogDrawActions: [],
+  drawShapes: {},
+  fogShapes: {},
   // Flags to determine what other people can edit
   editFlags: ["drawing", "tokens", "notes"],
   notes: {},

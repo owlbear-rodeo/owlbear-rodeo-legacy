@@ -2,7 +2,7 @@ import simplify from "simplify-js";
 import polygonClipping from "polygon-clipping";
 
 import * as Vector2 from "./vector2";
-import { toDegrees, omit } from "./shared";
+import { toDegrees } from "./shared";
 import { getRelativePointerPositionNormalized } from "./konva";
 import { logError } from "./logging";
 
@@ -219,80 +219,7 @@ export function simplifyPoints(points, gridSize, scale) {
   );
 }
 
-export function drawActionsToShapes(actions, actionIndex) {
-  let shapesById = {};
-  for (let i = 0; i <= actionIndex; i++) {
-    const action = actions[i];
-    if (!action) {
-      continue;
-    }
-    if (action.type === "add") {
-      for (let shape of action.shapes) {
-        shapesById[shape.id] = shape;
-      }
-    }
-    if (action.type === "edit") {
-      for (let edit of action.shapes) {
-        if (edit.id in shapesById) {
-          shapesById[edit.id] = { ...shapesById[edit.id], ...edit };
-        }
-      }
-    }
-    if (action.type === "remove") {
-      shapesById = omit(shapesById, action.shapeIds);
-    }
-    if (action.type === "subtract") {
-      const actionGeom = action.shapes.map((actionShape) => [
-        actionShape.data.points.map(({ x, y }) => [x, y]),
-      ]);
-      let subtractedShapes = {};
-      for (let shape of Object.values(shapesById)) {
-        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
-        const shapeHoles = shape.data.holes.map((hole) =>
-          hole.map(({ x, y }) => [x, y])
-        );
-        let shapeGeom = [[shapePoints, ...shapeHoles]];
-        const difference = polygonClipping.difference(shapeGeom, actionGeom);
-        addPolygonDifferenceToShapes(shape, difference, subtractedShapes);
-      }
-      shapesById = subtractedShapes;
-    }
-    if (action.type === "cut") {
-      const actionGeom = action.shapes.map((actionShape) => [
-        actionShape.data.points.map(({ x, y }) => [x, y]),
-      ]);
-      let cutShapes = {};
-      for (let shape of Object.values(shapesById)) {
-        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
-        const shapeHoles = shape.data.holes.map((hole) =>
-          hole.map(({ x, y }) => [x, y])
-        );
-        let shapeGeom = [[shapePoints, ...shapeHoles]];
-        try {
-          const difference = polygonClipping.difference(shapeGeom, actionGeom);
-          const intersection = polygonClipping.intersection(
-            shapeGeom,
-            actionGeom
-          );
-          addPolygonDifferenceToShapes(shape, difference, cutShapes);
-          addPolygonIntersectionToShapes(shape, intersection, cutShapes);
-        } catch {
-          logError(
-            new Error(
-              `Unable to find segment for shapes ${JSON.stringify(
-                shape
-              )} and ${JSON.stringify(action)}`
-            )
-          );
-        }
-      }
-      shapesById = cutShapes;
-    }
-  }
-  return Object.values(shapesById);
-}
-
-function addPolygonDifferenceToShapes(shape, difference, shapes) {
+export function addPolygonDifferenceToShapes(shape, difference, shapes) {
   for (let i = 0; i < difference.length; i++) {
     let newId = `${shape.id}-dif-${i}`;
     // Holes detected
@@ -314,7 +241,7 @@ function addPolygonDifferenceToShapes(shape, difference, shapes) {
   }
 }
 
-function addPolygonIntersectionToShapes(shape, intersection, shapes) {
+export function addPolygonIntersectionToShapes(shape, intersection, shapes) {
   for (let i = 0; i < intersection.length; i++) {
     let newId = `${shape.id}-int-${i}`;
     shapes[newId] = {

@@ -24,6 +24,7 @@
     "fuse.js": "^6.4.1",
     "interactjs": "^1.9.7",
     "konva": "^7.1.8",
+    "lodash.clonedeep": "^4.5.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "normalize-wheel": "^1.0.1",

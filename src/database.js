@@ -2,6 +2,7 @@ import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getMapDefaultInset } from "./helpers/map";
+import { convertOldActionsToShapes } from "./actions";
 
 function loadVersions(db) {
   // v1.2.0
@@ -305,7 +306,7 @@ function loadVersions(db) {
         });
     });
 
-  // 1.7.1 - Added note text only mode
+  // 1.8.0 - Added note text only mode, converted draw and fog representations
   db.version(18)
     .stores({})
     .upgrade((tx) => {
@@ -316,6 +317,20 @@ function loadVersions(db) {
           for (let id in state.notes) {
             state.notes[id].textOnly = false;
           }
+
+          state.drawShapes = convertOldActionsToShapes(
+            state.mapDrawActions,
+            state.mapDrawActionIndex
+          );
+          state.fogShapes = convertOldActionsToShapes(
+            state.fogDrawActions,
+            state.fogDrawActionIndex
+          );
+
+          delete state.mapDrawActions;
+          delete state.mapDrawActionIndex;
+          delete state.fogDrawActions;
+          delete state.fogDrawActionIndex;
         });
     });
 }

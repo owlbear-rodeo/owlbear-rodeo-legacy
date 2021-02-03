@@ -17,6 +17,13 @@ import Session from "./Session";
 import Map from "../components/map/Map";
 import Tokens from "../components/token/Tokens";
 
+const defaultMapActions = {
+  mapDrawActions: [],
+  mapDrawActionIndex: -1,
+  fogDrawActions: [],
+  fogDrawActionIndex: -1,
+};
+
 /**
  * @typedef {object} NetworkedMapProps
  * @property {Session} session
@@ -225,57 +232,114 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMapState(newMapState, true, true);
   }
 
-  function addMapDrawActions(actions, indexKey, actionsKey) {
-    setCurrentMapState((prevMapState) => {
+  const [mapActions, setMapActions] = useState(defaultMapActions);
+
+  function addMapActions(actions, indexKey, actionsKey, shapesKey) {
+    setMapActions((prevMapActions) => {
       const newActions = [
-        ...prevMapState[actionsKey].slice(0, prevMapState[indexKey] + 1),
+        ...prevMapActions[actionsKey].slice(0, prevMapActions[indexKey] + 1),
         ...actions,
       ];
       const newIndex = newActions.length - 1;
       return {
-        ...prevMapState,
+        ...prevMapActions,
         [actionsKey]: newActions,
         [indexKey]: newIndex,
       };
     });
+    // Update map state by performing the actions on it
+    setCurrentMapState((prevMapState) => {
+      if (prevMapState) {
+        let shapes = prevMapState[shapesKey];
+        for (let action of actions) {
+          shapes = action.execute(shapes);
+        }
+        return {
+          ...prevMapState,
+          [shapesKey]: shapes,
+        };
+      }
+    });
   }
 
-  function updateDrawActionIndex(change, indexKey, actionsKey) {
+  function updateActionIndex(change, indexKey, actionsKey, shapesKey) {
+    const prevIndex = mapActions[indexKey];
     const newIndex = Math.min(
-      Math.max(currentMapState[indexKey] + change, -1),
-      currentMapState[actionsKey].length - 1
+      Math.max(mapActions[indexKey] + change, -1),
+      mapActions[actionsKey].length - 1
     );
 
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
+    setMapActions((prevMapActions) => ({
+      ...prevMapActions,
       [indexKey]: newIndex,
     }));
+
+    // Update map state by either performing the actions or undoing them
+    setCurrentMapState((prevMapState) => {
+      if (prevMapState) {
+        let shapes = prevMapState[shapesKey];
+        if (prevIndex < newIndex) {
+          // Redo
+          for (let i = prevIndex + 1; i < newIndex + 1; i++) {
+            let action = mapActions[actionsKey][i];
+            shapes = action.execute(shapes);
+          }
+        } else {
+          // Undo
+          for (let i = prevIndex; i > newIndex; i--) {
+            let action = mapActions[actionsKey][i];
+            shapes = action.undo(shapes);
+          }
+        }
+        return {
+          ...prevMapState,
+          [shapesKey]: shapes,
+        };
+      }
+    });
+
     return newIndex;
   }
 
   function handleMapDraw(action) {
-    addMapDrawActions([action], "mapDrawActionIndex", "mapDrawActions");
+    addMapActions(
+      [action],
+      "mapDrawActionIndex",
+      "mapDrawActions",
+      "drawShapes"
+    );
   }
 
   function handleMapDrawUndo() {
-    updateDrawActionIndex(-1, "mapDrawActionIndex", "mapDrawActions");
+    updateActionIndex(-1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
   }
 
   function handleMapDrawRedo() {
-    updateDrawActionIndex(1, "mapDrawActionIndex", "mapDrawActions");
+    updateActionIndex(1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
   }
 
   function handleFogDraw(action) {
-    addMapDrawActions([action], "fogDrawActionIndex", "fogDrawActions");
+    addMapActions(
+      [action],
+      "fogDrawActionIndex",
+      "fogDrawActions",
+      "fogShapes"
+    );
   }
 
   function handleFogDrawUndo() {
-    updateDrawActionIndex(-1, "fogDrawActionIndex", "fogDrawActions");
+    updateActionIndex(-1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
   }
 
   function handleFogDrawRedo() {
-    updateDrawActionIndex(1, "fogDrawActionIndex", "fogDrawActions");
+    updateActionIndex(1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
   }
+
+  useEffect(() => {
+    if (!currentMapState) {
+      setMapActions(defaultMapActions);
+    }
+  }, [currentMapState]);
 
   function handleNoteChange(note) {
     setCurrentMapState((prevMapState) => ({
@@ -495,6 +559,7 @@ function NetworkedMapAndTokens({ session }) {
       <Map
         map={currentMap}
         mapState={currentMapState}
+        mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onMapChange={handleMapChange}
