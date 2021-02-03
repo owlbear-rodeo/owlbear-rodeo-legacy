@@ -1,7 +1,7 @@
 import polygonClipping from "polygon-clipping";
 
 import Action from "./Action";
-import { addPolygonDifferenceToShapes } from "../helpers/drawing";
+import { addPolygonDifferenceToShapes } from "../helpers/actions";
 
 class SubtractShapeAction extends Action {
   constructor(shapes) {

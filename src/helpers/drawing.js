@@ -10,7 +10,6 @@ const snappingThreshold = 1 / 5;
 export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
   const mapImage = mapStage.findOne("#mapImage");
   let position = getRelativePointerPositionNormalized(mapImage);
-
   if (useGridSnappning) {
     // Snap to corners of grid
     // Subtract offset to transform into offset space then add it back transform back
@@ -20,7 +19,6 @@ export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
       offset
     );
     const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
-
     // Snap to center of grid
     // Subtract offset and half size to transform it into offset half space then transform it back
     const halfSize = Vector2.multiply(gridSize, 0.5);
@@ -217,44 +215,6 @@ export function simplifyPoints(points, gridSize, scale) {
     points,
     (Vector2.min(gridSize) * defaultSimplifySize) / scale
   );
-}
-
-export function addPolygonDifferenceToShapes(shape, difference, shapes) {
-  for (let i = 0; i < difference.length; i++) {
-    let newId = `${shape.id}-dif-${i}`;
-    // Holes detected
-    let holes = [];
-    if (difference[i].length > 1) {
-      for (let j = 1; j < difference[i].length; j++) {
-        holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
-      }
-    }
-
-    shapes[newId] = {
-      ...shape,
-      id: newId,
-      data: {
-        points: difference[i][0].map(([x, y]) => ({ x, y })),
-        holes,
-      },
-    };
-  }
-}
-
-export function addPolygonIntersectionToShapes(shape, intersection, shapes) {
-  for (let i = 0; i < intersection.length; i++) {
-    let newId = `${shape.id}-int-${i}`;
-    shapes[newId] = {
-      ...shape,
-      id: newId,
-      data: {
-        points: intersection[i][0].map(([x, y]) => ({ x, y })),
-        holes: [],
-      },
-      // Default intersection visibility to false
-      visible: false,
-    };
-  }
 }
 
 export function mergeShapes(shapes) {

@@ -4,7 +4,7 @@ import Action from "./Action";
 import {
   addPolygonDifferenceToShapes,
   addPolygonIntersectionToShapes,
-} from "../helpers/drawing";
+} from "../helpers/actions";
 
 class CutShapeAction extends Action {
   constructor(shapes) {
