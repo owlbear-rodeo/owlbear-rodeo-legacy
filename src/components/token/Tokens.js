@@ -9,7 +9,8 @@ import ProxyToken from "./ProxyToken";
 import SelectTokensButton from "./SelectTokensButton";
 
 import { fromEntries } from "../../helpers/shared";
-import useSetting from "../../helpers/useSetting";
+
+import useSetting from "../../hooks/useSetting";
 
 import AuthContext from "../../contexts/AuthContext";
 import TokenDataContext from "../../contexts/TokenDataContext";

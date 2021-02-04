@@ -4,12 +4,13 @@ import ReactResizeDetector from "react-resize-detector";
 import { Stage, Layer, Image } from "react-konva";
 import { EventEmitter } from "events";
 
-import useMapImage from "../../helpers/useMapImage";
-import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-import useKeyboard from "../../helpers/useKeyboard";
-import useStageInteraction from "../../helpers/useStageInteraction";
-import useImageCenter from "../../helpers/useImageCenter";
-import { getMapMaxZoom } from "../../helpers/map";
+import useMapImage from "../../hooks/useMapImage";
+import usePreventOverscroll from "../../hooks/usePreventOverscroll";
+import useKeyboard from "../../hooks/useKeyboard";
+import useStageInteraction from "../../hooks/useStageInteraction";
+import useImageCenter from "../../hooks/useImageCenter";
+
+import { getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import MapStageContext, {
@@ -87,7 +88,7 @@ function MapInteraction({
     setStageScale,
     stageTranslateRef,
     mapLayerRef.current,
-    getMapMaxZoom(map),
+    getGridMaxZoom(map?.grid),
     selectedToolId,
     preventMapInteraction,
     {

@@ -5,7 +5,7 @@ import shortid from "shortid";
 
 import AuthContext from "../contexts/AuthContext";
 
-import useSetting from "../helpers/useSetting";
+import useSetting from "../hooks/useSetting";
 
 import Modal from "../components/Modal";
 

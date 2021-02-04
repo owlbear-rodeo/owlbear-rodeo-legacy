@@ -24,7 +24,7 @@ import DiceTray from "../../dice/diceTray/DiceTray";
 import DiceLoadingContext from "../../contexts/DiceLoadingContext";
 
 import { getDiceRoll } from "../../helpers/dice";
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 function DiceTrayOverlay({
   isOpen,

@@ -5,9 +5,10 @@ import { useSpring, animated } from "react-spring/konva";
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
-import { snapNodeToMap } from "../../helpers/map";
+import { snapNodeToGrid } from "../../helpers/grid";
 import colors from "../../helpers/colors";
-import usePrevious from "../../helpers/usePrevious";
+
+import usePrevious from "../../hooks/usePrevious";
 
 const snappingThreshold = 1 / 5;
 
@@ -38,7 +39,13 @@ function Note({
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToMap(map, mapWidth, mapHeight, noteGroup, snappingThreshold);
+      snapNodeToGrid(
+        map.grid,
+        mapWidth,
+        mapHeight,
+        noteGroup,
+        snappingThreshold
+      );
     }
   }
 

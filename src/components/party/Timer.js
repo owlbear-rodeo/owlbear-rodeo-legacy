@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { Box, Progress } from "theme-ui";
 
-import usePortal from "../../helpers/usePortal";
+import usePortal from "../../hooks/usePortal";
 
 function Timer({ timer, index }) {
   const progressBarRef = useRef();

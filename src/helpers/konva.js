@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Line, Group, Path, Circle } from "react-konva";
 import Color from "color";
-import * as Vector2 from "./vector2";
+import Vector2 from "./Vector2";
 
 // Holes should be wound in the opposite direction as the containing points array
 export function HoleyLine({ holes, ...props }) {

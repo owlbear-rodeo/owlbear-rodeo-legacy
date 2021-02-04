@@ -21,7 +21,7 @@ import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 function MapContols({
   onMapChange,

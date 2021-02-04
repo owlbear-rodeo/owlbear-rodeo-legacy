@@ -14,7 +14,7 @@ import diagonalPattern from "../../images/DiagonalPattern.png";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 
-import { compare as comparePoints } from "../../helpers/vector2";
+import Vector2 from "../../helpers/Vector2";
 import {
   getFogBrushPosition,
   simplifyPoints,
@@ -23,8 +23,9 @@ import {
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import { HoleyLine, Tick } from "../../helpers/konva";
-import useKeyboard from "../../helpers/useKeyboard";
-import useDebounce from "../../helpers/useDebounce";
+
+import useKeyboard from "../../hooks/useKeyboard";
+import useDebounce from "../../hooks/useDebounce";
 
 function MapFog({
   map,
@@ -120,7 +121,7 @@ function MapFog({
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
           if (
-            comparePoints(
+            Vector2.compare(
               prevPoints[prevPoints.length - 1],
               brushPosition,
               0.001

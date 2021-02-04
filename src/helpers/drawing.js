@@ -1,7 +1,7 @@
 import simplify from "simplify-js";
 import polygonClipping from "polygon-clipping";
 
-import * as Vector2 from "./vector2";
+import Vector2 from "./Vector2";
 import { toDegrees } from "./shared";
 import { getRelativePointerPositionNormalized } from "./konva";
 import { logError } from "./logging";

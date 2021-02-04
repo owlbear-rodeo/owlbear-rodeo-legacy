@@ -1,8 +1,100 @@
 import GridSizeModel from "../ml/gridSize/GridSizeModel";
-import * as Vector2 from "./vector2";
+import Vector2 from "./Vector2";
 
 import { logError } from "./logging";
 
+const SQRT3 = 1.73205;
+
+/**
+ * @typedef GridInset
+ * @property {Vector2} topLeft
+ * @property {Vector2} bottomRight
+ */
+
+/**
+ * @typedef Grid
+ * @property {GridInset} inset
+ * @property {Vector2} size
+ * @property {("square"|"hexVertical"|"hexHorizontal")} type
+ */
+
+/**
+ * @typedef CellSize
+ * @property {number} width
+ * @property {number} height
+ * @property {number?} radius - Used for hex cell sizes
+ */
+
+/**
+ * Gets the cell size for a grid taking into account inset and grid type
+ * @param {Grid} grid
+ * @param {number} insetWidth
+ * @param {number} insetHeight
+ * @returns {CellSize}
+ */
+export function getCellSize(grid, insetWidth, insetHeight) {
+  if (grid.type === "square") {
+    return {
+      width: insetWidth / grid.size.x,
+      height: insetHeight / grid.size.y,
+    };
+  } else if (grid.type === "hexVertical") {
+    const radius = insetWidth / grid.size.x / SQRT3;
+    return { width: radius * SQRT3, height: radius + radius / 2, radius };
+  } else if (grid.type === "hexHorizontal") {
+    const radius = insetHeight / grid.size.y / SQRT3;
+    return { width: radius + radius / 2, height: radius * SQRT3, radius };
+  }
+}
+
+/**
+ * Find the location of cell in the grid
+ * @param {Grid} grid
+ * @param {number} x X-axis location of the cell
+ * @param {number} y Y-axis location of the cell
+ * @param {CellSize} cellSize
+ * @returns {Vector2}
+ */
+export function getCellLocation(grid, x, y, cellSize) {
+  if (grid.type === "square") {
+    return { x: x * cellSize.width, y: y * cellSize.height };
+  } else if (grid.type === "hexVertical") {
+    return {
+      x: x * cellSize.width + (cellSize.width * (1 + (y % 2))) / 2,
+      y: y * cellSize.height + cellSize.radius,
+    };
+  } else if (grid.type === "hexHorizontal") {
+    return {
+      x: x * cellSize.width + cellSize.radius,
+      y: y * cellSize.height + (cellSize.height * (1 + (x % 2))) / 2,
+    };
+  }
+}
+
+/**
+ * Whether the cell located at `x, y` is out of bounds of the grid
+ * @param {Grid} grid
+ * @param {number} x X-axis location of the cell
+ * @param {number} y Y-axis location of the cell
+ * @returns {boolean}
+ */
+export function shouldClampCell(grid, x, y) {
+  if (grid.type === "hexVertical") {
+    return x === grid.size.x - 1 && y % 2 !== 0;
+  } else if (grid.type === "hexHorizontal") {
+    return y === grid.size.y - 1 && x % 2 !== 0;
+  }
+  return false;
+}
+
+/**
+ * Get the default inset for a map
+ * @param {number} width Hidth of the map
+ * @param {number} height Height of the map
+ * @param {number} gridX Number of grid cells in the horizontal direction
+ * @param {number} gridY Number of grid cells in the vertical direction
+ * @returns {GridInset}
+ */
 export function getMapDefaultInset(width, height, gridX, gridY) {
   // Max the width
   const gridScale = width / gridX;
@@ -11,14 +103,23 @@ export function getMapDefaultInset(width, height, gridX, gridY) {
   return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: yNorm } };
 }
 
-// Get all factors of a number
+/**
+ * Get all factors of a number
+ * @param {number} n
+ * @returns {number[]}
+ */
 function factors(n) {
   const numbers = Array.from(Array(n + 1), (_, i) => i);
   return numbers.filter((i) => n % i === 0);
 }
 
-// Greatest common divisor
-// Euclidean algorithm https://en.wikipedia.org/wiki/Euclidean_algorithm
+/**
+ * Greatest common divisor
+ * Uses the Euclidean algorithm https://en.wikipedia.org/wiki/Euclidean_algorithm
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
 function gcd(a, b) {
   while (b !== 0) {
     const t = b;
@@ -28,7 +129,12 @@ function gcd(a, b) {
   return a;
 }
 
-// Find all dividers that fit into two numbers
+/**
+ * Find all dividers that fit into two numbers
+ * @param {number} a
+ * @param {number} b
+ * @returns {number[]}
+ */
 function dividers(a, b) {
   const d = gcd(a, b);
   return factors(d);
@@ -42,12 +148,24 @@ const gridSizeStd = { x: 14.438842, y: 15.582376 };
 const minGridSize = 10;
 const maxGridSize = 200;
 
+/**
+ * Get whether the grid size is likely valid by checking whether it exceeds a bounds
+ * @param {number} x
+ * @param {number} y
+ * @returns {boolean}
+ */
 export function gridSizeVaild(x, y) {
   return (
     x > minGridSize && y > minGridSize && x < maxGridSize && y < maxGridSize
   );
 }
 
+/**
+ * Finds a grid size for an image by finding the closest size to the average grid size
+ * @param {Image} image
+ * @param {number[]} candidates
+ * @returns {Vector2}
+ */
 function gridSizeHeuristic(image, candidates) {
   const width = image.width;
   const height = image.height;
@@ -74,6 +192,12 @@ function gridSizeHeuristic(image, candidates) {
   }
 }
 
+/**
+ * Finds the grid size of an image by running the image through a machine learning model
+ * @param {Image} image
+ * @param {number[]} candidates
+ * @returns {Vector2}
+ */
 async function gridSizeML(image, candidates) {
   const width = image.width;
   const height = image.height;
@@ -134,6 +258,11 @@ async function gridSizeML(image, candidates) {
   }
 }
 
+/**
+ * Finds the grid size of an image by either using a ML model or falling back to a heuristic
+ * @param {Image} image
+ * @returns {Vector2}
+ */
 export async function getGridSize(image) {
   const candidates = dividers(image.width, image.height);
   let prediction;
@@ -155,32 +284,45 @@ export async function getGridSize(image) {
   return prediction;
 }
 
-export function getMapMaxZoom(map) {
-  if (!map) {
+/**
+ * Get the max zoom for a grid
+ * @param {Grid} grid
+ * @returns {number}
+ */
+export function getGridMaxZoom(grid) {
+  if (!grid) {
     return 10;
   }
   // Return max grid size / 2
-  return Math.max(Math.max(map.grid.size.x, map.grid.size.y) / 2, 5);
+  return Math.max(Math.max(grid.size.x, grid.size.y) / 2, 5);
 }
 
-export function snapNodeToMap(
-  map,
+/**
+ * Snap a Konva Node to a the closest grid cell
+ * @param {Grid} grid
+ * @param {number} mapWidth
+ * @param {number} mapHeight
+ * @param {Konva.node} node
+ * @param {number} snappingThreshold 1 = Always snap, 0 = never snap
+ */
+export function snapNodeToGrid(
+  grid,
   mapWidth,
   mapHeight,
   node,
   snappingThreshold
 ) {
-  const offset = Vector2.multiply(map.grid.inset.topLeft, {
+  const offset = Vector2.multiply(grid.inset.topLeft, {
     x: mapWidth,
     y: mapHeight,
   });
   const gridSize = {
     x:
-      (mapWidth * (map.grid.inset.bottomRight.x - map.grid.inset.topLeft.x)) /
-      map.grid.size.x,
+      (mapWidth * (grid.inset.bottomRight.x - grid.inset.topLeft.x)) /
+      grid.size.x,
     y:
-      (mapHeight * (map.grid.inset.bottomRight.y - map.grid.inset.topLeft.y)) /
-      map.grid.size.y,
+      (mapHeight * (grid.inset.bottomRight.y - grid.inset.topLeft.y)) /
+      grid.size.y,
   };
 
   const position = node.position();

@@ -8,8 +8,10 @@ import DatabaseContext from "../contexts/DatabaseContext";
 import PartyContext from "../contexts/PartyContext";
 
 import { omit } from "../helpers/shared";
-import useDebounce from "../helpers/useDebounce";
-import useNetworkedState from "../helpers/useNetworkedState";
+
+import useDebounce from "../hooks/useDebounce";
+import useNetworkedState from "../hooks/useNetworkedState";
+
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "./Session";

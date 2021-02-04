@@ -8,8 +8,9 @@ import MapEditor from "../components/map/MapEditor";
 import MapDataContext from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
-import { getMapDefaultInset } from "../helpers/map";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
+import { getMapDefaultInset } from "../helpers/grid";
+
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditMapModal({ isOpen, onDone, map, mapState }) {
   const { updateMap, updateMapState } = useContext(MapDataContext);

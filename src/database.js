@@ -1,7 +1,7 @@
 import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
-import { getMapDefaultInset } from "./helpers/map";
+import { getMapDefaultInset } from "./helpers/grid";
 import { convertOldActionsToShapes } from "./actions";
 
 function loadVersions(db) {

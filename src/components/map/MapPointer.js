@@ -9,7 +9,7 @@ import {
   getRelativePointerPositionNormalized,
   Trail,
 } from "../../helpers/konva";
-import { multiply } from "../../helpers/vector2";
+import Vector2 from "../../helpers/Vector2";
 
 import colors from "../../helpers/colors";
 
@@ -69,7 +69,7 @@ function MapPointer({
     <Group>
       {visible && (
         <Trail
-          position={multiply(position, { x: mapWidth, y: mapHeight })}
+          position={Vector2.multiply(position, { x: mapWidth, y: mapHeight })}
           color={colors[color]}
           size={size}
           duration={200}

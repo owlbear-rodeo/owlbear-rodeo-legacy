@@ -8,7 +8,8 @@ import TokenPreview from "../components/token/TokenPreview";
 import TokenDataContext from "../contexts/TokenDataContext";
 
 import { isEmpty } from "../helpers/shared";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
+
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditTokenModal({ isOpen, onDone, token }) {
   const { updateToken } = useContext(TokenDataContext);

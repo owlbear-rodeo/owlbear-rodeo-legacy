@@ -19,7 +19,7 @@ import SelectDiceButton from "./SelectDiceButton";
 import Divider from "../Divider";
 
 import { dice } from "../../dice";
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 function DiceButtons({
   diceRolls,

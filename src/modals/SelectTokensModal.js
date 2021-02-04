@@ -13,9 +13,10 @@ import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
-import useKeyboard from "../helpers/useKeyboard";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
+
+import useKeyboard from "../hooks/useKeyboard";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import TokenDataContext from "../contexts/TokenDataContext";
 import AuthContext from "../contexts/AuthContext";

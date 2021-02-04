@@ -16,7 +16,7 @@ import Slider from "../components/Slider";
 import AuthContext from "../contexts/AuthContext";
 import DatabaseContext from "../contexts/DatabaseContext";
 
-import useSetting from "../helpers/useSetting";
+import useSetting from "../hooks/useSetting";
 
 import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";

@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import useDataSource from "../../helpers/useDataSource";
+import useDataSource from "../../hooks/useDataSource";
 import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
 function MapTile({

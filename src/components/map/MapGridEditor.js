@@ -3,8 +3,9 @@ import { Group, Circle, Rect } from "react-konva";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
-import * as Vector2 from "../../helpers/vector2";
-import useKeyboard from "../../helpers/useKeyboard";
+import Vector2 from "../../helpers/Vector2";
+
+import useKeyboard from "../../hooks/useKeyboard";
 
 function MapGridEditor({ map, onGridChange }) {
   const {

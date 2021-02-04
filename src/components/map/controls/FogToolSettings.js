@@ -20,7 +20,7 @@ import ToolSection from "./ToolSection";
 
 import Divider from "../../Divider";
 
-import useKeyboard from "../../../helpers/useKeyboard";
+import useKeyboard from "../../../hooks/useKeyboard";
 
 function BrushToolSettings({
   settings,

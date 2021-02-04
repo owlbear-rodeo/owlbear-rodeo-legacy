@@ -1,10 +1,11 @@
 import React, { useEffect, useContext } from "react";
 
-import useNetworkedState from "../helpers/useNetworkedState";
 import DatabaseContext from "./DatabaseContext";
 import AuthContext from "./AuthContext";
 
 import { getRandomMonster } from "../helpers/monsters";
+
+import useNetworkedState from "../hooks/useNetworkedState";
 
 export const PlayerStateContext = React.createContext();
 export const PlayerUpdaterContext = React.createContext(() => {});

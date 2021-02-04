@@ -16,6 +16,12 @@ const qualitySettings = [
   { value: "original", label: "Original" },
 ];
 
+const gridTypeSettings = [
+  { value: "square", label: "Square" },
+  { value: "hexVertical", label: "Hex Vertical" },
+  { value: "hexHorizontal", label: "Hex Horizontal" },
+];
+
 function MapSettings({
   map,
   mapState,
@@ -141,13 +147,15 @@ function MapSettings({
             <Box mb={1} sx={{ width: "50%" }}>
               <Label mb={1}>Grid Type</Label>
               <Select
-                defaultValue={{ value: "square", label: "Square" }}
                 isDisabled={mapEmpty || map.type === "default"}
-                options={[
-                  { value: "square", label: "Square" },
-                  { value: "hex", label: "Hex (Coming Soon)" },
-                ]}
-                isOptionDisabled={(option) => option.value === "hex"}
+                options={gridTypeSettings}
+                value={
+                  !mapEmpty &&
+                  gridTypeSettings.find((s) => s.value === map.grid.type)
+                }
+                onChange={(option) =>
+                  onSettingsChange("grid", { ...map.grid, type: option.value })
+                }
                 isSearchable={false}
               />
             </Box>

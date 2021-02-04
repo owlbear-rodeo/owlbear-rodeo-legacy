@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { Image, Box } from "theme-ui";
 import interact from "interactjs";
 
-import usePortal from "../../helpers/usePortal";
+import usePortal from "../../hooks/usePortal";
 
 import MapStageContext from "../../contexts/MapStageContext";
 

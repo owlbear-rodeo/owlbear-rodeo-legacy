@@ -3,7 +3,7 @@ import useImage from "use-image";
 
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 
-import useDataSource from "../../helpers/useDataSource";
+import useDataSource from "../../hooks/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
 
 import { getImageLightness } from "../../helpers/image";
@@ -33,16 +33,9 @@ function MapGrid({ map, strokeWidth }) {
     }
   }, [mapImage, mapLoadingStatus]);
 
-  const gridX = map && map.grid.size.x;
-  const gridY = map && map.grid.size.y;
-
-  const gridInset = map && map.grid.inset;
-
   return (
     <Grid
-      gridX={gridX}
-      gridY={gridY}
-      gridInset={gridInset}
+      grid={map?.grid}
       strokeWidth={strokeWidth}
       width={mapWidth}
       height={mapHeight}

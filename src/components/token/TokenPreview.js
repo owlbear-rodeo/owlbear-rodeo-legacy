@@ -4,11 +4,11 @@ import { Stage, Layer, Image, Rect, Group } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
 
-import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-import useStageInteraction from "../../helpers/useStageInteraction";
-import useDataSource from "../../helpers/useDataSource";
-import useImageCenter from "../../helpers/useImageCenter";
-import useResponsiveLayout from "../../helpers/useResponsiveLayout";
+import usePreventOverscroll from "../../hooks/usePreventOverscroll";
+import useStageInteraction from "../../hooks/useStageInteraction";
+import useDataSource from "../../hooks/useDataSource";
+import useImageCenter from "../../hooks/useImageCenter";
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
@@ -111,8 +111,14 @@ function TokenPreview({ token }) {
             {showGridPreview && (
               <Group offsetY={gridHeight - tokenHeight}>
                 <Grid
-                  gridX={gridX}
-                  gridY={gridY}
+                  grid={{
+                    size: { x: gridX, y: gridY },
+                    inset: {
+                      topLeft: { x: 0, y: 0 },
+                      bottomRight: { x: 1, y: 1 },
+                    },
+                    type: "square",
+                  }}
                   width={gridWidth}
                   height={gridHeight}
                 />

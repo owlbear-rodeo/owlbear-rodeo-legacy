@@ -11,7 +11,7 @@ import StartTimerButton from "./StartTimerButton";
 import Timer from "./Timer";
 import DiceTrayButton from "./DiceTrayButton";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 import PartyContext from "../../contexts/PartyContext";
 import {

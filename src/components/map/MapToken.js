@@ -4,10 +4,11 @@ import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
 
-import useDataSource from "../../helpers/useDataSource";
-import useDebounce from "../../helpers/useDebounce";
-import usePrevious from "../../helpers/usePrevious";
-import { snapNodeToMap } from "../../helpers/map";
+import useDataSource from "../../hooks/useDataSource";
+import useDebounce from "../../hooks/useDebounce";
+import usePrevious from "../../hooks/usePrevious";
+
+import { snapNodeToGrid } from "../../helpers/grid";
 
 import AuthContext from "../../contexts/AuthContext";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
@@ -86,7 +87,13 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToMap(map, mapWidth, mapHeight, tokenGroup, snappingThreshold);
+      snapNodeToGrid(
+        map.grid,
+        mapWidth,
+        mapHeight,
+        tokenGroup,
+        snappingThreshold
+      );
     }
   }
 

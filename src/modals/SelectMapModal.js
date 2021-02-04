@@ -13,18 +13,22 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
-import useKeyboard from "../helpers/useKeyboard";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
-import * as Vector2 from "../helpers/vector2";
+import {
+  getMapDefaultInset,
+  getGridSize,
+  gridSizeVaild,
+} from "../helpers/grid";
+import Vector2 from "../helpers/Vector2";
+
+import useKeyboard from "../hooks/useKeyboard";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import MapDataContext from "../contexts/MapDataContext";
 import AuthContext from "../contexts/AuthContext";
 
 const defaultMapProps = {
-  // Grid type
   showGrid: false,
   snapToGrid: true,
   quality: "original",

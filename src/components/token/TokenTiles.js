@@ -14,7 +14,7 @@ import FilterBar from "../FilterBar";
 
 import DatabaseContext from "../../contexts/DatabaseContext";
 
-import useResponsiveLayout from "../../helpers/useResponsiveLayout";
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 function TokenTiles({
   tokens,

@@ -3,12 +3,13 @@ import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
 
-import useMapImage from "../../helpers/useMapImage";
-import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-import useStageInteraction from "../../helpers/useStageInteraction";
-import useImageCenter from "../../helpers/useImageCenter";
-import { getMapDefaultInset, getMapMaxZoom } from "../../helpers/map";
-import useResponsiveLayout from "../../helpers/useResponsiveLayout";
+import useMapImage from "../../hooks/useMapImage";
+import usePreventOverscroll from "../../hooks/usePreventOverscroll";
+import useStageInteraction from "../../hooks/useStageInteraction";
+import useImageCenter from "../../hooks/useImageCenter";
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+
+import { getMapDefaultInset, getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
@@ -65,7 +66,7 @@ function MapEditor({ map, onSettingsChange }) {
     setStageScale,
     stageTranslateRef,
     mapLayerRef.current,
-    getMapMaxZoom(map),
+    getGridMaxZoom(map.grid),
     "pan",
     preventMapInteraction
   );

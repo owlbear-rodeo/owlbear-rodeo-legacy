@@ -5,7 +5,7 @@ import { Group, Line, Rect, Circle } from "react-konva";
 import MapInteractionContext from "../../contexts/MapInteractionContext";
 import MapStageContext from "../../contexts/MapStageContext";
 
-import { compare as comparePoints } from "../../helpers/vector2";
+import Vector2 from "../../helpers/Vector2";
 import {
   getBrushPosition,
   getDefaultShapeData,
@@ -92,7 +92,7 @@ function MapDrawing({
           setDrawingShape((prevShape) => {
             const prevPoints = prevShape.data.points;
             if (
-              comparePoints(
+              Vector2.compare(
                 prevPoints[prevPoints.length - 1],
                 brushPosition,
                 0.001

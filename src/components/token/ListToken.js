@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
 import { Box, Image } from "theme-ui";
 
-import usePreventTouch from "../../helpers/usePreventTouch";
-import useDataSource from "../../helpers/useDataSource";
+import usePreventTouch from "../../hooks/usePreventTouch";
+import useDataSource from "../../hooks/useDataSource";
 
 import { tokenSources, unknownSource } from "../../tokens";
 

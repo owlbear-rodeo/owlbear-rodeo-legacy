@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Rect, Text, Group } from "react-konva";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 const maxTokenSize = 3;
 

@@ -5,8 +5,9 @@ import AuthContext from "../contexts/AuthContext";
 
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
-import { lerp, compare } from "../helpers/vector2";
-import useSetting from "../helpers/useSetting";
+import Vector2 from "../helpers/Vector2";
+
+import useSetting from "../hooks/useSetting";
 
 // Send pointer updates every 50ms (20fps)
 const sendTickRate = 50;
@@ -108,7 +109,11 @@ function NetworkedMapPointer({ session, active, gridSize }) {
           to: { ...pointer, time: performance.now() + sendTickRate },
         };
       } else if (
-        !compare(interpolations[id].to.position, pointer.position, 0.0001) ||
+        !Vector2.compare(
+          interpolations[id].to.position,
+          pointer.position,
+          0.0001
+        ) ||
         interpolations[id].to.visible !== pointer.visible
       ) {
         const from = interpolations[id].to;
@@ -153,7 +158,11 @@ function NetworkedMapPointer({ session, active, gridSize }) {
           interpolatedPointerState[interp.id] = {
             id: interp.id,
             visible: interp.from.visible,
-            position: lerp(interp.from.position, interp.to.position, alpha),
+            position: Vector2.lerp(
+              interp.from.position,
+              interp.to.position,
+              alpha
+            ),
             color: interp.from.color,
           };
         }

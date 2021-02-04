@@ -10,7 +10,7 @@ import {
   getUpdatedShapeData,
   getStrokeWidth,
 } from "../../helpers/drawing";
-import * as Vector2 from "../../helpers/vector2";
+import Vector2 from "../../helpers/Vector2";
 
 function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
   const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(

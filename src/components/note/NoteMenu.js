@@ -7,7 +7,7 @@ import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
-import usePrevious from "../../helpers/usePrevious";
+import usePrevious from "../../hooks/usePrevious";
 
 import LockIcon from "../../icons/TokenLockIcon";
 import UnlockIcon from "../../icons/TokenUnlockIcon";

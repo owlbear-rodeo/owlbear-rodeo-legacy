@@ -16,7 +16,7 @@ import "@babylonjs/loaders/glTF";
 
 import ReactResizeDetector from "react-resize-detector";
 
-import usePreventTouch from "../../helpers/usePreventTouch";
+import usePreventTouch from "../../hooks/usePreventTouch";
 
 const diceThrowSpeed = 2;
 
