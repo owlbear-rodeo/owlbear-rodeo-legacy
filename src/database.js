@@ -1,7 +1,7 @@
 import Dexie from "dexie";
 
 import blobToBuffer from "./helpers/blobToBuffer";
-import { getMapDefaultInset } from "./helpers/grid";
+import { getGridDefaultInset } from "./helpers/grid";
 import { convertOldActionsToShapes } from "./actions";
 
 function loadVersions(db) {
@@ -219,11 +219,10 @@ function loadVersions(db) {
           map.group = "";
           map.grid = {
             size: { x: map.gridX, y: map.gridY },
-            inset: getMapDefaultInset(
+            inset: getGridDefaultInset(
+              { size: { x: map.gridX, y: map.gridY }, type: "square" },
               map.width,
-              map.height,
-              map.gridX,
-              map.gridY
+              map.height
             ),
             type: "square",
           };

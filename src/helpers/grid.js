@@ -4,6 +4,7 @@ import Vector2 from "./Vector2";
 import { logError } from "./logging";
 
 const SQRT3 = 1.73205;
+const GRID_TYPE_NOT_IMPLEMENTED = new Error("Grid type not implemented");
 
 /**
  * @typedef GridInset
@@ -28,22 +29,33 @@ const SQRT3 = 1.73205;
 /**
  * Gets the cell size for a grid taking into account inset and grid type
  * @param {Grid} grid
- * @param {number} insetWidth
- * @param {number} insetHeight
+ * @param {number} gridWidth
+ * @param {number} gridHeight
  * @returns {CellSize}
  */
-export function getCellSize(grid, insetWidth, insetHeight) {
-  if (grid.type === "square") {
-    return {
-      width: insetWidth / grid.size.x,
-      height: insetHeight / grid.size.y,
-    };
-  } else if (grid.type === "hexVertical") {
-    const radius = insetWidth / grid.size.x / SQRT3;
-    return { width: radius * SQRT3, height: radius + radius / 2, radius };
-  } else if (grid.type === "hexHorizontal") {
-    const radius = insetHeight / grid.size.y / SQRT3;
-    return { width: radius + radius / 2, height: radius * SQRT3, radius };
+export function getCellSize(grid, gridWidth, gridHeight) {
+  switch (grid.type) {
+    case "square":
+      return {
+        width: gridWidth / grid.size.x,
+        height: gridHeight / grid.size.y,
+      };
+    case "hexVertical":
+      const radiusVert = gridWidth / grid.size.x / SQRT3;
+      return {
+        width: radiusVert * SQRT3,
+        height: radiusVert * 2,
+        radius: radiusVert,
+      };
+    case "hexHorizontal":
+      const radiusHorz = gridHeight / grid.size.y / SQRT3;
+      return {
+        width: radiusHorz * 2,
+        height: radiusHorz * SQRT3,
+        radius: radiusHorz,
+      };
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
   }
 }
 
@@ -56,18 +68,21 @@ export function getCellSize(grid, insetWidth, insetHeight) {
  * @returns {Vector2}
  */
 export function getCellLocation(grid, x, y, cellSize) {
-  if (grid.type === "square") {
-    return { x: x * cellSize.width, y: y * cellSize.height };
-  } else if (grid.type === "hexVertical") {
-    return {
-      x: x * cellSize.width + (cellSize.width * (1 + (y % 2))) / 2,
-      y: y * cellSize.height + cellSize.radius,
-    };
-  } else if (grid.type === "hexHorizontal") {
-    return {
-      x: x * cellSize.width + cellSize.radius,
-      y: y * cellSize.height + (cellSize.height * (1 + (x % 2))) / 2,
-    };
+  switch (grid.type) {
+    case "square":
+      return { x: x * cellSize.width, y: y * cellSize.height };
+    case "hexVertical":
+      return {
+        x: x * cellSize.width + (cellSize.width * (1 + (y % 2))) / 2,
+        y: y * cellSize.height * (3 / 4) + cellSize.radius,
+      };
+    case "hexHorizontal":
+      return {
+        x: x * cellSize.width * (3 / 4) + cellSize.radius,
+        y: y * cellSize.height + (cellSize.height * (1 + (x % 2))) / 2,
+      };
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
   }
 }
 
@@ -79,27 +94,44 @@ export function getCellLocation(grid, x, y, cellSize) {
  * @returns {boolean}
  */
 export function shouldClampCell(grid, x, y) {
-  if (grid.type === "hexVertical") {
-    return x === grid.size.x - 1 && y % 2 !== 0;
-  } else if (grid.type === "hexHorizontal") {
-    return y === grid.size.y - 1 && x % 2 !== 0;
+  switch (grid.type) {
+    case "square":
+      return false;
+    case "hexVertical":
+      return x === grid.size.x - 1 && y % 2 !== 0;
+    case "hexHorizontal":
+      return y === grid.size.y - 1 && x % 2 !== 0;
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
   }
-  return false;
 }
 
 /**
  * Get the default inset for a map
- * @param {number} width Hidth of the map
- * @param {number} height Height of the map
- * @param {number} gridX Number of grid cells in the horizontal direction
- * @param {number} gridY Number of grid cells in the vertical direction
+ * @param {Grid} grid
+ * @param {number} gridWidth
+ * @param {number} gridHeight
  * @returns {GridInset}
  */
-export function getMapDefaultInset(width, height, gridX, gridY) {
-  // Max the width
-  const gridScale = width / gridX;
-  const y = gridY * gridScale;
-  const yNorm = y / height;
+export function getGridDefaultInset(grid, gridWidth, gridHeight) {
+  // Max the width of the inset and figure out the resulting height value
+  let y;
+  switch (grid.type) {
+    case "square":
+      y = grid.size.y * (gridWidth / grid.size.x);
+      break;
+    case "hexVertical":
+      const cellHeightVert = (gridWidth / grid.size.x / SQRT3) * 2;
+      y = grid.size.y * cellHeightVert * (3 / 4) + cellHeightVert * (1 / 4);
+      break;
+    case "hexHorizontal":
+      const cellHeightHroz = gridWidth / ((grid.size.x - 1) * (3 / 4) + 1);
+      y = grid.size.y * cellHeightHroz * (SQRT3 / 2);
+      break;
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
+  }
+  const yNorm = y / gridHeight;
   return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: yNorm } };
 }
 

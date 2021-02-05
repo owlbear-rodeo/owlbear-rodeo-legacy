@@ -8,7 +8,7 @@ import MapEditor from "../components/map/MapEditor";
 import MapDataContext from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
-import { getMapDefaultInset } from "../helpers/grid";
+import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
@@ -65,18 +65,16 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
           inset.topLeft.y > inset.bottomRight.y
         ) {
           if ("size" in verifiedChanges.grid) {
-            verifiedChanges.grid.inset = getMapDefaultInset(
+            verifiedChanges.grid.inset = getGridDefaultInset(
+              verifiedChanges.grid,
               map.width,
-              map.height,
-              verifiedChanges.grid.size.x,
-              verifiedChanges.grid.size.y
+              map.height
             );
           } else {
-            verifiedChanges.grid.inset = getMapDefaultInset(
+            verifiedChanges.grid.inset = getGridDefaultInset(
+              map.grid,
               map.width,
-              map.height,
-              map.grid.size.x,
-              map.grid.size.y
+              map.height
             );
           }
         }

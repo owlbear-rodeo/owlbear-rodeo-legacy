@@ -16,7 +16,7 @@ import blobToBuffer from "../helpers/blobToBuffer";
 import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import {
-  getMapDefaultInset,
+  getGridDefaultInset,
   getGridSize,
   gridSizeVaild,
 } from "../helpers/grid";
@@ -206,7 +206,7 @@ function SelectMapModal({
           type: "file",
           grid: {
             size: gridSize,
-            inset: getMapDefaultInset(
+            inset: getGridDefaultInset(
               image.width,
               image.height,
               gridSize.x,

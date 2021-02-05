@@ -9,7 +9,7 @@ import useStageInteraction from "../../hooks/useStageInteraction";
 import useImageCenter from "../../hooks/useImageCenter";
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
-import { getMapDefaultInset, getGridMaxZoom } from "../../helpers/grid";
+import { getGridDefaultInset, getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
@@ -28,12 +28,7 @@ function MapEditor({ map, onSettingsChange }) {
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
 
-  const defaultInset = getMapDefaultInset(
-    map.width,
-    map.height,
-    map.grid.size.x,
-    map.grid.size.y
-  );
+  const defaultInset = getGridDefaultInset(map.grid, map.width, map.height);
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapStageRef = useRef();
