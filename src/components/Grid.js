@@ -2,7 +2,12 @@ import React from "react";
 import { Line, Group, RegularPolygon } from "react-konva";
 
 import { getStrokeWidth } from "../helpers/drawing";
-import { getCellSize, getCellLocation, shouldClampCell } from "../helpers/grid";
+import {
+  getCellSize,
+  getCellLocation,
+  gridClipFunction,
+  shouldClipCell,
+} from "../helpers/grid";
 
 function Grid({ grid, strokeWidth, width, height, stroke }) {
   if (!grid?.size.x || !grid?.size.y) {
@@ -62,30 +67,16 @@ function Grid({ grid, strokeWidth, width, height, stroke }) {
       );
     }
   } else if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
-    for (let x = 0; x < grid.size.x; x++) {
-      for (let y = 0; y < grid.size.y; y++) {
+    // Start at -1 to overshoot the bounds of the grid to ensure all lines are drawn
+    for (let x = -1; x < grid.size.x; x++) {
+      for (let y = -1; y < grid.size.y; y++) {
         const cellLocation = getCellLocation(grid, x, y, cellSize);
-
-        // If our hex shape will go past the bounds of the grid
-        const overshot = shouldClampCell(grid, x, y);
         shapes.push(
           <Group
             key={`grid_${x}_${y}`}
-            // Clip the hex if it will overshoot
             clipFunc={
-              overshot &&
-              ((context) => {
-                context.rect(
-                  -cellSize.radius,
-                  -cellSize.radius,
-                  grid.type === "hexVertical"
-                    ? cellSize.radius
-                    : cellSize.radius * 2,
-                  grid.type === "hexVertical"
-                    ? cellSize.radius * 2
-                    : cellSize.radius
-                );
-              })
+              shouldClipCell(grid, x, y) &&
+              ((context) => gridClipFunction(context, grid, x, y, cellSize))
             }
             x={cellLocation.x}
             y={cellLocation.y}

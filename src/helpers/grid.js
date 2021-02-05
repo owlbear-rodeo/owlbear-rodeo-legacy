@@ -93,7 +93,10 @@ export function getCellLocation(grid, x, y, cellSize) {
  * @param {number} y Y-axis location of the cell
  * @returns {boolean}
  */
-export function shouldClampCell(grid, x, y) {
+export function shouldClipCell(grid, x, y) {
+  if (x < 0 || y < 0) {
+    return true;
+  }
   switch (grid.type) {
     case "square":
       return false;
@@ -104,6 +107,32 @@ export function shouldClampCell(grid, x, y) {
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
   }
+}
+
+/**
+ * Canvas clip function for culling hex cells that overshoot/undershoot the grid
+ * @param {CanvasRenderingContext2D} context
+ * @param {Grid} grid
+ * @param {number} x
+ * @param {number} y
+ * @param {CellSize} cellSize
+ */
+export function gridClipFunction(context, grid, x, y, cellSize) {
+  // Clip the undershooting cells unless they are needed to fill out a specific grid type
+  if ((x < 0 && grid.type !== "hexVertical") || (x < 0 && y % 2 === 0)) {
+    return;
+  }
+  if ((y < 0 && grid.type !== "hexHorizontal") || (y < 0 && x % 2 === 0)) {
+    return;
+  }
+  context.rect(
+    x < 0 ? 0 : -cellSize.radius,
+    y < 0 ? 0 : -cellSize.radius,
+    x > 0 && grid.type === "hexVertical"
+      ? cellSize.radius
+      : cellSize.radius * 2,
+    y > 0 && grid.type === "hexVertical" ? cellSize.radius * 2 : cellSize.radius
+  );
 }
 
 /**
