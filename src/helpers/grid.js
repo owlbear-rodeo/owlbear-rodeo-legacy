@@ -107,7 +107,27 @@ export function shouldClampCell(grid, x, y) {
 }
 
 /**
- * Get the default inset for a map
+ * Get the height of a grid based off of its width
+ * @param {Grid} grid
+ * @param {number} gridWidth
+ */
+function getGridHeightFromWidth(grid, gridWidth) {
+  switch (grid.type) {
+    case "square":
+      return (grid.size.y * gridWidth) / grid.size.x;
+    case "hexVertical":
+      const cellHeightVert = (gridWidth / grid.size.x / SQRT3) * 2;
+      return grid.size.y * cellHeightVert * (3 / 4) + cellHeightVert * (1 / 4);
+    case "hexHorizontal":
+      const cellHeightHroz = gridWidth / ((grid.size.x - 1) * (3 / 4) + 1);
+      return grid.size.y * cellHeightHroz * (SQRT3 / 2);
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
+  }
+}
+
+/**
+ * Get the default inset for a grid
  * @param {Grid} grid
  * @param {number} gridWidth
  * @param {number} gridHeight
@@ -115,24 +135,28 @@ export function shouldClampCell(grid, x, y) {
  */
 export function getGridDefaultInset(grid, gridWidth, gridHeight) {
   // Max the width of the inset and figure out the resulting height value
-  let y;
-  switch (grid.type) {
-    case "square":
-      y = grid.size.y * (gridWidth / grid.size.x);
-      break;
-    case "hexVertical":
-      const cellHeightVert = (gridWidth / grid.size.x / SQRT3) * 2;
-      y = grid.size.y * cellHeightVert * (3 / 4) + cellHeightVert * (1 / 4);
-      break;
-    case "hexHorizontal":
-      const cellHeightHroz = gridWidth / ((grid.size.x - 1) * (3 / 4) + 1);
-      y = grid.size.y * cellHeightHroz * (SQRT3 / 2);
-      break;
-    default:
-      throw GRID_TYPE_NOT_IMPLEMENTED;
+  const insetHeightNorm = getGridHeightFromWidth(grid, gridWidth) / gridHeight;
+  return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: insetHeightNorm } };
+}
+
+/**
+ * Get an updated inset for a grid when its size changes
+ * @param {Grid} grid
+ * @param {number} mapWidth
+ * @param {number} mapHeight
+ * @returns {GridInset}
+ */
+export function getGridUpdatedInset(grid, mapWidth, mapHeight) {
+  let inset = grid.inset;
+  // Take current inset width and use it to calculate the new height
+  if (grid.size.x > 0 && grid.size.x > 0) {
+    // Convert to px relative to map size
+    const gridWidth = (inset.bottomRight.x - inset.topLeft.x) * mapWidth;
+    // Calculate the new inset height and convert back to normalized form
+    const insetHeightNorm = getGridHeightFromWidth(grid, gridWidth) / mapHeight;
+    inset.bottomRight.y = inset.topLeft.y + insetHeightNorm;
   }
-  const yNorm = y / gridHeight;
-  return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: yNorm } };
+  return inset;
 }
 
 /**

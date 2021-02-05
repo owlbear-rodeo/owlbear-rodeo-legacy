@@ -66,7 +66,7 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
         ) {
           if ("size" in verifiedChanges.grid) {
             verifiedChanges.grid.inset = getGridDefaultInset(
-              verifiedChanges.grid,
+              { size: verifiedChanges.grid.size, type: map.grid.type },
               map.width,
               map.height
             );

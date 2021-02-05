@@ -4,6 +4,7 @@ import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 import { isEmpty } from "../../helpers/shared";
+import { getGridUpdatedInset } from "../../helpers/grid";
 
 import Divider from "../Divider";
 import Select from "../Select";
@@ -43,46 +44,34 @@ function MapSettings({
 
   function handleGridSizeXChange(event) {
     const value = parseInt(event.target.value) || 0;
-    const gridY = map.grid.size.y;
-
-    let inset = map.grid.inset;
-
-    if (value > 0) {
-      const gridScale =
-        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / value;
-      inset.bottomRight.y = inset.topLeft.y + (gridY * gridScale) / map.height;
-    }
-
-    onSettingsChange("grid", {
+    let grid = {
       ...map.grid,
-      inset,
       size: {
         ...map.grid.size,
         x: value,
       },
-    });
+    };
+    grid.inset = getGridUpdatedInset(grid, map.width, map.height);
+    onSettingsChange("grid", grid);
   }
 
   function handleGridSizeYChange(event) {
     const value = parseInt(event.target.value) || 0;
-    const gridX = map.grid.size.x;
-
-    let inset = map.grid.inset;
-
-    if (gridX > 0) {
-      const gridScale =
-        ((inset.bottomRight.x - inset.topLeft.x) * map.width) / gridX;
-      inset.bottomRight.y = inset.topLeft.y + (value * gridScale) / map.height;
-    }
-
-    onSettingsChange("grid", {
+    let grid = {
       ...map.grid,
-      inset,
       size: {
         ...map.grid.size,
         y: value,
       },
-    });
+    };
+    grid.inset = getGridUpdatedInset(grid, map.width, map.height);
+    onSettingsChange("grid", grid);
+  }
+
+  function handleGridTypeChange(option) {
+    let grid = { ...map.grid, type: option.value };
+    grid.inset = getGridUpdatedInset(grid, map.width, map.height);
+    onSettingsChange("grid", grid);
   }
 
   function getMapSize() {
@@ -153,9 +142,7 @@ function MapSettings({
                   !mapEmpty &&
                   gridTypeSettings.find((s) => s.value === map.grid.type)
                 }
-                onChange={(option) =>
-                  onSettingsChange("grid", { ...map.grid, type: option.value })
-                }
+                onChange={handleGridTypeChange}
                 isSearchable={false}
               />
             </Box>
