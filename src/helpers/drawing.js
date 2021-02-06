@@ -7,7 +7,12 @@ import { getRelativePointerPositionNormalized } from "./konva";
 import { logError } from "./logging";
 
 const snappingThreshold = 1 / 5;
-export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
+export function getBrushPosition(
+  map,
+  mapStage,
+  useGridSnappning,
+  gridCellNormalizedSize
+) {
   const mapImage = mapStage.findOne("#mapImage");
   let position = getRelativePointerPositionNormalized(mapImage);
   if (useGridSnappning) {
@@ -15,18 +20,21 @@ export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
     // Subtract offset to transform into offset space then add it back transform back
     const offset = map.grid.inset.topLeft;
     const gridSnap = Vector2.add(
-      Vector2.roundTo(Vector2.subtract(position, offset), gridSize),
+      Vector2.roundTo(
+        Vector2.subtract(position, offset),
+        gridCellNormalizedSize
+      ),
       offset
     );
     const gridDistance = Vector2.length(Vector2.subtract(gridSnap, position));
     // Snap to center of grid
     // Subtract offset and half size to transform it into offset half space then transform it back
-    const halfSize = Vector2.multiply(gridSize, 0.5);
+    const halfSize = Vector2.multiply(gridCellNormalizedSize, 0.5);
     const centerSnap = Vector2.add(
       Vector2.add(
         Vector2.roundTo(
           Vector2.subtract(Vector2.subtract(position, offset), halfSize),
-          gridSize
+          gridCellNormalizedSize
         ),
         halfSize
       ),
@@ -35,7 +43,7 @@ export function getBrushPosition(map, mapStage, useGridSnappning, gridSize) {
     const centerDistance = Vector2.length(
       Vector2.subtract(centerSnap, position)
     );
-    const minGrid = Vector2.min(gridSize);
+    const minGrid = Vector2.min(gridCellNormalizedSize);
     if (gridDistance < minGrid * snappingThreshold) {
       position = gridSnap;
     } else if (centerDistance < minGrid * snappingThreshold) {
@@ -49,14 +57,19 @@ export function getFogBrushPosition(
   map,
   mapStage,
   useGridSnappning,
-  gridSize,
+  gridCellNormalizedSize,
   useEdgeSnapping,
   fogShapes,
   rectPoints
 ) {
-  let position = getBrushPosition(map, mapStage, useGridSnappning, gridSize);
+  let position = getBrushPosition(
+    map,
+    mapStage,
+    useGridSnappning,
+    gridCellNormalizedSize
+  );
   if (useEdgeSnapping) {
-    const minGrid = Vector2.min(gridSize);
+    const minGrid = Vector2.min(gridCellNormalizedSize);
     let closestDistance = Number.MAX_VALUE;
     let closestPosition = position;
     // Find the closest point on all fog shapes
@@ -139,18 +152,23 @@ export function getDefaultShapeData(type, brushPosition) {
   }
 }
 
-export function getGridScale(gridSize) {
-  if (gridSize.x < gridSize.y) {
-    return { x: gridSize.y / gridSize.x, y: 1 };
-  } else if (gridSize.y < gridSize.x) {
-    return { x: 1, y: gridSize.x / gridSize.y };
+export function getGridScale(cellSize) {
+  if (cellSize.x < cellSize.y) {
+    return { x: cellSize.y / cellSize.x, y: 1 };
+  } else if (cellSize.y < cellSize.x) {
+    return { x: 1, y: cellSize.x / cellSize.y };
   } else {
     return { x: 1, y: 1 };
   }
 }
 
-export function getUpdatedShapeData(type, data, brushPosition, gridSize) {
-  const gridScale = getGridScale(gridSize);
+export function getUpdatedShapeData(
+  type,
+  data,
+  brushPosition,
+  gridCellNormalizedSize
+) {
+  const gridScale = getGridScale(gridCellNormalizedSize);
   if (type === "line") {
     return {
       points: [data.points[0], { x: brushPosition.x, y: brushPosition.y }],
@@ -210,10 +228,10 @@ export function getStrokeWidth(multiplier, gridSize, mapWidth, mapHeight) {
 }
 
 const defaultSimplifySize = 1 / 100;
-export function simplifyPoints(points, gridSize, scale) {
+export function simplifyPoints(points, gridCellNormalizedSize, scale) {
   return simplify(
     points,
-    (Vector2.min(gridSize) * defaultSimplifySize) / scale
+    (Vector2.min(gridCellNormalizedSize) * defaultSimplifySize) / scale
   );
 }
 

@@ -10,6 +10,8 @@ import useDataSource from "../../hooks/useDataSource";
 import useImageCenter from "../../hooks/useImageCenter";
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
+import { GridProvider } from "../../contexts/GridContext";
+
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
 
@@ -110,7 +112,7 @@ function TokenPreview({ token }) {
             />
             {showGridPreview && (
               <Group offsetY={gridHeight - tokenHeight}>
-                <Grid
+                <GridProvider
                   grid={{
                     size: { x: gridX, y: gridY },
                     inset: {
@@ -121,7 +123,9 @@ function TokenPreview({ token }) {
                   }}
                   width={gridWidth}
                   height={gridHeight}
-                />
+                >
+                  <Grid />
+                </GridProvider>
                 <Rect
                   width={gridWidth}
                   height={gridHeight}

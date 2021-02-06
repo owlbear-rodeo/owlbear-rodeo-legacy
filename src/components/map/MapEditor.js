@@ -13,6 +13,7 @@ import { getGridDefaultInset, getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import { GridProvider } from "../../contexts/GridContext";
 
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import GridOnIcon from "../../icons/GridOnIcon";
@@ -130,10 +131,14 @@ function MapEditor({ map, onSettingsChange }) {
             <KeyboardContext.Provider value={keyboardValue}>
               <MapInteractionProvider value={mapInteraction}>
                 {showGridControls && canEditGrid && (
-                  <>
+                  <GridProvider
+                    grid={map.grid}
+                    width={mapWidth}
+                    height={mapHeight}
+                  >
                     <MapGrid map={map} strokeWidth={0.5} />
                     <MapGridEditor map={map} onGridChange={handleGridChange} />
-                  </>
+                  </GridProvider>
                 )}
               </MapInteractionProvider>
             </KeyboardContext.Provider>

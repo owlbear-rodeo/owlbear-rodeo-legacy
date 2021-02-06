@@ -1,30 +1,24 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import shortid from "shortid";
 import { Group, Rect } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useGrid } from "../../contexts/GridContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
 import {
   getFogBrushPosition,
   simplifyPoints,
-  getStrokeWidth,
   mergeShapes,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import { HoleyLine, Tick } from "../../helpers/konva";
 
-import useKeyboard from "../../hooks/useKeyboard";
 import useDebounce from "../../hooks/useDebounce";
 
 function MapFog({
@@ -36,13 +30,17 @@ function MapFog({
   onShapesEdit,
   active,
   toolSettings,
-  gridSize,
   editable,
 }) {
-  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
-  const mapStageRef = useContext(MapStageContext);
+  const {
+    stageScale,
+    mapWidth,
+    mapHeight,
+    interactionEmitter,
+  } = useMapInteraction();
+  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const mapStageRef = useMapStage();
+
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [editingShapes, setEditingShapes] = useState([]);
@@ -70,7 +68,7 @@ function MapFog({
         map,
         mapStage,
         useGridSnapping,
-        gridSize,
+        gridCellNormalizedSize,
         toolSettings.useEdgeSnapping,
         shapes
       );
@@ -114,7 +112,7 @@ function MapFog({
           map,
           mapStage,
           useGridSnapping,
-          gridSize,
+          gridCellNormalizedSize,
           toolSettings.useEdgeSnapping,
           shapes
         );
@@ -144,7 +142,7 @@ function MapFog({
           map,
           mapStage,
           useGridSnapping,
-          gridSize,
+          gridCellNormalizedSize,
           toolSettings.useEdgeSnapping,
           shapes,
           prevPoints
@@ -185,7 +183,7 @@ function MapFog({
               ...drawingShape.data,
               points: simplifyPoints(
                 drawingShape.data.points,
-                gridSize,
+                gridCellNormalizedSize,
                 // Downscale fog as smoothing doesn't currently work with edge snapping
                 stageScale / 2
               ),
@@ -211,7 +209,7 @@ function MapFog({
           map,
           mapStage,
           useGridSnapping,
-          gridSize,
+          gridCellNormalizedSize,
           toolSettings.useEdgeSnapping,
           shapes
         );
@@ -247,7 +245,7 @@ function MapFog({
           map,
           mapStage,
           useGridSnapping,
-          gridSize,
+          gridCellNormalizedSize,
           toolSettings.useEdgeSnapping,
           shapes
         );
@@ -378,12 +376,7 @@ function MapFog({
         closed
         lineCap="round"
         lineJoin="round"
-        strokeWidth={getStrokeWidth(
-          shape.strokeWidth,
-          gridSize,
-          mapWidth,
-          mapHeight
-        )}
+        strokeWidth={gridStrokeWidth * shape.strokeWidth}
         opacity={editable ? 0.5 : 1}
         fillPatternImage={patternImage}
         fillPriority={active && !shape.visible ? "pattern" : "color"}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { omit, isEmpty } from "../helpers/shared";
 
 const MapLoadingContext = React.createContext();
@@ -51,6 +51,14 @@ export function MapLoadingProvider({ children }) {
       {children}
     </MapLoadingContext.Provider>
   );
+}
+
+export function useMapLoading() {
+  const context = useContext(MapLoadingContext);
+  if (context === undefined) {
+    throw new Error("useMapLoading must be used within a MapLoadingProvider");
+  }
+  return context;
 }
 
 export default MapLoadingContext;

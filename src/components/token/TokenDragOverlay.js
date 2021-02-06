@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 
-import AuthContext from "../../contexts/AuthContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
 
 import DragOverlay from "../DragOverlay";
 
@@ -14,8 +14,8 @@ function TokenDragOverlay({
   dragging,
   mapState,
 }) {
-  const { userId } = useContext(AuthContext);
-  const { mapWidth, mapHeight } = useContext(MapInteractionContext);
+  const { userId } = useAuth();
+  const { mapWidth, mapHeight } = useMapInteraction();
 
   function handleTokenRemove() {
     // Handle other tokens when a vehicle gets deleted

@@ -1,7 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useImage from "use-image";
-
-import MapInteractionContext from "../../contexts/MapInteractionContext";
 
 import useDataSource from "../../hooks/useDataSource";
 import { mapSources as defaultMapSources } from "../../maps";
@@ -11,8 +9,6 @@ import { getImageLightness } from "../../helpers/image";
 import Grid from "../Grid";
 
 function MapGrid({ map, strokeWidth }) {
-  const { mapWidth, mapHeight } = useContext(MapInteractionContext);
-
   let mapSourceMap = map;
   // Use lowest resolution for grid lightness
   if (map && map.type === "file" && map.resolutions) {
@@ -34,13 +30,7 @@ function MapGrid({ map, strokeWidth }) {
   }, [mapImage, mapLoadingStatus]);
 
   return (
-    <Grid
-      grid={map?.grid}
-      strokeWidth={strokeWidth}
-      width={mapWidth}
-      height={mapHeight}
-      stroke={isImageLight ? "black" : "white"}
-    />
+    <Grid strokeWidth={strokeWidth} stroke={isImageLight ? "black" : "white"} />
   );
 }
 

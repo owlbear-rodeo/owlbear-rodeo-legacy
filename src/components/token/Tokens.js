@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Box, Flex } from "theme-ui";
 import shortid from "shortid";
 import SimpleBar from "simplebar-react";
@@ -12,14 +12,14 @@ import { fromEntries } from "../../helpers/shared";
 
 import useSetting from "../../hooks/useSetting";
 
-import AuthContext from "../../contexts/AuthContext";
-import TokenDataContext from "../../contexts/TokenDataContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useTokenData } from "../../contexts/TokenDataContext";
 
 const listTokenClassName = "list-token";
 
 function Tokens({ onMapTokenStateCreate }) {
-  const { userId } = useContext(AuthContext);
-  const { ownedTokens, tokens, updateToken } = useContext(TokenDataContext);
+  const { userId } = useAuth();
+  const { ownedTokens, tokens, updateToken } = useTokenData();
   const [fullScreen] = useSetting("map.fullScreen");
 
   function handleProxyDragEnd(isOnMap, token) {

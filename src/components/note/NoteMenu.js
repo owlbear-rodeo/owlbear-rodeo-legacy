@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Flex, Text, IconButton, Textarea } from "theme-ui";
 
 import Slider from "../Slider";
@@ -16,7 +16,7 @@ import HideIcon from "../../icons/TokenHideIcon";
 import NoteIcon from "../../icons/NoteToolIcon";
 import TextIcon from "../../icons/NoteTextIcon";
 
-import AuthContext from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const defaultNoteMaxSize = 6;
 
@@ -28,7 +28,7 @@ function NoteMenu({
   onNoteChange,
   map,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
 
   const wasOpen = usePrevious(isOpen);
 

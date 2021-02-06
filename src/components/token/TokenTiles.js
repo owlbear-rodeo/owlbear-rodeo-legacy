@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import Case from "case";
@@ -12,7 +12,7 @@ import TokenTile from "./TokenTile";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
 
-import DatabaseContext from "../../contexts/DatabaseContext";
+import { useDatabase } from "../../contexts/DatabaseContext";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -31,7 +31,7 @@ function TokenTiles({
   onTokensGroup,
   onTokensHide,
 }) {
-  const { databaseStatus } = useContext(DatabaseContext);
+  const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
 
   let hasSelectedDefaultToken = selectedTokens.some(

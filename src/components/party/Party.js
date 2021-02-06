@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
@@ -13,16 +13,13 @@ import DiceTrayButton from "./DiceTrayButton";
 
 import useSetting from "../../hooks/useSetting";
 
-import PartyContext from "../../contexts/PartyContext";
-import {
-  PlayerUpdaterContext,
-  PlayerStateContext,
-} from "../../contexts/PlayerContext";
+import { useParty } from "../../contexts/PartyContext";
+import { usePlayerState, usePlayerUpdater } from "../../contexts/PlayerContext";
 
 function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
-  const setPlayerState = useContext(PlayerUpdaterContext);
-  const playerState = useContext(PlayerStateContext);
-  const partyState = useContext(PartyContext);
+  const setPlayerState = usePlayerUpdater();
+  const playerState = usePlayerState();
+  const partyState = useParty();
 
   const [fullScreen] = useSetting("map.fullScreen");
   const [shareDice, setShareDice] = useSetting("dice.shareDice");

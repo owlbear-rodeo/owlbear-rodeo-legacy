@@ -18,6 +18,15 @@ class Vector2 {
   y;
 
   /**
+   * @param {number} x
+   * @param {number} y
+   */
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
    * @param {Vector2} p
    * @returns {number} Length squared of `p`
    */
@@ -385,7 +394,7 @@ class Vector2 {
    * Returns the distance between two vectors
    * @param {Vector2} a
    * @param {Vector2} b
-   * @param {string?} type - `chebyshev | euclidean | manhattan | alternating`
+   * @param {string=} type - `chebyshev | euclidean | manhattan | alternating`
    */
   static distance(a, b, type = "euclidean") {
     switch (type) {

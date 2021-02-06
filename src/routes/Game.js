@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
@@ -9,9 +9,9 @@ import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
-import DatabaseContext from "../contexts/DatabaseContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 import { PlayerProvider } from "../contexts/PlayerContext";
 import { PartyProvider } from "../contexts/PartyContext";
 
@@ -22,12 +22,8 @@ import Session from "../network/Session";
 
 function Game() {
   const { id: gameId } = useParams();
-  const {
-    authenticationStatus,
-    password,
-    setAuthenticationStatus,
-  } = useContext(AuthContext);
-  const { databaseStatus } = useContext(DatabaseContext);
+  const { authenticationStatus, password, setAuthenticationStatus } = useAuth();
+  const { databaseStatus } = useDatabase();
 
   const [session] = useState(new Session());
   const [offline, setOffline] = useState();

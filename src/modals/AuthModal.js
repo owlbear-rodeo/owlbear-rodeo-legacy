@@ -1,14 +1,12 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Input, Button, Label, Flex } from "theme-ui";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 import Modal from "../components/Modal";
 
 function AuthModal({ isOpen }) {
-  const { password, setPassword, setAuthenticationStatus } = useContext(
-    AuthContext
-  );
+  const { password, setPassword, setAuthenticationStatus } = useAuth();
   const [tmpPassword, setTempPassword] = useState(password);
 
   function handleChange(event) {

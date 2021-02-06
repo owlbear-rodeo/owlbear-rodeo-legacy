@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useCallback,
-  useEffect,
-  useContext,
-  useState,
-} from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
@@ -21,7 +15,7 @@ import DiceResults from "./DiceResults";
 
 import DiceTray from "../../dice/diceTray/DiceTray";
 
-import DiceLoadingContext from "../../contexts/DiceLoadingContext";
+import { useDiceLoading } from "../../contexts/DiceLoadingContext";
 
 import { getDiceRoll } from "../../helpers/dice";
 import useSetting from "../../hooks/useSetting";
@@ -43,9 +37,7 @@ function DiceTrayOverlay({
   const diceTrayRef = useRef();
 
   const [diceTraySize, setDiceTraySize] = useState("single");
-  const { assetLoadStart, assetLoadFinish, isLoading } = useContext(
-    DiceLoadingContext
-  );
+  const { assetLoadStart, assetLoadFinish, isLoading } = useDiceLoading();
   const [fullScreen] = useSetting("map.fullScreen");
 
   function handleAssetLoadStart() {

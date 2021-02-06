@@ -1,7 +1,7 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
@@ -12,8 +12,8 @@ import useSetting from "../hooks/useSetting";
 // Send pointer updates every 50ms (20fps)
 const sendTickRate = 50;
 
-function NetworkedMapPointer({ session, active, gridSize }) {
-  const { userId } = useContext(AuthContext);
+function NetworkedMapPointer({ session, active }) {
+  const { userId } = useAuth();
   const [localPointerState, setLocalPointerState] = useState({});
   const [pointerColor] = useSetting("pointer.color");
 
@@ -194,7 +194,6 @@ function NetworkedMapPointer({ session, active, gridSize }) {
       {Object.values(localPointerState).map((pointer) => (
         <MapPointer
           key={pointer.id}
-          gridSize={gridSize}
           active={pointer.id === userId ? active : false}
           position={pointer.position}
           visible={pointer.visible}

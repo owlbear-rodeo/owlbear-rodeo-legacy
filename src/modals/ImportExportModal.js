@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
 import streamSaver from "streamsaver";
 import * as Comlink from "comlink";
@@ -7,14 +7,14 @@ import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
 
-import DatabaseContext from "../contexts/DatabaseContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
 function ImportDatabaseModal({ isOpen, onRequestClose }) {
-  const { database } = useContext(DatabaseContext);
+  const { database } = useDatabase();
   const [isLoading, setIsLoading] = useState(false);
 
   const backgroundTaskRunningRef = useRef(false);

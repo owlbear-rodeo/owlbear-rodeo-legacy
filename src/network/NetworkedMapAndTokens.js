@@ -1,11 +1,11 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-import TokenDataContext from "../contexts/TokenDataContext";
-import MapDataContext from "../contexts/MapDataContext";
-import MapLoadingContext from "../contexts/MapLoadingContext";
-import AuthContext from "../contexts/AuthContext";
-import DatabaseContext from "../contexts/DatabaseContext";
-import PartyContext from "../contexts/PartyContext";
+import { useTokenData } from "../contexts/TokenDataContext";
+import { useMapData } from "../contexts/MapDataContext";
+import { useMapLoading } from "../contexts/MapLoadingContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
+import { useParty } from "../contexts/PartyContext";
 
 import { omit } from "../helpers/shared";
 
@@ -35,21 +35,17 @@ const defaultMapActions = {
  * @param {NetworkedMapProps} props
  */
 function NetworkedMapAndTokens({ session }) {
-  const { userId } = useContext(AuthContext);
-  const partyState = useContext(PartyContext);
+  const { userId } = useAuth();
+  const partyState = useParty();
   const {
     assetLoadStart,
     assetLoadFinish,
     assetProgressUpdate,
     isLoading,
-  } = useContext(MapLoadingContext);
+  } = useMapLoading();
 
-  const { putToken, updateToken, getTokenFromDB } = useContext(
-    TokenDataContext
-  );
-  const { putMap, updateMap, getMapFromDB, updateMapState } = useContext(
-    MapDataContext
-  );
+  const { putToken, updateToken, getTokenFromDB } = useTokenData();
+  const { putMap, updateMap, getMapFromDB, updateMapState } = useMapData();
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useNetworkedState(
@@ -193,7 +189,7 @@ function NetworkedMapAndTokens({ session }) {
    * Map state
    */
 
-  const { database } = useContext(DatabaseContext);
+  const { database } = useDatabase();
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(currentMapState, 500);
   useEffect(() => {

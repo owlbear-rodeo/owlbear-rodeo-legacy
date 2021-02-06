@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -15,21 +15,21 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import blobToBuffer from "../helpers/blobToBuffer";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 
-import useKeyboard from "../hooks/useKeyboard";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
-import TokenDataContext from "../contexts/TokenDataContext";
-import AuthContext from "../contexts/AuthContext";
+import { useTokenData } from "../contexts/TokenDataContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     ownedTokens,
     addToken,
     removeTokens,
     updateTokens,
     tokensLoading,
-  } = useContext(TokenDataContext);
+  } = useTokenData();
 
   /**
    * Search

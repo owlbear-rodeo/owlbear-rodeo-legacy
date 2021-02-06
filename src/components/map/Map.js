@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Group } from "react-konva";
 
 import MapControls from "./MapControls";
@@ -11,8 +11,8 @@ import MapMeasure from "./MapMeasure";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 import MapNotes from "./MapNotes";
 
-import TokenDataContext from "../../contexts/TokenDataContext";
-import SettingsContext from "../../contexts/SettingsContext";
+import { useTokenData } from "../../contexts/TokenDataContext";
+import { useSettings } from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
@@ -49,19 +49,10 @@ function Map({
   disabledTokens,
   session,
 }) {
-  const { tokensById } = useContext(TokenDataContext);
-
-  const gridX = map && map.grid.size.x;
-  const gridY = map && map.grid.size.y;
-  const inset = map && map.grid.inset;
-  const gridSizeNormalized = {
-    x: gridX ? (inset.bottomRight.x - inset.topLeft.x) / gridX : 0,
-    y: gridY ? (inset.bottomRight.y - inset.topLeft.y) / gridY : 0,
-  };
-  const tokenSizePercent = gridSizeNormalized.x;
+  const { tokensById } = useTokenData();
 
   const [selectedToolId, setSelectedToolId] = useState("pan");
-  const { settings, setSettings } = useContext(SettingsContext);
+  const { settings, setSettings } = useSettings();
 
   function handleToolSettingChange(tool, change) {
     setSettings((prevSettings) => ({
@@ -243,7 +234,6 @@ function Map({
             key={tokenState.id}
             token={tokensById[tokenState.tokenId]}
             tokenState={tokenState}
-            tokenSizePercent={tokenSizePercent}
             onTokenStateChange={onMapTokenStateChange}
             onTokenMenuOpen={handleTokenMenuOpen}
             onTokenDragStart={(e) =>
@@ -306,7 +296,6 @@ function Map({
       onShapesRemove={handleMapShapesRemove}
       active={selectedToolId === "drawing"}
       toolSettings={settings.drawing}
-      gridSize={gridSizeNormalized}
     />
   );
 
@@ -320,7 +309,6 @@ function Map({
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
       toolSettings={settings.fog}
-      gridSize={gridSizeNormalized}
       editable={allowFogDrawing && !settings.fog.preview}
     />
   );
@@ -331,7 +319,6 @@ function Map({
     <MapMeasure
       map={map}
       active={selectedToolId === "measure"}
-      gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
     />
   );
@@ -339,7 +326,6 @@ function Map({
   const mapPointer = (
     <NetworkedMapPointer
       active={selectedToolId === "pointer"}
-      gridSize={gridSizeNormalized}
       session={session}
     />
   );
@@ -377,7 +363,6 @@ function Map({
     <MapNotes
       map={map}
       active={selectedToolId === "note"}
-      gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
       onNoteAdd={onMapNoteChange}
       onNoteChange={onMapNoteChange}

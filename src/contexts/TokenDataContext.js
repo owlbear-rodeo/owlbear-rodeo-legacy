@@ -8,8 +8,8 @@ import React, {
 import * as Comlink from "comlink";
 import { decode } from "@msgpack/msgpack";
 
-import AuthContext from "./AuthContext";
-import DatabaseContext from "./DatabaseContext";
+import { useAuth } from "./AuthContext";
+import { useDatabase } from "./DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -22,8 +22,8 @@ const cachedTokenMax = 100;
 const worker = Comlink.wrap(new DatabaseWorker());
 
 export function TokenDataProvider({ children }) {
-  const { database, databaseStatus } = useContext(DatabaseContext);
-  const { userId } = useContext(AuthContext);
+  const { database, databaseStatus } = useDatabase();
+  const { userId } = useAuth();
 
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);
@@ -222,6 +222,14 @@ export function TokenDataProvider({ children }) {
       {children}
     </TokenDataContext.Provider>
   );
+}
+
+export function useTokenData() {
+  const context = useContext(TokenDataContext);
+  if (context === undefined) {
+    throw new Error("useTokenData must be used within a TokenDataProvider");
+  }
+  return context;
 }
 
 export default TokenDataContext;

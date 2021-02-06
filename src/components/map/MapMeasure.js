@@ -1,22 +1,26 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Group, Line, Text, Label, Tag } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import {
   getBrushPosition,
   getDefaultShapeData,
   getUpdatedShapeData,
-  getStrokeWidth,
 } from "../../helpers/drawing";
 import Vector2 from "../../helpers/Vector2";
 
-function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
-  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
-  const mapStageRef = useContext(MapStageContext);
+function MapMeasure({ map, selectedToolSettings, active }) {
+  const {
+    stageScale,
+    mapWidth,
+    mapHeight,
+    interactionEmitter,
+  } = useMapInteraction();
+  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
@@ -52,7 +56,7 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
         map,
         mapStage,
         map.snapToGrid,
-        gridSize
+        gridCellNormalizedSize
       );
       const { points } = getDefaultShapeData("line", brushPosition);
       const length = 0;
@@ -65,20 +69,26 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
         map,
         mapStage,
         map.snapToGrid,
-        gridSize
+        gridCellNormalizedSize
       );
       if (isBrushDown && drawingShapeData) {
         const { points } = getUpdatedShapeData(
           "line",
           drawingShapeData,
           brushPosition,
-          gridSize
+          gridCellNormalizedSize
         );
         // Round the grid positions to the nearest 0.1 to aviod floating point issues
         const precision = { x: 0.1, y: 0.1 };
         const length = Vector2.distance(
-          Vector2.roundTo(Vector2.divide(points[0], gridSize), precision),
-          Vector2.roundTo(Vector2.divide(points[1], gridSize), precision),
+          Vector2.roundTo(
+            Vector2.divide(points[0], gridCellNormalizedSize),
+            precision
+          ),
+          Vector2.roundTo(
+            Vector2.divide(points[1], gridCellNormalizedSize),
+            precision
+          ),
           selectedToolSettings.type
         );
         setDrawingShapeData({
@@ -119,13 +129,13 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
       <Group>
         <Line
           points={linePoints}
-          strokeWidth={getStrokeWidth(1.5, gridSize, mapWidth, mapHeight)}
+          strokeWidth={1.5 * gridStrokeWidth}
           stroke="hsla(230, 25%, 18%, 0.8)"
           lineCap="round"
         />
         <Line
           points={linePoints}
-          strokeWidth={getStrokeWidth(0.25, gridSize, mapWidth, mapHeight)}
+          strokeWidth={0.25 * gridStrokeWidth}
           stroke="white"
           lineCap="round"
         />

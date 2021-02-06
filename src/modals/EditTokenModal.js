@@ -1,18 +1,18 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
 import TokenSettings from "../components/token/TokenSettings";
 import TokenPreview from "../components/token/TokenPreview";
 
-import TokenDataContext from "../contexts/TokenDataContext";
+import { useTokenData } from "../contexts/TokenDataContext";
 
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditTokenModal({ isOpen, onDone, token }) {
-  const { updateToken } = useContext(TokenDataContext);
+  const { updateToken } = useTokenData();
 
   function handleClose() {
     setTokenSettingChanges({});

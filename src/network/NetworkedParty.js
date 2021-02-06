@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useToasts } from "react-toast-notifications";
 
 // Load session for auto complete
@@ -12,7 +6,7 @@ import { useToasts } from "react-toast-notifications";
 import Session from "./Session";
 import { isStreamStopped, omit } from "../helpers/shared";
 
-import PartyContext from "../contexts/PartyContext";
+import { useParty } from "../contexts/PartyContext";
 
 import Party from "../components/party/Party";
 
@@ -26,7 +20,7 @@ import Party from "../components/party/Party";
  * @param {NetworkedPartyProps} props
  */
 function NetworkedParty({ gameId, session }) {
-  const partyState = useContext(PartyContext);
+  const partyState = useParty();
   const [stream, setStream] = useState(null);
   const [partyStreams, setPartyStreams] = useState({});
 

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -17,16 +17,16 @@ import { resizeImage } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import {
   getGridDefaultInset,
-  getGridSize,
+  getGridSizeFromImage,
   gridSizeVaild,
 } from "../helpers/grid";
 import Vector2 from "../helpers/Vector2";
 
-import useKeyboard from "../hooks/useKeyboard";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
-import MapDataContext from "../contexts/MapDataContext";
-import AuthContext from "../contexts/AuthContext";
+import { useMapData } from "../contexts/MapDataContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 
 const defaultMapProps = {
   showGrid: false,
@@ -54,7 +54,7 @@ function SelectMapModal({
   // The map currently being view in the map screen
   currentMap,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     ownedMaps,
     mapStates,
@@ -64,7 +64,7 @@ function SelectMapModal({
     updateMap,
     updateMaps,
     mapsLoading,
-  } = useContext(MapDataContext);
+  } = useMapData();
 
   /**
    * Search
@@ -152,7 +152,7 @@ function SelectMapModal({
           }
 
           if (!gridSize) {
-            gridSize = await getGridSize(image);
+            gridSize = await getGridSizeFromImage(image);
           }
 
           // Remove file extension
@@ -207,10 +207,9 @@ function SelectMapModal({
           grid: {
             size: gridSize,
             inset: getGridDefaultInset(
+              { size: { x: gridSize.x, y: gridSize.y }, type: "square" },
               image.width,
-              image.height,
-              gridSize.x,
-              gridSize.y
+              image.height
             ),
             type: "square",
           },

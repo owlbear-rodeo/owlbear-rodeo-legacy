@@ -1,10 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Group } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useGrid } from "../../contexts/GridContext";
 
-import { getStrokeWidth } from "../../helpers/drawing";
 import {
   getRelativePointerPositionNormalized,
   Trail,
@@ -14,7 +14,6 @@ import Vector2 from "../../helpers/Vector2";
 import colors from "../../helpers/colors";
 
 function MapPointer({
-  gridSize,
   active,
   position,
   onPointerDown,
@@ -23,10 +22,9 @@ function MapPointer({
   visible,
   color,
 }) {
-  const { mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
-  const mapStageRef = useContext(MapStageContext);
+  const { mapWidth, mapHeight, interactionEmitter } = useMapInteraction();
+  const { gridStrokeWidth } = useGrid();
+  const mapStageRef = useMapStage();
 
   useEffect(() => {
     if (!active) {
@@ -63,7 +61,7 @@ function MapPointer({
     };
   });
 
-  const size = getStrokeWidth(2, gridSize, mapWidth, mapHeight);
+  const size = 2 * gridStrokeWidth;
 
   return (
     <Group>

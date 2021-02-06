@@ -1,11 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
 import MapSettings from "../components/map/MapSettings";
 import MapEditor from "../components/map/MapEditor";
 
-import MapDataContext from "../contexts/MapDataContext";
+import { useMapData } from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
 import { getGridDefaultInset } from "../helpers/grid";
@@ -13,7 +13,7 @@ import { getGridDefaultInset } from "../helpers/grid";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditMapModal({ isOpen, onDone, map, mapState }) {
-  const { updateMap, updateMapState } = useContext(MapDataContext);
+  const { updateMap, updateMapState } = useMapData();
 
   function handleClose() {
     setMapSettingChanges({});

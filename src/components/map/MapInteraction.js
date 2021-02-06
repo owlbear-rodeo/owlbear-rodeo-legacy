@@ -6,19 +6,18 @@ import { EventEmitter } from "events";
 
 import useMapImage from "../../hooks/useMapImage";
 import usePreventOverscroll from "../../hooks/usePreventOverscroll";
-import useKeyboard from "../../hooks/useKeyboard";
 import useStageInteraction from "../../hooks/useStageInteraction";
 import useImageCenter from "../../hooks/useImageCenter";
 
 import { getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import MapStageContext, {
-  MapStageProvider,
-} from "../../contexts/MapStageContext";
-import AuthContext from "../../contexts/AuthContext";
-import SettingsContext from "../../contexts/SettingsContext";
+import { MapStageProvider, useMapStage } from "../../contexts/MapStageContext";
+import AuthContext, { useAuth } from "../../contexts/AuthContext";
+import SettingsContext, { useSettings } from "../../contexts/SettingsContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import { GridProvider } from "../../contexts/GridContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
 function MapInteraction({
   map,
@@ -53,7 +52,7 @@ function MapInteraction({
 
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapStageRef = useContext(MapStageContext);
+  const mapStageRef = useMapStage();
   const mapLayerRef = useRef();
   const mapImageRef = useRef();
 
@@ -177,8 +176,8 @@ function MapInteraction({
     }
   }
 
-  const auth = useContext(AuthContext);
-  const settings = useContext(SettingsContext);
+  const auth = useAuth();
+  const settings = useSettings();
 
   const mapInteraction = {
     stageScale,
@@ -223,9 +222,15 @@ function MapInteraction({
               <SettingsContext.Provider value={settings}>
                 <KeyboardContext.Provider value={keyboardValue}>
                   <MapInteractionProvider value={mapInteraction}>
-                    <MapStageProvider value={mapStageRef}>
-                      {mapLoaded && children}
-                    </MapStageProvider>
+                    <GridProvider
+                      grid={map?.grid}
+                      width={mapWidth}
+                      height={mapHeight}
+                    >
+                      <MapStageProvider value={mapStageRef}>
+                        {mapLoaded && children}
+                      </MapStageProvider>
+                    </GridProvider>
                   </MapInteractionProvider>
                 </KeyboardContext.Provider>
               </SettingsContext.Provider>
@@ -234,7 +239,9 @@ function MapInteraction({
         </Stage>
       </ReactResizeDetector>
       <MapInteractionProvider value={mapInteraction}>
-        {controls}
+        <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+          {controls}
+        </GridProvider>
       </MapInteractionProvider>
     </Box>
   );

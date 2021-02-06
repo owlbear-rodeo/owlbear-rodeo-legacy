@@ -1,10 +1,11 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
-import AuthContext from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import { getBrushPosition } from "../../helpers/drawing";
 
@@ -15,7 +16,6 @@ const defaultNoteSize = 2;
 function MapNotes({
   map,
   active,
-  gridSize,
   onNoteAdd,
   onNoteChange,
   notes,
@@ -25,9 +25,10 @@ function MapNotes({
   onNoteDragEnd,
   fadeOnHover,
 }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-  const { userId } = useContext(AuthContext);
-  const mapStageRef = useContext(MapStageContext);
+  const { interactionEmitter } = useMapInteraction();
+  const { userId } = useAuth();
+  const { gridCellNormalizedSize } = useGrid();
+  const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState(null);
 
@@ -44,7 +45,7 @@ function MapNotes({
         map,
         mapStage,
         map.snapToGrid,
-        gridSize
+        gridCellNormalizedSize
       );
       setNoteData({
         x: brushPosition.x,
@@ -68,7 +69,7 @@ function MapNotes({
           map,
           mapStage,
           map.snapToGrid,
-          gridSize
+          gridCellNormalizedSize
         );
         setNoteData((prev) => ({
           ...prev,

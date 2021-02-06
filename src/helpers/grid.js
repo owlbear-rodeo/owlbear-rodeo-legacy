@@ -1,5 +1,6 @@
 import GridSizeModel from "../ml/gridSize/GridSizeModel";
 import Vector2 from "./Vector2";
+import Size from "./Size";
 
 import { logError } from "./logging";
 
@@ -8,52 +9,47 @@ const GRID_TYPE_NOT_IMPLEMENTED = new Error("Grid type not implemented");
 
 /**
  * @typedef GridInset
- * @property {Vector2} topLeft
- * @property {Vector2} bottomRight
+ * @property {Vector2} topLeft Top left position of the inset
+ * @property {Vector2} bottomRight Bottom right position of the inset
  */
 
 /**
  * @typedef Grid
- * @property {GridInset} inset
- * @property {Vector2} size
+ * @property {GridInset} inset The inset of the grid from the map
+ * @property {Vector2} size The number of columns and rows of the grid as `x` and `y`
  * @property {("square"|"hexVertical"|"hexHorizontal")} type
  */
 
 /**
- * @typedef CellSize
- * @property {number} width
- * @property {number} height
- * @property {number?} radius - Used for hex cell sizes
+ * Gets the size of a grid in pixels taking into account the inset
+ * @param {Grid} grid
+ * @param {number} baseWidth Width of the grid in pixels before inset
+ * @param {number} baseHeight Height of the grid in pixels before inset
+ * @returns {Size}
  */
+export function getGridPixelSize(grid, baseWidth, baseHeight) {
+  const width = (grid.inset.bottomRight.x - grid.inset.topLeft.x) * baseWidth;
+  const height = (grid.inset.bottomRight.y - grid.inset.topLeft.y) * baseHeight;
+  return new Size(width, height);
+}
 
 /**
- * Gets the cell size for a grid taking into account inset and grid type
+ * Gets the cell size for a grid in pixels for each grid type
  * @param {Grid} grid
- * @param {number} gridWidth
- * @param {number} gridHeight
- * @returns {CellSize}
+ * @param {number} gridWidth Width of the grid in pixels after inset
+ * @param {number} gridHeight Height of the grid in pixels after inset
+ * @returns {Size}
  */
-export function getCellSize(grid, gridWidth, gridHeight) {
+export function getCellPixelSize(grid, gridWidth, gridHeight) {
   switch (grid.type) {
     case "square":
-      return {
-        width: gridWidth / grid.size.x,
-        height: gridHeight / grid.size.y,
-      };
+      return new Size(gridWidth / grid.size.x, gridHeight / grid.size.y);
     case "hexVertical":
       const radiusVert = gridWidth / grid.size.x / SQRT3;
-      return {
-        width: radiusVert * SQRT3,
-        height: radiusVert * 2,
-        radius: radiusVert,
-      };
+      return new Size(radiusVert * SQRT3, radiusVert * 2, radiusVert);
     case "hexHorizontal":
       const radiusHorz = gridHeight / grid.size.y / SQRT3;
-      return {
-        width: radiusHorz * 2,
-        height: radiusHorz * SQRT3,
-        radius: radiusHorz,
-      };
+      return new Size(radiusHorz * 2, radiusHorz * SQRT3, radiusHorz);
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
   }
@@ -64,7 +60,7 @@ export function getCellSize(grid, gridWidth, gridHeight) {
  * @param {Grid} grid
  * @param {number} x X-axis location of the cell
  * @param {number} y Y-axis location of the cell
- * @param {CellSize} cellSize
+ * @param {Size} cellSize Cell size in pixels
  * @returns {Vector2}
  */
 export function getCellLocation(grid, x, y, cellSize) {
@@ -111,11 +107,11 @@ export function shouldClipCell(grid, x, y) {
 
 /**
  * Canvas clip function for culling hex cells that overshoot/undershoot the grid
- * @param {CanvasRenderingContext2D} context
+ * @param {CanvasRenderingContext2D} context The canvas context of the clip function
  * @param {Grid} grid
- * @param {number} x
- * @param {number} y
- * @param {CellSize} cellSize
+ * @param {number} x X-axis location of the cell
+ * @param {number} y Y-axis location of the cell
+ * @param {Size} cellSize Cell size in pixels
  */
 export function gridClipFunction(context, grid, x, y, cellSize) {
   // Clip the undershooting cells unless they are needed to fill out a specific grid type
@@ -138,7 +134,7 @@ export function gridClipFunction(context, grid, x, y, cellSize) {
 /**
  * Get the height of a grid based off of its width
  * @param {Grid} grid
- * @param {number} gridWidth
+ * @param {number} gridWidth Width of the grid in pixels after inset
  */
 function getGridHeightFromWidth(grid, gridWidth) {
   switch (grid.type) {
@@ -157,22 +153,22 @@ function getGridHeightFromWidth(grid, gridWidth) {
 
 /**
  * Get the default inset for a grid
- * @param {Grid} grid
- * @param {number} gridWidth
- * @param {number} gridHeight
+ * @param {Grid} grid Grid with no inset property set
+ * @param {number} mapWidth Width of the map in pixels before inset
+ * @param {number} mapHeight Height of the map in pixels before inset
  * @returns {GridInset}
  */
-export function getGridDefaultInset(grid, gridWidth, gridHeight) {
+export function getGridDefaultInset(grid, mapWidth, mapHeight) {
   // Max the width of the inset and figure out the resulting height value
-  const insetHeightNorm = getGridHeightFromWidth(grid, gridWidth) / gridHeight;
+  const insetHeightNorm = getGridHeightFromWidth(grid, mapWidth) / mapHeight;
   return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: insetHeightNorm } };
 }
 
 /**
  * Get an updated inset for a grid when its size changes
- * @param {Grid} grid
- * @param {number} mapWidth
- * @param {number} mapHeight
+ * @param {Grid} grid Grid with an inset property set
+ * @param {number} mapWidth Width of the map in pixels before inset
+ * @param {number} mapHeight Height of the map in pixels before inset
  * @returns {GridInset}
  */
 export function getGridUpdatedInset(grid, mapWidth, mapHeight) {
@@ -348,7 +344,7 @@ async function gridSizeML(image, candidates) {
  * @param {Image} image
  * @returns {Vector2}
  */
-export async function getGridSize(image) {
+export async function getGridSizeFromImage(image) {
   const candidates = dividers(image.width, image.height);
   let prediction;
 
@@ -387,7 +383,7 @@ export function getGridMaxZoom(grid) {
  * @param {Grid} grid
  * @param {number} mapWidth
  * @param {number} mapHeight
- * @param {Konva.node} node
+ * @param {Konva.Node} node
  * @param {number} snappingThreshold 1 = Always snap, 0 = never snap
  */
 export function snapNodeToGrid(

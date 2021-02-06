@@ -9,7 +9,7 @@ import MeasureAlternatingIcon from "../../../icons/MeasureAlternatingIcon";
 
 import Divider from "../../Divider";
 
-import useKeyboard from "../../../hooks/useKeyboard";
+import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 function MeasureToolSettings({ settings, onSettingChange }) {
   // Keyboard shortcuts

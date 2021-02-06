@@ -1,32 +1,26 @@
 import React from "react";
 import { Line, Group, RegularPolygon } from "react-konva";
 
-import { getStrokeWidth } from "../helpers/drawing";
 import {
-  getCellSize,
   getCellLocation,
   gridClipFunction,
   shouldClipCell,
 } from "../helpers/grid";
 
-function Grid({ grid, strokeWidth, width, height, stroke }) {
+import { useGrid } from "../contexts/GridContext";
+
+function Grid({ strokeWidth, stroke }) {
+  const {
+    grid,
+    gridStrokeWidth,
+    gridPixelSize,
+    gridOffset,
+    gridCellPixelSize,
+  } = useGrid();
+
   if (!grid?.size.x || !grid?.size.y) {
     return null;
   }
-
-  const gridSizeNormalized = {
-    x: (grid.inset.bottomRight.x - grid.inset.topLeft.x) / grid.size.x,
-    y: (grid.inset.bottomRight.y - grid.inset.topLeft.y) / grid.size.y,
-  };
-
-  const insetWidth = (grid.inset.bottomRight.x - grid.inset.topLeft.x) * width;
-  const insetHeight =
-    (grid.inset.bottomRight.y - grid.inset.topLeft.y) * height;
-
-  const offsetX = grid.inset.topLeft.x * width * -1;
-  const offsetY = grid.inset.topLeft.y * height * -1;
-
-  const cellSize = getCellSize(grid, insetWidth, insetHeight);
 
   const shapes = [];
   if (grid.type === "square") {
@@ -34,17 +28,16 @@ function Grid({ grid, strokeWidth, width, height, stroke }) {
       shapes.push(
         <Line
           key={`grid_x_${x}`}
-          points={[x * cellSize.width, 0, x * cellSize.width, insetHeight]}
+          points={[
+            x * gridCellPixelSize.width,
+            0,
+            x * gridCellPixelSize.width,
+            gridPixelSize.height,
+          ]}
           stroke={stroke}
-          strokeWidth={getStrokeWidth(
-            strokeWidth,
-            gridSizeNormalized,
-            width,
-            height
-          )}
+          strokeWidth={gridStrokeWidth * strokeWidth}
           opacity={0.5}
-          offsetX={offsetX}
-          offsetY={offsetY}
+          offset={gridOffset}
         />
       );
     }
@@ -52,17 +45,16 @@ function Grid({ grid, strokeWidth, width, height, stroke }) {
       shapes.push(
         <Line
           key={`grid_y_${y}`}
-          points={[0, y * cellSize.height, insetWidth, y * cellSize.height]}
+          points={[
+            0,
+            y * gridCellPixelSize.height,
+            gridPixelSize.width,
+            y * gridCellPixelSize.height,
+          ]}
           stroke={stroke}
-          strokeWidth={getStrokeWidth(
-            strokeWidth,
-            gridSizeNormalized,
-            width,
-            height
-          )}
+          strokeWidth={gridStrokeWidth * strokeWidth}
           opacity={0.5}
-          offsetX={offsetX}
-          offsetY={offsetY}
+          offset={gridOffset}
         />
       );
     }
@@ -70,29 +62,24 @@ function Grid({ grid, strokeWidth, width, height, stroke }) {
     // Start at -1 to overshoot the bounds of the grid to ensure all lines are drawn
     for (let x = -1; x < grid.size.x; x++) {
       for (let y = -1; y < grid.size.y; y++) {
-        const cellLocation = getCellLocation(grid, x, y, cellSize);
+        const cellLocation = getCellLocation(grid, x, y, gridCellPixelSize);
         shapes.push(
           <Group
             key={`grid_${x}_${y}`}
             clipFunc={
               shouldClipCell(grid, x, y) &&
-              ((context) => gridClipFunction(context, grid, x, y, cellSize))
+              ((context) =>
+                gridClipFunction(context, grid, x, y, gridCellPixelSize))
             }
             x={cellLocation.x}
             y={cellLocation.y}
-            offsetX={offsetX}
-            offsetY={offsetY}
+            offset={gridOffset}
           >
             <RegularPolygon
               sides={6}
-              radius={cellSize.radius}
+              radius={gridCellPixelSize.radius}
               stroke={stroke}
-              strokeWidth={getStrokeWidth(
-                strokeWidth,
-                gridSizeNormalized,
-                width,
-                height
-              )}
+              strokeWidth={gridStrokeWidth * strokeWidth}
               opacity={0.5}
               rotation={grid.type === "hexVertical" ? 0 : 90}
             />

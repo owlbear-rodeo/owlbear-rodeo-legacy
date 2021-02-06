@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Rect, Text } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 
-import AuthContext from "../../contexts/AuthContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import { snapNodeToGrid } from "../../helpers/grid";
 import colors from "../../helpers/colors";
@@ -22,12 +23,11 @@ function Note({
   onNoteDragEnd,
   fadeOnHover,
 }) {
-  const { userId } = useContext(AuthContext);
-  const { mapWidth, mapHeight, setPreventMapInteraction } = useContext(
-    MapInteractionContext
-  );
+  const { userId } = useAuth();
+  const { mapWidth, mapHeight, setPreventMapInteraction } = useMapInteraction();
+  const { gridCellPixelSize } = useGrid();
 
-  const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
+  const noteWidth = gridCellPixelSize.width * note.size;
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 

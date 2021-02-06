@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Label,
   Flex,
@@ -13,8 +13,8 @@ import prettyBytes from "pretty-bytes";
 import Modal from "../components/Modal";
 import Slider from "../components/Slider";
 
-import AuthContext from "../contexts/AuthContext";
-import DatabaseContext from "../contexts/DatabaseContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import useSetting from "../hooks/useSetting";
 
@@ -22,8 +22,8 @@ import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
-  const { database, databaseStatus } = useContext(DatabaseContext);
-  const { userId } = useContext(AuthContext);
+  const { database, databaseStatus } = useDatabase();
+  const { userId } = useAuth();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
   const [storageEstimate, setStorageEstimate] = useState();

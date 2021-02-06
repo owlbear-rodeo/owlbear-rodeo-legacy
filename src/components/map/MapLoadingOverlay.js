@@ -1,12 +1,12 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Box } from "theme-ui";
 
-import MapLoadingContext from "../../contexts/MapLoadingContext";
+import { useMapLoading } from "../../contexts/MapLoadingContext";
 
 import LoadingBar from "../LoadingBar";
 
 function MapLoadingOverlay() {
-  const { isLoading, loadingProgressRef } = useContext(MapLoadingContext);
+  const { isLoading, loadingProgressRef } = useMapLoading();
 
   return (
     isLoading && (

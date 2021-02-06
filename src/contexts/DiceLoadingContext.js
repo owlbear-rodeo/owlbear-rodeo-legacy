@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 const DiceLoadingContext = React.createContext();
 
@@ -26,6 +26,14 @@ export function DiceLoadingProvider({ children }) {
       {children}
     </DiceLoadingContext.Provider>
   );
+}
+
+export function useDiceLoading() {
+  const context = useContext(DiceLoadingContext);
+  if (context === undefined) {
+    throw new Error("useDiceLoading must be used within a DiceLoadingProvider");
+  }
+  return context;
 }
 
 export default DiceLoadingContext;

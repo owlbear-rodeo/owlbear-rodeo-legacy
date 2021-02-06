@@ -1,9 +1,10 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import shortid from "shortid";
 import { Group, Line, Rect, Circle } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import Vector2 from "../../helpers/Vector2";
 import {
@@ -11,7 +12,6 @@ import {
   getDefaultShapeData,
   getUpdatedShapeData,
   simplifyPoints,
-  getStrokeWidth,
 } from "../../helpers/drawing";
 
 import colors from "../../helpers/colors";
@@ -23,12 +23,15 @@ function MapDrawing({
   onShapesRemove,
   active,
   toolSettings,
-  gridSize,
 }) {
-  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
-  const mapStageRef = useContext(MapStageContext);
+  const {
+    stageScale,
+    mapWidth,
+    mapHeight,
+    interactionEmitter,
+  } = useMapInteraction();
+  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const mapStageRef = useMapStage();
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [erasingShapes, setErasingShapes] = useState([]);
@@ -53,7 +56,7 @@ function MapDrawing({
         map,
         mapStage,
         map.snapToGrid && isShape,
-        gridSize
+        gridCellNormalizedSize
       );
       const commonShapeData = {
         color: toolSettings.color,
@@ -85,7 +88,7 @@ function MapDrawing({
         map,
         mapStage,
         map.snapToGrid && isShape,
-        gridSize
+        gridCellNormalizedSize
       );
       if (isBrushDown && drawingShape) {
         if (isBrush) {
@@ -102,7 +105,7 @@ function MapDrawing({
             }
             const simplified = simplifyPoints(
               [...prevPoints, brushPosition],
-              gridSize,
+              gridCellNormalizedSize,
               stageScale
             );
             return {
@@ -117,7 +120,7 @@ function MapDrawing({
               prevShape.shapeType,
               prevShape.data,
               brushPosition,
-              gridSize
+              gridCellNormalizedSize
             ),
           }));
         }
@@ -191,12 +194,7 @@ function MapDrawing({
           fillEnabled={shape.pathType === "fill"}
           lineCap="round"
           lineJoin="round"
-          strokeWidth={getStrokeWidth(
-            shape.strokeWidth,
-            gridSize,
-            mapWidth,
-            mapHeight
-          )}
+          strokeWidth={gridStrokeWidth * shape.strokeWidth}
           {...defaultProps}
         />
       );
@@ -239,12 +237,7 @@ function MapDrawing({
               (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
               []
             )}
-            strokeWidth={getStrokeWidth(
-              shape.strokeWidth,
-              gridSize,
-              mapWidth,
-              mapHeight
-            )}
+            strokeWidth={gridStrokeWidth * shape.strokeWidth}
             stroke={colors[shape.color] || shape.color}
             lineCap="round"
             {...defaultProps}

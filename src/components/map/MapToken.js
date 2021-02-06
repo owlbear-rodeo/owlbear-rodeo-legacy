@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
@@ -10,8 +10,9 @@ import usePrevious from "../../hooks/usePrevious";
 
 import { snapNodeToGrid } from "../../helpers/grid";
 
-import AuthContext from "../../contexts/AuthContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
@@ -23,7 +24,6 @@ const snappingThreshold = 1 / 7;
 function MapToken({
   token,
   tokenState,
-  tokenSizePercent,
   onTokenStateChange,
   onTokenMenuOpen,
   onTokenDragStart,
@@ -33,13 +33,14 @@ function MapToken({
   fadeOnHover,
   map,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
     stageScale,
-  } = useContext(MapInteractionContext);
+  } = useMapInteraction();
+  const { gridCellPixelSize } = useGrid();
 
   const tokenSource = useDataSource(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
@@ -182,9 +183,9 @@ function MapToken({
     }
   }
 
-  const tokenWidth = tokenSizePercent * mapWidth * tokenState.size;
+  const tokenWidth = gridCellPixelSize.width * tokenState.size;
   const tokenHeight =
-    tokenSizePercent * (mapWidth / tokenAspectRatio) * tokenState.size;
+    (gridCellPixelSize.width / tokenAspectRatio) * tokenState.size;
 
   const debouncedStageScale = useDebounce(stageScale, 50);
   const imageRef = useRef();

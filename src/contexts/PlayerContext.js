@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from "react";
 
-import DatabaseContext from "./DatabaseContext";
-import AuthContext from "./AuthContext";
+import { useDatabase } from "./DatabaseContext";
+import { useAuth } from "./AuthContext";
 
 import { getRandomMonster } from "../helpers/monsters";
 
@@ -11,8 +11,8 @@ export const PlayerStateContext = React.createContext();
 export const PlayerUpdaterContext = React.createContext(() => {});
 
 export function PlayerProvider({ session, children }) {
-  const { userId } = useContext(AuthContext);
-  const { database, databaseStatus } = useContext(DatabaseContext);
+  const { userId } = useAuth();
+  const { database, databaseStatus } = useDatabase();
 
   const [playerState, setPlayerState] = useNetworkedState(
     {
@@ -92,4 +92,20 @@ export function PlayerProvider({ session, children }) {
       </PlayerUpdaterContext.Provider>
     </PlayerStateContext.Provider>
   );
+}
+
+export function usePlayerState() {
+  const context = useContext(PlayerStateContext);
+  if (context === undefined) {
+    throw new Error("usePlayerState must be used within a PlayerProvider");
+  }
+  return context;
+}
+
+export function usePlayerUpdater() {
+  const context = useContext(PlayerUpdaterContext);
+  if (context === undefined) {
+    throw new Error("usePlayerUpdater must be used within a PlayerProvider");
+  }
+  return context;
 }

@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Image, Box } from "theme-ui";
 import interact from "interactjs";
 
 import usePortal from "../../hooks/usePortal";
 
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapStage } from "../../contexts/MapStageContext";
 
 /**
  * @callback onProxyDragEnd
@@ -34,7 +34,7 @@ function ProxyToken({ tokenClassName, onProxyDragEnd, tokens }) {
   }, [tokens]);
 
   const proxyOnMap = useRef(false);
-  const mapStageRef = useContext(MapStageContext);
+  const mapStageRef = useMapStage();
 
   useEffect(() => {
     interact(`.${tokenClassName}`).draggable({

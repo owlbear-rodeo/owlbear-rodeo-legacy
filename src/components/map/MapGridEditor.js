@@ -1,11 +1,10 @@
-import React, { useContext, useRef } from "react";
+import React, { useRef } from "react";
 import { Group, Circle, Rect } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
-
-import useKeyboard from "../../hooks/useKeyboard";
 
 function MapGridEditor({ map, onGridChange }) {
   const {
@@ -13,7 +12,7 @@ function MapGridEditor({ map, onGridChange }) {
     mapHeight,
     stageScale,
     setPreventMapInteraction,
-  } = useContext(MapInteractionContext);
+  } = useMapInteraction();
 
   const mapSize = { x: mapWidth, y: mapHeight };
 

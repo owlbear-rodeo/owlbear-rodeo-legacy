@@ -8,8 +8,8 @@ import React, {
 import * as Comlink from "comlink";
 import { decode } from "@msgpack/msgpack";
 
-import AuthContext from "./AuthContext";
-import DatabaseContext from "./DatabaseContext";
+import { useAuth } from "./AuthContext";
+import { useDatabase } from "./DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -32,8 +32,8 @@ const defaultMapState = {
 const worker = Comlink.wrap(new DatabaseWorker());
 
 export function MapDataProvider({ children }) {
-  const { database, databaseStatus } = useContext(DatabaseContext);
-  const { userId } = useContext(AuthContext);
+  const { database, databaseStatus } = useDatabase();
+  const { userId } = useAuth();
 
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);
@@ -301,6 +301,14 @@ export function MapDataProvider({ children }) {
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>
   );
+}
+
+export function useMapData() {
+  const context = useContext(MapDataContext);
+  if (context === undefined) {
+    throw new Error("useMapData must be used within a MapDataProvider");
+  }
+  return context;
 }
 
 export default MapDataContext;
