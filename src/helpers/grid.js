@@ -1,4 +1,5 @@
 import GridSizeModel from "../ml/gridSize/GridSizeModel";
+import Vector3 from "./Vector3";
 import Vector2 from "./Vector2";
 import Size from "./Size";
 
@@ -56,27 +57,58 @@ export function getCellPixelSize(grid, gridWidth, gridHeight) {
 }
 
 /**
- * Find the location of cell in the grid
+ * Find the location of a cell in the grid.
+ * Hex is addressed in an offset coordinate system with even numbered columns/rows offset to the right
  * @param {Grid} grid
- * @param {number} x X-axis location of the cell
- * @param {number} y Y-axis location of the cell
+ * @param {number} col X-axis coordinate of the cell
+ * @param {number} row Y-axis coordinate of the cell
  * @param {Size} cellSize Cell size in pixels
  * @returns {Vector2}
  */
-export function getCellLocation(grid, x, y, cellSize) {
+export function getCellLocation(grid, col, row, cellSize) {
   switch (grid.type) {
     case "square":
-      return { x: x * cellSize.width, y: y * cellSize.height };
+      return { x: col * cellSize.width, y: row * cellSize.height };
     case "hexVertical":
       return {
-        x: x * cellSize.width + (cellSize.width * (1 + (y % 2))) / 2,
-        y: y * cellSize.height * (3 / 4) + cellSize.radius,
+        x: col * cellSize.width + (cellSize.width * (1 + (row & 1))) / 2,
+        y: row * cellSize.height * (3 / 4) + cellSize.radius,
       };
     case "hexHorizontal":
       return {
-        x: x * cellSize.width * (3 / 4) + cellSize.radius,
-        y: y * cellSize.height + (cellSize.height * (1 + (x % 2))) / 2,
+        x: col * cellSize.width * (3 / 4) + cellSize.radius,
+        y: row * cellSize.height + (cellSize.height * (1 + (col & 1))) / 2,
       };
+    default:
+      throw GRID_TYPE_NOT_IMPLEMENTED;
+  }
+}
+
+/**
+ * Find the coordinates of the nearest cell in the grid to a point in pixels
+ * @param {Grid} grid
+ * @param {number} x X location to look for in pixels
+ * @param {number} y Y location to look for in pixels
+ * @param {Size} cellSize Cell size in pixels
+ * @returns {Vector2}
+ */
+export function getNearestCellCoordinates(grid, x, y, cellSize) {
+  switch (grid.type) {
+    case "square":
+      return Vector2.roundTo({ x, y }, cellSize);
+    case "hexVertical":
+      // Find nearest cell in cube coordinates the convert to offset coordinates
+      const cubeXVert = ((SQRT3 / 3) * x - (1 / 3) * y) / cellSize.radius;
+      const cubeZVert = ((2 / 3) * y) / cellSize.radius;
+      const cubeYVert = -cubeXVert - cubeZVert;
+      const cubeVert = new Vector3(cubeXVert, cubeYVert, cubeZVert);
+      return hexCubeToOffset(Vector3.cubeRound(cubeVert), "hexVertical");
+    case "hexHorizontal":
+      const cubeXHorz = ((2 / 3) * x) / cellSize.radius;
+      const cubeZHorz = (-(1 / 3) * x + (SQRT3 / 3) * y) / cellSize.radius;
+      const cubeYHorz = -cubeXHorz - cubeZHorz;
+      const cubeHorz = new Vector3(cubeXHorz, cubeYHorz, cubeZHorz);
+      return hexCubeToOffset(Vector3.cubeRound(cubeHorz), "hexHorizontal");
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
   }
@@ -85,21 +117,21 @@ export function getCellLocation(grid, x, y, cellSize) {
 /**
  * Whether the cell located at `x, y` is out of bounds of the grid
  * @param {Grid} grid
- * @param {number} x X-axis location of the cell
- * @param {number} y Y-axis location of the cell
+ * @param {number} col X-axis coordinate of the cell
+ * @param {number} row Y-axis coordinate of the cell
  * @returns {boolean}
  */
-export function shouldClipCell(grid, x, y) {
-  if (x < 0 || y < 0) {
+export function shouldClipCell(grid, col, row) {
+  if (col < 0 || row < 0) {
     return true;
   }
   switch (grid.type) {
     case "square":
       return false;
     case "hexVertical":
-      return x === grid.size.x - 1 && y % 2 !== 0;
+      return col === grid.size.x - 1 && (row & 1) !== 0;
     case "hexHorizontal":
-      return y === grid.size.y - 1 && x % 2 !== 0;
+      return row === grid.size.y - 1 && (col & 1) !== 0;
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
   }
@@ -109,25 +141,33 @@ export function shouldClipCell(grid, x, y) {
  * Canvas clip function for culling hex cells that overshoot/undershoot the grid
  * @param {CanvasRenderingContext2D} context The canvas context of the clip function
  * @param {Grid} grid
- * @param {number} x X-axis location of the cell
- * @param {number} y Y-axis location of the cell
+ * @param {number} col X-axis coordinate of the cell
+ * @param {number} row Y-axis coordinate of the cell
  * @param {Size} cellSize Cell size in pixels
  */
-export function gridClipFunction(context, grid, x, y, cellSize) {
+export function gridClipFunction(context, grid, col, row, cellSize) {
   // Clip the undershooting cells unless they are needed to fill out a specific grid type
-  if ((x < 0 && grid.type !== "hexVertical") || (x < 0 && y % 2 === 0)) {
+  if (
+    (col < 0 && grid.type !== "hexVertical") ||
+    (col < 0 && (row & 1) === 0)
+  ) {
     return;
   }
-  if ((y < 0 && grid.type !== "hexHorizontal") || (y < 0 && x % 2 === 0)) {
+  if (
+    (row < 0 && grid.type !== "hexHorizontal") ||
+    (row < 0 && (col & 1) === 0)
+  ) {
     return;
   }
   context.rect(
-    x < 0 ? 0 : -cellSize.radius,
-    y < 0 ? 0 : -cellSize.radius,
-    x > 0 && grid.type === "hexVertical"
+    col < 0 ? 0 : -cellSize.radius,
+    row < 0 ? 0 : -cellSize.radius,
+    col > 0 && grid.type === "hexVertical"
       ? cellSize.radius
       : cellSize.radius * 2,
-    y > 0 && grid.type === "hexVertical" ? cellSize.radius * 2 : cellSize.radius
+    row > 0 && grid.type === "hexVertical"
+      ? cellSize.radius * 2
+      : cellSize.radius
   );
 }
 
@@ -182,6 +222,56 @@ export function getGridUpdatedInset(grid, mapWidth, mapHeight) {
     inset.bottomRight.y = inset.topLeft.y + insetHeightNorm;
   }
   return inset;
+}
+
+/**
+ * Get the max zoom for a grid
+ * @param {Grid} grid
+ * @returns {number}
+ */
+export function getGridMaxZoom(grid) {
+  if (!grid) {
+    return 10;
+  }
+  // Return max grid size / 2
+  return Math.max(Math.max(grid.size.x, grid.size.y) / 2, 5);
+}
+
+/**
+ * Convert from a 3D cube hex representation to a 2D offset one
+ * @param {Vector3} cube Cube representation of the hex cell
+ * @param {("hexVertical"|"hexHorizontal")} type
+ * @returns {Vector2}
+ */
+function hexCubeToOffset(cube, type) {
+  if (type === "hexVertical") {
+    const x = cube.x + (cube.z + (cube.z & 1)) / 2;
+    const y = cube.z;
+    return new Vector2(x, y);
+  } else {
+    const x = cube.x;
+    const y = cube.z + (cube.x + (cube.x & 1)) / 2;
+    return new Vector2(x, y);
+  }
+}
+/**
+ * Convert from a 2D offset hex representation to a 3D cube one
+ * @param {Vector2} offset Offset representation of the hex cell
+ * @param {("hexVertical"|"hexHorizontal")} type
+ * @returns {Vector3}
+ */
+function hexOffsetToCube(offset, type) {
+  if (type === "hexVertical") {
+    const x = offset.x - (offset.y - (offset.y & 1)) / 2;
+    const z = offset.y;
+    const y = -x - z;
+    return { x, y, z };
+  } else {
+    const x = offset.x;
+    const z = offset.y - (offset.x - (offset.x & 1)) / 2;
+    const y = -x - z;
+    return { x, y, z };
+  }
 }
 
 /**
@@ -363,104 +453,4 @@ export async function getGridSizeFromImage(image) {
   }
 
   return prediction;
-}
-
-/**
- * Get the max zoom for a grid
- * @param {Grid} grid
- * @returns {number}
- */
-export function getGridMaxZoom(grid) {
-  if (!grid) {
-    return 10;
-  }
-  // Return max grid size / 2
-  return Math.max(Math.max(grid.size.x, grid.size.y) / 2, 5);
-}
-
-/**
- * Snap a Konva Node to a the closest grid cell
- * @param {Grid} grid
- * @param {number} mapWidth
- * @param {number} mapHeight
- * @param {Konva.Node} node
- * @param {number} snappingThreshold 1 = Always snap, 0 = never snap
- */
-export function snapNodeToGrid(
-  grid,
-  mapWidth,
-  mapHeight,
-  node,
-  snappingThreshold
-) {
-  const offset = Vector2.multiply(grid.inset.topLeft, {
-    x: mapWidth,
-    y: mapHeight,
-  });
-  const gridSize = {
-    x:
-      (mapWidth * (grid.inset.bottomRight.x - grid.inset.topLeft.x)) /
-      grid.size.x,
-    y:
-      (mapHeight * (grid.inset.bottomRight.y - grid.inset.topLeft.y)) /
-      grid.size.y,
-  };
-
-  const position = node.position();
-  const halfSize = Vector2.divide({ x: node.width(), y: node.height() }, 2);
-
-  // Offsets to tranform the centered position into the four corners
-  const cornerOffsets = [
-    { x: 0, y: 0 },
-    halfSize,
-    { x: -halfSize.x, y: -halfSize.y },
-    { x: halfSize.x, y: -halfSize.y },
-    { x: -halfSize.x, y: halfSize.y },
-  ];
-
-  // Minimum distance from a corner to the grid
-  let minCornerGridDistance = Number.MAX_VALUE;
-  // Minimum component of the difference between the min corner and the grid
-  let minCornerMinComponent;
-  // Closest grid value
-  let minGridSnap;
-
-  // Find the closest corner to the grid
-  for (let cornerOffset of cornerOffsets) {
-    const corner = Vector2.add(position, cornerOffset);
-    // Transform into offset space, round, then transform back
-    const gridSnap = Vector2.add(
-      Vector2.roundTo(Vector2.subtract(corner, offset), gridSize),
-      offset
-    );
-    const gridDistance = Vector2.length(Vector2.subtract(gridSnap, corner));
-    const minComponent = Vector2.min(gridSize);
-    if (gridDistance < minCornerGridDistance) {
-      minCornerGridDistance = gridDistance;
-      minCornerMinComponent = minComponent;
-      // Move the grid value back to the center
-      minGridSnap = Vector2.subtract(gridSnap, cornerOffset);
-    }
-  }
-
-  // Snap to center of grid
-  // Subtract offset and half grid size to transform it into offset half space then transform it back
-  const halfGridSize = Vector2.multiply(gridSize, 0.5);
-  const centerSnap = Vector2.add(
-    Vector2.add(
-      Vector2.roundTo(
-        Vector2.subtract(Vector2.subtract(position, offset), halfGridSize),
-        gridSize
-      ),
-      halfGridSize
-    ),
-    offset
-  );
-  const centerDistance = Vector2.length(Vector2.subtract(centerSnap, position));
-
-  if (minCornerGridDistance < minCornerMinComponent * snappingThreshold) {
-    node.position(minGridSnap);
-  } else if (centerDistance < Vector2.min(gridSize) * snappingThreshold) {
-    node.position(centerSnap);
-  }
 }

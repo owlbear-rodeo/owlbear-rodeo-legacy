@@ -6,10 +6,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useMapInteraction } from "../../contexts/MapInteractionContext";
 import { useGrid } from "../../contexts/GridContext";
 
-import { snapNodeToGrid } from "../../helpers/grid";
 import colors from "../../helpers/colors";
 
 import usePrevious from "../../hooks/usePrevious";
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 const snappingThreshold = 1 / 5;
 
@@ -31,6 +31,8 @@ function Note({
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 
+  const snapNodeToGrid = useGridSnapping(snappingThreshold);
+
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
   }
@@ -39,13 +41,7 @@ function Note({
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToGrid(
-        map.grid,
-        mapWidth,
-        mapHeight,
-        noteGroup,
-        snappingThreshold
-      );
+      snapNodeToGrid(noteGroup);
     }
   }
 

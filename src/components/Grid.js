@@ -5,7 +5,9 @@ import {
   getCellLocation,
   gridClipFunction,
   shouldClipCell,
+  getNearestCellCoordinates,
 } from "../helpers/grid";
+import Vector2 from "../helpers/Vector2";
 
 import { useGrid } from "../contexts/GridContext";
 
@@ -22,6 +24,8 @@ function Grid({ strokeWidth, stroke }) {
     return null;
   }
 
+  const negativeGridOffset = Vector2.multiply(gridOffset, -1);
+
   const shapes = [];
   if (grid.type === "square") {
     for (let x = 1; x < grid.size.x; x++) {
@@ -37,7 +41,7 @@ function Grid({ strokeWidth, stroke }) {
           stroke={stroke}
           strokeWidth={gridStrokeWidth * strokeWidth}
           opacity={0.5}
-          offset={gridOffset}
+          offset={negativeGridOffset}
         />
       );
     }
@@ -54,7 +58,7 @@ function Grid({ strokeWidth, stroke }) {
           stroke={stroke}
           strokeWidth={gridStrokeWidth * strokeWidth}
           opacity={0.5}
-          offset={gridOffset}
+          offset={negativeGridOffset}
         />
       );
     }
@@ -73,7 +77,7 @@ function Grid({ strokeWidth, stroke }) {
             }
             x={cellLocation.x}
             y={cellLocation.y}
-            offset={gridOffset}
+            offset={negativeGridOffset}
           >
             <RegularPolygon
               sides={6}
@@ -82,6 +86,16 @@ function Grid({ strokeWidth, stroke }) {
               strokeWidth={gridStrokeWidth * strokeWidth}
               opacity={0.5}
               rotation={grid.type === "hexVertical" ? 0 : 90}
+              onMouseDown={() => {
+                console.log(
+                  getNearestCellCoordinates(
+                    grid,
+                    cellLocation.x,
+                    cellLocation.y,
+                    gridCellPixelSize
+                  )
+                );
+              }}
             />
           </Group>
         );

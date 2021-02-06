@@ -7,8 +7,7 @@ import Konva from "konva";
 import useDataSource from "../../hooks/useDataSource";
 import useDebounce from "../../hooks/useDebounce";
 import usePrevious from "../../hooks/usePrevious";
-
-import { snapNodeToGrid } from "../../helpers/grid";
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useMapInteraction } from "../../contexts/MapInteractionContext";
@@ -52,6 +51,8 @@ function MapToken({
     }
   }, [tokenSourceImage]);
 
+  const snapNodeToGrid = useGridSnapping(snappingThreshold);
+
   function handleDragStart(event) {
     const tokenGroup = event.target;
     const tokenImage = imageRef.current;
@@ -88,13 +89,7 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToGrid(
-        map.grid,
-        mapWidth,
-        mapHeight,
-        tokenGroup,
-        snappingThreshold
-      );
+      snapNodeToGrid(tokenGroup);
     }
   }
 

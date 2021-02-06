@@ -19,14 +19,14 @@ import { getGridPixelSize, getCellPixelSize, Grid } from "../helpers/grid";
  */
 const defaultValue = {
   grid: {
-    size: { x: 0, y: 0 },
-    inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+    size: new Vector2(0, 0),
+    inset: { topLeft: new Vector2(0, 0), bottomRight: new Vector2(1, 1) },
     type: "square",
   },
   gridPixelSize: new Size(0, 0),
   gridCellPixelSize: new Size(0, 0, 0),
   gridCellNormalizedSize: new Size(0, 0, 0),
-  gridOffset: { x: 0, y: 0 },
+  gridOffset: new Vector2(0, 0),
   gridStrokeWidth: 0,
 };
 
@@ -53,10 +53,10 @@ export function GridProvider({ grid, width, height, children }) {
     gridCellPixelSize.width / gridPixelSize.width,
     gridCellPixelSize.height / gridPixelSize.height
   );
-  const gridOffset = {
-    x: grid.inset.topLeft.x * width * -1,
-    y: grid.inset.topLeft.y * height * -1,
-  };
+  const gridOffset = Vector2.multiply(grid.inset.topLeft, {
+    x: width,
+    y: height,
+  });
   const gridStrokeWidth =
     (gridCellPixelSize.width < gridCellPixelSize.height
       ? gridCellPixelSize.width
