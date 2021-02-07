@@ -220,15 +220,15 @@ function TokenMenu({
           <Text
             as="label"
             variant="body2"
-            sx={{ width: "95%", fontSize: "16px" }}
+            sx={{ width: "65%", fontSize: "16px" }}
             p={1}
           >
-            Rotation:
+            Rotate:
           </Text>
           <Slider
             value={(tokenState && tokenState.rotation) || 0}
             onChange={handleRotationChange}
-            step={45}
+            step={15}
             min={0}
             max={360}
             mr={1}
