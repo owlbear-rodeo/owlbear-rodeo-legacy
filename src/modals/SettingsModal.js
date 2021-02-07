@@ -26,6 +26,9 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const { userId } = useAuth();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
+  const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
+    "map.gridSnappingSensitivity"
+  );
   const [storageEstimate, setStorageEstimate] = useState();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
@@ -111,6 +114,21 @@ function SettingsModal({ isOpen, onRequestClose }) {
               value={labelSize}
               onChange={(e) => setLabelSize(parseFloat(e.target.value))}
               labelFunc={(value) => `${value}x`}
+            />
+          </Label>
+          <Label py={2}>
+            Grid Snapping Sensitivity
+            <Slider
+              step={0.05}
+              min={0}
+              max={0.5}
+              ml={1}
+              sx={{ width: "initial" }}
+              value={gridSnappingSensitivity}
+              onChange={(e) =>
+                setGridSnappingSensitivity(parseFloat(e.target.value))
+              }
+              labelFunc={(value) => `${value * 2}`}
             />
           </Label>
           <Divider bg="text" />

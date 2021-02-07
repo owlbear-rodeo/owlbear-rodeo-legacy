@@ -37,10 +37,11 @@ function loadVersions(settings) {
     ...prev,
     game: { usePassword: true },
   }));
-  // v1.7.1 - Added pointer color
+  // v1.8.0 - Added pointer color and grid snapping sensitivity
   settings.version(4, (prev) => ({
     ...prev,
     pointer: { color: "red" },
+    map: { ...prev.map, gridSnappingSensitivity: 0.2 },
   }));
 }
 

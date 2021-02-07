@@ -18,8 +18,6 @@ import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
-const snappingThreshold = 1 / 7;
-
 function MapToken({
   token,
   tokenState,
@@ -51,7 +49,7 @@ function MapToken({
     }
   }, [tokenSourceImage]);
 
-  const snapNodeToGrid = useGridSnapping(snappingThreshold);
+  const snapNodeToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     const tokenGroup = event.target;

@@ -11,8 +11,6 @@ import colors from "../../helpers/colors";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-const snappingThreshold = 1 / 5;
-
 function Note({
   note,
   map,
@@ -35,7 +33,7 @@ function Note({
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 
-  const snapNodeToGrid = useGridSnapping(snappingThreshold);
+  const snapNodeToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
