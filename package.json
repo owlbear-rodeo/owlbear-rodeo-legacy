@@ -56,6 +56,9 @@
     "use-image": "^1.0.5",
     "webrtc-adapter": "^7.5.1"
   },
+  "resolutions": {
+    "simple-peer/get-browser-rtc": "substack/get-browser-rtc#4/head"
+  },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts start",
