@@ -1,10 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
-import * as streamSaver from "streamsaver";
-import * as streamPonyfill from "web-streams-polyfill/ponyfill";
+import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
-// Polyfill blob to get use to Blob.stream() on unsupported browsers (Safari)
-import "blob-polyfill";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -13,10 +10,6 @@ import LoadingBar from "../components/LoadingBar";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
-
-// Add writableStream ponyfill
-streamSaver.WritableStream =
-  streamSaver.WritableStream || streamPonyfill.WritableStream;
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
@@ -49,37 +42,13 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
     window.location.reload();
   }
 
-  const fileStreamRef = useRef();
-
   async function handleExportDatabase() {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     const blob = await worker.exportData(Comlink.proxy(handleDBProgress));
+    saveAs(blob, `${new Date().toISOString()}.owlbear`);
     setIsLoading(false);
-
-    const fileStream = streamSaver.createWriteStream(
-      `${new Date().toISOString()}.owlbear`,
-      {
-        size: blob.size,
-      }
-    );
-    fileStreamRef.current = fileStream;
-
-    const readableStream = blob.stream();
-    try {
-      await readableStream.pipeTo(fileStream);
-    } catch (error) {
-      console.error(error);
-    }
     backgroundTaskRunningRef.current = false;
-    fileStreamRef.current = null;
-  }
-
-  function handleClose() {
-    if (isLoading) {
-      return;
-    }
-    onRequestClose();
   }
 
   useEffect(() => {
@@ -90,19 +59,18 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
       }
     }
 
-    function handleUnload() {
-      if (fileStreamRef.current) {
-        fileStreamRef.current.abort();
-      }
-    }
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("unload", handleUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("unload", handleUnload);
     };
   }, []);
+
+  function handleClose() {
+    if (isLoading) {
+      return;
+    }
+    onRequestClose();
+  }
 
   return (
     <Modal isOpen={isOpen} onRequestClose={handleClose} allowClose={!isLoading}>
