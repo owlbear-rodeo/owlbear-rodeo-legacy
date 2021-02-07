@@ -1,7 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
-import streamSaver from "streamsaver";
+import * as streamSaver from "streamsaver";
+import * as streamPonyfill from "web-streams-polyfill/ponyfill";
 import * as Comlink from "comlink";
+// Polyfill blob to get use to Blob.stream() on unsupported browsers (Safari)
+// eslint-disable-next-line no-unused-vars
+import { Blob } from "blob-polyfill";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -10,6 +14,10 @@ import LoadingBar from "../components/LoadingBar";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
+
+// Add writableStream ponyfill
+streamSaver.WritableStream =
+  streamSaver.WritableStream || streamPonyfill.WritableStream;
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
@@ -60,9 +68,10 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
 
     const readableStream = blob.stream();
     if (window.WritableStream && readableStream.pipeTo) {
-      await readableStream.pipeTo(fileStream);
+      readableStream.pipeTo(fileStream);
       backgroundTaskRunningRef.current = false;
     } else {
+      // Fallback when no writableStream and pipeTo is available (Safari)
       const writer = fileStream.getWriter();
       const reader = readableStream.getReader();
       async function pump() {
@@ -70,7 +79,8 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
         if (res.done) {
           writer.close();
         } else {
-          writer.write(res.value).then(pump);
+          await writer.write(res.value);
+          await pump();
         }
       }
       await pump();
