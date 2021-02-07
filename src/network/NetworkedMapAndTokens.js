@@ -141,22 +141,26 @@ function NetworkedMapAndTokens({ session }) {
           continue;
         }
 
+        requestingAssetsRef.current.add(asset.id);
+
         if (asset.type === "map") {
           const cachedMap = await getMapFromDB(asset.id);
           if (cachedMap && cachedMap.lastModified === asset.lastModified) {
+            requestingAssetsRef.current.delete(asset.id);
             continue;
           } else if (cachedMap && cachedMap.lastModified > asset.lastModified) {
             // Update last used for cache invalidation
             const lastUsed = Date.now();
             await updateMap(cachedMap.id, { lastUsed });
             setCurrentMap({ ...cachedMap, lastUsed });
+            requestingAssetsRef.current.delete(asset.id);
           } else {
-            requestingAssetsRef.current.add(asset.id);
             session.sendTo(owner.sessionId, "mapRequest", asset.id);
           }
         } else if (asset.type === "token") {
           const cachedToken = await getTokenFromDB(asset.id);
           if (cachedToken && cachedToken.lastModified === asset.lastModified) {
+            requestingAssetsRef.current.delete(asset.id);
             continue;
           } else if (
             cachedToken &&
@@ -165,8 +169,8 @@ function NetworkedMapAndTokens({ session }) {
             // Update last used for cache invalidation
             const lastUsed = Date.now();
             await updateToken(cachedToken.id, { lastUsed });
+            requestingAssetsRef.current.delete(asset.id);
           } else {
-            requestingAssetsRef.current.add(asset.id);
             session.sendTo(owner.sessionId, "tokenRequest", asset.id);
           }
         }
@@ -480,6 +484,7 @@ function NetworkedMapAndTokens({ session }) {
         const newToken = data;
         if (newToken?.id) {
           await putToken(newToken);
+          requestingAssetsRef.current.delete(newToken.id);
         }
         assetLoadFinish();
       }
