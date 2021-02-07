@@ -2,6 +2,7 @@ import {
   toRadians,
   roundTo as roundToNumber,
   lerp as lerpNumber,
+  floorTo as floorToNumber,
 } from "./shared";
 
 /**
@@ -183,6 +184,19 @@ class Vector2 {
     return {
       x: roundToNumber(p.x, to.x),
       y: roundToNumber(p.y, to.y),
+    };
+  }
+
+  /**
+   * Floors `p` to the nearest value of `to`
+   * @param {Vector2} p
+   * @param {Vector2} to
+   * @returns {Vector2}
+   */
+  static floorTo(p, to) {
+    return {
+      x: floorToNumber(p.x, to.x),
+      y: floorToNumber(p.y, to.y),
     };
   }
 
@@ -472,6 +486,20 @@ class Vector2 {
     }
 
     return resampledPoints;
+  }
+
+  /**
+   * Rotate a vector 90 degrees
+   * @param {Vector2} p Point
+   * @param {("counterClockwise"|"clockwise")=} direction Direction to rotate the vector
+   * @returns {Vector2}
+   */
+  static rotate90(p, direction = "clockwise") {
+    if (direction === "clockwise") {
+      return { x: p.y, y: -p.x };
+    } else {
+      return { x: -p.y, y: p.x };
+    }
   }
 }
 

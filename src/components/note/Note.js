@@ -27,7 +27,11 @@ function Note({
   const { mapWidth, mapHeight, setPreventMapInteraction } = useMapInteraction();
   const { gridCellPixelSize } = useGrid();
 
-  const noteWidth = gridCellPixelSize.width * note.size;
+  const minCellSize = Math.min(
+    gridCellPixelSize.width,
+    gridCellPixelSize.height
+  );
+  const noteWidth = minCellSize * note.size;
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 

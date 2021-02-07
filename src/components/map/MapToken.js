@@ -178,9 +178,12 @@ function MapToken({
     }
   }
 
-  const tokenWidth = gridCellPixelSize.width * tokenState.size;
-  const tokenHeight =
-    (gridCellPixelSize.width / tokenAspectRatio) * tokenState.size;
+  const minCellSize = Math.min(
+    gridCellPixelSize.width,
+    gridCellPixelSize.height
+  );
+  const tokenWidth = minCellSize * tokenState.size;
+  const tokenHeight = (minCellSize / tokenAspectRatio) * tokenState.size;
 
   const debouncedStageScale = useDebounce(stageScale, 50);
   const imageRef = useRef();

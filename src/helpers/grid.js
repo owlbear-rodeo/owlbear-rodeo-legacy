@@ -57,7 +57,7 @@ export function getCellPixelSize(grid, gridWidth, gridHeight) {
 }
 
 /**
- * Find the location of a cell in the grid.
+ * Find the center location of a cell in the grid.
  * Hex is addressed in an offset coordinate system with even numbered columns/rows offset to the right
  * @param {Grid} grid
  * @param {number} col X-axis coordinate of the cell
@@ -68,16 +68,19 @@ export function getCellPixelSize(grid, gridWidth, gridHeight) {
 export function getCellLocation(grid, col, row, cellSize) {
   switch (grid.type) {
     case "square":
-      return { x: col * cellSize.width, y: row * cellSize.height };
+      return {
+        x: col * cellSize.width + cellSize.width / 2,
+        y: row * cellSize.height + cellSize.height / 2,
+      };
     case "hexVertical":
       return {
-        x: col * cellSize.width + (cellSize.width * (1 + (row & 1))) / 2,
-        y: row * cellSize.height * (3 / 4) + cellSize.radius,
+        x: cellSize.radius * SQRT3 * (col - 0.5 * (row & 1)),
+        y: ((cellSize.radius * 3) / 2) * row,
       };
     case "hexHorizontal":
       return {
-        x: col * cellSize.width * (3 / 4) + cellSize.radius,
-        y: row * cellSize.height + (cellSize.height * (1 + (col & 1))) / 2,
+        x: ((cellSize.radius * 3) / 2) * col,
+        y: cellSize.radius * SQRT3 * (row - 0.5 * (col & 1)),
       };
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
@@ -95,7 +98,7 @@ export function getCellLocation(grid, col, row, cellSize) {
 export function getNearestCellCoordinates(grid, x, y, cellSize) {
   switch (grid.type) {
     case "square":
-      return Vector2.roundTo({ x, y }, cellSize);
+      return Vector2.divide(Vector2.floorTo({ x, y }, cellSize), cellSize);
     case "hexVertical":
       // Find nearest cell in cube coordinates the convert to offset coordinates
       const cubeXVert = ((SQRT3 / 3) * x - (1 / 3) * y) / cellSize.radius;
@@ -115,60 +118,47 @@ export function getNearestCellCoordinates(grid, x, y, cellSize) {
 }
 
 /**
- * Whether the cell located at `x, y` is out of bounds of the grid
+ * Find the corners of a grid cell
  * @param {Grid} grid
- * @param {number} col X-axis coordinate of the cell
- * @param {number} row Y-axis coordinate of the cell
- * @returns {boolean}
+ * @param {number} x X location of the cell in pixels
+ * @param {number} y Y location of the cell in pixels
+ * @param {Size} cellSize Cell size in pixels
+ * @returns {Vector2[]}
  */
-export function shouldClipCell(grid, col, row) {
-  if (col < 0 || row < 0) {
-    return true;
-  }
+export function getCellCorners(grid, x, y, cellSize) {
+  const position = new Vector2(x, y);
   switch (grid.type) {
     case "square":
-      return false;
+      const halfSize = Vector2.multiply(cellSize, 0.5);
+      return [
+        Vector2.add(position, Vector2.multiply(halfSize, { x: -1, y: -1 })),
+        Vector2.add(position, Vector2.multiply(halfSize, { x: 1, y: -1 })),
+        Vector2.add(position, Vector2.multiply(halfSize, { x: 1, y: 1 })),
+        Vector2.add(position, Vector2.multiply(halfSize, { x: -1, y: 1 })),
+      ];
     case "hexVertical":
-      return col === grid.size.x - 1 && (row & 1) !== 0;
+      const up = Vector2.subtract(position, { x: 0, y: cellSize.radius });
+      return [
+        up,
+        Vector2.rotate(up, position, 60),
+        Vector2.rotate(up, position, 120),
+        Vector2.rotate(up, position, 180),
+        Vector2.rotate(up, position, 240),
+        Vector2.rotate(up, position, 300),
+      ];
     case "hexHorizontal":
-      return row === grid.size.y - 1 && (col & 1) !== 0;
+      const right = Vector2.add(position, { x: cellSize.radius, y: 0 });
+      return [
+        right,
+        Vector2.rotate(right, position, 60),
+        Vector2.rotate(right, position, 120),
+        Vector2.rotate(right, position, 180),
+        Vector2.rotate(right, position, 240),
+        Vector2.rotate(right, position, 300),
+      ];
     default:
       throw GRID_TYPE_NOT_IMPLEMENTED;
   }
-}
-
-/**
- * Canvas clip function for culling hex cells that overshoot/undershoot the grid
- * @param {CanvasRenderingContext2D} context The canvas context of the clip function
- * @param {Grid} grid
- * @param {number} col X-axis coordinate of the cell
- * @param {number} row Y-axis coordinate of the cell
- * @param {Size} cellSize Cell size in pixels
- */
-export function gridClipFunction(context, grid, col, row, cellSize) {
-  // Clip the undershooting cells unless they are needed to fill out a specific grid type
-  if (
-    (col < 0 && grid.type !== "hexVertical") ||
-    (col < 0 && (row & 1) === 0)
-  ) {
-    return;
-  }
-  if (
-    (row < 0 && grid.type !== "hexHorizontal") ||
-    (row < 0 && (col & 1) === 0)
-  ) {
-    return;
-  }
-  context.rect(
-    col < 0 ? 0 : -cellSize.radius,
-    row < 0 ? 0 : -cellSize.radius,
-    col > 0 && grid.type === "hexVertical"
-      ? cellSize.radius
-      : cellSize.radius * 2,
-    row > 0 && grid.type === "hexVertical"
-      ? cellSize.radius * 2
-      : cellSize.radius
-  );
 }
 
 /**
@@ -243,7 +233,7 @@ export function getGridMaxZoom(grid) {
  * @param {("hexVertical"|"hexHorizontal")} type
  * @returns {Vector2}
  */
-function hexCubeToOffset(cube, type) {
+export function hexCubeToOffset(cube, type) {
   if (type === "hexVertical") {
     const x = cube.x + (cube.z + (cube.z & 1)) / 2;
     const y = cube.z;
@@ -260,7 +250,7 @@ function hexCubeToOffset(cube, type) {
  * @param {("hexVertical"|"hexHorizontal")} type
  * @returns {Vector3}
  */
-function hexOffsetToCube(offset, type) {
+export function hexOffsetToCube(offset, type) {
   if (type === "hexVertical") {
     const x = offset.x - (offset.y - (offset.y & 1)) / 2;
     const z = offset.y;

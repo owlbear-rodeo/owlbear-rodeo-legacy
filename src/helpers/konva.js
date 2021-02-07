@@ -223,7 +223,7 @@ export function Trail({ position, size, duration, segments, color }) {
     const drawOffsetLine = (from, to, alpha) => {
       const forward = Vector2.normalize(Vector2.subtract(from, to));
       // Rotate the forward vector 90 degrees based off of the direction
-      const side = { x: forward.y, y: -forward.x };
+      const side = Vector2.rotate90(forward);
 
       // Offset the `to` position by the size of the point and in the side direction
       const toSize = (alpha * size) / 2;

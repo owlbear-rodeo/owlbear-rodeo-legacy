@@ -1,12 +1,7 @@
 import React from "react";
 import { Line, Group, RegularPolygon } from "react-konva";
 
-import {
-  getCellLocation,
-  gridClipFunction,
-  shouldClipCell,
-  getNearestCellCoordinates,
-} from "../helpers/grid";
+import { getCellLocation } from "../helpers/grid";
 import Vector2 from "../helpers/Vector2";
 
 import { useGrid } from "../contexts/GridContext";
@@ -25,6 +20,7 @@ function Grid({ strokeWidth, stroke }) {
   }
 
   const negativeGridOffset = Vector2.multiply(gridOffset, -1);
+  const finalStrokeWidth = gridStrokeWidth * strokeWidth;
 
   const shapes = [];
   if (grid.type === "square") {
@@ -39,7 +35,7 @@ function Grid({ strokeWidth, stroke }) {
             gridPixelSize.height,
           ]}
           stroke={stroke}
-          strokeWidth={gridStrokeWidth * strokeWidth}
+          strokeWidth={finalStrokeWidth}
           opacity={0.5}
           offset={negativeGridOffset}
         />
@@ -56,54 +52,56 @@ function Grid({ strokeWidth, stroke }) {
             y * gridCellPixelSize.height,
           ]}
           stroke={stroke}
-          strokeWidth={gridStrokeWidth * strokeWidth}
+          strokeWidth={finalStrokeWidth}
           opacity={0.5}
           offset={negativeGridOffset}
         />
       );
     }
   } else if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
-    // Start at -1 to overshoot the bounds of the grid to ensure all lines are drawn
-    for (let x = -1; x < grid.size.x; x++) {
-      for (let y = -1; y < grid.size.y; y++) {
+    // End at grid size + 1 to overshoot the bounds of the grid to ensure all lines are drawn
+    for (let x = 0; x < grid.size.x + 1; x++) {
+      for (let y = 0; y < grid.size.y + 1; y++) {
         const cellLocation = getCellLocation(grid, x, y, gridCellPixelSize);
         shapes.push(
           <Group
             key={`grid_${x}_${y}`}
-            clipFunc={
-              shouldClipCell(grid, x, y) &&
-              ((context) =>
-                gridClipFunction(context, grid, x, y, gridCellPixelSize))
-            }
             x={cellLocation.x}
             y={cellLocation.y}
             offset={negativeGridOffset}
           >
-            <RegularPolygon
-              sides={6}
-              radius={gridCellPixelSize.radius}
-              stroke={stroke}
-              strokeWidth={gridStrokeWidth * strokeWidth}
-              opacity={0.5}
-              rotation={grid.type === "hexVertical" ? 0 : 90}
-              onMouseDown={() => {
-                console.log(
-                  getNearestCellCoordinates(
-                    grid,
-                    cellLocation.x,
-                    cellLocation.y,
-                    gridCellPixelSize
-                  )
-                );
-              }}
-            />
+            {/* Offset the hex tile to align to top left of grid */}
+            <Group offset={Vector2.multiply(gridCellPixelSize, -0.5)}>
+              <RegularPolygon
+                sides={6}
+                radius={gridCellPixelSize.radius}
+                stroke={stroke}
+                strokeWidth={finalStrokeWidth}
+                opacity={0.5}
+                rotation={grid.type === "hexVertical" ? 0 : 90}
+              />
+            </Group>
           </Group>
         );
       }
     }
   }
 
-  return <Group>{shapes}</Group>;
+  return (
+    <Group
+      // Clip grid to bounds to cover hex overshoot
+      clipFunc={(context) => {
+        context.rect(
+          gridOffset.x - finalStrokeWidth / 2,
+          gridOffset.y - finalStrokeWidth / 2,
+          gridPixelSize.width + finalStrokeWidth,
+          gridPixelSize.height + finalStrokeWidth
+        );
+      }}
+    >
+      {shapes}
+    </Group>
+  );
 }
 
 Grid.defaultProps = {
