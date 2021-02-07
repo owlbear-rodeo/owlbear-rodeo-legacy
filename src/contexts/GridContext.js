@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 
 import Vector2 from "../helpers/Vector2";
 import Size from "../helpers/Size";
+// eslint-disable-next-line no-unused-vars
 import { getGridPixelSize, getCellPixelSize, Grid } from "../helpers/grid";
 
 /**
