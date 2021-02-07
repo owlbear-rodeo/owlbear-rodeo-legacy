@@ -162,9 +162,12 @@ function MapGridEditor({ map, onGridChange }) {
     });
   }
 
-  function handleKeyDown({ key, shiftKey }) {
+  function handleKeyDown(event) {
+    const { key, shiftKey } = event;
     const nudgeAmount = shiftKey ? 2 : 0.5;
     if (key === "ArrowUp") {
+      // Stop arrow up/down scrolling if overflowing
+      event.preventDefault();
       nudgeGrid({ x: 0, y: -1 }, nudgeAmount);
     }
     if (key === "ArrowLeft") {
@@ -174,6 +177,7 @@ function MapGridEditor({ map, onGridChange }) {
       nudgeGrid({ x: 1, y: 0 }, nudgeAmount);
     }
     if (key === "ArrowDown") {
+      event.preventDefault();
       nudgeGrid({ x: 0, y: 1 }, nudgeAmount);
     }
   }
