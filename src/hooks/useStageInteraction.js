@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
@@ -21,7 +21,20 @@ function useStageInteraction(
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
 
-  const bind = useGesture(
+  // Prevent accessibility pinch to zoom on Mac
+  useEffect(() => {
+    function handleGesture(e) {
+      e.preventDefault();
+    }
+    window.addEventListener("gesturestart", handleGesture);
+    window.addEventListener("gesturechange", handleGesture);
+    return () => {
+      window.removeEventListener("gesturestart", handleGesture);
+      window.removeEventListener("gesturechange", handleGesture);
+    };
+  });
+
+  useGesture(
     {
       ...gesture,
       onWheelStart: (props) => {
@@ -31,12 +44,12 @@ function useStageInteraction(
         gesture.onWheelStart && gesture.onWheelStart(props);
       },
       onWheel: (props) => {
-        const { event } = props;
-        event.persist();
-        const { pixelY } = normalizeWheel(event);
         if (preventInteraction || !isInteractingWithCanvas.current) {
           return;
         }
+        const { event } = props;
+        const { pixelY } = normalizeWheel(event);
+
         const newScale = Math.min(
           Math.max(
             stageScale +
@@ -154,10 +167,12 @@ function useStageInteraction(
     {
       // Fix drawing using old pointer end position on touch devices when drawing new shapes
       drag: { delay: 300 },
+      domTarget: window,
+      eventOptions: {
+        passive: false,
+      },
     }
   );
-
-  return bind;
 }
 
 export default useStageInteraction;

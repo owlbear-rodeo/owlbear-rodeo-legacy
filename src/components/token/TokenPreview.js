@@ -62,7 +62,7 @@ function TokenPreview({ token }) {
     true
   );
 
-  const bind = useStageInteraction(
+  useStageInteraction(
     tokenStageRef.current,
     stageScale,
     setStageScale,
@@ -95,7 +95,6 @@ function TokenPreview({ token }) {
       }}
       bg="muted"
       ref={containerRef}
-      {...bind()}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage

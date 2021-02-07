@@ -81,7 +81,7 @@ function MapInteraction({
 
   const [interactionEmitter] = useState(new EventEmitter());
 
-  const bind = useStageInteraction(
+  useStageInteraction(
     mapStageRef.current,
     stageScale,
     setStageScale,
@@ -199,7 +199,6 @@ function MapInteraction({
         outline: "none",
       }}
       ref={containerRef}
-      {...bind()}
       className="map"
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>

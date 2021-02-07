@@ -56,7 +56,7 @@ function MapEditor({ map, onSettingsChange }) {
     true
   );
 
-  const bind = useStageInteraction(
+  useStageInteraction(
     mapStageRef.current,
     stageScale,
     setStageScale,
@@ -117,7 +117,6 @@ function MapEditor({ map, onSettingsChange }) {
       }}
       bg="muted"
       ref={containerRef}
-      {...bind()}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage
