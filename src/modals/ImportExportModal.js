@@ -4,8 +4,7 @@ import * as streamSaver from "streamsaver";
 import * as streamPonyfill from "web-streams-polyfill/ponyfill";
 import * as Comlink from "comlink";
 // Polyfill blob to get use to Blob.stream() on unsupported browsers (Safari)
-// eslint-disable-next-line no-unused-vars
-import { Blob } from "blob-polyfill";
+import "blob-polyfill";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -67,25 +66,12 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
     fileStreamRef.current = fileStream;
 
     const readableStream = blob.stream();
-    if (window.WritableStream && readableStream.pipeTo) {
-      readableStream.pipeTo(fileStream);
-      backgroundTaskRunningRef.current = false;
-    } else {
-      // Fallback when no writableStream and pipeTo is available (Safari)
-      const writer = fileStream.getWriter();
-      const reader = readableStream.getReader();
-      async function pump() {
-        const res = await reader.read();
-        if (res.done) {
-          writer.close();
-        } else {
-          await writer.write(res.value);
-          await pump();
-        }
-      }
-      await pump();
-      backgroundTaskRunningRef.current = false;
+    try {
+      await readableStream.pipeTo(fileStream);
+    } catch (error) {
+      console.error(error);
     }
+    backgroundTaskRunningRef.current = false;
     fileStreamRef.current = null;
   }
 
