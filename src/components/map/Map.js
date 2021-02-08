@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Group } from "react-konva";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
