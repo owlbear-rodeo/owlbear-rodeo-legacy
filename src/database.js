@@ -348,6 +348,7 @@ function loadVersions(db) {
     );
   }
 
+  // 1.8.0 - Add thumbnail to maps
   db.version(19)
     .stores({})
     .upgrade(async (tx) => {
@@ -364,6 +365,7 @@ function loadVersions(db) {
         });
     });
 
+  // 1.8.0 - Add thumbnail to tokens
   db.version(20)
     .stores({})
     .upgrade(async (tx) => {
