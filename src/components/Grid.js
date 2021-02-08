@@ -19,26 +19,27 @@ function Grid({ strokeWidth, stroke }) {
   } = useGrid();
 
   const gridGroupRef = useRef();
-  const { stageScale } = useMapInteraction();
+  const { stageScale, mapWidth } = useMapInteraction();
   const debouncedStageScale = useDebounce(stageScale, 50);
-
   useEffect(() => {
     const gridGroup = gridGroupRef.current;
-    if (gridGroup && grid?.size.x && grid?.size.y) {
+    if (gridGroup && grid?.size.x && grid?.size.y && debouncedStageScale) {
       const gridRect = gridGroup.getClientRect();
-      // 150 pixels per grid cell
-      const maxMapSize = Math.max(grid.size.x, grid.size.y) * 150;
-      const maxGridSize =
-        Math.max(gridRect.width, gridRect.height) / debouncedStageScale;
-      const maxPixelRatio = maxMapSize / maxGridSize;
-      gridGroup.cache({
-        pixelRatio: Math.min(
-          Math.max(debouncedStageScale * 2, 1),
-          maxPixelRatio
-        ),
-      });
+      if (gridRect.width > 0 && gridRect.height > 0) {
+        // 150 pixels per grid cell
+        const maxMapSize = Math.max(grid.size.x, grid.size.y) * 150;
+        const maxGridSize =
+          Math.max(gridRect.width, gridRect.height) / debouncedStageScale;
+        const maxPixelRatio = maxMapSize / maxGridSize;
+        gridGroup.cache({
+          pixelRatio: Math.min(
+            Math.max(debouncedStageScale * 2, 1),
+            maxPixelRatio
+          ),
+        });
+      }
     }
-  }, [grid, debouncedStageScale]);
+  }, [grid, debouncedStageScale, mapWidth]);
 
   if (!grid?.size.x || !grid?.size.y) {
     return null;
