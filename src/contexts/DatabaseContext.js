@@ -40,7 +40,7 @@ export function DatabaseProvider({ children }) {
     };
 
     function handleDatabaseError(event) {
-      if (event.reason.name === "QuotaExceededError") {
+      if (event.reason?.name === "QuotaExceededError") {
         event.preventDefault();
         setDatabaseError({
           name: event.reason.name,
