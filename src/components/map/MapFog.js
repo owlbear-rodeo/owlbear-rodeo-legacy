@@ -371,7 +371,9 @@ function MapFog({
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
         points={points}
-        stroke={editable ? colors.white : colors[shape.color] || shape.color}
+        stroke={
+          editable ? colors.lightGray : colors[shape.color] || shape.color
+        }
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
