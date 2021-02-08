@@ -3,7 +3,6 @@ import polygonClipping from "polygon-clipping";
 
 import * as Vector2 from "./vector2";
 import { toDegrees, omit } from "./shared";
-import { logError } from "./logging";
 
 const snappingThreshold = 1 / 5;
 export function getBrushPositionForTool(
@@ -263,13 +262,7 @@ export function drawActionsToShapes(actions, actionIndex) {
           addPolygonDifferenceToShapes(shape, difference, cutShapes);
           addPolygonIntersectionToShapes(shape, intersection, cutShapes);
         } catch {
-          logError(
-            new Error(
-              `Unable to find segment for shapes ${JSON.stringify(
-                shape
-              )} and ${JSON.stringify(action)}`
-            )
-          );
+          console.error("Unable to cut shapes");
         }
       }
       shapesById = cutShapes;
@@ -357,7 +350,7 @@ export function mergeShapes(shapes) {
     }
     return merged;
   } catch {
-    logError(new Error(`Unable to merge shapes ${JSON.stringify(shapes)}`));
+    console.error("Unable to merge shapes");
     return shapes;
   }
 }
