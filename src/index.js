@@ -20,12 +20,15 @@ if (process.env.REACT_APP_LOGGING === "true") {
     // Ignore quota error
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
     // Ignore LastPass extension text error
+    // Ignore WebRTC error TODO: Remove after 1.8
+    // Ignore chrome extension error
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "QuotaExceededError",
       "XDR encoding failure",
       "Assertion failed: Input argument is not an HTMLInputElement",
       "No WebRTC support",
+      "Extension context invalidated",
     ],
   });
 }
