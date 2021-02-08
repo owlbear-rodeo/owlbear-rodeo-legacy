@@ -25,6 +25,10 @@ export function TokenDataProvider({ children }) {
   const { database, databaseStatus } = useDatabase();
   const { userId } = useAuth();
 
+  /**
+   * Contains all tokens without any file data,
+   * to ensure file data is present call loadTokens
+   */
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);
 
@@ -32,7 +36,7 @@ export function TokenDataProvider({ children }) {
     if (!userId || !database || databaseStatus === "loading") {
       return;
     }
-    function getDefaultTokes() {
+    function getDefaultTokens() {
       const defaultTokensWithIds = [];
       for (let defaultToken of defaultTokens) {
         defaultTokensWithIds.push({
@@ -45,6 +49,7 @@ export function TokenDataProvider({ children }) {
       return defaultTokensWithIds;
     }
 
+    // Loads tokens without the file data to save memory
     async function loadTokens() {
       let storedTokens = [];
       // Try to load tokens with worker, fallback to database if failed
@@ -53,12 +58,13 @@ export function TokenDataProvider({ children }) {
         storedTokens = decode(packedTokens);
       } else {
         console.warn("Unable to load tokens with worker, loading may be slow");
-        await database
-          .table("tokens")
-          .each((token) => storedTokens.push(token));
+        await database.table("tokens").each((token) => {
+          const { file, resolutions, ...rest } = token;
+          storedTokens.push(rest);
+        });
       }
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
-      const defaultTokensWithIds = getDefaultTokes();
+      const defaultTokensWithIds = getDefaultTokens();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];
       setTokens(allTokens);
       setTokensLoading(false);
@@ -195,6 +201,35 @@ export function TokenDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
+  const loadTokens = useCallback(
+    async (tokenIds) => {
+      const loadedTokens = await database.table("tokens").bulkGet(tokenIds);
+      const loadedTokensById = loadedTokens.reduce((obj, token) => {
+        obj[token.id] = token;
+        return obj;
+      }, {});
+      setTokens((prevTokens) => {
+        return prevTokens.map((prevToken) => {
+          if (prevToken.id in loadedTokensById) {
+            return loadedTokensById[prevToken.id];
+          } else {
+            return prevToken;
+          }
+        });
+      });
+    },
+    [database]
+  );
+
+  const unloadTokens = useCallback(async () => {
+    setTokens((prevTokens) => {
+      return prevTokens.map((prevToken) => {
+        const { file, ...rest } = prevToken;
+        return rest;
+      });
+    });
+  }, []);
+
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 
   const tokensById = tokens.reduce((obj, token) => {
@@ -215,6 +250,8 @@ export function TokenDataProvider({ children }) {
     tokensById,
     tokensLoading,
     getTokenFromDB,
+    loadTokens,
+    unloadTokens,
   };
 
   return (

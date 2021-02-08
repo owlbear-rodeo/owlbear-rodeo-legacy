@@ -13,7 +13,7 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
-import { resizeImage } from "../helpers/image";
+import { resizeImage, createThumbnail } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import {
   getGridDefaultInset,
@@ -64,6 +64,7 @@ function SelectMapModal({
     updateMap,
     updateMaps,
     mapsLoading,
+    getMapFromDB,
   } = useMapData();
 
   /**
@@ -82,8 +83,10 @@ function SelectMapModal({
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   async function handleMapsGroup(group) {
+    setIsLoading(true);
     setIsGroupModalOpen(false);
-    updateMaps(selectedMapIds, { group });
+    await updateMaps(selectedMapIds, { group });
+    setIsLoading(false);
   }
 
   const [mapsByGroup, mapGroups] = useGroup(
@@ -98,7 +101,7 @@ function SelectMapModal({
    */
 
   const fileInputRef = useRef();
-  const [imageLoading, setImageLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleImagesUpload(files) {
     if (navigator.storage) {
@@ -120,7 +123,7 @@ function SelectMapModal({
       return Promise.reject();
     }
     let image = new Image();
-    setImageLoading(true);
+    setIsLoading(true);
 
     const buffer = await blobToBuffer(file);
     // Copy file to avoid permissions issues
@@ -197,11 +200,14 @@ function SelectMapModal({
             };
           }
         }
+        // Create thumbnail
+        const thumbnail = await createThumbnail(image, file.type);
 
         handleMapAdd({
           // Save as a buffer to send with msgpack
           file: buffer,
           resolutions,
+          thumbnail,
           name,
           type: "file",
           grid: {
@@ -222,7 +228,7 @@ function SelectMapModal({
           owner: userId,
           ...defaultMapProps,
         });
-        setImageLoading(false);
+        setIsLoading(false);
         URL.revokeObjectURL(url);
         resolve();
       };
@@ -302,14 +308,20 @@ function SelectMapModal({
   }
 
   async function handleDone() {
-    if (imageLoading) {
+    if (isLoading) {
       return;
     }
     if (selectedMapIds.length === 1) {
       // Update last used for cache invalidation
       const lastUsed = Date.now();
-      await updateMap(selectedMapIds[0], { lastUsed });
-      onMapChange({ ...selectedMaps[0], lastUsed }, selectedMapStates[0]);
+      const map = selectedMaps[0];
+      if (map.type === "file") {
+        await updateMap(map.id, { lastUsed });
+        const updatedMap = await getMapFromDB(map.id);
+        onMapChange(updatedMap, selectedMapStates[0]);
+      } else {
+        onMapChange(map, selectedMapStates[0]);
+      }
     } else {
       onMapChange(null, null);
     }
@@ -414,7 +426,7 @@ function SelectMapModal({
           />
           <Button
             variant="primary"
-            disabled={imageLoading || selectedMapIds.length !== 1}
+            disabled={isLoading || selectedMapIds.length !== 1}
             onClick={handleDone}
             mt={2}
           >
@@ -422,12 +434,11 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
-      {(imageLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
+      {(isLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        map={selectedMaps.length === 1 && selectedMaps[0]}
-        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
+        mapId={selectedMaps.length === 1 && selectedMaps[0].id}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}

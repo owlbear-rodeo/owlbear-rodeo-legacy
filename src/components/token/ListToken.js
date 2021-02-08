@@ -7,7 +7,12 @@ import useDataSource from "../../hooks/useDataSource";
 import { tokenSources, unknownSource } from "../../tokens";
 
 function ListToken({ token, className }) {
-  const imageSource = useDataSource(token, tokenSources, unknownSource);
+  const isDefault = token.type === "default";
+  const tokenSource = useDataSource(
+    isDefault ? token : token.thumbnail,
+    tokenSources,
+    unknownSource
+  );
 
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS
@@ -16,7 +21,7 @@ function ListToken({ token, className }) {
   return (
     <Box my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
       <Image
-        src={imageSource}
+        src={tokenSource}
         ref={imageRef}
         className={className}
         sx={{

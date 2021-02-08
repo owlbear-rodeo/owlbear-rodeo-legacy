@@ -69,6 +69,7 @@ export function MapDataProvider({ children }) {
       return defaultMapsWithIds;
     }
 
+    // Loads maps without the file data to save memory
     async function loadMaps() {
       let storedMaps = [];
       // Try to load maps with worker, fallback to database if failed
@@ -77,7 +78,10 @@ export function MapDataProvider({ children }) {
         storedMaps = decode(packedMaps);
       } else {
         console.warn("Unable to load maps with worker, loading may be slow");
-        await database.table("maps").each((map) => storedMaps.push(map));
+        await database.table("maps").each((map) => {
+          const { file, resolutions, ...rest } = map;
+          storedMaps.push(rest);
+        });
       }
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
       const defaultMapsWithIds = await getDefaultMaps();

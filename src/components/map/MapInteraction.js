@@ -16,6 +16,9 @@ import { MapStageProvider, useMapStage } from "../../contexts/MapStageContext";
 import AuthContext, { useAuth } from "../../contexts/AuthContext";
 import SettingsContext, { useSettings } from "../../contexts/SettingsContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import TokenDataContext, {
+  useTokenData,
+} from "../../contexts/TokenDataContext";
 import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
@@ -178,6 +181,7 @@ function MapInteraction({
 
   const auth = useAuth();
   const settings = useSettings();
+  const tokenData = useTokenData();
 
   const mapInteraction = {
     stageScale,
@@ -227,7 +231,9 @@ function MapInteraction({
                       height={mapHeight}
                     >
                       <MapStageProvider value={mapStageRef}>
-                        {mapLoaded && children}
+                        <TokenDataContext.Provider value={tokenData}>
+                          {mapLoaded && children}
+                        </TokenDataContext.Provider>
                       </MapStageProvider>
                     </GridProvider>
                   </MapInteractionProvider>

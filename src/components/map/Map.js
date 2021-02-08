@@ -3,7 +3,7 @@ import { Group } from "react-konva";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
-import MapToken from "./MapToken";
+import MapTokens from "./MapTokens";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapGrid from "./MapGrid";
@@ -175,91 +175,17 @@ function Map({
     setIsTokenMenuOpen(true);
   }
 
-  function getMapTokenCategoryWeight(category) {
-    switch (category) {
-      case "character":
-        return 0;
-      case "vehicle":
-        return 1;
-      case "prop":
-        return 2;
-      default:
-        return 0;
-    }
-  }
-
-  // Sort so vehicles render below other tokens
-  function sortMapTokenStates(a, b, tokenDraggingOptions) {
-    const tokenA = tokensById[a.tokenId];
-    const tokenB = tokensById[b.tokenId];
-    if (tokenA && tokenB) {
-      // If categories are different sort in order "prop", "vehicle", "character"
-      if (tokenB.category !== tokenA.category) {
-        const aWeight = getMapTokenCategoryWeight(tokenA.category);
-        const bWeight = getMapTokenCategoryWeight(tokenB.category);
-        return bWeight - aWeight;
-      } else if (
-        tokenDraggingOptions &&
-        tokenDraggingOptions.dragging &&
-        tokenDraggingOptions.tokenState.id === a.id
-      ) {
-        // If dragging token a move above
-        return 1;
-      } else if (
-        tokenDraggingOptions &&
-        tokenDraggingOptions.dragging &&
-        tokenDraggingOptions.tokenState.id === b.id
-      ) {
-        // If dragging token b move above
-        return -1;
-      } else {
-        // Else sort so last modified is on top
-        return a.lastModified - b.lastModified;
-      }
-    } else if (tokenA) {
-      return 1;
-    } else if (tokenB) {
-      return -1;
-    } else {
-      return 0;
-    }
-  }
-
   const mapTokens = map && mapState && (
-    <Group>
-      {Object.values(mapState.tokens)
-        .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
-        .map((tokenState) => (
-          <MapToken
-            key={tokenState.id}
-            token={tokensById[tokenState.tokenId]}
-            tokenState={tokenState}
-            onTokenStateChange={onMapTokenStateChange}
-            onTokenMenuOpen={handleTokenMenuOpen}
-            onTokenDragStart={(e) =>
-              setTokenDraggingOptions({
-                dragging: true,
-                tokenState,
-                tokenGroup: e.target,
-              })
-            }
-            onTokenDragEnd={() =>
-              setTokenDraggingOptions({
-                ...tokenDraggingOptions,
-                dragging: false,
-              })
-            }
-            draggable={
-              selectedToolId === "pan" &&
-              !(tokenState.id in disabledTokens) &&
-              !tokenState.locked
-            }
-            mapState={mapState}
-            fadeOnHover={selectedToolId === "drawing"}
-            map={map}
-          />
-        ))}
-    </Group>
+    <MapTokens
+      map={map}
+      mapState={mapState}
+      tokenDraggingOptions={tokenDraggingOptions}
+      setTokenDraggingOptions={setTokenDraggingOptions}
+      onMapTokenStateChange={onMapTokenStateChange}
+      handleTokenMenuOpen={handleTokenMenuOpen}
+      selectedToolId={selectedToolId}
+      disabledTokens={disabledTokens}
+    />
   );
 
   const tokenMenu = (

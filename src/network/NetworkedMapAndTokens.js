@@ -208,7 +208,7 @@ function NetworkedMapAndTokens({ session }) {
     }
   }, [currentMap, debouncedMapState, userId, database, updateMapState]);
 
-  function handleMapChange(newMap, newMapState) {
+  async function handleMapChange(newMap, newMapState) {
     // Clear map before sending new one
     setCurrentMap(null);
     session.socket?.emit("map", null);
@@ -217,17 +217,16 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMap(newMap);
 
     if (newMap && newMap.type === "file") {
-      const { file, resolutions, ...rest } = newMap;
+      const { file, resolutions, thumbnail, ...rest } = newMap;
       session.socket?.emit("map", rest);
     } else {
       session.socket?.emit("map", newMap);
     }
-
     if (!newMap || !newMapState) {
       return;
     }
 
-    loadAssetManifestFromMap(newMap, newMapState);
+    await loadAssetManifestFromMap(newMap, newMapState);
   }
 
   function handleMapStateChange(newMapState) {
@@ -406,6 +405,7 @@ function NetworkedMapAndTokens({ session }) {
             ...map,
             resolutions: undefined,
             file: undefined,
+            thumbnail: undefined,
             // Remove last modified so if there is an error
             // during the map request the cache is invalid
             lastModified: 0,

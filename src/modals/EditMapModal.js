@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
 import MapSettings from "../components/map/MapSettings";
 import MapEditor from "../components/map/MapEditor";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import { useMapData } from "../contexts/MapDataContext";
 
@@ -12,8 +13,28 @@ import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
-function EditMapModal({ isOpen, onDone, map, mapState }) {
-  const { updateMap, updateMapState } = useMapData();
+function EditMapModal({ isOpen, onDone, mapId }) {
+  const { updateMap, updateMapState, getMapFromDB, mapStates } = useMapData();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [map, setMap] = useState();
+  const [mapState, setMapState] = useState();
+  // Load full map when modal is opened
+  useEffect(() => {
+    async function loadMap() {
+      setIsLoading(true);
+      setMap(await getMapFromDB(mapId));
+      setMapState(mapStates.find((state) => state.mapId === mapId));
+      setIsLoading(false);
+    }
+
+    if (isOpen && mapId) {
+      loadMap();
+    } else {
+      setMap();
+      setMapState();
+    }
+  }, [isOpen, mapId, getMapFromDB, mapStates]);
 
   function handleClose() {
     setMapSettingChanges({});
@@ -114,10 +135,23 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
         <Label pt={2} pb={1}>
           Edit map
         </Label>
-        <MapEditor
-          map={selectedMapWithChanges}
-          onSettingsChange={handleMapSettingsChange}
-        />
+        {isLoading ? (
+          <Flex
+            sx={{
+              width: "100%",
+              height: layout.screenSize === "large" ? "500px" : "300px",
+              position: "relative",
+            }}
+            bg="muted"
+          >
+            <LoadingOverlay />
+          </Flex>
+        ) : (
+          <MapEditor
+            map={selectedMapWithChanges}
+            onSettingsChange={handleMapSettingsChange}
+          />
+        )}
         <MapSettings
           map={selectedMapWithChanges}
           mapState={selectedMapStateWithChanges}

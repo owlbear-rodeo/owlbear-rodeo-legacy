@@ -3,6 +3,7 @@ import Dexie from "dexie";
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
 import { convertOldActionsToShapes } from "./actions";
+import { createThumbnail } from "./helpers/image";
 
 function loadVersions(db) {
   // v1.2.0
@@ -330,6 +331,52 @@ function loadVersions(db) {
           delete state.mapDrawActionIndex;
           delete state.fogDrawActions;
           delete state.fogDrawActionIndex;
+        });
+    });
+
+  async function createDataThumbnail(data) {
+    const url = URL.createObjectURL(new Blob([data.file]));
+    return await Dexie.waitFor(
+      new Promise((resolve) => {
+        let image = new Image();
+        image.onload = async () => {
+          const thumbnail = await createThumbnail(image);
+          resolve(thumbnail);
+        };
+        image.src = url;
+      })
+    );
+  }
+
+  db.version(19)
+    .stores({})
+    .upgrade(async (tx) => {
+      const maps = await Dexie.waitFor(tx.table("maps").toArray());
+      const thumbnails = {};
+      for (let map of maps) {
+        thumbnails[map.id] = await createDataThumbnail(map);
+      }
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.thumbnail = thumbnails[map.id];
+        });
+    });
+
+  db.version(20)
+    .stores({})
+    .upgrade(async (tx) => {
+      const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
+      const thumbnails = {};
+      for (let token of tokens) {
+        thumbnails[token.id] = await createDataThumbnail(token);
+      }
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.thumbnail = thumbnails[token.id];
         });
     });
 }

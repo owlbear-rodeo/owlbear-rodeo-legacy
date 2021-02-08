@@ -17,11 +17,7 @@ function MapTile({
 }) {
   const isDefault = map.type === "default";
   const mapSource = useDataSource(
-    isDefault
-      ? map
-      : map.resolutions && map.resolutions.low
-      ? map.resolutions.low
-      : map,
+    isDefault ? map : map.thumbnail,
     defaultMapSources,
     unknownSource
   );
