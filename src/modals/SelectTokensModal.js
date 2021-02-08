@@ -22,9 +22,6 @@ import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard } from "../contexts/KeyboardContext";
 
-// 300 pixels total
-const thumbnailResolution = { size: 300, quality: 0.5 };
-
 function SelectTokensModal({ isOpen, onRequestClose }) {
   const { userId } = useAuth();
   const {
@@ -159,13 +156,17 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
   async function handleTokensRemove() {
+    setIsLoading(true);
     setIsTokensRemoveModalOpen(false);
     await removeTokens(selectedTokenIds);
     setSelectedTokenIds([]);
+    setIsLoading(false);
   }
 
   async function handleTokensHide(hideInSidebar) {
+    setIsLoading(true);
     await updateTokens(selectedTokenIds, { hideInSidebar });
+    setIsLoading(false);
   }
 
   // Either single, multiple or range

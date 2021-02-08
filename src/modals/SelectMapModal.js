@@ -264,6 +264,7 @@ function SelectMapModal({
 
   const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
   async function handleMapsRemove() {
+    setIsLoading(true);
     setIsMapsRemoveModalOpen(false);
     await removeMaps(selectedMapIds);
     setSelectedMapIds([]);
@@ -271,10 +272,12 @@ function SelectMapModal({
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
     }
+    setIsLoading(false);
   }
 
   const [isMapsResetModalOpen, setIsMapsResetModalOpen] = useState(false);
   async function handleMapsReset() {
+    setIsLoading(true);
     setIsMapsResetModalOpen(false);
     for (let id of selectedMapIds) {
       const newState = await resetMap(id);
@@ -283,6 +286,7 @@ function SelectMapModal({
         onMapStateChange(newState);
       }
     }
+    setIsLoading(false);
   }
 
   // Either single, multiple or range
