@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Line, Group, RegularPolygon } from "react-konva";
 
 import { getCellLocation } from "../helpers/grid";
 import Vector2 from "../helpers/Vector2";
 
 import { useGrid } from "../contexts/GridContext";
+import { useMapInteraction } from "../contexts/MapInteractionContext";
+
+import useDebounce from "../hooks/useDebounce";
 
 function Grid({ strokeWidth, stroke }) {
   const {
@@ -14,6 +17,28 @@ function Grid({ strokeWidth, stroke }) {
     gridOffset,
     gridCellPixelSize,
   } = useGrid();
+
+  const gridGroupRef = useRef();
+  const { stageScale } = useMapInteraction();
+  const debouncedStageScale = useDebounce(stageScale, 50);
+
+  useEffect(() => {
+    const gridGroup = gridGroupRef.current;
+    if (gridGroup && grid?.size.x && grid?.size.y) {
+      const gridRect = gridGroup.getClientRect();
+      // 150 pixels per grid cell
+      const maxMapSize = Math.max(grid.size.x, grid.size.y) * 150;
+      const maxGridSize =
+        Math.max(gridRect.width, gridRect.height) / debouncedStageScale;
+      const maxPixelRatio = maxMapSize / maxGridSize;
+      gridGroup.cache({
+        pixelRatio: Math.min(
+          Math.max(debouncedStageScale * 2, 1),
+          maxPixelRatio
+        ),
+      });
+    }
+  }, [grid, debouncedStageScale]);
 
   if (!grid?.size.x || !grid?.size.y) {
     return null;
@@ -98,6 +123,7 @@ function Grid({ strokeWidth, stroke }) {
           gridPixelSize.height + finalStrokeWidth
         );
       }}
+      ref={gridGroupRef}
     >
       {shapes}
     </Group>
