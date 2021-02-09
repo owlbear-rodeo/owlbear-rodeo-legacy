@@ -5,9 +5,11 @@ import { Group } from "react-konva";
 import { useMapInteraction } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { useGrid } from "../../contexts/GridContext";
 
-import { getBrushPosition } from "../../helpers/drawing";
+import Vector2 from "../../helpers/Vector2";
+import { getRelativePointerPosition } from "../../helpers/konva";
+
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 import Note from "../note/Note";
 
@@ -27,12 +29,13 @@ function MapNotes({
 }) {
   const { interactionEmitter } = useMapInteraction();
   const { userId } = useAuth();
-  const { gridCellNormalizedSize } = useGrid();
   const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState(null);
 
   const creatingNoteRef = useRef();
+
+  const snapPositionToGrid = useGridSnapping();
 
   useEffect(() => {
     if (!active) {
@@ -40,13 +43,20 @@ function MapNotes({
     }
     const mapStage = mapStageRef.current;
 
+    function getBrushPosition() {
+      const mapImage = mapStage.findOne("#mapImage");
+      let position = getRelativePointerPosition(mapImage);
+      if (map.snapToGrid) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
+    }
+
     function handleBrushDown() {
-      const brushPosition = getBrushPosition(
-        map,
-        mapStage,
-        map.snapToGrid,
-        gridCellNormalizedSize
-      );
+      const brushPosition = getBrushPosition();
       setNoteData({
         x: brushPosition.x,
         y: brushPosition.y,
@@ -65,12 +75,7 @@ function MapNotes({
 
     function handleBrushMove() {
       if (noteData) {
-        const brushPosition = getBrushPosition(
-          map,
-          mapStage,
-          map.snapToGrid,
-          gridCellNormalizedSize
-        );
+        const brushPosition = getBrushPosition();
         setNoteData((prev) => ({
           ...prev,
           x: brushPosition.x,

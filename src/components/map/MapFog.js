@@ -11,15 +11,16 @@ import { useGrid } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
-import {
-  getFogBrushPosition,
-  simplifyPoints,
-  mergeShapes,
-} from "../../helpers/drawing";
+import { simplifyPoints, mergeShapes } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
-import { HoleyLine, Tick } from "../../helpers/konva";
+import {
+  HoleyLine,
+  Tick,
+  getRelativePointerPosition,
+} from "../../helpers/konva";
 
 import useDebounce from "../../hooks/useDebounce";
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 function MapFog({
   map,
@@ -52,6 +53,8 @@ function MapFog({
 
   const [patternImage] = useImage(diagonalPattern);
 
+  const snapPositionToGrid = useGridSnapping();
+
   useEffect(() => {
     if (!active || !editable) {
       return;
@@ -59,19 +62,23 @@ function MapFog({
 
     const mapStage = mapStageRef.current;
 
-    const useGridSnapping =
-      map.snapToGrid &&
-      (toolSettings.type === "polygon" || toolSettings.type === "rectangle");
+    function getBrushPosition() {
+      const mapImage = mapStage.findOne("#mapImage");
+      let position = getRelativePointerPosition(mapImage);
+      if (
+        map.snapToGrid &&
+        (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
+      ) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
+    }
 
     function handleBrushDown() {
-      const brushPosition = getFogBrushPosition(
-        map,
-        mapStage,
-        useGridSnapping,
-        gridCellNormalizedSize,
-        toolSettings.useEdgeSnapping,
-        shapes
-      );
+      const brushPosition = getBrushPosition();
       if (toolSettings.type === "brush") {
         setDrawingShape({
           type: "fog",
@@ -108,14 +115,7 @@ function MapFog({
 
     function handleBrushMove() {
       if (toolSettings.type === "brush" && isBrushDown && drawingShape) {
-        const brushPosition = getFogBrushPosition(
-          map,
-          mapStage,
-          useGridSnapping,
-          gridCellNormalizedSize,
-          toolSettings.useEdgeSnapping,
-          shapes
-        );
+        const brushPosition = getBrushPosition();
         setDrawingShape((prevShape) => {
           const prevPoints = prevShape.data.points;
           if (
@@ -138,15 +138,7 @@ function MapFog({
       }
       if (toolSettings.type === "rectangle" && isBrushDown && drawingShape) {
         const prevPoints = drawingShape.data.points;
-        const brushPosition = getFogBrushPosition(
-          map,
-          mapStage,
-          useGridSnapping,
-          gridCellNormalizedSize,
-          toolSettings.useEdgeSnapping,
-          shapes,
-          prevPoints
-        );
+        const brushPosition = getBrushPosition();
         setDrawingShape((prevShape) => {
           return {
             ...prevShape,
@@ -205,14 +197,7 @@ function MapFog({
 
     function handlePolygonClick() {
       if (toolSettings.type === "polygon") {
-        const brushPosition = getFogBrushPosition(
-          map,
-          mapStage,
-          useGridSnapping,
-          gridCellNormalizedSize,
-          toolSettings.useEdgeSnapping,
-          shapes
-        );
+        const brushPosition = getBrushPosition();
         setDrawingShape((prevDrawingShape) => {
           if (prevDrawingShape) {
             return {
@@ -241,14 +226,7 @@ function MapFog({
 
     function handlePolygonMove() {
       if (toolSettings.type === "polygon" && drawingShape) {
-        const brushPosition = getFogBrushPosition(
-          map,
-          mapStage,
-          useGridSnapping,
-          gridCellNormalizedSize,
-          toolSettings.useEdgeSnapping,
-          shapes
-        );
+        const brushPosition = getBrushPosition();
         setDrawingShape((prevShape) => {
           if (!prevShape) {
             return;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Line, Group, Path, Circle } from "react-konva";
+import Konva from "konva";
 import Color from "color";
 import Vector2 from "./Vector2";
 
@@ -291,11 +292,15 @@ Trail.defaultProps = {
   segments: 20,
 };
 
+/**
+ * @param {Konva.Node} node
+ * @returns {Vector2}
+ */
 export function getRelativePointerPosition(node) {
   let transform = node.getAbsoluteTransform().copy();
   transform.invert();
-  let posision = node.getStage().getPointerPosition();
-  return transform.point(posision);
+  let position = node.getStage().getPointerPosition();
+  return transform.point(position);
 }
 
 export function getRelativePointerPositionNormalized(node) {

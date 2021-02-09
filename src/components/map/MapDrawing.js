@@ -8,13 +8,14 @@ import { useGrid } from "../../contexts/GridContext";
 
 import Vector2 from "../../helpers/Vector2";
 import {
-  getBrushPosition,
   getDefaultShapeData,
   getUpdatedShapeData,
   simplifyPoints,
 } from "../../helpers/drawing";
-
 import colors from "../../helpers/colors";
+import { getRelativePointerPosition } from "../../helpers/konva";
+
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 function MapDrawing({
   map,
@@ -45,19 +46,28 @@ function MapDrawing({
     toolSettings.type === "circle" ||
     toolSettings.type === "triangle";
 
+  const snapPositionToGrid = useGridSnapping();
+
   useEffect(() => {
     if (!active) {
       return;
     }
     const mapStage = mapStageRef.current;
 
+    function getBrushPosition() {
+      const mapImage = mapStage.findOne("#mapImage");
+      let position = getRelativePointerPosition(mapImage);
+      if (map.snapToGrid && isShape) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
+    }
+
     function handleBrushDown() {
-      const brushPosition = getBrushPosition(
-        map,
-        mapStage,
-        map.snapToGrid && isShape,
-        gridCellNormalizedSize
-      );
+      const brushPosition = getBrushPosition();
       const commonShapeData = {
         color: toolSettings.color,
         blend: toolSettings.useBlending,
@@ -84,12 +94,7 @@ function MapDrawing({
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition(
-        map,
-        mapStage,
-        map.snapToGrid && isShape,
-        gridCellNormalizedSize
-      );
+      const brushPosition = getBrushPosition();
       if (isBrushDown && drawingShape) {
         if (isBrush) {
           setDrawingShape((prevShape) => {

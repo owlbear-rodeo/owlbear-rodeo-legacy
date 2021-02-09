@@ -6,11 +6,13 @@ import { useMapStage } from "../../contexts/MapStageContext";
 import { useGrid } from "../../contexts/GridContext";
 
 import {
-  getBrushPosition,
   getDefaultShapeData,
   getUpdatedShapeData,
 } from "../../helpers/drawing";
 import Vector2 from "../../helpers/Vector2";
+import { getRelativePointerPosition } from "../../helpers/konva";
+
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 function MapMeasure({ map, selectedToolSettings, active }) {
   const {
@@ -45,19 +47,28 @@ function MapMeasure({ map, selectedToolSettings, active }) {
 
   const measureScale = parseToolScale(active && selectedToolSettings.scale);
 
+  const snapPositionToGrid = useGridSnapping();
+
   useEffect(() => {
     if (!active) {
       return;
     }
     const mapStage = mapStageRef.current;
 
+    function getBrushPosition() {
+      const mapImage = mapStage.findOne("#mapImage");
+      let position = getRelativePointerPosition(mapImage);
+      if (map.snapToGrid) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
+    }
+
     function handleBrushDown() {
-      const brushPosition = getBrushPosition(
-        map,
-        mapStage,
-        map.snapToGrid,
-        gridCellNormalizedSize
-      );
+      const brushPosition = getBrushPosition();
       const { points } = getDefaultShapeData("line", brushPosition);
       const length = 0;
       setDrawingShapeData({ length, points });
@@ -65,12 +76,7 @@ function MapMeasure({ map, selectedToolSettings, active }) {
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition(
-        map,
-        mapStage,
-        map.snapToGrid,
-        gridCellNormalizedSize
-      );
+      const brushPosition = getBrushPosition();
       if (isBrushDown && drawingShapeData) {
         const { points } = getUpdatedShapeData(
           "line",

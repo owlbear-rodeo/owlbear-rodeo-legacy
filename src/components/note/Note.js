@@ -33,7 +33,7 @@ function Note({
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
 
-  const snapNodeToGrid = useGridSnapping();
+  const snapPositionToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
@@ -43,7 +43,7 @@ function Note({
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToGrid(noteGroup);
+      noteGroup.position(snapPositionToGrid(noteGroup.position()));
     }
   }
 

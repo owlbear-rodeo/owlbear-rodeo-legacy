@@ -49,7 +49,7 @@ function MapToken({
     }
   }, [tokenSourceImage]);
 
-  const snapNodeToGrid = useGridSnapping();
+  const snapPositionToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     const tokenGroup = event.target;
@@ -87,7 +87,7 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToGrid(tokenGroup);
+      tokenGroup.position(snapPositionToGrid(tokenGroup.position()));
     }
   }
 

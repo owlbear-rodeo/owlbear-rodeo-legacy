@@ -1,7 +1,3 @@
-// Load Konva for auto complete
-// eslint-disable-next-line no-unused-vars
-import Konva from "konva";
-
 import Vector2 from "../helpers/Vector2";
 import {
   getCellLocation,
@@ -26,10 +22,9 @@ function useGridSnapping(snappingSensitivity) {
   const { grid, gridOffset, gridCellPixelSize } = useGrid();
 
   /**
-   * @param {Konva.Node} node The node to snap
+   * @param {Vector2} node The node to snap
    */
-  function snapNodeToGrid(node) {
-    const position = node.position();
+  function snapPositionToGrid(position) {
     // Account for grid offset
     let offsetPosition = Vector2.subtract(position, gridOffset);
     // Move hex tiles to top left
@@ -75,13 +70,14 @@ function useGridSnapping(snappingSensitivity) {
             Vector2.multiply(gridCellPixelSize, 0.5)
           );
         }
-        node.position(offsetSnapPoint);
-        return;
+        return offsetSnapPoint;
       }
     }
+
+    return position;
   }
 
-  return snapNodeToGrid;
+  return snapPositionToGrid;
 }
 
 export default useGridSnapping;
