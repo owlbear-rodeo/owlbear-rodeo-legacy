@@ -27,7 +27,10 @@ function Grid({ strokeWidth, stroke }) {
       const gridRect = gridGroup.getClientRect();
       if (gridRect.width > 0 && gridRect.height > 0) {
         // 150 pixels per grid cell
-        const maxMapSize = Math.max(grid.size.x, grid.size.y) * 150;
+        const maxMapSize = Math.min(
+          Math.max(grid.size.x, grid.size.y) * 150,
+          7680 // Max 8K
+        );
         const maxGridSize =
           Math.max(gridRect.width, gridRect.height) / debouncedStageScale;
         const maxPixelRatio = maxMapSize / maxGridSize;
