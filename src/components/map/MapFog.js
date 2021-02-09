@@ -364,7 +364,7 @@ function MapFog({
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
         hitFunc={editable && !active ? () => {} : undefined}
-        shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 0.33)"}
+        shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(34, 34, 34, 0.50)"}
         shadowOffset={{ x: 0, y: 5 }}
         shadowBlur={10}
       />
