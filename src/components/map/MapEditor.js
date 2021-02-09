@@ -135,7 +135,7 @@ function MapEditor({ map, onSettingsChange }) {
                     width={mapWidth}
                     height={mapHeight}
                   >
-                    <MapGrid map={map} strokeWidth={0.5} />
+                    <MapGrid map={map} />
                     <MapGridEditor map={map} onGridChange={handleGridChange} />
                   </GridProvider>
                 )}

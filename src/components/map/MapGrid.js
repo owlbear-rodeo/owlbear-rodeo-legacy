@@ -8,7 +8,7 @@ import { getImageLightness } from "../../helpers/image";
 
 import Grid from "../Grid";
 
-function MapGrid({ map, strokeWidth }) {
+function MapGrid({ map }) {
   let mapSourceMap = map;
   // Use lowest resolution for grid lightness
   if (map && map.type === "file" && map.resolutions) {
@@ -29,13 +29,7 @@ function MapGrid({ map, strokeWidth }) {
     }
   }, [mapImage, mapLoadingStatus]);
 
-  return (
-    <Grid strokeWidth={strokeWidth} stroke={isImageLight ? "black" : "white"} />
-  );
+  return <Grid stroke={isImageLight ? "black" : "white"} />;
 }
-
-MapGrid.defaultProps = {
-  strokeWidth: 0.1,
-};
 
 export default MapGrid;

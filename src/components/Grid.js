@@ -1,135 +1,74 @@
-import React, { useEffect, useRef } from "react";
-import { Line, Group, RegularPolygon } from "react-konva";
+import React from "react";
+import { Group, Rect } from "react-konva";
+import useImage from "use-image";
 
-import { getCellLocation } from "../helpers/grid";
 import Vector2 from "../helpers/Vector2";
 
 import { useGrid } from "../contexts/GridContext";
-import { useMapInteraction } from "../contexts/MapInteractionContext";
 
-import useDebounce from "../hooks/useDebounce";
+import squarePatternDark from "../images/SquarePatternDark.png";
+import squarePatternLight from "../images/SquarePatternLight.png";
+import hexPatternDark from "../images/HexPatternDark.png";
+import hexPatternLight from "../images/HexPatternLight.png";
 
-function Grid({ strokeWidth, stroke }) {
-  const {
-    grid,
-    gridStrokeWidth,
-    gridPixelSize,
-    gridOffset,
-    gridCellPixelSize,
-  } = useGrid();
-
-  const gridGroupRef = useRef();
-  const { stageScale, mapWidth } = useMapInteraction();
-  const debouncedStageScale = useDebounce(stageScale, 50);
-  useEffect(() => {
-    const gridGroup = gridGroupRef.current;
-    if (gridGroup && grid?.size.x && grid?.size.y && debouncedStageScale) {
-      const gridRect = gridGroup.getClientRect();
-      if (gridRect.width > 0 && gridRect.height > 0) {
-        // 150 pixels per grid cell
-        const maxMapSize = Math.min(
-          Math.max(grid.size.x, grid.size.y) * 150,
-          7680 // Max 8K
-        );
-        const maxGridSize =
-          Math.max(gridRect.width, gridRect.height) / debouncedStageScale;
-        const maxPixelRatio = maxMapSize / maxGridSize;
-        gridGroup.cache({
-          pixelRatio: Math.min(
-            Math.max(debouncedStageScale * 2, 1),
-            maxPixelRatio
-          ),
-        });
-      }
+function Grid({ stroke }) {
+  const { grid, gridPixelSize, gridOffset, gridCellPixelSize } = useGrid();
+  let imageSource;
+  if (grid.type === "square") {
+    if (stroke === "black") {
+      imageSource = squarePatternDark;
+    } else {
+      imageSource = squarePatternLight;
     }
-  }, [grid, debouncedStageScale, mapWidth]);
+  } else {
+    if (stroke === "black") {
+      imageSource = hexPatternDark;
+    } else {
+      imageSource = hexPatternLight;
+    }
+  }
+
+  const [patternImage] = useImage(imageSource);
 
   if (!grid?.size.x || !grid?.size.y) {
     return null;
   }
 
   const negativeGridOffset = Vector2.multiply(gridOffset, -1);
-  const finalStrokeWidth = gridStrokeWidth * strokeWidth;
 
-  const shapes = [];
+  let patternProps = {};
   if (grid.type === "square") {
-    for (let x = 1; x < grid.size.x; x++) {
-      shapes.push(
-        <Line
-          key={`grid_x_${x}`}
-          points={[
-            x * gridCellPixelSize.width,
-            0,
-            x * gridCellPixelSize.width,
-            gridPixelSize.height,
-          ]}
-          stroke={stroke}
-          strokeWidth={finalStrokeWidth}
-          opacity={0.5}
-          offset={negativeGridOffset}
-        />
-      );
-    }
-    for (let y = 1; y < grid.size.y; y++) {
-      shapes.push(
-        <Line
-          key={`grid_y_${y}`}
-          points={[
-            0,
-            y * gridCellPixelSize.height,
-            gridPixelSize.width,
-            y * gridCellPixelSize.height,
-          ]}
-          stroke={stroke}
-          strokeWidth={finalStrokeWidth}
-          opacity={0.5}
-          offset={negativeGridOffset}
-        />
-      );
-    }
-  } else if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
-    // End at grid size + 1 to overshoot the bounds of the grid to ensure all lines are drawn
-    for (let x = 0; x < grid.size.x + 1; x++) {
-      for (let y = 0; y < grid.size.y + 1; y++) {
-        const cellLocation = getCellLocation(grid, x, y, gridCellPixelSize);
-        shapes.push(
-          <Group
-            key={`grid_${x}_${y}`}
-            x={cellLocation.x}
-            y={cellLocation.y}
-            offset={negativeGridOffset}
-          >
-            {/* Offset the hex tile to align to top left of grid */}
-            <Group offset={Vector2.multiply(gridCellPixelSize, -0.5)}>
-              <RegularPolygon
-                sides={6}
-                radius={gridCellPixelSize.radius}
-                stroke={stroke}
-                strokeWidth={finalStrokeWidth}
-                opacity={0.5}
-                rotation={grid.type === "hexVertical" ? 0 : 90}
-              />
-            </Group>
-          </Group>
-        );
-      }
-    }
+    // Square grid pattern is 150 DPI
+    const scale = gridCellPixelSize.width / 300;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetX = gridCellPixelSize.width / 2;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.height / 2;
+  } else if (grid.type === "hexVertical") {
+    // Hex tile pattern is 153 DPI to better fit hex tiles
+    const scale = gridCellPixelSize.width / 153;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.radius / 2;
+  } else if (grid.type === "hexHorizontal") {
+    const scale = gridCellPixelSize.height / 153;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / 2;
+    patternProps.fillPatternRotation = 90;
   }
 
   return (
-    <Group
-      // Clip grid to bounds to cover hex overshoot
-      clipFunc={(context) => {
-        context.rect(
-          gridOffset.x - finalStrokeWidth / 2,
-          gridOffset.y - finalStrokeWidth / 2,
-          gridPixelSize.width + finalStrokeWidth,
-          gridPixelSize.height + finalStrokeWidth
-        );
-      }}
-      ref={gridGroupRef}
-    >
-      {shapes}
+    <Group>
+      <Rect
+        width={gridPixelSize.width}
+        height={gridPixelSize.height}
+        offset={negativeGridOffset}
+        fillPatternImage={patternImage}
+        fillPatternRepeat="repeat"
+        opacity={stroke === "black" ? 0.8 : 0.4}
+        {...patternProps}
+      />
     </Group>
   );
 }
