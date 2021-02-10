@@ -23,6 +23,18 @@ const gridTypeSettings = [
   { value: "hexHorizontal", label: "Hex Horizontal" },
 ];
 
+const gridSquareMeasurementTypeSettings = [
+  { value: "chebyshev", label: "Chessboard (D&D 5e)" },
+  { value: "alternating", label: "Alternating Diagonal (D&D 3.5e)" },
+  { value: "euclidean", label: "Euclidean" },
+  { value: "manhattan", label: "Manhattan" },
+];
+
+const gridHexMeasurementTypeSettings = [
+  { value: "manhattan", label: "Manhattan" },
+  { value: "euclidean", label: "Euclidean" },
+];
+
 function MapSettings({
   map,
   mapState,
@@ -69,8 +81,38 @@ function MapSettings({
   }
 
   function handleGridTypeChange(option) {
-    let grid = { ...map.grid, type: option.value };
+    const type = option.value;
+    let grid = {
+      ...map.grid,
+      type,
+      measurement: {
+        ...map.grid.measurement,
+        type: type === "square" ? "chebyshev" : "manhattan",
+      },
+    };
     grid.inset = getGridUpdatedInset(grid, map.width, map.height);
+    onSettingsChange("grid", grid);
+  }
+
+  function handleGridMeasurementTypeChange(option) {
+    const grid = {
+      ...map.grid,
+      measurement: {
+        ...map.grid.measurement,
+        type: option.value,
+      },
+    };
+    onSettingsChange("grid", grid);
+  }
+
+  function handleGridMeasurementScaleChange(event) {
+    const grid = {
+      ...map.grid,
+      measurement: {
+        ...map.grid.measurement,
+        scale: event.target.value,
+      },
+    };
     onSettingsChange("grid", grid);
   }
 
@@ -131,42 +173,77 @@ function MapSettings({
           <Flex
             mt={2}
             mb={mapEmpty || map.type === "default" ? 2 : 0}
-            sx={{ alignItems: "flex-end" }}
+            sx={{ flexDirection: "column" }}
           >
-            <Box mb={1} sx={{ width: "50%" }}>
-              <Label mb={1}>Grid Type</Label>
-              <Select
-                isDisabled={mapEmpty || map.type === "default"}
-                options={gridTypeSettings}
-                value={
-                  !mapEmpty &&
-                  gridTypeSettings.find((s) => s.value === map.grid.type)
-                }
-                onChange={handleGridTypeChange}
-                isSearchable={false}
-              />
-            </Box>
-            <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
-              <Label>
-                <Checkbox
-                  checked={!mapEmpty && map.showGrid}
-                  disabled={mapEmpty || map.type === "default"}
-                  onChange={(e) =>
-                    onSettingsChange("showGrid", e.target.checked)
+            <Flex sx={{ alignItems: "flex-end" }}>
+              <Box mb={1} sx={{ width: "50%" }}>
+                <Label mb={1}>Grid Type</Label>
+                <Select
+                  isDisabled={mapEmpty || map.type === "default"}
+                  options={gridTypeSettings}
+                  value={
+                    !mapEmpty &&
+                    gridTypeSettings.find((s) => s.value === map.grid.type)
                   }
+                  onChange={handleGridTypeChange}
+                  isSearchable={false}
                 />
-                Draw Grid
-              </Label>
-              <Label>
-                <Checkbox
-                  checked={!mapEmpty && map.snapToGrid}
-                  disabled={mapEmpty || map.type === "default"}
-                  onChange={(e) =>
-                    onSettingsChange("snapToGrid", e.target.checked)
+              </Box>
+              <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
+                <Label>
+                  <Checkbox
+                    checked={!mapEmpty && map.showGrid}
+                    disabled={mapEmpty || map.type === "default"}
+                    onChange={(e) =>
+                      onSettingsChange("showGrid", e.target.checked)
+                    }
+                  />
+                  Draw Grid
+                </Label>
+                <Label>
+                  <Checkbox
+                    checked={!mapEmpty && map.snapToGrid}
+                    disabled={mapEmpty || map.type === "default"}
+                    onChange={(e) =>
+                      onSettingsChange("snapToGrid", e.target.checked)
+                    }
+                  />
+                  Snap to Grid
+                </Label>
+              </Flex>
+            </Flex>
+            <Flex sx={{ alignItems: "flex-end" }}>
+              <Box my={2} sx={{ width: "50%" }}>
+                <Label mb={1}>Grid Measurement</Label>
+                <Select
+                  isDisabled={mapEmpty || map.type === "default"}
+                  options={
+                    map && map.grid.type === "square"
+                      ? gridSquareMeasurementTypeSettings
+                      : gridHexMeasurementTypeSettings
                   }
+                  value={
+                    !mapEmpty &&
+                    gridSquareMeasurementTypeSettings.find(
+                      (s) => s.value === map.grid.measurement.type
+                    )
+                  }
+                  onChange={handleGridMeasurementTypeChange}
+                  isSearchable={false}
                 />
-                Snap to Grid
-              </Label>
+              </Box>
+              <Box mb={1} mx={2} sx={{ flexGrow: 1 }}>
+                <Label htmlFor="gridMeasurementScale">Grid Scale</Label>
+                <Input
+                  name="gridMeasurementScale"
+                  value={`${map && map.grid.measurement.scale}`}
+                  onChange={handleGridMeasurementScaleChange}
+                  disabled={mapEmpty || map.type === "default"}
+                  min={1}
+                  my={1}
+                  autoComplete="off"
+                />
+              </Box>
             </Flex>
           </Flex>
           {!mapEmpty && map.type !== "default" && (

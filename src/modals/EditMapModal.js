@@ -14,7 +14,13 @@ import { getGridDefaultInset } from "../helpers/grid";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditMapModal({ isOpen, onDone, mapId }) {
-  const { updateMap, updateMapState, getMapFromDB, mapStates } = useMapData();
+  const {
+    updateMap,
+    updateMapState,
+    getMap,
+    getMapFromDB,
+    mapStates,
+  } = useMapData();
 
   const [isLoading, setIsLoading] = useState(true);
   const [map, setMap] = useState();
@@ -23,7 +29,12 @@ function EditMapModal({ isOpen, onDone, mapId }) {
   useEffect(() => {
     async function loadMap() {
       setIsLoading(true);
-      setMap(await getMapFromDB(mapId));
+      let loadingMap = getMap(mapId);
+      // Ensure file is loaded for map
+      if (loadingMap?.type === "file" && !loadingMap?.file) {
+        loadingMap = await getMapFromDB(mapId);
+      }
+      setMap(loadingMap);
       setMapState(mapStates.find((state) => state.mapId === mapId));
       setIsLoading(false);
     }

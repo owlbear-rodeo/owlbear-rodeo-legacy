@@ -14,14 +14,14 @@ import { getRelativePointerPosition } from "../../helpers/konva";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-function MapMeasure({ map, selectedToolSettings, active }) {
+function MapMeasure({ map, active }) {
   const {
     stageScale,
     mapWidth,
     mapHeight,
     interactionEmitter,
   } = useMapInteraction();
-  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const { grid, gridCellNormalizedSize, gridStrokeWidth } = useGrid();
   const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
@@ -45,7 +45,7 @@ function MapMeasure({ map, selectedToolSettings, active }) {
     return { multiplier: 1, unit: "", digits: 0 };
   }
 
-  const measureScale = parseToolScale(active && selectedToolSettings.scale);
+  const measureScale = parseToolScale(active && grid.measurement.scale);
 
   const snapPositionToGrid = useGridSnapping();
 
@@ -95,7 +95,7 @@ function MapMeasure({ map, selectedToolSettings, active }) {
             Vector2.divide(points[1], gridCellNormalizedSize),
             precision
           ),
-          selectedToolSettings.type
+          grid.measurement.type
         );
         setDrawingShapeData({
           length,

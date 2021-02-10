@@ -213,11 +213,15 @@ function SelectMapModal({
           grid: {
             size: gridSize,
             inset: getGridDefaultInset(
-              { size: { x: gridSize.x, y: gridSize.y }, type: "square" },
+              { size: gridSize, type: "square" },
               image.width,
               image.height
             ),
             type: "square",
+            measurement: {
+              type: "chebyshev",
+              scale: "5ft",
+            },
           },
           width: image.width,
           height: image.height,

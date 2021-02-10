@@ -348,7 +348,7 @@ function loadVersions(db) {
     );
   }
 
-  // 1.8.0 - Add thumbnail to maps
+  // 1.8.0 - Add thumbnail to maps and add measurement to grid
   db.version(19)
     .stores({})
     .upgrade(async (tx) => {
@@ -362,6 +362,7 @@ function loadVersions(db) {
         .toCollection()
         .modify((map) => {
           map.thumbnail = thumbnails[map.id];
+          map.grid.measurement = { type: "chebyshev", scale: "5ft" };
         });
     });
 

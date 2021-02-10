@@ -8,7 +8,6 @@ import SelectMapButton from "./SelectMapButton";
 
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
-import MeasureToolSettings from "./controls/MeasureToolSettings";
 import PointerToolSettings from "./controls/PointerToolSettings";
 
 import PanToolIcon from "../../icons/PanToolIcon";
@@ -61,7 +60,6 @@ function MapContols({
       id: "measure",
       icon: <MeasureToolIcon />,
       title: "Measure Tool (M)",
-      SettingsComponent: MeasureToolSettings,
     },
     pointer: {
       id: "pointer",

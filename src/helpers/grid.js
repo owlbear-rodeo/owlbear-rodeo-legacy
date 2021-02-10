@@ -15,10 +15,17 @@ const GRID_TYPE_NOT_IMPLEMENTED = new Error("Grid type not implemented");
  */
 
 /**
+ * @typedef GridMeasurement
+ * @property {("chebyshev"|"alternating"|"euclidean"|"manhattan")} type
+ * @property {string} scale
+ */
+
+/**
  * @typedef Grid
  * @property {GridInset} inset The inset of the grid from the map
  * @property {Vector2} size The number of columns and rows of the grid as `x` and `y`
  * @property {("square"|"hexVertical"|"hexHorizontal")} type
+ * @property {GridMeasurement} measurement
  */
 
 /**

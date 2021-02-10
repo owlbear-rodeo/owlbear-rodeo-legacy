@@ -51,8 +51,8 @@ export function GridProvider({ grid, width, height, children }) {
     gridPixelSize.height
   );
   const gridCellNormalizedSize = new Size(
-    gridCellPixelSize.width / gridPixelSize.width,
-    gridCellPixelSize.height / gridPixelSize.height
+    gridCellPixelSize.width / width,
+    gridCellPixelSize.height / height
   );
   const gridOffset = Vector2.multiply(grid.inset.topLeft, {
     x: width,
