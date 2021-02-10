@@ -67,7 +67,7 @@ function MapGridEditor({ map, onGridChange }) {
     // Find distance and direction of dragging
     const previousPosition = handlePreviousPositionRef.current;
     const position = getHandleNormalizedPosition(handle);
-    const distance = Vector2.distance(previousPosition, position, "euclidean");
+    const distance = Vector2.distance(previousPosition, position);
     const direction = Vector2.normalize(
       Vector2.subtract(position, previousPosition)
     );

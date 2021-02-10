@@ -259,16 +259,92 @@ export function hexCubeToOffset(cube, type) {
  */
 export function hexOffsetToCube(offset, type) {
   if (type === "hexVertical") {
-    const x = offset.x - (offset.y - (offset.y & 1)) / 2;
+    const x = offset.x - (offset.y + (offset.y & 1)) / 2;
     const z = offset.y;
     const y = -x - z;
     return { x, y, z };
   } else {
     const x = offset.x;
-    const z = offset.y - (offset.x - (offset.x & 1)) / 2;
+    const z = offset.y - (offset.x + (offset.x & 1)) / 2;
     const y = -x - z;
     return { x, y, z };
   }
+}
+
+/**
+ * Get the distance between a and b on the grid
+ * @param {Grid} grid
+ * @param {Vector2} a
+ * @param {Vector2} b
+ */
+export function gridDistance(grid, a, b, cellSize) {
+  // Get grid coordinates
+  const aCoord = getNearestCellCoordinates(grid, a.x, a.y, cellSize);
+  const bCoord = getNearestCellCoordinates(grid, b.x, b.y, cellSize);
+  if (grid.type === "square") {
+    if (grid.measurement.type === "chebyshev") {
+      return Math.max(
+        Math.abs(aCoord.x - bCoord.x),
+        Math.abs(aCoord.y - bCoord.y)
+      );
+    } else if (grid.measurement.type === "alternating") {
+      // Alternating diagonal distance like D&D 3.5 and Pathfinder
+      const delta = Vector2.abs(Vector2.subtract(aCoord, bCoord));
+      const max = Vector2.max(delta);
+      const min = Vector2.min(delta);
+      return max - min + Math.floor(1.5 * min);
+    } else if (grid.measurement.type === "euclidean") {
+      return Vector2.distance(aCoord, bCoord);
+    } else if (grid.measurement.type === "manhattan") {
+      return Math.abs(aCoord.x - bCoord.x) + Math.abs(aCoord.y - bCoord.y);
+    }
+  } else {
+    if (grid.measurement.type === "manhattan") {
+      // Convert to cube coordinates to get distance easier
+      const aCube = hexOffsetToCube(aCoord, grid.type);
+      const bCube = hexOffsetToCube(bCoord, grid.type);
+      return (
+        (Math.abs(aCube.x - bCube.x) +
+          Math.abs(aCube.y - bCube.y) +
+          Math.abs(aCube.z - bCube.z)) /
+        2
+      );
+    } else if (grid.measurement.type === "euclidean") {
+      return Vector2.distance(aCoord, bCoord);
+    }
+  }
+}
+
+/**
+ * @typedef GridScale
+ * @property {number} multiplier The number multiplier of the scale
+ * @property {string} unit The unit of the scale
+ * @property {number} digits The precision of the scale
+ */
+
+/**
+ * Parse a string representation of scale e.g. 5ft into a `GridScale`
+ * @param {string} scale
+ * @returns {GridScale}
+ */
+
+export function parseGridScale(scale) {
+  if (typeof scale === "string") {
+    const match = scale.match(/(\d*)(\.\d*)?([a-zA-Z]*)/);
+    const integer = parseFloat(match[1]);
+    const fractional = parseFloat(match[2]);
+    const unit = match[3] || "";
+    if (!isNaN(integer) && !isNaN(fractional)) {
+      return {
+        multiplier: integer + fractional,
+        unit: unit,
+        digits: match[2].length - 1,
+      };
+    } else if (!isNaN(integer) && isNaN(fractional)) {
+      return { multiplier: integer, unit: unit, digits: 0 };
+    }
+  }
+  return { multiplier: 1, unit: "", digits: 0 };
 }
 
 /**

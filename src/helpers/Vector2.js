@@ -408,25 +408,9 @@ class Vector2 {
    * Returns the distance between two vectors
    * @param {Vector2} a
    * @param {Vector2} b
-   * @param {string=} type - `chebyshev | euclidean | manhattan | alternating`
    */
-  static distance(a, b, type = "euclidean") {
-    switch (type) {
-      case "chebyshev":
-        return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-      case "euclidean":
-        return this.length(this.subtract(a, b));
-      case "manhattan":
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-      case "alternating":
-        // Alternating diagonal distance like D&D 3.5 and Pathfinder
-        const delta = this.abs(this.subtract(a, b));
-        const ma = this.max(delta);
-        const mi = this.min(delta);
-        return ma - mi + Math.floor(1.5 * mi);
-      default:
-        return this.length(this.subtract(a, b));
-    }
+  static distance(a, b) {
+    return this.length(this.subtract(a, b));
   }
 
   /**

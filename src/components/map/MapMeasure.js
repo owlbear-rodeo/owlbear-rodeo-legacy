@@ -11,6 +11,7 @@ import {
 } from "../../helpers/drawing";
 import Vector2 from "../../helpers/Vector2";
 import { getRelativePointerPosition } from "../../helpers/konva";
+import { parseGridScale, gridDistance } from "../../helpers/grid";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 
@@ -21,31 +22,17 @@ function MapMeasure({ map, active }) {
     mapHeight,
     interactionEmitter,
   } = useMapInteraction();
-  const { grid, gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const {
+    grid,
+    gridCellNormalizedSize,
+    gridStrokeWidth,
+    gridCellPixelSize,
+  } = useGrid();
   const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
-  function parseToolScale(scale) {
-    if (typeof scale === "string") {
-      const match = scale.match(/(\d*)(\.\d*)?([a-zA-Z]*)/);
-      const integer = parseFloat(match[1]);
-      const fractional = parseFloat(match[2]);
-      const unit = match[3] || "";
-      if (!isNaN(integer) && !isNaN(fractional)) {
-        return {
-          multiplier: integer + fractional,
-          unit: unit,
-          digits: match[2].length - 1,
-        };
-      } else if (!isNaN(integer) && isNaN(fractional)) {
-        return { multiplier: integer, unit: unit, digits: 0 };
-      }
-    }
-    return { multiplier: 1, unit: "", digits: 0 };
-  }
-
-  const measureScale = parseToolScale(active && grid.measurement.scale);
+  const gridScale = parseGridScale(active && grid.measurement.scale);
 
   const snapPositionToGrid = useGridSnapping();
 
@@ -54,6 +41,7 @@ function MapMeasure({ map, active }) {
       return;
     }
     const mapStage = mapStageRef.current;
+    const mapImage = mapStage?.findOne("#mapImage");
 
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
@@ -84,19 +72,16 @@ function MapMeasure({ map, active }) {
           brushPosition,
           gridCellNormalizedSize
         );
-        // Round the grid positions to the nearest 0.1 to aviod floating point issues
-        const precision = { x: 0.1, y: 0.1 };
-        const length = Vector2.distance(
-          Vector2.roundTo(
-            Vector2.divide(points[0], gridCellNormalizedSize),
-            precision
-          ),
-          Vector2.roundTo(
-            Vector2.divide(points[1], gridCellNormalizedSize),
-            precision
-          ),
-          grid.measurement.type
-        );
+        // Convert back to pixel values
+        const a = Vector2.multiply(points[0], {
+          x: mapImage.width(),
+          y: mapImage.height(),
+        });
+        const b = Vector2.multiply(points[1], {
+          x: mapImage.width(),
+          y: mapImage.height(),
+        });
+        const length = gridDistance(grid, a, b, gridCellPixelSize);
         setDrawingShapeData({
           length,
           points,
@@ -155,9 +140,9 @@ function MapMeasure({ map, active }) {
         >
           <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
           <Text
-            text={`${(shapeData.length * measureScale.multiplier).toFixed(
-              measureScale.digits
-            )}${measureScale.unit}`}
+            text={`${(shapeData.length * gridScale.multiplier).toFixed(
+              gridScale.digits
+            )}${gridScale.unit}`}
             fill="white"
             fontSize={24}
             padding={4}

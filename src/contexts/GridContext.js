@@ -23,6 +23,10 @@ const defaultValue = {
     size: new Vector2(0, 0),
     inset: { topLeft: new Vector2(0, 0), bottomRight: new Vector2(1, 1) },
     type: "square",
+    measurement: {
+      scale: "",
+      type: "euclidean",
+    },
   },
   gridPixelSize: new Size(0, 0),
   gridCellPixelSize: new Size(0, 0, 0),
