@@ -7,14 +7,11 @@ import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
 
-import { useDatabase } from "../contexts/DatabaseContext";
-
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
 function ImportDatabaseModal({ isOpen, onRequestClose }) {
-  const { database } = useDatabase();
   const [isLoading, setIsLoading] = useState(false);
 
   const backgroundTaskRunningRef = useRef(false);
