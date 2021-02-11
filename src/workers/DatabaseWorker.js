@@ -1,5 +1,5 @@
 import * as Comlink from "comlink";
-import { importDB, exportDB } from "dexie-export-import";
+import { importInto, exportDB } from "dexie-export-import";
 import { encode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
@@ -59,7 +59,8 @@ let service = {
    */
   async importData(data, progressCallback) {
     try {
-      await importDB(data, { progressCallback });
+      let db = getDatabase({});
+      await importInto(db, data, { progressCallback, overwriteValues: true });
     } catch {}
   },
 };

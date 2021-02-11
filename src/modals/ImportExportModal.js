@@ -35,7 +35,6 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
   async function handleImportDatabase(file) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
-    await database.delete();
     await worker.importData(file, Comlink.proxy(handleDBProgress));
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
