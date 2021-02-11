@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Line, Group, Path, Circle } from "react-konva";
+// eslint-disable-next-line no-unused-vars
 import Konva from "konva";
 import Color from "color";
 import Vector2 from "./Vector2";
