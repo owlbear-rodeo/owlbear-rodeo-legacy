@@ -4,7 +4,83 @@ import polygonClipping from "polygon-clipping";
 import Vector2 from "./Vector2";
 import { toDegrees } from "./shared";
 import { logError } from "./logging";
+import { getNearestCellCoordinates, getCellLocation } from "./grid";
 
+/**
+ * @typedef PointsData
+ * @property {Vector2[]} points
+ */
+
+/**
+ * @typedef RectData
+ * @property {number} x
+ * @property {number} y
+ * @property {number} width
+ * @property {number} height
+ */
+
+/**
+ * @typedef CircleData
+ * @property {number} x
+ * @property {number} y
+ * @property {number} radius
+ */
+/**
+ * @typedef FogData
+ * @property {Vector2[]} points
+ * @property {Vector2[]} holes
+ */
+
+/**
+ * @typedef {(PointsData|RectData|CircleData)} ShapeData
+ */
+
+/**
+ * @typedef {("line"|"rectangle"|"circle"|"triangle")} ShapeType
+ */
+
+/**
+ * @typedef {("fill"|"stroke")} PathType
+ */
+
+/**
+ * @typedef Path
+ * @property {boolean} blend
+ * @property {string} color
+ * @property {PointsData} data
+ * @property {string} id
+ * @property {PathType} pathType
+ * @property {number} strokeWidth
+ * @property {"path"} type
+ */
+
+/**
+ * @typedef Shape
+ * @property {boolean} blend
+ * @property {string} color
+ * @property {ShapeData} data
+ * @property {string} id
+ * @property {ShapeType} shapeType
+ * @property {number} strokeWidth
+ * @property {"shape"} type
+ */
+
+/**
+ * @typedef Fog
+ * @property {string} color
+ * @property {FogData} data
+ * @property {string} id
+ * @property {number} strokeWidth
+ * @property {"fog"} type
+ * @property {boolean} visible
+ */
+
+/**
+ *
+ * @param {ShapeType} type
+ * @param {Vector2} brushPosition
+ * @returns {ShapeData}
+ */
 export function getDefaultShapeData(type, brushPosition) {
   if (type === "line") {
     return {
@@ -33,6 +109,10 @@ export function getDefaultShapeData(type, brushPosition) {
   }
 }
 
+/**
+ * @param {Vector2} cellSize
+ * @returns {Vector2}
+ */
 export function getGridScale(cellSize) {
   if (cellSize.x < cellSize.y) {
     return { x: cellSize.y / cellSize.x, y: 1 };
@@ -43,6 +123,14 @@ export function getGridScale(cellSize) {
   }
 }
 
+/**
+ *
+ * @param {ShapeType} type
+ * @param {ShapeData} data
+ * @param {Vector2} brushPosition
+ * @param {Vector2} gridCellNormalizedSize
+ * @returns {ShapeData}
+ */
 export function getUpdatedShapeData(
   type,
   data,
@@ -99,24 +187,26 @@ export function getUpdatedShapeData(
   }
 }
 
-const defaultStrokeWidth = 1 / 10;
-export function getStrokeWidth(multiplier, gridSize, mapWidth, mapHeight) {
-  const gridPixelSize = Vector2.multiply(gridSize, {
-    x: mapWidth,
-    y: mapHeight,
-  });
-  return Vector2.min(gridPixelSize) * defaultStrokeWidth * multiplier;
-}
-
 const defaultSimplifySize = 1 / 100;
-export function simplifyPoints(points, gridCellNormalizedSize, scale) {
+/**
+ * Simplify points to a grid size
+ * @param {Vector2[]} points
+ * @param {Vector2} gridCellSize
+ * @param {number} scale
+ */
+export function simplifyPoints(points, gridCellSize, scale) {
   return simplify(
     points,
-    (Vector2.min(gridCellNormalizedSize) * defaultSimplifySize) / scale
+    (Vector2.min(gridCellSize) * defaultSimplifySize) / scale
   );
 }
 
-export function mergeShapes(shapes) {
+/**
+ * Merges overlapping fog shapes
+ * @param {Fog[]} shapes
+ * @returns {Fog[]}
+ */
+export function mergeFogShapes(shapes) {
   if (shapes.length === 0) {
     return shapes;
   }
@@ -160,4 +250,268 @@ export function mergeShapes(shapes) {
     logError(new Error(`Unable to merge shapes ${JSON.stringify(shapes)}`));
     return shapes;
   }
+}
+
+/**
+ * @param {Fog[]} shapes
+ * @returns {Vector2.BoundingBox[]}
+ */
+export function getFogShapesBoundingBoxes(shapes) {
+  let boxes = [];
+  for (let shape of shapes) {
+    boxes.push(Vector2.getBoundingBox(shape.data.points));
+  }
+  return boxes;
+}
+
+/**
+ * @typedef Edge
+ * @property {Vector2} start
+ * @property {Vector2} end
+ */
+
+/**
+ * @typedef Guide
+ * @property {Vector2} start
+ * @property {Vector2} end
+ * @property {("horizontal"|"vertical")} orientation
+ * @property {number}
+ */
+
+/**
+ * @param {Vector2} brushPosition Brush position in pixels
+ * @param {Vector2} grid
+ * @param {Vector2} gridCellSize Grid cell size in pixels
+ * @param {Vector2} gridOffset
+ * @param {Vector2} gridCellOffset
+ * @param {number} snappingSensitivity
+ * @param {Vector2} mapSize
+ * @returns {Guide[]}
+ */
+export function getGuidesFromGridCell(
+  brushPosition,
+  grid,
+  gridCellSize,
+  gridOffset,
+  gridCellOffset,
+  snappingSensitivity,
+  mapSize
+) {
+  let boundingBoxes = [];
+  // Add map bounds
+  boundingBoxes.push(
+    Vector2.getBoundingBox([
+      { x: 0, y: 0 },
+      { x: 1, y: 1 },
+    ])
+  );
+  let offsetPosition = Vector2.subtract(
+    Vector2.subtract(brushPosition, gridOffset),
+    gridCellOffset
+  );
+  const cellCoords = getNearestCellCoordinates(
+    grid,
+    offsetPosition.x,
+    offsetPosition.y,
+    gridCellSize
+  );
+  let cellPosition = getCellLocation(
+    grid,
+    cellCoords.x,
+    cellCoords.y,
+    gridCellSize
+  );
+  cellPosition = Vector2.add(
+    Vector2.add(cellPosition, gridOffset),
+    gridCellOffset
+  );
+  // Normalize values so output is normalized
+  cellPosition = Vector2.divide(cellPosition, mapSize);
+  const gridCellNormalizedSize = Vector2.divide(gridCellSize, mapSize);
+  const brushPositionNorm = Vector2.divide(brushPosition, mapSize);
+  const boundingBox = Vector2.getBoundingBox([
+    {
+      x: cellPosition.x - gridCellNormalizedSize.x / 2,
+      y: cellPosition.y - gridCellNormalizedSize.y / 2,
+    },
+    {
+      x: cellPosition.x + gridCellNormalizedSize.x / 2,
+      y: cellPosition.y + gridCellNormalizedSize.y / 2,
+    },
+  ]);
+  boundingBoxes.push(boundingBox);
+  return getGuidesFromBoundingBoxes(
+    brushPositionNorm,
+    boundingBoxes,
+    gridCellNormalizedSize,
+    snappingSensitivity
+  );
+}
+
+/**
+ * @param {Vector2} brushPosition
+ * @param {Vector2.BoundingBox[]} boundingBoxes
+ * @param {Vector2} gridCellSize
+ * @param {number} snappingSensitivity
+ * @returns {Guide[]}
+ */
+export function getGuidesFromBoundingBoxes(
+  brushPosition,
+  boundingBoxes,
+  gridCellSize,
+  snappingSensitivity
+) {
+  let horizontalEdges = [];
+  let verticalEdges = [];
+  for (let bounds of boundingBoxes) {
+    horizontalEdges.push({
+      start: { x: bounds.min.x, y: bounds.min.y },
+      end: { x: bounds.max.x, y: bounds.min.y },
+    });
+    horizontalEdges.push({
+      start: { x: bounds.min.x, y: bounds.center.y },
+      end: { x: bounds.max.x, y: bounds.center.y },
+    });
+    horizontalEdges.push({
+      start: { x: bounds.min.x, y: bounds.max.y },
+      end: { x: bounds.max.x, y: bounds.max.y },
+    });
+
+    verticalEdges.push({
+      start: { x: bounds.min.x, y: bounds.min.y },
+      end: { x: bounds.min.x, y: bounds.max.y },
+    });
+    verticalEdges.push({
+      start: { x: bounds.center.x, y: bounds.min.y },
+      end: { x: bounds.center.x, y: bounds.max.y },
+    });
+    verticalEdges.push({
+      start: { x: bounds.max.x, y: bounds.min.y },
+      end: { x: bounds.max.x, y: bounds.max.y },
+    });
+  }
+  let guides = [];
+  for (let edge of verticalEdges) {
+    const distance = Math.abs(brushPosition.x - edge.start.x);
+    if (distance / gridCellSize.x < snappingSensitivity) {
+      guides.push({ ...edge, distance, orientation: "vertical" });
+    }
+  }
+  for (let edge of horizontalEdges) {
+    const distance = Math.abs(brushPosition.y - edge.start.y);
+    if (distance / gridCellSize.y < snappingSensitivity) {
+      guides.push({ ...edge, distance, orientation: "horizontal" });
+    }
+  }
+  return guides;
+}
+
+/**
+ * @param {Vector2} brushPosition
+ * @param {Guide[]} guides
+ * @returns {Guide[]}
+ */
+export function findBestGuides(brushPosition, guides) {
+  let bestGuides = [];
+  let verticalGuide = guides
+    .filter((guide) => guide.orientation === "vertical")
+    .sort((a, b) => a.distance - b.distance)[0];
+  let horizontalGuide = guides
+    .filter((guide) => guide.orientation === "horizontal")
+    .sort((a, b) => a.distance - b.distance)[0];
+
+  // Offset edges to match brush position
+  if (verticalGuide && !horizontalGuide) {
+    verticalGuide.start.y = Math.min(verticalGuide.start.y, brushPosition.y);
+    verticalGuide.end.y = Math.max(verticalGuide.end.y, brushPosition.y);
+    bestGuides.push(verticalGuide);
+  }
+  if (horizontalGuide && !verticalGuide) {
+    horizontalGuide.start.x = Math.min(
+      horizontalGuide.start.x,
+      brushPosition.x
+    );
+    horizontalGuide.end.x = Math.max(horizontalGuide.end.x, brushPosition.x);
+    bestGuides.push(horizontalGuide);
+  }
+  if (horizontalGuide && verticalGuide) {
+    verticalGuide.start.y = Math.min(
+      verticalGuide.start.y,
+      horizontalGuide.start.y
+    );
+    verticalGuide.end.y = Math.max(
+      verticalGuide.end.y,
+      horizontalGuide.start.y
+    );
+
+    horizontalGuide.start.x = Math.min(
+      horizontalGuide.start.x,
+      verticalGuide.start.x
+    );
+    horizontalGuide.end.x = Math.max(
+      horizontalGuide.end.x,
+      verticalGuide.start.x
+    );
+
+    bestGuides.push(horizontalGuide);
+    bestGuides.push(verticalGuide);
+  }
+  return bestGuides;
+}
+
+/**
+ * @param {Vector2} brushPosition
+ * @param {Fog[]} shapes
+ * @param {Vector2.BoundingBox} boundingBoxes
+ * @param {Vector2} gridCellSize
+ * @param {number} snappingSensitivity
+ */
+export function getSnappingVertex(
+  brushPosition,
+  shapes,
+  boundingBoxes,
+  gridCellSize,
+  snappingSensitivity
+) {
+  const minGrid = Vector2.min(gridCellSize);
+  const snappingDistance = minGrid * snappingSensitivity;
+
+  let closestDistance = Number.MAX_VALUE;
+  let closestPosition;
+
+  for (let i = 0; i < shapes.length; i++) {
+    // TODO: Check bounds before checking all points
+    // const bounds = boundingBoxes[i];
+    const shape = shapes[i];
+    // Include shape points and holes
+    let pointArray = [shape.data.points, ...shape.data.holes];
+
+    for (let points of pointArray) {
+      // Find the closest point to each edge of the shape
+      for (let i = 0; i < points.length; i++) {
+        const a = points[i];
+        // Wrap around points to the start to account for closed shape
+        const b = points[(i + 1) % points.length];
+
+        let { distance, point } = Vector2.distanceToLine(brushPosition, a, b);
+        // Bias towards vertices
+        distance += snappingDistance / 2;
+        const isCloseToShape = distance < snappingDistance;
+        if (isCloseToShape && distance < closestDistance) {
+          closestPosition = point;
+          closestDistance = distance;
+        }
+      }
+      // Find cloest vertex
+      for (let point of points) {
+        const distance = Vector2.distance(point, brushPosition);
+        const isCloseToShape = distance < snappingDistance;
+        if (isCloseToShape && distance < closestDistance) {
+          closestPosition = point;
+          closestDistance = distance;
+        }
+      }
+    }
+  }
+  return closestPosition;
 }

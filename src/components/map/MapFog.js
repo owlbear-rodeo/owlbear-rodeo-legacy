@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import shortid from "shortid";
-import { Group, Rect } from "react-konva";
+import { Group, Rect, Line, Circle } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -11,7 +11,15 @@ import { useGrid } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
-import { simplifyPoints, mergeShapes } from "../../helpers/drawing";
+import {
+  simplifyPoints,
+  mergeFogShapes,
+  getFogShapesBoundingBoxes,
+  getGuidesFromBoundingBoxes,
+  getGuidesFromGridCell,
+  findBestGuides,
+  getSnappingVertex,
+} from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import {
   HoleyLine,
@@ -20,7 +28,7 @@ import {
 } from "../../helpers/konva";
 
 import useDebounce from "../../hooks/useDebounce";
-import useGridSnapping from "../../hooks/useGridSnapping";
+import useSetting from "../../hooks/useSetting";
 
 function MapFog({
   map,
@@ -39,21 +47,48 @@ function MapFog({
     mapHeight,
     interactionEmitter,
   } = useMapInteraction();
-  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const {
+    grid,
+    gridCellNormalizedSize,
+    gridCellPixelSize,
+    gridStrokeWidth,
+    gridCellPixelOffset,
+    gridOffset,
+  } = useGrid();
+  const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
   const mapStageRef = useMapStage();
 
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [editingShapes, setEditingShapes] = useState([]);
 
+  // Shapes that have been merged for fog
+  const [fogShapes, setFogShapes] = useState(shapes);
+  // Bounding boxes for guides
+  const [fogShapeBoundingBoxes, setFogShapeBoundingBoxes] = useState([]);
+  const [guides, setGuides] = useState([]);
+  const [vertexSnapping, setVertexSnapping] = useState();
+
   const shouldHover =
     active &&
     editable &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
-  const [patternImage] = useImage(diagonalPattern);
+  const shouldRenderGuides =
+    active &&
+    editable &&
+    (toolSettings.type === "rectangle" || toolSettings.type === "polygon") &&
+    !vertexSnapping;
+  const shouldRenderVertexSnapping =
+    active &&
+    editable &&
+    (toolSettings.type === "rectangle" ||
+      toolSettings.type === "polygon" ||
+      toolSettings.type === "brush") &&
+    toolSettings.useEdgeSnapping &&
+    vertexSnapping;
 
-  const snapPositionToGrid = useGridSnapping();
+  const [patternImage] = useImage(diagonalPattern);
 
   useEffect(() => {
     if (!active || !editable) {
@@ -62,14 +97,25 @@ function MapFog({
 
     const mapStage = mapStageRef.current;
 
-    function getBrushPosition() {
+    function getBrushPosition(snapping = true) {
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
-      if (
-        map.snapToGrid &&
-        (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
-      ) {
-        position = snapPositionToGrid(position);
+      if (snapping) {
+        if (shouldRenderVertexSnapping) {
+          position = Vector2.multiply(vertexSnapping, {
+            x: mapWidth,
+            y: mapHeight,
+          });
+        } else if (shouldRenderGuides) {
+          for (let guide of guides) {
+            if (guide.orientation === "vertical") {
+              position.x = guide.start.x * mapWidth;
+            }
+            if (guide.orientation === "horizontal") {
+              position.y = guide.start.y * mapHeight;
+            }
+          }
+        }
       }
       return Vector2.divide(position, {
         x: mapImage.width(),
@@ -78,8 +124,8 @@ function MapFog({
     }
 
     function handleBrushDown() {
-      const brushPosition = getBrushPosition();
       if (toolSettings.type === "brush") {
+        const brushPosition = getBrushPosition();
         setDrawingShape({
           type: "fog",
           data: {
@@ -93,6 +139,7 @@ function MapFog({
         });
       }
       if (toolSettings.type === "rectangle") {
+        const brushPosition = getBrushPosition();
         setDrawingShape({
           type: "fog",
           data: {
@@ -225,20 +272,77 @@ function MapFog({
     }
 
     function handlePolygonMove() {
-      if (toolSettings.type === "polygon" && drawingShape) {
-        const brushPosition = getBrushPosition();
-        setDrawingShape((prevShape) => {
-          if (!prevShape) {
-            return;
-          }
-          return {
-            ...prevShape,
-            data: {
-              ...prevShape.data,
-              points: [...prevShape.data.points.slice(0, -1), brushPosition],
-            },
-          };
+      if (
+        active &&
+        (toolSettings.type === "polygon" ||
+          toolSettings.type === "rectangle") &&
+        !shouldRenderVertexSnapping
+      ) {
+        let guides = [];
+        const brushPosition = getBrushPosition(false);
+        const absoluteBrushPosition = Vector2.multiply(brushPosition, {
+          x: mapWidth,
+          y: mapHeight,
         });
+        if (map.snapToGrid) {
+          guides.push(
+            ...getGuidesFromGridCell(
+              absoluteBrushPosition,
+              grid,
+              gridCellPixelSize,
+              gridOffset,
+              gridCellPixelOffset,
+              gridSnappingSensitivity,
+              { x: mapWidth, y: mapHeight }
+            )
+          );
+        }
+
+        guides.push(
+          ...getGuidesFromBoundingBoxes(
+            brushPosition,
+            fogShapeBoundingBoxes,
+            gridCellNormalizedSize,
+            gridSnappingSensitivity
+          )
+        );
+
+        setGuides(findBestGuides(brushPosition, guides));
+      }
+      if (
+        active &&
+        toolSettings.useEdgeSnapping &&
+        (toolSettings.type === "polygon" ||
+          toolSettings.type === "rectangle" ||
+          toolSettings.type === "brush")
+      ) {
+        const brushPosition = getBrushPosition(false);
+        setVertexSnapping(
+          getSnappingVertex(
+            brushPosition,
+            fogShapes,
+            fogShapeBoundingBoxes,
+            gridCellNormalizedSize,
+            Math.min(0.4 / stageScale, 0.4)
+          )
+        );
+      }
+      if (toolSettings.type === "polygon") {
+        const brushPosition = getBrushPosition();
+        if (toolSettings.type === "polygon" && drawingShape) {
+          setDrawingShape((prevShape) => {
+            if (!prevShape) {
+              return;
+            }
+            return {
+              ...prevShape,
+              data: {
+                ...prevShape.data,
+                points: [...prevShape.data.points.slice(0, -1), brushPosition],
+              },
+            };
+          });
+        }
       }
     }
 
@@ -356,17 +460,17 @@ function MapFog({
         closed
         lineCap="round"
         lineJoin="round"
-        strokeWidth={gridStrokeWidth * shape.strokeWidth}
-        opacity={editable ? 0.5 : 1}
+        strokeWidth={editable ? gridStrokeWidth * shape.strokeWidth : 0}
+        opacity={editable ? (!shape.visible ? 0.2 : 0.5) : 1}
         fillPatternImage={patternImage}
         fillPriority={active && !shape.visible ? "pattern" : "color"}
         holes={holes}
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
         hitFunc={editable && !active ? () => {} : undefined}
-        shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(34, 34, 34, 0.50)"}
-        shadowOffset={{ x: 0, y: 5 }}
-        shadowBlur={10}
+        // shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(34, 34, 34, 1)"}
+        // shadowOffset={{ x: 0, y: 5 }}
+        // shadowBlur={10}
       />
     );
   }
@@ -402,48 +506,51 @@ function MapFog({
     );
   }
 
-  const [fogShapes, setFogShapes] = useState(shapes);
+  function renderGuides() {
+    return guides.map((guide, index) => (
+      <Line
+        points={[
+          guide.start.x * mapWidth,
+          guide.start.y * mapHeight,
+          guide.end.x * mapWidth,
+          guide.end.y * mapHeight,
+        ]}
+        stroke="hsl(260, 100%, 80%)"
+        key={index}
+        strokeWidth={gridStrokeWidth * 0.25}
+        lineCap="round"
+        lineJoin="round"
+      />
+    ));
+  }
+
+  function renderSnappingVertex() {
+    return (
+      <Circle
+        x={vertexSnapping.x * mapWidth}
+        y={vertexSnapping.y * mapHeight}
+        radius={gridStrokeWidth}
+        stroke="hsl(260, 100%, 80%)"
+        strokeWidth={gridStrokeWidth * 0.25}
+      />
+    );
+  }
+
   useEffect(() => {
     function shapeVisible(shape) {
       return (active && !toolSettings.preview) || shape.visible;
     }
 
     if (editable) {
-      setFogShapes(shapes.filter(shapeVisible));
+      const visibleShapes = shapes.filter(shapeVisible);
+      setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes));
+      setFogShapes(visibleShapes);
     } else {
-      setFogShapes(mergeShapes(shapes));
+      setFogShapes(mergeFogShapes(shapes));
     }
   }, [shapes, editable, active, toolSettings]);
 
   const fogGroupRef = useRef();
-  const debouncedStageScale = useDebounce(stageScale, 50);
-
-  useEffect(() => {
-    const fogGroup = fogGroupRef.current;
-
-    if (!editable) {
-      const canvas = fogGroup.getChildren()[0].getCanvas();
-      const pixelRatio = canvas.pixelRatio || 1;
-
-      // Constrain fog buffer to the map resolution
-      const fogRect = fogGroup.getClientRect();
-      const maxMapSize = map ? Math.max(map.width, map.height) : 4096; // Default to 4096
-      const maxFogSize =
-        Math.max(fogRect.width, fogRect.height) / debouncedStageScale;
-      const maxPixelRatio = maxMapSize / maxFogSize;
-
-      fogGroup.cache({
-        pixelRatio: Math.min(
-          Math.max(debouncedStageScale * pixelRatio, 1),
-          maxPixelRatio
-        ),
-      });
-    } else {
-      fogGroup.clearCache();
-    }
-
-    fogGroup.getLayer().draw();
-  }, [fogShapes, editable, active, debouncedStageScale, mapWidth, map]);
 
   return (
     <Group>
@@ -452,6 +559,8 @@ function MapFog({
         <Rect width={1} height={1} />
         {fogShapes.map(renderShape)}
       </Group>
+      {shouldRenderGuides && renderGuides()}
+      {shouldRenderVertexSnapping && renderSnappingVertex()}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
         toolSettings &&

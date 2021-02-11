@@ -345,11 +345,20 @@ class Vector2 {
   }
 
   /**
+   * @typedef BoundingBox
+   * @property {Vector2} min
+   * @property {Vector2} max
+   * @property {number} width
+   * @property {number} height
+   * @property {Vector2} center
+   */
+
+  /**
    * Calculates an axis-aligned bounding box around an array of point
    * @param {Vector2[]} points
-   * @returns {Object}
+   * @returns {BoundingBox}
    */
-  static getBounds(points) {
+  static getBoundingBox(points) {
     let minX = Number.MAX_VALUE;
     let maxX = Number.MIN_VALUE;
     let minY = Number.MAX_VALUE;
@@ -360,7 +369,16 @@ class Vector2 {
       minY = point.y < minY ? point.y : minY;
       maxY = point.y > maxY ? point.y : maxY;
     }
-    return { minX, maxX, minY, maxY };
+    let width = maxX - minX;
+    let height = maxY - minY;
+    let center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+    return {
+      min: { x: minX, y: minY },
+      max: { x: maxX, y: maxY },
+      width,
+      height,
+      center,
+    };
   }
 
   /**
@@ -372,8 +390,13 @@ class Vector2 {
    * @returns {boolean}
    */
   static pointInPolygon(p, points) {
-    const { minX, maxX, minY, maxY } = this.getBounds(points);
-    if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) {
+    const bounds = this.getBoundingBox(points);
+    if (
+      p.x < bounds.min.x ||
+      p.x > bounds.max.x ||
+      p.y < bounds.min.y ||
+      p.y > bounds.max.y
+    ) {
       return false;
     }
 

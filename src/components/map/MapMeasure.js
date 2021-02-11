@@ -27,6 +27,7 @@ function MapMeasure({ map, active }) {
     gridCellNormalizedSize,
     gridStrokeWidth,
     gridCellPixelSize,
+    gridOffset,
   } = useGrid();
   const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
@@ -73,14 +74,20 @@ function MapMeasure({ map, active }) {
           gridCellNormalizedSize
         );
         // Convert back to pixel values
-        const a = Vector2.multiply(points[0], {
-          x: mapImage.width(),
-          y: mapImage.height(),
-        });
-        const b = Vector2.multiply(points[1], {
-          x: mapImage.width(),
-          y: mapImage.height(),
-        });
+        const a = Vector2.subtract(
+          Vector2.multiply(points[0], {
+            x: mapImage.width(),
+            y: mapImage.height(),
+          }),
+          gridOffset
+        );
+        const b = Vector2.subtract(
+          Vector2.multiply(points[1], {
+            x: mapImage.width(),
+            y: mapImage.height(),
+          }),
+          gridOffset
+        );
         const length = gridDistance(grid, a, b, gridCellPixelSize);
         setDrawingShapeData({
           length,

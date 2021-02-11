@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useCallback } from "react";
 
 import Vector2 from "../helpers/Vector2";
 import Size from "../helpers/Size";
@@ -13,6 +13,7 @@ import { getGridPixelSize, getCellPixelSize, Grid } from "../helpers/grid";
  * @property {Size} gridCellNormalizedSize Size of each cell normalized to the grid
  * @property {Vector2} gridOffset Offset of the grid from the top left in pixels
  * @property {number} gridStrokeWidth Stroke width of the grid in pixels
+ * @property {Vector2} gridCellPixelOffset Offset of the grid cells to convert the center position of hex cells to the top left
  */
 
 /**
@@ -33,6 +34,7 @@ const defaultValue = {
   gridCellNormalizedSize: new Size(0, 0, 0),
   gridOffset: new Vector2(0, 0),
   gridStrokeWidth: 0,
+  gridCellPixelOffset: new Vector2(0, 0),
 };
 
 const GridContext = React.createContext(defaultValue);
@@ -67,6 +69,12 @@ export function GridProvider({ grid, width, height, children }) {
       ? gridCellPixelSize.width
       : gridCellPixelSize.height) * defaultStrokeWidth;
 
+  let gridCellPixelOffset = { x: 0, y: 0 };
+  // Move hex tiles to top left
+  if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
+    gridCellPixelOffset = Vector2.multiply(gridCellPixelSize, 0.5);
+  }
+
   const value = {
     grid,
     gridPixelSize,
@@ -74,6 +82,7 @@ export function GridProvider({ grid, width, height, children }) {
     gridCellNormalizedSize,
     gridOffset,
     gridStrokeWidth,
+    gridCellPixelOffset,
   };
 
   return <GridContext.Provider value={value}>{children}</GridContext.Provider>;

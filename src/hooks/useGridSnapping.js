@@ -19,21 +19,22 @@ function useGridSnapping(snappingSensitivity) {
   );
   snappingSensitivity = snappingSensitivity || defaultSnappingSensitivity;
 
-  const { grid, gridOffset, gridCellPixelSize } = useGrid();
+  const {
+    grid,
+    gridOffset,
+    gridCellPixelSize,
+    gridCellPixelOffset,
+  } = useGrid();
 
   /**
    * @param {Vector2} node The node to snap
    */
   function snapPositionToGrid(position) {
     // Account for grid offset
-    let offsetPosition = Vector2.subtract(position, gridOffset);
-    // Move hex tiles to top left
-    if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
-      offsetPosition = Vector2.subtract(
-        offsetPosition,
-        Vector2.multiply(gridCellPixelSize, 0.5)
-      );
-    }
+    let offsetPosition = Vector2.subtract(
+      Vector2.subtract(position, gridOffset),
+      gridCellPixelOffset
+    );
     const nearsetCell = getNearestCellCoordinates(
       grid,
       offsetPosition.x,
@@ -62,14 +63,10 @@ function useGridSnapping(snappingSensitivity) {
         Vector2.min(gridCellPixelSize) * snappingSensitivity
       ) {
         // Reverse grid offset
-        let offsetSnapPoint = Vector2.add(snapPoint, gridOffset);
-        // Reverse offset for hex tiles
-        if (grid.type === "hexVertical" || grid.type === "hexHorizontal") {
-          offsetSnapPoint = Vector2.add(
-            offsetSnapPoint,
-            Vector2.multiply(gridCellPixelSize, 0.5)
-          );
-        }
+        let offsetSnapPoint = Vector2.add(
+          Vector2.add(snapPoint, gridOffset),
+          gridCellPixelOffset
+        );
         return offsetSnapPoint;
       }
     }
