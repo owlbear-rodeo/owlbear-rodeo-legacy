@@ -53,7 +53,7 @@ function NoteMenu({
   }, [isOpen, note, wasOpen, noteNode]);
 
   function handleTextChange(event) {
-    const text = event.target.value.substring(0, 144);
+    const text = event.target.value.substring(0, 1024);
     note && onNoteChange({ ...note, text: text });
   }
 

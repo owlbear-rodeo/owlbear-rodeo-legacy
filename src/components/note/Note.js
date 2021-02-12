@@ -11,6 +11,8 @@ import colors from "../../helpers/colors";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
+const minTextSize = 16;
+
 function Note({
   note,
   map,
@@ -117,10 +119,10 @@ function Note({
     }
 
     function findFontSize() {
-      // Create an array from 1 / 10 of the note height to the full note height
+      // Create an array from 1 / minTextSize of the note height to the full note height
       const sizes = Array.from(
         { length: Math.ceil(noteHeight - notePadding * 2) },
-        (_, i) => i + Math.ceil(noteHeight / 10)
+        (_, i) => i + Math.ceil(noteHeight / minTextSize)
       );
 
       if (sizes.length > 0) {
@@ -203,7 +205,7 @@ function Note({
             ? "white"
             : "black"
         }
-        align="center"
+        align="left"
         verticalAlign="middle"
         padding={notePadding}
         fontSize={fontSize}
