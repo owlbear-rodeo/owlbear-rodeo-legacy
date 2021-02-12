@@ -125,7 +125,9 @@ function MapDrawing({
               prevShape.shapeType,
               prevShape.data,
               brushPosition,
-              gridCellNormalizedSize
+              gridCellNormalizedSize,
+              mapWidth,
+              mapHeight
             ),
           }));
         }

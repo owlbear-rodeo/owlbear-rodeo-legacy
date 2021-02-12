@@ -113,7 +113,7 @@ export function getDefaultShapeData(type, brushPosition) {
  * @param {Vector2} cellSize
  * @returns {Vector2}
  */
-export function getGridScale(cellSize) {
+export function getGridCellRatio(cellSize) {
   if (cellSize.x < cellSize.y) {
     return { x: cellSize.y / cellSize.x, y: 1 };
   } else if (cellSize.y < cellSize.x) {
@@ -135,19 +135,21 @@ export function getUpdatedShapeData(
   type,
   data,
   brushPosition,
-  gridCellNormalizedSize
+  gridCellNormalizedSize,
+  mapWidth,
+  mapHeight
 ) {
-  const gridScale = getGridScale(gridCellNormalizedSize);
   if (type === "line") {
     return {
       points: [data.points[0], { x: brushPosition.x, y: brushPosition.y }],
     };
   } else if (type === "circle") {
+    const gridRatio = getGridCellRatio(gridCellNormalizedSize);
     const dif = Vector2.subtract(brushPosition, {
       x: data.x,
       y: data.y,
     });
-    const scaled = Vector2.multiply(dif, gridScale);
+    const scaled = Vector2.multiply(dif, gridRatio);
     const distance = Vector2.length(scaled);
     return {
       ...data,
@@ -161,12 +163,15 @@ export function getUpdatedShapeData(
       height: dif.y,
     };
   } else if (type === "triangle") {
+    // Convert to absolute coordinates
+    const mapSize = { x: mapWidth, y: mapHeight };
+    const brushPositionPixel = Vector2.multiply(brushPosition, mapSize);
+
     const points = data.points;
-    const dif = Vector2.subtract(brushPosition, points[0]);
-    // Scale the distance by the grid scale then unscale before adding
-    const scaled = Vector2.multiply(dif, gridScale);
-    const length = Vector2.length(scaled);
-    const direction = Vector2.normalize(scaled);
+    const startPixel = Vector2.multiply(points[0], mapSize);
+    const dif = Vector2.subtract(brushPositionPixel, startPixel);
+    const length = Vector2.length(dif);
+    const direction = Vector2.normalize(dif);
     // Get the angle for a triangle who's width is the same as it's length
     const angle = Math.atan(length / 2 / (length === 0 ? 1 : length));
     const sideLength = length / Math.cos(angle);
@@ -174,14 +179,15 @@ export function getUpdatedShapeData(
     const leftDir = Vector2.rotateDirection(direction, toDegrees(angle));
     const rightDir = Vector2.rotateDirection(direction, -toDegrees(angle));
 
-    const leftDirUnscaled = Vector2.divide(leftDir, gridScale);
-    const rightDirUnscaled = Vector2.divide(rightDir, gridScale);
+    // Convert back to normalized coordinates
+    const leftDirNorm = Vector2.divide(leftDir, mapSize);
+    const rightDirNorm = Vector2.divide(rightDir, mapSize);
 
     return {
       points: [
         points[0],
-        Vector2.add(Vector2.multiply(leftDirUnscaled, sideLength), points[0]),
-        Vector2.add(Vector2.multiply(rightDirUnscaled, sideLength), points[0]),
+        Vector2.add(Vector2.multiply(leftDirNorm, sideLength), points[0]),
+        Vector2.add(Vector2.multiply(rightDirNorm, sideLength), points[0]),
       ],
     };
   }
