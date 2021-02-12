@@ -484,10 +484,19 @@ export function getSnappingVertex(
 
   let closestDistance = Number.MAX_VALUE;
   let closestPosition;
-
   for (let i = 0; i < shapes.length; i++) {
-    // TODO: Check bounds before checking all points
-    // const bounds = boundingBoxes[i];
+    // Check bounds before checking all points
+    const bounds = boundingBoxes[i];
+    const offsetMin = Vector2.subtract(bounds.min, gridCellSize);
+    const offsetMax = Vector2.add(bounds.max, gridCellSize);
+    if (
+      brushPosition.x < offsetMin.x ||
+      brushPosition.x > offsetMax.x ||
+      brushPosition.y < offsetMin.y ||
+      brushPosition.y > offsetMax.y
+    ) {
+      continue;
+    }
     const shape = shapes[i];
     // Include shape points and holes
     let pointArray = [shape.data.points, ...shape.data.holes];
