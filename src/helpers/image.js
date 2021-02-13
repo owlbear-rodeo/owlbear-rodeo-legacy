@@ -39,7 +39,7 @@ export function getImageLightness(image) {
 
 /**
  * @typedef ResizedImage
- * @property {Blob} blob
+ * @property {Blob|null} blob The blob of the resized image, `null` if the image was unable to be resized to that dimension
  * @property {number} width
  * @property {number} height
  */
