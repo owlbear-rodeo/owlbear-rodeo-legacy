@@ -48,6 +48,9 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     try {
+      // Ensure import DB is cleared before importing new data
+      let importDB = getDatabase({}, importDBName);
+      importDB.delete();
       await worker.importData(
         file,
         importDBName,
@@ -115,13 +118,35 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     const importDB = getDatabase({}, importDBName);
     const db = getDatabase({});
 
+    // Keep track of a mapping of old token ids to new ones to apply them to the map states
+    let newTokenIds = {};
+    if (checkedTokens.length > 0) {
+      const tokenIds = checkedTokens.map((token) => token.id);
+      const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
+      let newTokens = [];
+      for (let token of tokensToAdd) {
+        const newId = shortid.generate();
+        newTokenIds[token.id] = newId;
+        // Generate new id and change owner
+        newTokens.push({ ...token, id: newId, owner: userId });
+      }
+      await db.table("tokens").bulkAdd(newTokens);
+    }
+
     if (checkedMaps.length > 0) {
       const mapIds = checkedMaps.map((map) => map.id);
       const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
       let newMaps = [];
       let newStates = [];
       for (let map of mapsToAdd) {
-        const state = await importDB.table("states").get(map.id);
+        let state = await importDB.table("states").get(map.id);
+        // Apply new token ids to imported state
+        for (let tokenState of Object.values(state.tokens)) {
+          if (tokenState.tokenId in newTokenIds) {
+            state.tokens[tokenState.id].tokenId =
+              newTokenIds[tokenState.tokenId];
+          }
+        }
         const newId = shortid.generate();
         // Generate new id and change owner
         newMaps.push({ ...map, id: newId, owner: userId });
@@ -129,18 +154,6 @@ function ImportExportModal({ isOpen, onRequestClose }) {
       }
       await db.table("maps").bulkAdd(newMaps);
       await db.table("states").bulkAdd(newStates);
-    }
-    if (checkedTokens.length > 0) {
-      const tokenIds = checkedTokens.map((token) => token.id);
-      const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
-      console.log(tokensToAdd);
-      let newTokens = [];
-      for (let token of tokensToAdd) {
-        const newId = shortid.generate();
-        // Generate new id and change owner
-        newTokens.push({ ...token, id: newId, owner: userId });
-      }
-      await db.table("tokens").bulkAdd(newTokens);
     }
 
     await importDB.delete();
