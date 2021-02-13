@@ -336,11 +336,14 @@ function NetworkedMapAndTokens({ session }) {
     updateActionIndex(1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
   }
 
+  // If map changes clear map actions
+  const previousMapIdRef = useRef();
   useEffect(() => {
-    if (!currentMapState) {
+    if (currentMap && currentMap.id !== previousMapIdRef.current) {
       setMapActions(defaultMapActions);
+      previousMapIdRef.current = currentMap.id;
     }
-  }, [currentMapState]);
+  }, [currentMap]);
 
   function handleNoteChange(note) {
     setCurrentMapState((prevMapState) => ({

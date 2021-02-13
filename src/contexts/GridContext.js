@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from "react";
+import React, { useContext } from "react";
 
 import Vector2 from "../helpers/Vector2";
 import Size from "../helpers/Size";

@@ -45,7 +45,7 @@ function EditMapModal({ isOpen, onDone, mapId }) {
       setMap();
       setMapState();
     }
-  }, [isOpen, mapId, getMapFromDB, mapStates]);
+  }, [isOpen, mapId, getMapFromDB, mapStates, getMap]);
 
   function handleClose() {
     setMapSettingChanges({});
