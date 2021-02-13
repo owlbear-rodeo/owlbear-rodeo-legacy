@@ -7,7 +7,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 
 import { getDatabase } from "../database";
 
-function DataSelectorModal({
+function SelectDataModal({
   isOpen,
   onRequestClose,
   onConfirm,
@@ -17,6 +17,7 @@ function DataSelectorModal({
   filter,
 }) {
   const [maps, setMaps] = useState({});
+  const [tokensByMap, setTokensByMap] = useState({});
   const [tokens, setTokens] = useState({});
 
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,7 @@ function DataSelectorModal({
         setIsLoading(true);
         const db = getDatabase({}, databaseName);
         let loadedMaps = {};
+        let loadedTokensByMap = {};
         let loadedTokens = {};
         await db
           .table("maps")
@@ -36,6 +38,17 @@ function DataSelectorModal({
           .each((map) => {
             loadedMaps[map.id] = { name: map.name, id: map.id, checked: true };
           });
+        await db
+          .table("states")
+          .filter((state) => filter("states", state, state.mapId))
+          .each((state) => {
+            loadedTokensByMap[state.mapId] = new Set(
+              Object.values(state.tokens).map(
+                (tokenState) => tokenState.tokenId
+              )
+            );
+          });
+
         await db
           .table("tokens")
           .filter((token) => filter("tokens", token, token.id))
@@ -48,6 +61,7 @@ function DataSelectorModal({
           });
         db.close();
         setMaps(loadedMaps);
+        setTokensByMap(loadedTokensByMap);
         setTokens(loadedTokens);
         setIsLoading(false);
       } else {
@@ -57,6 +71,34 @@ function DataSelectorModal({
     }
     loadData();
   }, [isOpen, databaseName, filter]);
+
+  // An object mapping a tokenId to how many checked maps it is currently used in
+  const [tokenUsedCount, setTokenUsedCount] = useState({});
+  useEffect(() => {
+    let tokensUsed = {};
+    for (let mapId in maps) {
+      if (maps[mapId].checked && mapId in tokensByMap) {
+        for (let tokenId of tokensByMap[mapId]) {
+          if (tokenId in tokensUsed) {
+            tokensUsed[tokenId] += 1;
+          } else {
+            tokensUsed[tokenId] = 1;
+          }
+        }
+      }
+    }
+    setTokenUsedCount(tokensUsed);
+    // Update tokens to ensure used tokens are checked
+    setTokens((prevTokens) => {
+      let newTokens = { ...prevTokens };
+      for (let id in newTokens) {
+        if (id in tokensUsed) {
+          newTokens[id].checked = true;
+        }
+      }
+      return newTokens;
+    });
+  }, [maps, tokensByMap]);
 
   function handleConfirm() {
     let checkedMaps = Object.values(maps).filter((map) => map.checked);
@@ -140,13 +182,15 @@ function DataSelectorModal({
                 <Label>
                   <Checkbox
                     checked={Object.values(tokens).some(
-                      (token) => token.checked
+                      (token) => !(token.id in tokenUsedCount) && token.checked
                     )}
                     onChange={(e) =>
                       setTokens((prevTokens) => {
                         let newTokens = { ...prevTokens };
                         for (let id in newTokens) {
-                          newTokens[id].checked = e.target.checked;
+                          if (!(id in tokenUsedCount)) {
+                            newTokens[id].checked = e.target.checked;
+                          }
                         }
                         return newTokens;
                       })
@@ -155,23 +199,27 @@ function DataSelectorModal({
                   Tokens
                 </Label>
                 {Object.values(tokens).map((token) => (
-                  <Label
-                    key={token.id}
-                    my={1}
-                    pl={4}
-                    sx={{ fontFamily: "body2" }}
-                  >
-                    <Checkbox
-                      checked={token.checked}
-                      onChange={(e) =>
-                        setTokens((prevTokens) => ({
-                          ...prevTokens,
-                          [token.id]: { ...token, checked: e.target.checked },
-                        }))
-                      }
-                    />
-                    {token.name}
-                  </Label>
+                  <Box pl={4} my={1} key={token.id}>
+                    <Label sx={{ fontFamily: "body2" }}>
+                      <Checkbox
+                        checked={token.checked}
+                        onChange={(e) =>
+                          setTokens((prevTokens) => ({
+                            ...prevTokens,
+                            [token.id]: { ...token, checked: e.target.checked },
+                          }))
+                        }
+                        disabled={token.id in tokenUsedCount}
+                      />
+                      {token.name}
+                    </Label>
+                    {token.id in tokenUsedCount && (
+                      <Text as="p" variant="caption" ml={4}>
+                        Token used in {tokenUsedCount[token.id]} selected map
+                        {tokenUsedCount[token.id] > 1 && "s"}
+                      </Text>
+                    )}
+                  </Box>
                 ))}
               </>
             )}
@@ -200,11 +248,11 @@ function DataSelectorModal({
   );
 }
 
-DataSelectorModal.defaultProps = {
+SelectDataModal.defaultProps = {
   label: "Select data",
   confirmText: "Yes",
   filter: () => true,
   databaseName: "OwlbearRodeoDB",
 };
 
-export default DataSelectorModal;
+export default SelectDataModal;

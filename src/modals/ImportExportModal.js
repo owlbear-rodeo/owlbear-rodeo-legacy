@@ -11,7 +11,7 @@ import Banner from "../components/Banner";
 
 import { useAuth } from "../contexts/AuthContext";
 
-import DataSelectorModal from "./DataSelectorModal";
+import SelectDataModal from "./SelectDataModal";
 
 import { getDatabase } from "../database";
 
@@ -156,6 +156,10 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         return true;
       }
     }
+    // Allow all states so tokens can be checked against maps
+    if (table === "states") {
+      return true;
+    }
     return false;
   }
 
@@ -241,7 +245,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             </Text>
           </Box>
         </Banner>
-        <DataSelectorModal
+        <SelectDataModal
           isOpen={showImportSelector}
           onRequestClose={handleImportSelectorClose}
           onConfirm={handleImportSelectorConfirm}
@@ -249,7 +253,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
           confirmText="Import"
           label="Select data to import"
         />
-        <DataSelectorModal
+        <SelectDataModal
           isOpen={showExportSelector}
           onRequestClose={handleExportSelectorClose}
           onConfirm={handleExportSelectorConfirm}
