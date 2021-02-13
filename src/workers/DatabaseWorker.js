@@ -1,5 +1,5 @@
 import * as Comlink from "comlink";
-import { importDB, exportDB } from "dexie-export-import";
+import { importInto, exportDB } from "@mitchemmc/dexie-export-import";
 import { encode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
@@ -43,13 +43,11 @@ let service = {
    * @param {function} progressCallback
    */
   async exportData(progressCallback) {
-    try {
-      let db = getDatabase({});
-      return await exportDB(db, {
-        progressCallback,
-        numRowsPerChunk: 1,
-      });
-    } catch {}
+    let db = getDatabase({});
+    return await exportDB(db, {
+      progressCallback,
+      numRowsPerChunk: 1,
+    });
   },
 
   /**
@@ -58,9 +56,8 @@ let service = {
    * @param {function} progressCallback
    */
   async importData(data, progressCallback) {
-    try {
-      await importDB(data, { progressCallback });
-    } catch {}
+    let db = getDatabase({});
+    await importInto(db, data, { progressCallback, overwriteValues: true });
   },
 };
 

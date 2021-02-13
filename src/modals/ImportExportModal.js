@@ -6,16 +6,15 @@ import * as Comlink from "comlink";
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
-
-import { useDatabase } from "../contexts/DatabaseContext";
+import Banner from "../components/Banner";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
-function ImportDatabaseModal({ isOpen, onRequestClose }) {
-  const { database } = useDatabase();
+function ImportExportModal({ isOpen, onRequestClose }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
 
   const backgroundTaskRunningRef = useRef(false);
   const fileInputRef = useRef();
@@ -35,18 +34,35 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
   async function handleImportDatabase(file) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
-    await database.delete();
-    await worker.importData(file, Comlink.proxy(handleDBProgress));
-    setIsLoading(false);
-    backgroundTaskRunningRef.current = false;
-    window.location.reload();
+    try {
+      await worker.importData(file, Comlink.proxy(handleDBProgress));
+      setIsLoading(false);
+      backgroundTaskRunningRef.current = false;
+      window.location.reload();
+    } catch (e) {
+      setIsLoading(false);
+      backgroundTaskRunningRef.current = false;
+      if (e.message.startsWith("Max buffer length exceeded")) {
+        setError(
+          new Error(
+            "Max image size exceeded ensure your database doesn't have an image over 100MB"
+          )
+        );
+      } else {
+        setError(e);
+      }
+    }
   }
 
   async function handleExportDatabase() {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
-    const blob = await worker.exportData(Comlink.proxy(handleDBProgress));
-    saveAs(blob, `${new Date().toISOString()}.owlbear`);
+    try {
+      const blob = await worker.exportData(Comlink.proxy(handleDBProgress));
+      saveAs(blob, `${new Date().toISOString()}.owlbear`);
+    } catch (e) {
+      setError(e);
+    }
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
   }
@@ -121,9 +137,16 @@ function ImportDatabaseModal({ isOpen, onRequestClose }) {
             />
           </Box>
         )}
+        <Banner isOpen={!!error} onRequestClose={() => setError()}>
+          <Box p={1}>
+            <Text as="p" variant="body2">
+              Error: {error && error.message}
+            </Text>
+          </Box>
+        </Banner>
       </Flex>
     </Modal>
   );
 }
 
-export default ImportDatabaseModal;
+export default ImportExportModal;
