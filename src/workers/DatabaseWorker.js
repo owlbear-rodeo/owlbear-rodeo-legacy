@@ -72,6 +72,7 @@ let service = {
       progressCallback,
       filter,
       numRowsPerChunk: 1,
+      prettyJson: true,
     });
     db.close();
     return data;
@@ -99,7 +100,6 @@ let service = {
       filter: (table, value) => {
         // Ensure values are of the correct form
         if (table === "maps" || table === "tokens") {
-          console.log("id" in value && "owner" in value);
           return "id" in value && "owner" in value;
         }
         if (table === "states") {
