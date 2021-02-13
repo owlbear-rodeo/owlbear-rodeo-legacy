@@ -1,5 +1,9 @@
 import * as Comlink from "comlink";
-import { importInto, exportDB } from "@mitchemmc/dexie-export-import";
+import {
+  importInto,
+  exportDB,
+  peakImportFile,
+} from "@mitchemmc/dexie-export-import";
 import { encode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
@@ -17,7 +21,9 @@ let service = {
       let db = getDatabase({});
       if (key) {
         // Load specific item
-        return await db.table(table).get(key);
+        const data = await db.table(table).get(key);
+        db.close();
+        return data;
       } else {
         // Load entire table
         let items = [];
@@ -31,6 +37,8 @@ let service = {
           }
         });
 
+        db.close();
+
         // Pack data with msgpack so we can use transfer to avoid memory issues
         const packed = encode(items);
         return Comlink.transfer(packed, [packed.buffer]);
@@ -41,23 +49,67 @@ let service = {
   /**
    * Export current database
    * @param {function} progressCallback
+   * @param {string[]} maps An array of map ids to export
+   * @param {string[]} tokens An array of token ids to export
    */
-  async exportData(progressCallback) {
+  async exportData(progressCallback, maps, tokens) {
     let db = getDatabase({});
-    return await exportDB(db, {
+
+    const filter = (table, value) => {
+      if (table === "maps") {
+        return maps.includes(value.id);
+      }
+      if (table === "states") {
+        return maps.includes(value.mapId);
+      }
+      if (table === "tokens") {
+        return tokens.includes(value.id);
+      }
+      return false;
+    };
+
+    const data = await exportDB(db, {
       progressCallback,
+      filter,
       numRowsPerChunk: 1,
     });
+    db.close();
+    return data;
   },
 
   /**
    * Import into current database
    * @param {Blob} data
+   * @param {string} databaseName The name of the database to import into
    * @param {function} progressCallback
    */
-  async importData(data, progressCallback) {
+  async importData(data, databaseName, progressCallback) {
+    const importMeta = await peakImportFile(data);
     let db = getDatabase({});
-    await importInto(db, data, { progressCallback, overwriteValues: true });
+
+    if (importMeta.data.databaseName !== db.name) {
+      throw new Error("Unable to import database, name mismatch");
+    }
+
+    let importDB = getDatabase({}, databaseName);
+    await importInto(importDB, data, {
+      progressCallback,
+      acceptNameDiff: true,
+      overwriteValues: true,
+      filter: (table, value) => {
+        // Ensure values are of the correct form
+        if (table === "maps" || table === "tokens") {
+          console.log("id" in value && "owner" in value);
+          return "id" in value && "owner" in value;
+        }
+        if (table === "states") {
+          return "mapId" in value;
+        }
+        return true;
+      },
+    });
+    db.close();
+    importDB.close();
   },
 };
 

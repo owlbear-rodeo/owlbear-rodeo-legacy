@@ -5,7 +5,7 @@
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
     "@babylonjs/loaders": "^4.2.0",
-    "@mitchemmc/dexie-export-import": "^1.0.0-rc.2",
+    "@mitchemmc/dexie-export-import": "^1.0.0",
     "@msgpack/msgpack": "^2.3.0",
     "@sentry/react": "^5.27.1",
     "@stripe/stripe-js": "^1.3.2",

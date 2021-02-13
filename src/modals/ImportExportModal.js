@@ -2,22 +2,35 @@ import React, { useRef, useState, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
 import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
+import shortid from "shortid";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
 import Banner from "../components/Banner";
 
+import { useAuth } from "../contexts/AuthContext";
+
+import DataSelectorModal from "./DataSelectorModal";
+
+import { getDatabase } from "../database";
+
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
+const importDBName = "OwlbearRodeoImportDB";
+
 function ImportExportModal({ isOpen, onRequestClose }) {
+  const { userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
   const backgroundTaskRunningRef = useRef(false);
   const fileInputRef = useRef();
+
+  const [showImportSelector, setShowImportSelector] = useState(false);
+  const [showExportSelector, setShowExportSelector] = useState(false);
 
   function openFileDialog() {
     if (fileInputRef.current) {
@@ -35,10 +48,14 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     try {
-      await worker.importData(file, Comlink.proxy(handleDBProgress));
+      await worker.importData(
+        file,
+        importDBName,
+        Comlink.proxy(handleDBProgress)
+      );
       setIsLoading(false);
+      setShowImportSelector(true);
       backgroundTaskRunningRef.current = false;
-      window.location.reload();
     } catch (e) {
       setIsLoading(false);
       backgroundTaskRunningRef.current = false;
@@ -52,19 +69,14 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         setError(e);
       }
     }
+    // Set file input to null to allow adding the same data 2 times in a row
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
-  async function handleExportDatabase() {
-    setIsLoading(true);
-    backgroundTaskRunningRef.current = true;
-    try {
-      const blob = await worker.exportData(Comlink.proxy(handleDBProgress));
-      saveAs(blob, `${new Date().toISOString()}.owlbear`);
-    } catch (e) {
-      setError(e);
-    }
-    setIsLoading(false);
-    backgroundTaskRunningRef.current = false;
+  function handleExportDatabase() {
+    setShowExportSelector(true);
   }
 
   useEffect(() => {
@@ -88,6 +100,91 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     onRequestClose();
   }
 
+  async function handleImportSelectorClose() {
+    const importDB = getDatabase({}, importDBName);
+    await importDB.delete();
+    setShowImportSelector(false);
+  }
+
+  async function handleImportSelectorConfirm(checkedMaps, checkedTokens) {
+    setIsLoading(true);
+    backgroundTaskRunningRef.current = true;
+    setShowImportSelector(false);
+    loadingProgressRef.current = 0;
+
+    const importDB = getDatabase({}, importDBName);
+    const db = getDatabase({});
+
+    if (checkedMaps.length > 0) {
+      const mapIds = checkedMaps.map((map) => map.id);
+      const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
+      let newMaps = [];
+      let newStates = [];
+      for (let map of mapsToAdd) {
+        const state = await importDB.table("states").get(map.id);
+        const newId = shortid.generate();
+        // Generate new id and change owner
+        newMaps.push({ ...map, id: newId, owner: userId });
+        newStates.push({ ...state, mapId: newId });
+      }
+      await db.table("maps").bulkAdd(newMaps);
+      await db.table("states").bulkAdd(newStates);
+    }
+    if (checkedTokens.length > 0) {
+      const tokenIds = checkedTokens.map((token) => token.id);
+      const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
+      console.log(tokensToAdd);
+      let newTokens = [];
+      for (let token of tokensToAdd) {
+        const newId = shortid.generate();
+        // Generate new id and change owner
+        newTokens.push({ ...token, id: newId, owner: userId });
+      }
+      await db.table("tokens").bulkAdd(newTokens);
+    }
+
+    await importDB.delete();
+    setIsLoading(false);
+    backgroundTaskRunningRef.current = false;
+    window.location.reload();
+  }
+
+  function exportSelectorFilter(table, value) {
+    // Only show owned maps and tokens
+    if (table === "maps" || table === "tokens") {
+      if (value.owner === userId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async function handleExportSelectorClose() {
+    setShowExportSelector(false);
+  }
+
+  async function handleExportSelectorConfirm(checkedMaps, checkedTokens) {
+    setShowExportSelector(false);
+    setIsLoading(true);
+    backgroundTaskRunningRef.current = true;
+
+    const mapIds = checkedMaps.map((map) => map.id);
+    const tokenIds = checkedTokens.map((token) => token.id);
+
+    try {
+      const blob = await worker.exportData(
+        Comlink.proxy(handleDBProgress),
+        mapIds,
+        tokenIds
+      );
+      saveAs(blob, `${new Date().toISOString()}.owlbear`);
+    } catch (e) {
+      setError(e);
+    }
+    setIsLoading(false);
+    backgroundTaskRunningRef.current = false;
+  }
+
   return (
     <Modal isOpen={isOpen} onRequestClose={handleClose} allowClose={!isLoading}>
       <Flex
@@ -100,9 +197,9 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         m={2}
       >
         <Box>
-          <Label>Import / Export Database</Label>
+          <Label>Import / Export</Label>
           <Text as="p" mb={2} variant="caption">
-            Importing a database will overwrite your current data.
+            Select import or export then select the data you wish to use
           </Text>
           <input
             onChange={(event) => handleImportDatabase(event.target.files[0])}
@@ -144,6 +241,22 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             </Text>
           </Box>
         </Banner>
+        <DataSelectorModal
+          isOpen={showImportSelector}
+          onRequestClose={handleImportSelectorClose}
+          onConfirm={handleImportSelectorConfirm}
+          databaseName={importDBName}
+          confirmText="Import"
+          label="Select data to import"
+        />
+        <DataSelectorModal
+          isOpen={showExportSelector}
+          onRequestClose={handleExportSelectorClose}
+          onConfirm={handleExportSelectorConfirm}
+          confirmText="Export"
+          label="Select data to export"
+          filter={exportSelectorFilter}
+        />
       </Flex>
     </Modal>
   );

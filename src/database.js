@@ -385,8 +385,8 @@ function loadVersions(db) {
 }
 
 // Get the dexie database used in DatabaseContext
-export function getDatabase(options) {
-  let db = new Dexie("OwlbearRodeoDB", options);
+export function getDatabase(options, name="OwlbearRodeoDB") {
+  let db = new Dexie(name, options);
   loadVersions(db);
   return db;
 }

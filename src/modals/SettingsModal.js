@@ -151,7 +151,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onClick={() => setIsImportExportModalOpen(true)}
               disabled={databaseStatus !== "loaded"}
             >
-              Import / Export Database
+              Import / Export Data
             </Button>
           </Flex>
           {storageEstimate && (
