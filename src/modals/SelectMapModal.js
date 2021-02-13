@@ -183,14 +183,16 @@ function SelectMapModal({
               file.type,
               resolution.quality
             );
-            const resizedBuffer = await blobToBuffer(resized.blob);
-            resolutions[resolution.id] = {
-              file: resizedBuffer,
-              width: resized.width,
-              height: resized.height,
-              type: "file",
-              id: resolution.id,
-            };
+            if (resized.blob) {
+              const resizedBuffer = await blobToBuffer(resized.blob);
+              resolutions[resolution.id] = {
+                file: resizedBuffer,
+                width: resized.width,
+                height: resized.height,
+                type: "file",
+                id: resolution.id,
+              };
+            }
           }
         }
 
