@@ -19,7 +19,7 @@ function EditMapModal({ isOpen, onDone, mapId }) {
     updateMapState,
     getMap,
     getMapFromDB,
-    mapStates,
+    getMapStateFromDB,
   } = useMapData();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +34,9 @@ function EditMapModal({ isOpen, onDone, mapId }) {
       if (loadingMap?.type === "file" && !loadingMap?.file) {
         loadingMap = await getMapFromDB(mapId);
       }
+      const mapState = await getMapStateFromDB(mapId);
       setMap(loadingMap);
-      setMapState(mapStates.find((state) => state.mapId === mapId));
+      setMapState(mapState);
       setIsLoading(false);
     }
 
@@ -45,7 +46,7 @@ function EditMapModal({ isOpen, onDone, mapId }) {
       setMap();
       setMapState();
     }
-  }, [isOpen, mapId, getMapFromDB, mapStates, getMap]);
+  }, [isOpen, mapId, getMapFromDB, getMapStateFromDB, getMap]);
 
   function handleClose() {
     setMapSettingChanges({});

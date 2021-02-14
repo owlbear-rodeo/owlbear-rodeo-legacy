@@ -65,6 +65,7 @@ function SelectMapModal({
     updateMaps,
     mapsLoading,
     getMapFromDB,
+    getMapStateFromDB,
   } = useMapData();
 
   /**
@@ -325,12 +326,13 @@ function SelectMapModal({
       // Update last used for cache invalidation
       const lastUsed = Date.now();
       const map = selectedMaps[0];
+      const mapState = await getMapStateFromDB(map.id);
       if (map.type === "file") {
         await updateMap(map.id, { lastUsed });
         const updatedMap = await getMapFromDB(map.id);
-        onMapChange(updatedMap, selectedMapStates[0]);
+        onMapChange(updatedMap, mapState);
       } else {
-        onMapChange(map, selectedMapStates[0]);
+        onMapChange(map, mapState);
       }
     } else {
       onMapChange(null, null);
