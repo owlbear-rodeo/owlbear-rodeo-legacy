@@ -112,6 +112,14 @@ export function MapDataProvider({ children }) {
     [database]
   );
 
+  const getMapStateFromDB = useCallback(
+    async (mapId) => {
+      let mapState = await database.table("states").get(mapId);
+      return mapState;
+    },
+    [database]
+  );
+
   /**
    * Keep up to cachedMapMax amount of maps that you don't own
    * Sorted by when they we're last used
@@ -140,11 +148,10 @@ export function MapDataProvider({ children }) {
    */
   const addMap = useCallback(
     async (map) => {
-      await database.table("maps").add(map);
+      // Just update map database as react state will be updated with an Observable
       const state = { ...defaultMapState, mapId: map.id };
+      await database.table("maps").add(map);
       await database.table("states").add(state);
-      setMaps((prevMaps) => [map, ...prevMaps]);
-      setMapStates((prevStates) => [state, ...prevStates]);
       if (map.owner !== userId) {
         await updateCache();
       }
@@ -156,14 +163,6 @@ export function MapDataProvider({ children }) {
     async (id) => {
       await database.table("maps").delete(id);
       await database.table("states").delete(id);
-      setMaps((prevMaps) => {
-        const filtered = prevMaps.filter((map) => map.id !== id);
-        return filtered;
-      });
-      setMapStates((prevMapsStates) => {
-        const filtered = prevMapsStates.filter((state) => state.mapId !== id);
-        return filtered;
-      });
     },
     [database]
   );
@@ -172,16 +171,6 @@ export function MapDataProvider({ children }) {
     async (ids) => {
       await database.table("maps").bulkDelete(ids);
       await database.table("states").bulkDelete(ids);
-      setMaps((prevMaps) => {
-        const filtered = prevMaps.filter((map) => !ids.includes(map.id));
-        return filtered;
-      });
-      setMapStates((prevMapsStates) => {
-        const filtered = prevMapsStates.filter(
-          (state) => !ids.includes(state.mapId)
-        );
-        return filtered;
-      });
     },
     [database]
   );
@@ -284,6 +273,46 @@ export function MapDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
+  // Create DB observable to sync creating and deleting
+  useEffect(() => {
+    if (!database || databaseStatus === "loading") {
+      return;
+    }
+
+    function handleMapChanges(changes) {
+      for (let change of changes) {
+        if (change.table === "maps") {
+          if (change.type === 1) {
+            // Created
+            const map = change.obj;
+            const state = { ...defaultMapState, mapId: map.id };
+            setMaps((prevMaps) => [map, ...prevMaps]);
+            setMapStates((prevStates) => [state, ...prevStates]);
+          } else if (change.type === 3) {
+            // Deleted
+            const id = change.key;
+            setMaps((prevMaps) => {
+              const filtered = prevMaps.filter((map) => map.id !== id);
+              return filtered;
+            });
+            setMapStates((prevMapsStates) => {
+              const filtered = prevMapsStates.filter(
+                (state) => state.mapId !== id
+              );
+              return filtered;
+            });
+          }
+        }
+      }
+    }
+
+    database.on("changes", handleMapChanges);
+
+    return () => {
+      database.on("changes").unsubscribe(handleMapChanges);
+    };
+  }, [database, databaseStatus]);
+
   const ownedMaps = maps.filter((map) => map.owner === userId);
 
   const value = {
@@ -301,6 +330,7 @@ export function MapDataProvider({ children }) {
     getMap,
     getMapFromDB,
     mapsLoading,
+    getMapStateFromDB,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>

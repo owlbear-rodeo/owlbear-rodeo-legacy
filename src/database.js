@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import Dexie, { Version, DexieOptions } from "dexie";
+import "dexie-observable";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
@@ -391,9 +392,13 @@ const versions = {
         });
     });
   },
+  // 1.8.0 - Upgrade for Dexie.Observable
+  21(v) {
+    v.stores({});
+  },
 };
 
-const latestVersion = 20;
+const latestVersion = 21;
 
 /**
  * Load versions onto a database up to a specific version number

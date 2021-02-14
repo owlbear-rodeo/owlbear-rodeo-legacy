@@ -160,7 +160,6 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     db.close();
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
-    window.location.reload();
   }
 
   function exportSelectorFilter(table, value) {

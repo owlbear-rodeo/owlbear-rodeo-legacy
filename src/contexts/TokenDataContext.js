@@ -115,7 +115,6 @@ export function TokenDataProvider({ children }) {
   const addToken = useCallback(
     async (token) => {
       await database.table("tokens").add(token);
-      setTokens((prevTokens) => [token, ...prevTokens]);
       if (token.owner !== userId) {
         await updateCache();
       }
@@ -126,10 +125,6 @@ export function TokenDataProvider({ children }) {
   const removeToken = useCallback(
     async (id) => {
       await database.table("tokens").delete(id);
-      setTokens((prevTokens) => {
-        const filtered = prevTokens.filter((token) => token.id !== id);
-        return filtered;
-      });
     },
     [database]
   );
@@ -137,10 +132,6 @@ export function TokenDataProvider({ children }) {
   const removeTokens = useCallback(
     async (ids) => {
       await database.table("tokens").bulkDelete(ids);
-      setTokens((prevTokens) => {
-        const filtered = prevTokens.filter((token) => !ids.includes(token.id));
-        return filtered;
-      });
     },
     [database]
   );
@@ -229,6 +220,38 @@ export function TokenDataProvider({ children }) {
       });
     });
   }, []);
+
+  // Create DB observable to sync creating and deleting
+  useEffect(() => {
+    if (!database || databaseStatus === "loading") {
+      return;
+    }
+
+    function handleMapChanges(changes) {
+      for (let change of changes) {
+        if (change.table === "tokens") {
+          if (change.type === 1) {
+            // Created
+            const token = change.obj;
+            setTokens((prevTokens) => [token, ...prevTokens]);
+          } else if (change.type === 3) {
+            // Deleted
+            const id = change.key;
+            setTokens((prevTokens) => {
+              const filtered = prevTokens.filter((token) => token.id !== id);
+              return filtered;
+            });
+          }
+        }
+      }
+    }
+
+    database.on("changes", handleMapChanges);
+
+    return () => {
+      database.on("changes").unsubscribe(handleMapChanges);
+    };
+  }, [database, databaseStatus]);
 
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 

@@ -4540,6 +4540,11 @@ detect-port-alt@1.1.6:
     address "^1.0.1"
     debug "^2.6.0"
 
+dexie-observable@^3.0.0-beta.10:
+  version "3.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/dexie-observable/-/dexie-observable-3.0.0-beta.10.tgz#ad7a7e136defbb62f9eab9198a5cb9e10bce1c87"
+  integrity sha512-GMPwQMLh1nYqM1MYsOZudsIwSMqDMrAOBxNuw+Y2ijsrQTBPi3nRF2CinY02IdlmffkaU7DsDfnlgdaMEaiHTQ==
+
 "dexie@^3.0.0-alpha.5 || ^2.0.4", dexie@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.0.3.tgz#ede63849dfe5f07e13e99bb72a040e8ac1d29dab"

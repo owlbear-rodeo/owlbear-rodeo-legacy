@@ -84,7 +84,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
         <Label pt={2} pb={1}>
           Edit token
         </Label>
-        {isLoading ? (
+        {isLoading || !token ? (
           <Flex
             sx={{
               width: "100%",

@@ -147,7 +147,7 @@ function EditMapModal({ isOpen, onDone, mapId }) {
         <Label pt={2} pb={1}>
           Edit map
         </Label>
-        {isLoading ? (
+        {isLoading || !map ? (
           <Flex
             sx={{
               width: "100%",
