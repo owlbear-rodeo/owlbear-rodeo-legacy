@@ -86,6 +86,10 @@ let service = {
    */
   async importData(data, databaseName, progressCallback) {
     const importMeta = await peakImportFile(data);
+    if (!importMeta.data) {
+      throw new Error("Uanble to parse file");
+    }
+
     let db = getDatabase({});
 
     if (importMeta.data.databaseName !== db.name) {
