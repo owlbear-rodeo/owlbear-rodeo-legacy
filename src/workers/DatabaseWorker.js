@@ -91,8 +91,19 @@ let service = {
     if (importMeta.data.databaseName !== db.name) {
       throw new Error("Unable to import database, name mismatch");
     }
+    if (importMeta.data.databaseVersion > db.verno) {
+      throw new Error(
+        `Database version differs. Current database is in version ${db.verno} but export is ${importMeta.data.databaseVersion}`
+      );
+    }
 
-    let importDB = getDatabase({}, databaseName);
+    // Ensure import DB is cleared before importing new data
+    let importDB = getDatabase({}, databaseName, 0);
+    await importDB.delete();
+    importDB.close();
+
+    // Load import database up to it's desired version
+    importDB = getDatabase({}, databaseName, importMeta.data.databaseVersion);
     await importInto(importDB, data, {
       progressCallback,
       acceptNameDiff: true,
@@ -107,9 +118,10 @@ let service = {
         }
         return true;
       },
+      acceptVersionDiff: true,
     });
-    db.close();
     importDB.close();
+    db.close();
   },
 };
 

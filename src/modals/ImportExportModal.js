@@ -48,14 +48,12 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     try {
-      // Ensure import DB is cleared before importing new data
-      let importDB = getDatabase({}, importDBName);
-      importDB.delete();
       await worker.importData(
         file,
         importDBName,
         Comlink.proxy(handleDBProgress)
       );
+
       setIsLoading(false);
       setShowImportSelector(true);
       backgroundTaskRunningRef.current = false;
@@ -106,6 +104,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
   async function handleImportSelectorClose() {
     const importDB = getDatabase({}, importDBName);
     await importDB.delete();
+    importDB.close();
     setShowImportSelector(false);
   }
 
@@ -157,6 +156,8 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     }
 
     await importDB.delete();
+    importDB.close();
+    db.close();
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
     window.location.reload();
