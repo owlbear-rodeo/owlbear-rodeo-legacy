@@ -194,7 +194,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         mapIds,
         tokenIds
       );
-      saveAs(blob, `${new Date().toISOString()}.owlbear`);
+      saveAs(blob, `${shortid.generate()}.owlbear`);
     } catch (e) {
       setError(e);
     }
