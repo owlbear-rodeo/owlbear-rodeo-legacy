@@ -106,6 +106,70 @@ function SelectDataModal({
     onConfirm(checkedMaps, checkedTokens);
   }
 
+  function handleSelectMapsChanged(event) {
+    setMaps((prevMaps) => {
+      let newMaps = { ...prevMaps };
+      for (let id in newMaps) {
+        newMaps[id].checked = event.target.checked;
+      }
+      return newMaps;
+    });
+    // If all token select is unchecked then ensure all tokens are unchecked
+    if (!event.target.checked && !tokensSelectChecked) {
+      setTokens((prevTokens) => {
+        let newTokens = { ...prevTokens };
+        for (let id in newTokens) {
+          newTokens[id].checked = false;
+        }
+        return newTokens;
+      });
+    }
+  }
+
+  function handleMapChange(event, map) {
+    setMaps((prevMaps) => ({
+      ...prevMaps,
+      [map.id]: { ...map, checked: event.target.checked },
+    }));
+    // If all token select is unchecked then ensure tokens assosiated to this map are unchecked
+    if (!event.target.checked && !tokensSelectChecked) {
+      setTokens((prevTokens) => {
+        let newTokens = { ...prevTokens };
+        for (let id in newTokens) {
+          if (tokensByMap[map.id].has(id) && tokenUsedCount[id] === 1) {
+            newTokens[id].checked = false;
+          }
+        }
+        return newTokens;
+      });
+    }
+  }
+
+  function handleSelectTokensChange(event) {
+    setTokens((prevTokens) => {
+      let newTokens = { ...prevTokens };
+      for (let id in newTokens) {
+        if (!(id in tokenUsedCount)) {
+          newTokens[id].checked = event.target.checked;
+        }
+      }
+      return newTokens;
+    });
+  }
+
+  function handleTokenChange(event, token) {
+    setTokens((prevTokens) => ({
+      ...prevTokens,
+      [token.id]: { ...token, checked: event.target.checked },
+    }));
+  }
+
+  // Some tokens are checked not by maps or all tokens are checked by maps
+  const tokensSelectChecked =
+    Object.values(tokens).some(
+      (token) => !(token.id in tokenUsedCount) && token.checked
+    ) || Object.values(tokens).every((token) => token.id in tokenUsedCount);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -142,15 +206,7 @@ function SelectDataModal({
                   <Label>
                     <Checkbox
                       checked={Object.values(maps).some((map) => map.checked)}
-                      onChange={(e) =>
-                        setMaps((prevMaps) => {
-                          let newMaps = { ...prevMaps };
-                          for (let id in newMaps) {
-                            newMaps[id].checked = e.target.checked;
-                          }
-                          return newMaps;
-                        })
-                      }
+                      onChange={handleSelectMapsChanged}
                     />
                     Maps
                   </Label>
@@ -164,12 +220,7 @@ function SelectDataModal({
                   >
                     <Checkbox
                       checked={map.checked}
-                      onChange={(e) =>
-                        setMaps((prevMaps) => ({
-                          ...prevMaps,
-                          [map.id]: { ...map, checked: e.target.checked },
-                        }))
-                      }
+                      onChange={(e) => handleMapChange(e, map)}
                     />
                     {map.name}
                   </Label>
@@ -181,20 +232,8 @@ function SelectDataModal({
               <>
                 <Label>
                   <Checkbox
-                    checked={Object.values(tokens).some(
-                      (token) => !(token.id in tokenUsedCount) && token.checked
-                    )}
-                    onChange={(e) =>
-                      setTokens((prevTokens) => {
-                        let newTokens = { ...prevTokens };
-                        for (let id in newTokens) {
-                          if (!(id in tokenUsedCount)) {
-                            newTokens[id].checked = e.target.checked;
-                          }
-                        }
-                        return newTokens;
-                      })
-                    }
+                    checked={tokensSelectChecked}
+                    onChange={handleSelectTokensChange}
                   />
                   Tokens
                 </Label>
@@ -203,12 +242,7 @@ function SelectDataModal({
                     <Label sx={{ fontFamily: "body2" }}>
                       <Checkbox
                         checked={token.checked}
-                        onChange={(e) =>
-                          setTokens((prevTokens) => ({
-                            ...prevTokens,
-                            [token.id]: { ...token, checked: e.target.checked },
-                          }))
-                        }
+                        onChange={(e) => handleTokenChange(e, token)}
                         disabled={token.id in tokenUsedCount}
                       />
                       {token.name}
