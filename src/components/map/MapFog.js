@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import shortid from "shortid";
-import { Group, Rect, Line, Circle } from "react-konva";
+import { Group, Rect, Line } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -18,7 +18,6 @@ import {
   getGuidesFromBoundingBoxes,
   getGuidesFromGridCell,
   findBestGuides,
-  getSnappingVertex,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import {
@@ -27,13 +26,15 @@ import {
   getRelativePointerPosition,
 } from "../../helpers/konva";
 
+import SubtractShapeAction from "../../actions/SubtractShapeAction";
+
 import useSetting from "../../hooks/useSetting";
 
 function MapFog({
   map,
   shapes,
-  onShapeAdd,
-  onShapeCut,
+  onShapesAdd,
+  onShapesCut,
   onShapesRemove,
   onShapesEdit,
   active,
@@ -66,7 +67,6 @@ function MapFog({
   // Bounding boxes for guides
   const [fogShapeBoundingBoxes, setFogShapeBoundingBoxes] = useState([]);
   const [guides, setGuides] = useState([]);
-  const [vertexSnapping, setVertexSnapping] = useState();
 
   const shouldHover =
     active &&
@@ -76,16 +76,7 @@ function MapFog({
   const shouldRenderGuides =
     active &&
     editable &&
-    (toolSettings.type === "rectangle" || toolSettings.type === "polygon") &&
-    !vertexSnapping;
-  const shouldRenderVertexSnapping =
-    active &&
-    editable &&
-    (toolSettings.type === "rectangle" ||
-      toolSettings.type === "polygon" ||
-      toolSettings.type === "brush") &&
-    toolSettings.useEdgeSnapping &&
-    vertexSnapping;
+    (toolSettings.type === "rectangle" || toolSettings.type === "polygon");
 
   const [patternImage] = useImage(diagonalPattern);
 
@@ -99,20 +90,13 @@ function MapFog({
     function getBrushPosition(snapping = true) {
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
-      if (snapping) {
-        if (shouldRenderVertexSnapping) {
-          position = Vector2.multiply(vertexSnapping, {
-            x: mapWidth,
-            y: mapHeight,
-          });
-        } else if (shouldRenderGuides) {
-          for (let guide of guides) {
-            if (guide.orientation === "vertical") {
-              position.x = guide.start.x * mapWidth;
-            }
-            if (guide.orientation === "horizontal") {
-              position.y = guide.start.y * mapHeight;
-            }
+      if (snapping && shouldRenderGuides) {
+        for (let guide of guides) {
+          if (guide.orientation === "vertical") {
+            position.x = guide.start.x * mapWidth;
+          }
+          if (guide.orientation === "horizontal") {
+            position.y = guide.start.y * mapHeight;
           }
         }
       }
@@ -204,33 +188,53 @@ function MapFog({
 
     function handleBrushUp() {
       if (
-        toolSettings.type === "brush" ||
-        (toolSettings.type === "rectangle" && drawingShape)
+        (toolSettings.type === "brush" || toolSettings.type === "rectangle") &&
+        drawingShape
       ) {
         const cut = toolSettings.useFogCut;
-        if (drawingShape.data.points.length > 1) {
-          let shapeData = {};
+
+        let drawingShapes = [drawingShape];
+        if (!toolSettings.multilayer) {
+          const shapesToSubtract = shapes.filter((shape) =>
+            cut ? !shape.visible : shape.visible
+          );
+          const subtractAction = new SubtractShapeAction(
+            mergeFogShapes(shapesToSubtract, !cut)
+          );
+          const state = subtractAction.execute({
+            [drawingShape.id]: drawingShape,
+          });
+          drawingShapes = Object.values(state)
+            .filter((shape) => shape.data.points.length > 2)
+            .map((shape) => ({ ...shape, id: shortid.generate() }));
+        }
+
+        if (drawingShapes.length > 0) {
+          drawingShapes = drawingShapes.map((shape) => {
+            let shapeData = {};
+            if (cut) {
+              shapeData = { id: shape.id, type: shape.type };
+            } else {
+              shapeData = { ...shape, color: "black" };
+            }
+            return {
+              ...shapeData,
+              data: {
+                ...shape.data,
+                points: simplifyPoints(
+                  shape.data.points,
+                  gridCellNormalizedSize,
+                  // Downscale fog as smoothing doesn't currently work with edge snapping
+                  Math.max(stageScale, 1) / 2
+                ),
+              },
+            };
+          });
+
           if (cut) {
-            shapeData = { id: drawingShape.id, type: drawingShape.type };
+            onShapesCut(drawingShapes);
           } else {
-            shapeData = { ...drawingShape, color: "black" };
-          }
-          const shape = {
-            ...shapeData,
-            data: {
-              ...drawingShape.data,
-              points: simplifyPoints(
-                drawingShape.data.points,
-                gridCellNormalizedSize,
-                // Downscale fog as smoothing doesn't currently work with edge snapping
-                stageScale / 2
-              ),
-            },
-          };
-          if (cut) {
-            onShapeCut(shape);
-          } else {
-            onShapeAdd(shape);
+            onShapesAdd(drawingShapes);
           }
         }
         setDrawingShape(null);
@@ -273,9 +277,7 @@ function MapFog({
     function handlePolygonMove() {
       if (
         active &&
-        (toolSettings.type === "polygon" ||
-          toolSettings.type === "rectangle") &&
-        !shouldRenderVertexSnapping
+        (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
       ) {
         let guides = [];
         const brushPosition = getBrushPosition(false);
@@ -307,24 +309,6 @@ function MapFog({
         );
 
         setGuides(findBestGuides(brushPosition, guides));
-      }
-      if (
-        active &&
-        toolSettings.useEdgeSnapping &&
-        (toolSettings.type === "polygon" ||
-          toolSettings.type === "rectangle" ||
-          toolSettings.type === "brush")
-      ) {
-        const brushPosition = getBrushPosition(false);
-        setVertexSnapping(
-          getSnappingVertex(
-            brushPosition,
-            fogShapes,
-            fogShapeBoundingBoxes,
-            gridCellNormalizedSize,
-            Math.min(0.4 / stageScale, 0.4)
-          )
-        );
       }
       if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
@@ -365,23 +349,50 @@ function MapFog({
 
   const finishDrawingPolygon = useCallback(() => {
     const cut = toolSettings.useFogCut;
-    const data = {
-      ...drawingShape.data,
-      // Remove the last point as it hasn't been placed yet
-      points: drawingShape.data.points.slice(0, -1),
+
+    let polygonShape = {
+      id: drawingShape.id,
+      type: drawingShape.type,
+      data: {
+        ...drawingShape.data,
+        // Remove the last point as it hasn't been placed yet
+        points: drawingShape.data.points.slice(0, -1),
+      },
     };
-    if (cut) {
-      onShapeCut({
-        id: drawingShape.id,
-        type: drawingShape.type,
-        data: data,
+
+    let polygonShapes = [polygonShape];
+    if (!toolSettings.multilayer) {
+      const shapesToSubtract = shapes.filter((shape) =>
+        cut ? !shape.visible : shape.visible
+      );
+      const subtractAction = new SubtractShapeAction(
+        mergeFogShapes(shapesToSubtract, !cut)
+      );
+      const state = subtractAction.execute({
+        [polygonShape.id]: polygonShape,
       });
-    } else {
-      onShapeAdd({ ...drawingShape, data: data, color: "black" });
+      polygonShapes = Object.values(state)
+        .filter((shape) => shape.data.points.length > 2)
+        .map((shape) => ({ ...shape, id: shortid.generate() }));
+    }
+
+    if (polygonShapes.length > 0) {
+      if (cut) {
+        onShapesCut(polygonShapes);
+      } else {
+        onShapesAdd(
+          polygonShapes.map((shape) => ({
+            ...drawingShape,
+            data: shape.data,
+            id: shape.id,
+            color: "black",
+          }))
+        );
+      }
     }
 
     setDrawingShape(null);
-  }, [toolSettings, drawingShape, onShapeCut, onShapeAdd]);
+  }, [toolSettings, drawingShape, onShapesCut, onShapesAdd, shapes]);
 
   // Add keyboard shortcuts
   function handleKeyDown({ key }) {
@@ -467,9 +478,6 @@ function MapFog({
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
         hitFunc={editable && !active ? () => {} : undefined}
-        // shadowColor={editable ? "rgba(0, 0, 0, 0)" : "rgba(34, 34, 34, 1)"}
-        // shadowOffset={{ x: 0, y: 5 }}
-        // shadowBlur={10}
       />
     );
   }
@@ -523,18 +531,6 @@ function MapFog({
     ));
   }
 
-  function renderSnappingVertex() {
-    return (
-      <Circle
-        x={vertexSnapping.x * mapWidth}
-        y={vertexSnapping.y * mapHeight}
-        radius={gridStrokeWidth}
-        stroke="hsl(260, 100%, 80%)"
-        strokeWidth={gridStrokeWidth * 0.25}
-      />
-    );
-  }
-
   useEffect(() => {
     function shapeVisible(shape) {
       return (active && !toolSettings.preview) || shape.visible;
@@ -559,7 +555,6 @@ function MapFog({
         {fogShapes.map(renderShape)}
       </Group>
       {shouldRenderGuides && renderGuides()}
-      {shouldRenderVertexSnapping && renderSnappingVertex()}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
         toolSettings &&

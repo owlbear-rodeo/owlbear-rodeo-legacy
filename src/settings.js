@@ -47,6 +47,13 @@ function loadVersions(settings) {
     delete newSettings.measure;
     return newSettings;
   });
+  // v1.8.0 - Removed edge snapping for multilayer
+  settings.version(5, (prev) => {
+    let newSettings = { ...prev };
+    delete newSettings.fog.useEdgeSnapping;
+    newSettings.fog.multilayer = false;
+    return newSettings;
+  });
 }
 
 export function getSettings() {

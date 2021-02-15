@@ -4,7 +4,7 @@ import { useMedia } from "react-media";
 
 import RadioIconButton from "../../RadioIconButton";
 
-import EdgeSnappingToggle from "./EdgeSnappingToggle";
+import MultilayerToggle from "./MultilayerToggle";
 import FogPreviewToggle from "./FogPreviewToggle";
 import FogCutToggle from "./FogCutToggle";
 
@@ -40,8 +40,8 @@ function BrushToolSettings({
       onSettingChange({ type: "toggle" });
     } else if (key === "e") {
       onSettingChange({ type: "remove" });
-    } else if (key === "s") {
-      onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+    } else if (key === "l") {
+      onSettingChange({ multilayer: !settings.multilayer });
     } else if (key === "f") {
       onSettingChange({ preview: !settings.preview });
     } else if (key === "c") {
@@ -128,11 +128,9 @@ function BrushToolSettings({
         onFogCutChange={(useFogCut) => onSettingChange({ useFogCut })}
         disabled={settings.preview}
       />
-      <EdgeSnappingToggle
-        useEdgeSnapping={settings.useEdgeSnapping}
-        onEdgeSnappingChange={(useEdgeSnapping) =>
-          onSettingChange({ useEdgeSnapping })
-        }
+      <MultilayerToggle
+        multilayer={settings.multilayer}
+        onMultilayerChange={(multilayer) => onSettingChange({ multilayer })}
         disabled={settings.preview}
       />
       <FogPreviewToggle

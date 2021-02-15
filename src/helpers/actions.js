@@ -9,11 +9,13 @@ export function addPolygonDifferenceToShapes(shape, difference, shapes) {
       }
     }
 
+    const points = difference[i][0].map(([x, y]) => ({ x, y }));
+
     shapes[newId] = {
       ...shape,
       id: newId,
       data: {
-        points: difference[i][0].map(([x, y]) => ({ x, y })),
+        points,
         holes,
       },
     };
@@ -23,11 +25,14 @@ export function addPolygonDifferenceToShapes(shape, difference, shapes) {
 export function addPolygonIntersectionToShapes(shape, intersection, shapes) {
   for (let i = 0; i < intersection.length; i++) {
     let newId = `${shape.id}-int-${i}`;
+
+    const points = intersection[i][0].map(([x, y]) => ({ x, y }));
+
     shapes[newId] = {
       ...shape,
       id: newId,
       data: {
-        points: intersection[i][0].map(([x, y]) => ({ x, y })),
+        points,
         holes: [],
       },
       // Default intersection visibility to false

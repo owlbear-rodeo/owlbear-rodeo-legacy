@@ -92,12 +92,12 @@ function Map({
     onMapDraw(new RemoveShapeAction(shapeIds));
   }
 
-  function handleFogShapeAdd(shape) {
-    onFogDraw(new AddShapeAction([shape]));
+  function handleFogShapesAdd(shapes) {
+    onFogDraw(new AddShapeAction(shapes));
   }
 
-  function handleFogShapeCut(shape) {
-    onFogDraw(new CutShapeAction([shape]));
+  function handleFogShapesCut(shapes) {
+    onFogDraw(new CutShapeAction(shapes));
   }
 
   function handleFogShapesRemove(shapeIds) {
@@ -228,8 +228,8 @@ function Map({
     <MapFog
       map={map}
       shapes={fogShapes}
-      onShapeAdd={handleFogShapeAdd}
-      onShapeCut={handleFogShapeCut}
+      onShapesAdd={handleFogShapesAdd}
+      onShapesCut={handleFogShapesCut}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
