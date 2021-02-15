@@ -402,6 +402,28 @@ function MapFog({
     if (key === "Escape" && drawingShape) {
       setDrawingShape(null);
     }
+    // Remove last point from polygon shape if delete pressed
+    if (
+      (key === "Backspace" || key === "Delete") &&
+      drawingShape &&
+      toolSettings.type === "polygon"
+    ) {
+      if (drawingShape.data.points.length > 2) {
+        setDrawingShape((drawingShape) => ({
+          ...drawingShape,
+          data: {
+            ...drawingShape.data,
+            points: [
+              // Shift last point to previous point
+              ...drawingShape.data.points.slice(0, -2),
+              ...drawingShape.data.points.slice(-1),
+            ],
+          },
+        }));
+      } else {
+        setDrawingShape(null);
+      }
+    }
   }
 
   useKeyboard(handleKeyDown);
