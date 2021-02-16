@@ -1443,10 +1443,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-1.6.16.tgz#538eb14473194d0b3c54020cb230e426174315cd"
   integrity sha512-+FhuSVOPo7+4fZaRwWuCSRUcZkJOkZu0rfAbBKvoCg1LWb1Td8Vzi0DTLORdSvgWNbU6+EL40HIgwTOs00x2Jw==
 
-"@mitchemmc/dexie-export-import@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@mitchemmc/dexie-export-import/-/dexie-export-import-1.0.0.tgz#035ed78cd39940662e66bcccd8152e552d0b5a45"
-  integrity sha512-mDiOD24gYXylrToc0t6nzeNfgnhCDqiLC8AdQ698/Hu229qZgj7ECFDzj+HmIXLlriPniWhIZxv02j7EN7zjEQ==
+"@mitchemmc/dexie-export-import@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@mitchemmc/dexie-export-import/-/dexie-export-import-1.0.1.tgz#4e47109e9c46a91d6b442248cb49ba5f066c387c"
+  integrity sha512-Ao8gKgJCI3BytVGKcAhuti1jN7nqnlnSJQF/lQc9STZm2HkU2BByJQGg60ybJe2lFP3VTZ73ol5BplxNh7O5zQ==
   dependencies:
     dexie "^3.0.0-alpha.5 || ^2.0.4"
     rollup-plugin-sourcemaps "^0.6.3"
