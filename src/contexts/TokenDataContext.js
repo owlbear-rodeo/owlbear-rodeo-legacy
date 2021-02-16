@@ -106,9 +106,6 @@ export function TokenDataProvider({ children }) {
         .slice(0, cacheDeleteCount)
         .map((token) => token.id);
       database.table("tokens").where("id").anyOf(idsToDelete).delete();
-      setTokens((prevTokens) => {
-        return prevTokens.filter((token) => !idsToDelete.includes(token.id));
-      });
     }
   }, [database, userId]);
 
@@ -140,14 +137,6 @@ export function TokenDataProvider({ children }) {
     async (id, update) => {
       const change = { ...update, lastModified: Date.now() };
       await database.table("tokens").update(id, change);
-      setTokens((prevTokens) => {
-        const newTokens = [...prevTokens];
-        const i = newTokens.findIndex((token) => token.id === id);
-        if (i > -1) {
-          newTokens[i] = { ...newTokens[i], ...change };
-        }
-        return newTokens;
-      });
     },
     [database]
   );
@@ -158,16 +147,6 @@ export function TokenDataProvider({ children }) {
       await Promise.all(
         ids.map((id) => database.table("tokens").update(id, change))
       );
-      setTokens((prevTokens) => {
-        const newTokens = [...prevTokens];
-        for (let id of ids) {
-          const i = newTokens.findIndex((token) => token.id === id);
-          if (i > -1) {
-            newTokens[i] = { ...newTokens[i], ...change };
-          }
-        }
-        return newTokens;
-      });
     },
     [database]
   );
@@ -175,16 +154,6 @@ export function TokenDataProvider({ children }) {
   const putToken = useCallback(
     async (token) => {
       await database.table("tokens").put(token);
-      setTokens((prevTokens) => {
-        const newTokens = [...prevTokens];
-        const i = newTokens.findIndex((t) => t.id === token.id);
-        if (i > -1) {
-          newTokens[i] = { ...newTokens[i], ...token };
-        } else {
-          newTokens.unshift(token);
-        }
-        return newTokens;
-      });
       if (token.owner !== userId) {
         await updateCache();
       }
@@ -227,13 +196,24 @@ export function TokenDataProvider({ children }) {
       return;
     }
 
-    function handleMapChanges(changes) {
+    function handleTokenChanges(changes) {
       for (let change of changes) {
         if (change.table === "tokens") {
           if (change.type === 1) {
             // Created
             const token = change.obj;
             setTokens((prevTokens) => [token, ...prevTokens]);
+          } else if (change.type === 2) {
+            // Updated
+            const token = change.obj;
+            setTokens((prevTokens) => {
+              const newTokens = [...prevTokens];
+              const i = newTokens.findIndex((t) => t.id === token.id);
+              if (i > -1) {
+                newTokens[i] = token;
+              }
+              return newTokens;
+            });
           } else if (change.type === 3) {
             // Deleted
             const id = change.key;
@@ -246,10 +226,10 @@ export function TokenDataProvider({ children }) {
       }
     }
 
-    database.on("changes", handleMapChanges);
+    database.on("changes", handleTokenChanges);
 
     return () => {
-      database.on("changes").unsubscribe(handleMapChanges);
+      database.on("changes").unsubscribe(handleTokenChanges);
     };
   }, [database, databaseStatus]);
 

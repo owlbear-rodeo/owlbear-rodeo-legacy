@@ -136,9 +136,6 @@ export function MapDataProvider({ children }) {
         .slice(0, cacheDeleteCount)
         .map((map) => map.id);
       database.table("maps").where("id").anyOf(idsToDelete).delete();
-      setMaps((prevMaps) => {
-        return prevMaps.filter((map) => !idsToDelete.includes(map.id));
-      });
     }
   }, [database, userId]);
 
@@ -179,14 +176,6 @@ export function MapDataProvider({ children }) {
     async (id) => {
       const state = { ...defaultMapState, mapId: id };
       await database.table("states").put(state);
-      setMapStates((prevMapStates) => {
-        const newStates = [...prevMapStates];
-        const i = newStates.findIndex((state) => state.mapId === id);
-        if (i > -1) {
-          newStates[i] = state;
-        }
-        return newStates;
-      });
       return state;
     },
     [database]
@@ -202,14 +191,6 @@ export function MapDataProvider({ children }) {
         const map = (await getMapFromDB(id)) || {};
         await database.table("maps").put({ ...map, id, ...update });
       }
-      setMaps((prevMaps) => {
-        const newMaps = [...prevMaps];
-        const i = newMaps.findIndex((map) => map.id === id);
-        if (i > -1) {
-          newMaps[i] = { ...newMaps[i], ...update };
-        }
-        return newMaps;
-      });
     },
     [database, getMapFromDB]
   );
@@ -219,16 +200,6 @@ export function MapDataProvider({ children }) {
       await Promise.all(
         ids.map((id) => database.table("maps").update(id, update))
       );
-      setMaps((prevMaps) => {
-        const newMaps = [...prevMaps];
-        for (let id of ids) {
-          const i = newMaps.findIndex((map) => map.id === id);
-          if (i > -1) {
-            newMaps[i] = { ...newMaps[i], ...update };
-          }
-        }
-        return newMaps;
-      });
     },
     [database]
   );
@@ -236,14 +207,6 @@ export function MapDataProvider({ children }) {
   const updateMapState = useCallback(
     async (id, update) => {
       await database.table("states").update(id, update);
-      setMapStates((prevMapStates) => {
-        const newStates = [...prevMapStates];
-        const i = newStates.findIndex((state) => state.mapId === id);
-        if (i > -1) {
-          newStates[i] = { ...newStates[i], ...update };
-        }
-        return newStates;
-      });
     },
     [database]
   );
@@ -256,16 +219,6 @@ export function MapDataProvider({ children }) {
   const putMap = useCallback(
     async (map) => {
       await database.table("maps").put(map);
-      setMaps((prevMaps) => {
-        const newMaps = [...prevMaps];
-        const i = newMaps.findIndex((m) => m.id === map.id);
-        if (i > -1) {
-          newMaps[i] = { ...newMaps[i], ...map };
-        } else {
-          newMaps.unshift(map);
-        }
-        return newMaps;
-      });
       if (map.owner !== userId) {
         await updateCache();
       }
@@ -288,6 +241,16 @@ export function MapDataProvider({ children }) {
             const state = { ...defaultMapState, mapId: map.id };
             setMaps((prevMaps) => [map, ...prevMaps]);
             setMapStates((prevStates) => [state, ...prevStates]);
+          } else if (change.type === 2) {
+            const map = change.obj;
+            setMaps((prevMaps) => {
+              const newMaps = [...prevMaps];
+              const i = newMaps.findIndex((m) => m.id === map.id);
+              if (i > -1) {
+                newMaps[i] = map;
+              }
+              return newMaps;
+            });
           } else if (change.type === 3) {
             // Deleted
             const id = change.key;
@@ -300,6 +263,20 @@ export function MapDataProvider({ children }) {
                 (state) => state.mapId !== id
               );
               return filtered;
+            });
+          }
+        }
+        if (change.table === "states") {
+          if (change.type === 2) {
+            // Update map state
+            const state = change.obj;
+            setMapStates((prevMapStates) => {
+              const newStates = [...prevMapStates];
+              const i = newStates.findIndex((s) => s.mapId === state.mapId);
+              if (i > -1) {
+                newStates[i] = state;
+              }
+              return newStates;
             });
           }
         }
