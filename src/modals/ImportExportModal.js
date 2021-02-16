@@ -3,6 +3,7 @@ import { Box, Label, Text, Button, Flex } from "theme-ui";
 import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
 import shortid from "shortid";
+import { useToasts } from "react-toast-notifications";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -23,6 +24,7 @@ const importDBName = "OwlbearRodeoImportDB";
 
 function ImportExportModal({ isOpen, onRequestClose }) {
   const { userId } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
@@ -31,6 +33,19 @@ function ImportExportModal({ isOpen, onRequestClose }) {
 
   const [showImportSelector, setShowImportSelector] = useState(false);
   const [showExportSelector, setShowExportSelector] = useState(false);
+
+  const { addToast } = useToasts();
+  function addSuccessToast(message, maps, tokens) {
+    const mapText = `${maps.length} map${maps.length > 1 ? "s" : ""}`;
+    const tokenText = `${tokens.length} token${tokens.length > 1 ? "s" : ""}`;
+    if (maps.length > 0 && tokens.length > 0) {
+      addToast(`${message} ${mapText} and ${tokenText}`);
+    } else if (maps.length > 0) {
+      addToast(`${message} ${mapText}`);
+    } else if (tokens.length > 0) {
+      addToast(`${message} ${tokenText}`);
+    }
+  }
 
   function openFileDialog() {
     if (fileInputRef.current) {
@@ -116,45 +131,49 @@ function ImportExportModal({ isOpen, onRequestClose }) {
 
     const importDB = getDatabase({}, importDBName);
     const db = getDatabase({});
-
-    // Keep track of a mapping of old token ids to new ones to apply them to the map states
-    let newTokenIds = {};
-    if (checkedTokens.length > 0) {
-      const tokenIds = checkedTokens.map((token) => token.id);
-      const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
-      let newTokens = [];
-      for (let token of tokensToAdd) {
-        const newId = shortid.generate();
-        newTokenIds[token.id] = newId;
-        // Generate new id and change owner
-        newTokens.push({ ...token, id: newId, owner: userId });
-      }
-      await db.table("tokens").bulkAdd(newTokens);
-    }
-
-    if (checkedMaps.length > 0) {
-      const mapIds = checkedMaps.map((map) => map.id);
-      const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
-      let newMaps = [];
-      let newStates = [];
-      for (let map of mapsToAdd) {
-        let state = await importDB.table("states").get(map.id);
-        // Apply new token ids to imported state
-        for (let tokenState of Object.values(state.tokens)) {
-          if (tokenState.tokenId in newTokenIds) {
-            state.tokens[tokenState.id].tokenId =
-              newTokenIds[tokenState.tokenId];
-          }
+    try {
+      // Keep track of a mapping of old token ids to new ones to apply them to the map states
+      let newTokenIds = {};
+      if (checkedTokens.length > 0) {
+        const tokenIds = checkedTokens.map((token) => token.id);
+        const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
+        let newTokens = [];
+        for (let token of tokensToAdd) {
+          const newId = shortid.generate();
+          newTokenIds[token.id] = newId;
+          // Generate new id and change owner
+          newTokens.push({ ...token, id: newId, owner: userId });
         }
-        const newId = shortid.generate();
-        // Generate new id and change owner
-        newMaps.push({ ...map, id: newId, owner: userId });
-        newStates.push({ ...state, mapId: newId });
+        await db.table("tokens").bulkAdd(newTokens);
       }
-      await db.table("maps").bulkAdd(newMaps);
-      await db.table("states").bulkAdd(newStates);
-    }
 
+      if (checkedMaps.length > 0) {
+        const mapIds = checkedMaps.map((map) => map.id);
+        const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
+        let newMaps = [];
+        let newStates = [];
+        for (let map of mapsToAdd) {
+          let state = await importDB.table("states").get(map.id);
+          // Apply new token ids to imported state
+          for (let tokenState of Object.values(state.tokens)) {
+            if (tokenState.tokenId in newTokenIds) {
+              state.tokens[tokenState.id].tokenId =
+                newTokenIds[tokenState.tokenId];
+            }
+          }
+          const newId = shortid.generate();
+          // Generate new id and change owner
+          newMaps.push({ ...map, id: newId, owner: userId });
+          newStates.push({ ...state, mapId: newId });
+        }
+        await db.table("maps").bulkAdd(newMaps);
+        await db.table("states").bulkAdd(newStates);
+      }
+      addSuccessToast("Imported", checkedMaps, checkedTokens);
+    } catch (e) {
+      console.error(e);
+      setError(new Error("Unable to import data"));
+    }
     await importDB.delete();
     importDB.close();
     db.close();
@@ -195,6 +214,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         tokenIds
       );
       saveAs(blob, `${shortid.generate()}.owlbear`);
+      addSuccessToast("Exported", checkedMaps, checkedTokens);
     } catch (e) {
       setError(e);
     }
