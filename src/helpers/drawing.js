@@ -3,7 +3,6 @@ import polygonClipping from "polygon-clipping";
 
 import Vector2 from "./Vector2";
 import { toDegrees } from "./shared";
-import { logError } from "./logging";
 import { getNearestCellCoordinates, getCellLocation } from "./grid";
 
 /**
