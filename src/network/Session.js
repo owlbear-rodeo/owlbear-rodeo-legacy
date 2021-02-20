@@ -46,7 +46,7 @@ class Session extends EventEmitter {
   /**
    * The socket io connection
    *
-   * @type {SocketIOClient.Socket}
+   * @type {io.Socket}
    */
   socket;
 
