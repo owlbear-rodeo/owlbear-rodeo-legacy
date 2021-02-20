@@ -105,6 +105,10 @@ class Session extends EventEmitter {
     }
   }
 
+  disconnect() {
+    this.socket.disconnect();
+  }
+
   /**
    * Send data to a single peer
    *

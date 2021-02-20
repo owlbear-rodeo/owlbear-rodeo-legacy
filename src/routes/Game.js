@@ -33,6 +33,10 @@ function Game() {
       await session.connect();
     }
     connect();
+
+    return () => {
+      session.disconnect();
+    };
   }, [session]);
 
   // Handle session errors
