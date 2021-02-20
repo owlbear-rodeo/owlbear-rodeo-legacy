@@ -41,6 +41,7 @@ import { logError } from "../helpers/logging";
  * @fires Session#status
  * @fires Session#playerJoined
  * @fires Session#playerLeft
+ * @fires Session#gameExpired
  */
 class Session extends EventEmitter {
   /**
@@ -95,6 +96,7 @@ class Session extends EventEmitter {
       this.socket.on("joined_game", this._handleJoinedGame.bind(this));
       this.socket.on("signal", this._handleSignal.bind(this));
       this.socket.on("auth_error", this._handleAuthError.bind(this));
+      this.socket.on("game_expired", this._handleGameExpired.bind(this));
       this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
       this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
 
@@ -347,6 +349,15 @@ class Session extends EventEmitter {
 
   _handleJoinedGame() {
     this.emit("status", "joined");
+  }
+
+  _handleGameExpired() {
+    /**
+     * Game Expired Event - A joining game has expired
+     *
+     * @event Session#gameExpired
+     */
+    this.emit("gameExpired");
   }
 
   _handlePlayerJoined(id) {

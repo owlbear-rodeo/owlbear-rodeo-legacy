@@ -8,6 +8,7 @@ import Link from "../components/Link";
 import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
+import GameExpiredModal from "../modals/GameExpiredModal";
 
 import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
@@ -64,6 +65,19 @@ function Game() {
 
     return () => {
       session.off("status", handleStatus);
+    };
+  }, [session]);
+
+  const [gameExpired, setGameExpired] = useState(false);
+  useEffect(() => {
+    function handleGameExpired() {
+      setGameExpired(true);
+    }
+
+    session.on("gameExpired", handleGameExpired);
+
+    return () => {
+      session.off("gameExpired", handleGameExpired);
     };
   }, [session]);
 
@@ -136,6 +150,10 @@ function Game() {
           <AuthModal
             isOpen={sessionStatus === "auth"}
             onSubmit={handleAuthSubmit}
+          />
+          <GameExpiredModal
+            isOpen={gameExpired}
+            onRequestClose={() => setGameExpired(false)}
           />
           {!sessionStatus && <LoadingOverlay />}
           <MapLoadingOverlay />
