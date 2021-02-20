@@ -26,8 +26,6 @@ export function AuthProvider({ children }) {
     storage.setItem("auth", password);
   }, [password]);
 
-  const [authenticationStatus, setAuthenticationStatus] = useState("unknown");
-
   const [userId, setUserId] = useState();
   useEffect(() => {
     if (!database || databaseStatus === "loading") {
@@ -51,8 +49,6 @@ export function AuthProvider({ children }) {
     userId,
     password,
     setPassword,
-    authenticationStatus,
-    setAuthenticationStatus,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

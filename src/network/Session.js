@@ -22,6 +22,13 @@ import { logError } from "../helpers/logging";
  */
 
 /**
+ * Session Status Event - Status of the session has changed
+ *
+ * @event Session#status
+ * @property {"ready"|"joining"|"joined"|"offline"|"reconnecting"|"auth"} status
+ */
+
+/**
  *
  * Handles connections to multiple peers
  *
@@ -31,10 +38,7 @@ import { logError } from "../helpers/logging";
  * @fires Session#peerTrackRemoved
  * @fires Session#peerDisconnect
  * @fires Session#peerError
- * @fires Session#authenticationSuccess
- * @fires Session#authenticationError
- * @fires Session#connected
- * @fires Session#disconnected
+ * @fires Session#status
  * @fires Session#playerJoined
  * @fires Session#playerLeft
  */
@@ -53,13 +57,6 @@ class Session extends EventEmitter {
    */
   peers;
 
-  /**
-   * The state of the session
-   *
-   * @type {('unknown'|'online'|'offline')}
-   */
-  state;
-
   get id() {
     return this.socket && this.socket.id;
   }
@@ -73,7 +70,6 @@ class Session extends EventEmitter {
   constructor() {
     super();
     this.peers = {};
-    this.state = "unknown";
     // Signal connected peers of a closure on refresh
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
   }
@@ -102,10 +98,10 @@ class Session extends EventEmitter {
       this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
       this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
 
-      this.state = "online";
+      this.emit("status", "ready");
     } catch (error) {
       logError(error);
-      this.state = "offline";
+      this.emit("status", "offline");
     }
   }
 
@@ -194,6 +190,7 @@ class Session extends EventEmitter {
     this._gameId = gameId;
     this._password = password;
     this.socket.emit("join_game", gameId, password);
+    this.emit("status", "joining");
   }
 
   /**
@@ -345,18 +342,7 @@ class Session extends EventEmitter {
   }
 
   _handleJoinedGame() {
-    /**
-     * Authentication Success Event - Successfully authenticated when joining a game
-     *
-     * @event Session#authenticationSuccess
-     */
-    this.emit("authenticationSuccess");
-    /**
-     * Connected Event - You have connected to the game
-     *
-     * @event Session#connected
-     */
-    this.emit("connected");
+    this.emit("status", "joined");
   }
 
   _handlePlayerJoined(id) {
@@ -394,12 +380,7 @@ class Session extends EventEmitter {
   }
 
   _handleAuthError() {
-    /**
-     * Authentication Error Event - Unsuccessfully authenticated when joining a game
-     *
-     * @event Session#authenticationError
-     */
-    this.emit("authenticationError");
+    this.emit("status", "auth");
   }
 
   _handleUnload() {
@@ -409,12 +390,7 @@ class Session extends EventEmitter {
   }
 
   _handleSocketDisconnect() {
-    /**
-     * Disconnected Event - You have disconnected from the party
-     *
-     * @event Session#disconnected
-     */
-    this.emit("disconnected");
+    this.emit("status", "reconnecting");
     for (let peer of Object.values(this.peers)) {
       peer.connection && peer.connection.destroy();
     }

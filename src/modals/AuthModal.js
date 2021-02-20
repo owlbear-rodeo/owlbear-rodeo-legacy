@@ -5,8 +5,8 @@ import { useAuth } from "../contexts/AuthContext";
 
 import Modal from "../components/Modal";
 
-function AuthModal({ isOpen }) {
-  const { password, setPassword, setAuthenticationStatus } = useAuth();
+function AuthModal({ isOpen, onSubmit }) {
+  const { password, setPassword } = useAuth();
   const [tmpPassword, setTempPassword] = useState(password);
 
   function handleChange(event) {
@@ -15,8 +15,8 @@ function AuthModal({ isOpen }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    setAuthenticationStatus("unknown");
     setPassword(tmpPassword);
+    onSubmit(tmpPassword);
   }
 
   const inputRef = useRef();
@@ -38,9 +38,7 @@ function AuthModal({ isOpen }) {
           autoComplete="off"
         />
         <Flex py={2}>
-          <Button sx={{ flexGrow: 1 }} disabled={!tmpPassword}>
-            Join
-          </Button>
+          <Button sx={{ flexGrow: 1 }}>Join</Button>
         </Flex>
       </Box>
     </Modal>
