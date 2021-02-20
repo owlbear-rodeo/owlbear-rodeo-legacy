@@ -74,12 +74,18 @@ export function PlayerProvider({ session, children }) {
       setPlayerState({ ...playerState, sessionId: session.id });
     }
 
-    session.on("connected", handleSocketConnect);
+    function handleSocketStatus(status) {
+      if (status === "joined") {
+        setPlayerState({ ...playerState, sessionId: session.id });
+      }
+    }
+
+    session.on("status", handleSocketStatus);
     session.socket?.on("connect", handleSocketConnect);
     session.socket?.on("reconnect", handleSocketConnect);
 
     return () => {
-      session.off("connected", handleSocketConnect);
+      session.off("status", handleSocketStatus);
       session.socket?.off("connect", handleSocketConnect);
       session.socket?.off("reconnect", handleSocketConnect);
     };
