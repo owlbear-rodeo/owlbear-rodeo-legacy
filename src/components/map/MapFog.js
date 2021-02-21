@@ -492,7 +492,7 @@ function MapFog({
         closed
         lineCap="round"
         lineJoin="round"
-        strokeWidth={editable ? gridStrokeWidth * shape.strokeWidth : 0}
+        strokeWidth={gridStrokeWidth * shape.strokeWidth}
         opacity={editable ? (!shape.visible ? 0.2 : 0.5) : 1}
         fillPatternImage={patternImage}
         fillPriority={active && !shape.visible ? "pattern" : "color"}
