@@ -30,9 +30,7 @@ function BrushToolSettings({
 }) {
   // Keyboard shortcuts
   function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-    if (key === "Alt") {
-      onSettingChange({ useFogCut: !settings.useFogCut });
-    } else if (key === "p") {
+    if (key === "p") {
       onSettingChange({ type: "polygon" });
     } else if (key === "b") {
       onSettingChange({ type: "brush" });
@@ -65,13 +63,7 @@ function BrushToolSettings({
     }
   }
 
-  function handleKeyUp({ key }) {
-    if (key === "Alt") {
-      onSettingChange({ useFogCut: !settings.useFogCut });
-    }
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
+  useKeyboard(handleKeyDown);
 
   const isSmallScreen = useMedia({ query: "(max-width: 799px)" });
   const drawTools = [
