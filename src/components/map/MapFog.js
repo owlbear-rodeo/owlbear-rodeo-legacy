@@ -501,7 +501,7 @@ function MapFog({
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
         opacity={editable ? (!shape.visible ? 0.2 : 0.5) : 1}
         fillPatternImage={patternImage}
-        fillPriority={active && !shape.visible ? "pattern" : "color"}
+        fillPriority={editable && !shape.visible ? "pattern" : "color"}
         holes={holes}
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
