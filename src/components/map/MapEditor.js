@@ -63,7 +63,7 @@ function MapEditor({ map, onSettingsChange }) {
     stageTranslateRef,
     mapLayerRef.current,
     getGridMaxZoom(map.grid),
-    "pan",
+    "move",
     preventMapInteraction
   );
 

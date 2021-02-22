@@ -115,7 +115,7 @@ function MapTokens({
               })
             }
             draggable={
-              selectedToolId === "pan" &&
+              selectedToolId === "move" &&
               !(tokenState.id in disabledTokens) &&
               !tokenState.locked
             }

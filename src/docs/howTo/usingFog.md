@@ -8,15 +8,15 @@ The Fog Tool allows you to add hidden areas to control what the other party memb
 
 A summary of the Fog Tool options are listed below.
 
-| Option        | Description                                        | Shortcut                                       |
-| ------------- | -------------------------------------------------- | ---------------------------------------------- |
-| Fog Polygon   | Click to add points to a fog shape                 | P, Enter (Accept Shape), Escape (Cancel Shape) |
-| Fog Rectangle | Drag to add a rectangle fog shape                  | R                                              |
-| Fog Brush     | Drag to add a free form fog shape                  | B                                              |
-| Toggle Fog    | Click a fog shape to hide/show it                  | T                                              |
-| Erase Fog     | Click a fog shape to remove it                     | E                                              |
-| Fog Cutting   | Enables/Disables fog cutting                       | C, Alt (Toggle)                                |
-| Edge Snapping | Enables/Disables edge snapping                     | S                                              |
-| Fog Preview   | Enables/Disables a preview of the final fog shapes | F                                              |
-| Undo          | Undo a fog action                                  | Ctrl + Z                                       |
-| Redo          | Redo a fog action                                  | Ctrl + Shift + Z                               |
+| Option        | Description                                        |
+| ------------- | -------------------------------------------------- |
+| Fog Polygon   | Click to add points to a fog shape                 |
+| Fog Rectangle | Drag to add a rectangle fog shape                  |
+| Fog Brush     | Drag to add a free form fog shape                  |
+| Toggle Fog    | Click a fog shape to hide/show it                  |
+| Erase Fog     | Click a fog shape to remove it                     |
+| Fog Cutting   | Enables/Disables fog cutting                       |
+| Layer Toggle  | Changes between single layer and multilayer fog    |
+| Fog Preview   | Enables/Disables a preview of the final fog shapes |
+| Undo          | Undo a fog action                                  |
+| Redo          | Redo a fog action                                  |

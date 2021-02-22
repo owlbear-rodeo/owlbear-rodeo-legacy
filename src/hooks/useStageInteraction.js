@@ -13,7 +13,7 @@ function useStageInteraction(
   stageTranslateRef,
   layer,
   maxZoom = 10,
-  tool = "pan",
+  tool = "move",
   preventInteraction = false,
   gesture = {}
 ) {
@@ -152,7 +152,7 @@ function useStageInteraction(
 
         const [dx, dy] = delta;
         const stageTranslate = stageTranslateRef.current;
-        if (tool === "pan") {
+        if (tool === "move") {
           const newTranslate = {
             x: stageTranslate.x + dx,
             y: stageTranslate.y + dy,

@@ -10,7 +10,7 @@ import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import PointerToolSettings from "./controls/PointerToolSettings";
 
-import PanToolIcon from "../../icons/PanToolIcon";
+import MoveToolIcon from "../../icons/MoveToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
 import MeasureToolIcon from "../../icons/MeasureToolIcon";
@@ -39,10 +39,10 @@ function MapContols({
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
 
   const toolsById = {
-    pan: {
-      id: "pan",
-      icon: <PanToolIcon />,
-      title: "Pan Tool (W)",
+    move: {
+      id: "move",
+      icon: <MoveToolIcon />,
+      title: "Move Tool (W)",
     },
     fog: {
       id: "fog",
@@ -73,7 +73,7 @@ function MapContols({
       title: "Note Tool (N)",
     },
   };
-  const tools = ["pan", "fog", "drawing", "measure", "pointer", "note"];
+  const tools = ["move", "fog", "drawing", "measure", "pointer", "note"];
 
   const sections = [
     {

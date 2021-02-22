@@ -95,9 +95,9 @@ function MapInteraction({
     preventMapInteraction,
     {
       onPinchStart: () => {
-        // Change to pan tool when pinching and zooming
+        // Change to move tool when pinching and zooming
         previousSelectedToolRef.current = selectedToolId;
-        onSelectedToolChange("pan");
+        onSelectedToolChange("move");
       },
       onPinchEnd: () => {
         onSelectedToolChange(previousSelectedToolRef.current);
@@ -115,24 +115,24 @@ function MapInteraction({
   );
 
   function handleKeyDown(event) {
-    // Change to pan tool when pressing space
-    if (event.key === " " && selectedToolId === "pan") {
-      // Stop active state on pan icon from being selected
+    // Change to move tool when pressing space
+    if (event.key === " " && selectedToolId === "move") {
+      // Stop active state on move icon from being selected
       event.preventDefault();
     }
     if (
       event.key === " " &&
-      selectedToolId !== "pan" &&
-      !disabledControls.includes("pan")
+      selectedToolId !== "move" &&
+      !disabledControls.includes("move")
     ) {
       event.preventDefault();
       previousSelectedToolRef.current = selectedToolId;
-      onSelectedToolChange("pan");
+      onSelectedToolChange("move");
     }
 
     // Basic keyboard shortcuts
-    if (event.key === "w" && !disabledControls.includes("pan")) {
-      onSelectedToolChange("pan");
+    if (event.key === "w" && !disabledControls.includes("move")) {
+      onSelectedToolChange("move");
     }
     if (event.key === "d" && !disabledControls.includes("drawing")) {
       onSelectedToolChange("drawing");
@@ -152,7 +152,7 @@ function MapInteraction({
   }
 
   function handleKeyUp(event) {
-    if (event.key === " " && selectedToolId === "pan") {
+    if (event.key === " " && selectedToolId === "move") {
       onSelectedToolChange(previousSelectedToolRef.current);
     }
   }
@@ -163,7 +163,7 @@ function MapInteraction({
 
   function getCursorForTool(tool) {
     switch (tool) {
-      case "pan":
+      case "move":
         return "move";
       case "fog":
       case "drawing":

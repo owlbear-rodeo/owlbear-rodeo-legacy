@@ -50,7 +50,7 @@ function Map({
 }) {
   const { tokensById } = useTokenData();
 
-  const [selectedToolId, setSelectedToolId] = useState("pan");
+  const [selectedToolId, setSelectedToolId] = useState("move");
   const { settings, setSettings } = useSettings();
 
   function handleToolSettingChange(tool, change) {
@@ -113,7 +113,7 @@ function Map({
     disabledControls.push("drawing");
   }
   if (!map) {
-    disabledControls.push("pan");
+    disabledControls.push("move");
     disabledControls.push("measure");
     disabledControls.push("pointer");
   }
@@ -301,7 +301,7 @@ function Map({
       onNoteMenuOpen={handleNoteMenuOpen}
       draggable={
         allowNoteEditing &&
-        (selectedToolId === "note" || selectedToolId === "pan")
+        (selectedToolId === "note" || selectedToolId === "move")
       }
       onNoteDragStart={(e, noteId) =>
         setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })

@@ -21,7 +21,7 @@ An overview of each setting is listed below:
 - Label: allows you to write text that is then displayed at the bottom of the token.
 - Status: allows you to overlay a coloured ring on top of the token, these can be useful for showing status effects.
 - Size: controls the size of the token each notch represents how many grid cells the token takes up in the horizontal direction.
-- Rotation: the direction the token faces, restrained to 45 degree angles.
+- Rotation: the direction the token faces, restrained to 15 degree increments.
 - Hide / Show (GM Only): toggle the visibility of the token, useful for tracking invisible enemies.
 - Lock / Unlock (GM Only): when a token is locked it can't be moved until it is unlocked again.
 
