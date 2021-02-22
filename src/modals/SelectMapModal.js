@@ -50,7 +50,7 @@ function SelectMapModal({
   isOpen,
   onDone,
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   // The map currently being view in the map screen
   currentMap,
 }) {
@@ -290,7 +290,7 @@ function SelectMapModal({
       const newState = await resetMap(id);
       // Reset the state of the current map if needed
       if (currentMap && currentMap.id === id) {
-        onMapStateChange(newState);
+        onMapReset(newState);
       }
     }
     setIsLoading(false);

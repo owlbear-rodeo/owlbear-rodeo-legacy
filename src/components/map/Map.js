@@ -32,7 +32,7 @@ function Map({
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   onMapDraw,
   onMapDrawUndo,
   onMapDrawRedo,
@@ -153,7 +153,7 @@ function Map({
   const mapControls = (
     <MapControls
       onMapChange={onMapChange}
-      onMapStateChange={onMapStateChange}
+      onMapReset={onMapReset}
       currentMap={map}
       currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}

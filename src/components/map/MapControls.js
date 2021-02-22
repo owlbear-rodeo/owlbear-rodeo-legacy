@@ -24,7 +24,7 @@ import useSetting from "../../hooks/useSetting";
 
 function MapContols({
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   currentMap,
   currentMapState,
   selectedToolId,
@@ -81,7 +81,7 @@ function MapContols({
       component: (
         <SelectMapButton
           onMapChange={onMapChange}
-          onMapStateChange={onMapStateChange}
+          onMapReset={onMapReset}
           currentMap={currentMap}
           currentMapState={currentMapState}
           disabled={disabledControls.includes("map")}

@@ -9,7 +9,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 function SelectMapButton({
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   currentMap,
   currentMapState,
   disabled,
@@ -43,7 +43,7 @@ function SelectMapButton({
         isOpen={isModalOpen}
         onDone={handleDone}
         onMapChange={onMapChange}
-        onMapStateChange={onMapStateChange}
+        onMapReset={onMapReset}
         currentMap={currentMap}
       />
     </>

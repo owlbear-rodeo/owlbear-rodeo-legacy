@@ -229,8 +229,9 @@ function NetworkedMapAndTokens({ session }) {
     await loadAssetManifestFromMap(newMap, newMapState);
   }
 
-  function handleMapStateChange(newMapState) {
+  function handleMapReset(newMapState) {
     setCurrentMapState(newMapState, true, true);
+    setMapActions(defaultMapActions);
   }
 
   const [mapActions, setMapActions] = useState(defaultMapActions);
@@ -569,7 +570,7 @@ function NetworkedMapAndTokens({ session }) {
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onMapChange={handleMapChange}
-        onMapStateChange={handleMapStateChange}
+        onMapReset={handleMapReset}
         onMapDraw={handleMapDraw}
         onMapDrawUndo={handleMapDrawUndo}
         onMapDrawRedo={handleMapDrawRedo}
