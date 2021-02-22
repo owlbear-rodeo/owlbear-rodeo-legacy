@@ -245,7 +245,7 @@ function MapFog({
       setIsBrushDown(false);
     }
 
-    function handlePolygonClick() {
+    function handlePointerClick() {
       if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
         setDrawingShape((prevDrawingShape) => {
@@ -274,7 +274,7 @@ function MapFog({
       }
     }
 
-    function handlePolygonMove() {
+    function handlePointerMove() {
       if (
         active &&
         (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
@@ -329,21 +329,27 @@ function MapFog({
       }
     }
 
+    function handelTouchEnd() {
+      setGuides([]);
+    }
+
     interactionEmitter.on("dragStart", handleBrushDown);
     interactionEmitter.on("drag", handleBrushMove);
     interactionEmitter.on("dragEnd", handleBrushUp);
     // Use mouse events for polygon and erase to allow for single clicks
-    mapStage.on("mousedown touchstart", handlePolygonMove);
-    mapStage.on("mousemove touchmove", handlePolygonMove);
-    mapStage.on("click tap", handlePolygonClick);
+    mapStage.on("mousedown touchstart", handlePointerMove);
+    mapStage.on("mousemove touchmove", handlePointerMove);
+    mapStage.on("click tap", handlePointerClick);
+    mapStage.on("touchend", handelTouchEnd);
 
     return () => {
       interactionEmitter.off("dragStart", handleBrushDown);
       interactionEmitter.off("drag", handleBrushMove);
       interactionEmitter.off("dragEnd", handleBrushUp);
-      mapStage.off("mousedown touchstart", handlePolygonMove);
-      mapStage.off("mousemove touchmove", handlePolygonMove);
-      mapStage.off("click tap", handlePolygonClick);
+      mapStage.off("mousedown touchstart", handlePointerMove);
+      mapStage.off("mousemove touchmove", handlePointerMove);
+      mapStage.off("click tap", handlePointerClick);
+      mapStage.off("touchend", handelTouchEnd);
     };
   });
 
