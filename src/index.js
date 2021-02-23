@@ -21,12 +21,14 @@ if (process.env.REACT_APP_LOGGING === "true") {
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
     // Ignore LastPass extension text error
     // Ignore chrome extension error
+    // Ignore dexie error todo: fix
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "QuotaExceededError",
       "XDR encoding failure",
       "Assertion failed: Input argument is not an HTMLInputElement",
       "Extension context invalidated",
+      "InvalidStateError",
     ],
   });
 }
