@@ -18,7 +18,8 @@ async function createDataThumbnail(data) {
         resolve(thumbnail);
       };
       image.src = url;
-    })
+    }),
+    60000 * 10 // 10 minute timeout
   );
 }
 
