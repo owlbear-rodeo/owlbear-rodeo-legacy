@@ -365,7 +365,9 @@ const versions = {
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
       const thumbnails = {};
       for (let map of maps) {
-        thumbnails[map.id] = await createDataThumbnail(map);
+        try {
+          thumbnails[map.id] = await createDataThumbnail(map);
+        } catch {}
       }
       return tx
         .table("maps")
@@ -382,7 +384,9 @@ const versions = {
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       const thumbnails = {};
       for (let token of tokens) {
-        thumbnails[token.id] = await createDataThumbnail(token);
+        try {
+          thumbnails[token.id] = await createDataThumbnail(token);
+        } catch {}
       }
       return tx
         .table("tokens")
