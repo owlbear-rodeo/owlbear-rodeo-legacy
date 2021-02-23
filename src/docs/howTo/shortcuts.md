@@ -9,6 +9,8 @@
 | M                | Measure Tool |
 | Q                | Pointer Tool |
 | N                | Note Tool    |
+| +                | Zoom In      |
+| -                | Zoom Out     |
 
 ## Fog Tool
 

@@ -2,6 +2,8 @@ import { useRef, useEffect } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
+import { useKeyboard } from "../contexts/KeyboardContext";
+
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
@@ -173,6 +175,44 @@ function useStageInteraction(
       },
     }
   );
+
+  function handleKeyDown(event) {
+    // TODO: Find better way to detect whether keyboard event should fire.
+    // This one fires on all open stages
+    if (preventInteraction) {
+      return;
+    }
+    const { key, ctrlKey, metaKey } = event;
+    if (
+      (key === "=" || key === "+" || key === "-" || key === "_") &&
+      !ctrlKey &&
+      !metaKey
+    ) {
+      const pixelY = key === "=" || key === "+" ? -100 : 100;
+      const newScale = Math.min(
+        Math.max(
+          stageScale +
+            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+          minZoom
+        ),
+        maxZoom
+      );
+
+      // Center on pointer
+      const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      const newTranslate = {
+        x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+        y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+      };
+
+      stage.position(newTranslate);
+      stageTranslateRef.current = newTranslate;
+
+      onStageScaleChange(newScale);
+    }
+  }
+
+  useKeyboard(handleKeyDown);
 }
 
 export default useStageInteraction;
