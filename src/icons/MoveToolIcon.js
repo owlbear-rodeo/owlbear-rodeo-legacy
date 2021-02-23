@@ -1,6 +1,6 @@
 import React from "react";
 
-function PanToolIcon() {
+function MoveToolIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ function PanToolIcon() {
   );
 }
 
-export default PanToolIcon;
+export default MoveToolIcon;

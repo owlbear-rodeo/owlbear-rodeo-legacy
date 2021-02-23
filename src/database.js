@@ -1,20 +1,49 @@
-import Dexie from "dexie";
+// eslint-disable-next-line no-unused-vars
+import Dexie, { Version, DexieOptions } from "dexie";
+import "dexie-observable";
 
 import blobToBuffer from "./helpers/blobToBuffer";
-import { getMapDefaultInset } from "./helpers/map";
+import { getGridDefaultInset } from "./helpers/grid";
+import { convertOldActionsToShapes } from "./actions";
+import { createThumbnail } from "./helpers/image";
 
-function loadVersions(db) {
+// Helper to create a thumbnail for a file in a db
+async function createDataThumbnail(data) {
+  const url = URL.createObjectURL(new Blob([data.file]));
+  return await Dexie.waitFor(
+    new Promise((resolve) => {
+      let image = new Image();
+      image.onload = async () => {
+        const thumbnail = await createThumbnail(image);
+        resolve(thumbnail);
+      };
+      image.src = url;
+    })
+  );
+}
+
+/**
+ * @callback VersionCallback
+ * @param {Version} version
+ */
+
+/**
+ * Mapping of version number to their upgrade function
+ * @type {Object.<number, VersionCallback>}
+ */
+const versions = {
   // v1.2.0
-  db.version(1).stores({
-    maps: "id, owner",
-    states: "mapId",
-    tokens: "id, owner",
-    user: "key",
-  });
+  1(v) {
+    v.stores({
+      maps: "id, owner",
+      states: "mapId",
+      tokens: "id, owner",
+      user: "key",
+    });
+  },
   // v1.2.1 - Move from blob files to array buffers
-  db.version(2)
-    .stores({})
-    .upgrade(async (tx) => {
+  2(v) {
+    v.stores({}).upgrade(async (tx) => {
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
       let mapBuffers = {};
       for (let map of maps) {
@@ -27,10 +56,10 @@ function loadVersions(db) {
           map.file = mapBuffers[map.id];
         });
     });
+  },
   // v1.3.0 - Added new default tokens
-  db.version(3)
-    .stores({})
-    .upgrade((tx) => {
+  3(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -90,10 +119,10 @@ function loadVersions(db) {
           }
         });
     });
+  },
   // v1.3.1 - Added show grid option
-  db.version(4)
-    .stores({})
-    .upgrade((tx) => {
+  4(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -101,10 +130,10 @@ function loadVersions(db) {
           map.showGrid = false;
         });
     });
+  },
   // v1.4.0 - Added fog subtraction
-  db.version(5)
-    .stores({})
-    .upgrade((tx) => {
+  5(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -118,10 +147,10 @@ function loadVersions(db) {
           }
         });
     });
+  },
   // v1.4.2 - Added map resolutions
-  db.version(6)
-    .stores({})
-    .upgrade((tx) => {
+  6(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -130,10 +159,10 @@ function loadVersions(db) {
           map.quality = "original";
         });
     });
+  },
   // v1.5.0 - Fixed default token rogue spelling
-  db.version(7)
-    .stores({})
-    .upgrade((tx) => {
+  7(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -145,10 +174,10 @@ function loadVersions(db) {
           }
         });
     });
+  },
   // v1.5.0 - Added map snap to grid option
-  db.version(8)
-    .stores({})
-    .upgrade((tx) => {
+  8(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -156,10 +185,10 @@ function loadVersions(db) {
           map.snapToGrid = true;
         });
     });
+  },
   // v1.5.1 - Added lock, visibility and modified to tokens
-  db.version(9)
-    .stores({})
-    .upgrade((tx) => {
+  9(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -173,10 +202,10 @@ function loadVersions(db) {
           }
         });
     });
+  },
   // v1.5.1 - Added token prop category and remove isVehicle bool
-  db.version(10)
-    .stores({})
-    .upgrade((tx) => {
+  10(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("tokens")
         .toCollection()
@@ -185,10 +214,10 @@ function loadVersions(db) {
           delete token.isVehicle;
         });
     });
+  },
   // v1.5.2 - Added automatic cache invalidation to maps
-  db.version(11)
-    .stores({})
-    .upgrade((tx) => {
+  11(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -196,10 +225,10 @@ function loadVersions(db) {
           map.lastUsed = map.lastModified;
         });
     });
+  },
   // v1.5.2 - Added automatic cache invalidation to tokens
-  db.version(12)
-    .stores({})
-    .upgrade((tx) => {
+  12(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("tokens")
         .toCollection()
@@ -207,10 +236,10 @@ function loadVersions(db) {
           token.lastUsed = token.lastModified;
         });
     });
+  },
   // v1.6.0 - Added map grouping and grid scale and offset
-  db.version(13)
-    .stores({})
-    .upgrade((tx) => {
+  13(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("maps")
         .toCollection()
@@ -218,11 +247,10 @@ function loadVersions(db) {
           map.group = "";
           map.grid = {
             size: { x: map.gridX, y: map.gridY },
-            inset: getMapDefaultInset(
+            inset: getGridDefaultInset(
+              { size: { x: map.gridX, y: map.gridY }, type: "square" },
               map.width,
-              map.height,
-              map.gridX,
-              map.gridY
+              map.height
             ),
             type: "square",
           };
@@ -231,10 +259,10 @@ function loadVersions(db) {
           delete map.gridType;
         });
     });
+  },
   // v1.6.0 - Added token grouping
-  db.version(14)
-    .stores({})
-    .upgrade((tx) => {
+  14(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("tokens")
         .toCollection()
@@ -242,10 +270,10 @@ function loadVersions(db) {
           token.group = "";
         });
     });
+  },
   // v1.6.1 - Added width and height to tokens
-  db.version(15)
-    .stores({})
-    .upgrade(async (tx) => {
+  15(v) {
+    v.stores({}).upgrade(async (tx) => {
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       let tokenSizes = {};
       for (let token of tokens) {
@@ -268,10 +296,10 @@ function loadVersions(db) {
           token.height = tokenSizes[token.id].height;
         });
     });
+  },
   // v1.7.0 - Added note tool
-  db.version(16)
-    .stores({})
-    .upgrade((tx) => {
+  16(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -280,11 +308,10 @@ function loadVersions(db) {
           state.editFlags = [...state.editFlags, "notes"];
         });
     });
-
+  },
   // 1.7.0 (hotfix) - Optimized fog shape edits to only include needed data
-  db.version(17)
-    .stores({})
-    .upgrade((tx) => {
+  17(v) {
+    v.stores({}).upgrade((tx) => {
       return tx
         .table("states")
         .toCollection()
@@ -304,11 +331,99 @@ function loadVersions(db) {
           }
         });
     });
+  },
+  // 1.8.0 - Added note text only mode, converted draw and fog representations
+  18(v) {
+    v.stores({}).upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.notes) {
+            state.notes[id].textOnly = false;
+          }
+
+          state.drawShapes = convertOldActionsToShapes(
+            state.mapDrawActions,
+            state.mapDrawActionIndex
+          );
+          state.fogShapes = convertOldActionsToShapes(
+            state.fogDrawActions,
+            state.fogDrawActionIndex
+          );
+
+          delete state.mapDrawActions;
+          delete state.mapDrawActionIndex;
+          delete state.fogDrawActions;
+          delete state.fogDrawActionIndex;
+        });
+    });
+  },
+  // 1.8.0 - Add thumbnail to maps and add measurement to grid
+  19(v) {
+    v.stores({}).upgrade(async (tx) => {
+      const maps = await Dexie.waitFor(tx.table("maps").toArray());
+      const thumbnails = {};
+      for (let map of maps) {
+        thumbnails[map.id] = await createDataThumbnail(map);
+      }
+      return tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          map.thumbnail = thumbnails[map.id];
+          map.grid.measurement = { type: "chebyshev", scale: "5ft" };
+        });
+    });
+  },
+  // 1.8.0 - Add thumbnail to tokens
+  20(v) {
+    v.stores({}).upgrade(async (tx) => {
+      const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
+      const thumbnails = {};
+      for (let token of tokens) {
+        thumbnails[token.id] = await createDataThumbnail(token);
+      }
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.thumbnail = thumbnails[token.id];
+        });
+    });
+  },
+  // 1.8.0 - Upgrade for Dexie.Observable
+  21(v) {
+    v.stores({});
+  },
+};
+
+const latestVersion = 21;
+
+/**
+ * Load versions onto a database up to a specific version number
+ * @param {Dexie} db
+ * @param {number=} upTo version number to load up to, latest version if undefined
+ */
+export function loadVersions(db, upTo = latestVersion) {
+  for (let versionNumber = 1; versionNumber <= upTo; versionNumber++) {
+    versions[versionNumber](db.version(versionNumber));
+  }
 }
 
-// Get the dexie database used in DatabaseContext
-export function getDatabase(options) {
-  let db = new Dexie("OwlbearRodeoDB", options);
-  loadVersions(db);
+/**
+ * Get a Dexie database with a name and versions applied
+ * @param {DexieOptions} options
+ * @param {string=} name
+ * @param {number=} versionNumber
+ * @returns {Dexie}
+ */
+export function getDatabase(
+  options,
+  name = "OwlbearRodeoDB",
+  versionNumber = latestVersion
+) {
+  let db = new Dexie(name, options);
+  loadVersions(db, versionNumber);
   return db;
 }

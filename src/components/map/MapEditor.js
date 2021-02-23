@@ -3,15 +3,17 @@ import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
 
-import useMapImage from "../../helpers/useMapImage";
-import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-import useStageInteraction from "../../helpers/useStageInteraction";
-import useImageCenter from "../../helpers/useImageCenter";
-import { getMapDefaultInset, getMapMaxZoom } from "../../helpers/map";
-import useResponsiveLayout from "../../helpers/useResponsiveLayout";
+import useMapImage from "../../hooks/useMapImage";
+import usePreventOverscroll from "../../hooks/usePreventOverscroll";
+import useStageInteraction from "../../hooks/useStageInteraction";
+import useImageCenter from "../../hooks/useImageCenter";
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+
+import { getGridDefaultInset, getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import { GridProvider } from "../../contexts/GridContext";
 
 import ResetMapIcon from "../../icons/ResetMapIcon";
 import GridOnIcon from "../../icons/GridOnIcon";
@@ -27,12 +29,7 @@ function MapEditor({ map, onSettingsChange }) {
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
 
-  const defaultInset = getMapDefaultInset(
-    map.width,
-    map.height,
-    map.grid.size.x,
-    map.grid.size.y
-  );
+  const defaultInset = getGridDefaultInset(map.grid, map.width, map.height);
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapStageRef = useRef();
@@ -59,14 +56,14 @@ function MapEditor({ map, onSettingsChange }) {
     true
   );
 
-  const bind = useStageInteraction(
+  useStageInteraction(
     mapStageRef.current,
     stageScale,
     setStageScale,
     stageTranslateRef,
     mapLayerRef.current,
-    getMapMaxZoom(map),
-    "pan",
+    getGridMaxZoom(map.grid),
+    "move",
     preventMapInteraction
   );
 
@@ -120,7 +117,6 @@ function MapEditor({ map, onSettingsChange }) {
       }}
       bg="muted"
       ref={containerRef}
-      {...bind()}
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
         <Stage
@@ -134,10 +130,14 @@ function MapEditor({ map, onSettingsChange }) {
             <KeyboardContext.Provider value={keyboardValue}>
               <MapInteractionProvider value={mapInteraction}>
                 {showGridControls && canEditGrid && (
-                  <>
-                    <MapGrid map={map} strokeWidth={0.5} />
+                  <GridProvider
+                    grid={map.grid}
+                    width={mapWidth}
+                    height={mapHeight}
+                  >
+                    <MapGrid map={map} />
                     <MapGridEditor map={map} onGridChange={handleGridChange} />
-                  </>
+                  </GridProvider>
                 )}
               </MapInteractionProvider>
             </KeyboardContext.Provider>

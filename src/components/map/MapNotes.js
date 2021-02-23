@@ -1,13 +1,15 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
-import AuthContext from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useAuth } from "../../contexts/AuthContext";
 
-import { getBrushPositionForTool } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
+import Vector2 from "../../helpers/Vector2";
+import { getRelativePointerPosition } from "../../helpers/konva";
+
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 import Note from "../note/Note";
 
@@ -16,7 +18,6 @@ const defaultNoteSize = 2;
 function MapNotes({
   map,
   active,
-  gridSize,
   onNoteAdd,
   onNoteChange,
   notes,
@@ -24,14 +25,17 @@ function MapNotes({
   draggable,
   onNoteDragStart,
   onNoteDragEnd,
+  fadeOnHover,
 }) {
-  const { interactionEmitter } = useContext(MapInteractionContext);
-  const { userId } = useContext(AuthContext);
-  const mapStageRef = useContext(MapStageContext);
+  const { interactionEmitter } = useMapInteraction();
+  const { userId } = useAuth();
+  const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState(null);
 
   const creatingNoteRef = useRef();
+
+  const snapPositionToGrid = useGridSnapping();
 
   useEffect(() => {
     if (!active) {
@@ -41,14 +45,14 @@ function MapNotes({
 
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid,
-        false,
-        gridSize,
-        []
-      );
+      let position = getRelativePointerPosition(mapImage);
+      if (map.snapToGrid) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
     }
 
     function handleBrushDown() {
@@ -64,6 +68,7 @@ function MapNotes({
         visible: true,
         locked: false,
         color: "yellow",
+        textOnly: false,
       });
       setIsBrushDown(true);
     }
@@ -112,6 +117,7 @@ function MapNotes({
           onNoteChange={onNoteChange}
           onNoteDragStart={onNoteDragStart}
           onNoteDragEnd={onNoteDragEnd}
+          fadeOnHover={fadeOnHover}
         />
       ))}
       <Group ref={creatingNoteRef}>

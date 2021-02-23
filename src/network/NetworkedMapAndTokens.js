@@ -1,21 +1,30 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-import TokenDataContext from "../contexts/TokenDataContext";
-import MapDataContext from "../contexts/MapDataContext";
-import MapLoadingContext from "../contexts/MapLoadingContext";
-import AuthContext from "../contexts/AuthContext";
-import DatabaseContext from "../contexts/DatabaseContext";
-import PartyContext from "../contexts/PartyContext";
+import { useTokenData } from "../contexts/TokenDataContext";
+import { useMapData } from "../contexts/MapDataContext";
+import { useMapLoading } from "../contexts/MapLoadingContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
+import { useParty } from "../contexts/PartyContext";
 
 import { omit } from "../helpers/shared";
-import useDebounce from "../helpers/useDebounce";
-import useNetworkedState from "../helpers/useNetworkedState";
+
+import useDebounce from "../hooks/useDebounce";
+import useNetworkedState from "../hooks/useNetworkedState";
+
 // Load session for auto complete
 // eslint-disable-next-line no-unused-vars
 import Session from "./Session";
 
 import Map from "../components/map/Map";
 import Tokens from "../components/token/Tokens";
+
+const defaultMapActions = {
+  mapDrawActions: [],
+  mapDrawActionIndex: -1,
+  fogDrawActions: [],
+  fogDrawActionIndex: -1,
+};
 
 /**
  * @typedef {object} NetworkedMapProps
@@ -26,21 +35,17 @@ import Tokens from "../components/token/Tokens";
  * @param {NetworkedMapProps} props
  */
 function NetworkedMapAndTokens({ session }) {
-  const { userId } = useContext(AuthContext);
-  const partyState = useContext(PartyContext);
+  const { userId } = useAuth();
+  const partyState = useParty();
   const {
     assetLoadStart,
     assetLoadFinish,
     assetProgressUpdate,
     isLoading,
-  } = useContext(MapLoadingContext);
+  } = useMapLoading();
 
-  const { putToken, updateToken, getTokenFromDB } = useContext(
-    TokenDataContext
-  );
-  const { putMap, updateMap, getMapFromDB, updateMapState } = useContext(
-    MapDataContext
-  );
+  const { putToken, updateToken, getTokenFromDB } = useTokenData();
+  const { putMap, updateMap, getMapFromDB, updateMapState } = useMapData();
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useNetworkedState(
@@ -173,14 +178,22 @@ function NetworkedMapAndTokens({ session }) {
     }
 
     requestAssetsIfNeeded();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetManifest, partyState, session]);
+  }, [
+    assetManifest,
+    partyState,
+    session,
+    getMapFromDB,
+    getTokenFromDB,
+    updateMap,
+    updateToken,
+    userId,
+  ]);
 
   /**
    * Map state
    */
 
-  const { database } = useContext(DatabaseContext);
+  const { database } = useDatabase();
   // Sync the map state to the database after 500ms of inactivity
   const debouncedMapState = useDebounce(currentMapState, 500);
   useEffect(() => {
@@ -193,10 +206,9 @@ function NetworkedMapAndTokens({ session }) {
     ) {
       updateMapState(debouncedMapState.mapId, debouncedMapState);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentMap, debouncedMapState, userId, database]);
+  }, [currentMap, debouncedMapState, userId, database, updateMapState]);
 
-  function handleMapChange(newMap, newMapState) {
+  async function handleMapChange(newMap, newMapState) {
     // Clear map before sending new one
     setCurrentMap(null);
     session.socket?.emit("map", null);
@@ -205,74 +217,134 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMap(newMap);
 
     if (newMap && newMap.type === "file") {
-      const { file, resolutions, ...rest } = newMap;
+      const { file, resolutions, thumbnail, ...rest } = newMap;
       session.socket?.emit("map", rest);
     } else {
       session.socket?.emit("map", newMap);
     }
-
     if (!newMap || !newMapState) {
       return;
     }
 
-    loadAssetManifestFromMap(newMap, newMapState);
+    await loadAssetManifestFromMap(newMap, newMapState);
   }
 
-  function handleMapStateChange(newMapState) {
+  function handleMapReset(newMapState) {
     setCurrentMapState(newMapState, true, true);
+    setMapActions(defaultMapActions);
   }
 
-  function addMapDrawActions(actions, indexKey, actionsKey) {
-    setCurrentMapState((prevMapState) => {
+  const [mapActions, setMapActions] = useState(defaultMapActions);
+
+  function addMapActions(actions, indexKey, actionsKey, shapesKey) {
+    setMapActions((prevMapActions) => {
       const newActions = [
-        ...prevMapState[actionsKey].slice(0, prevMapState[indexKey] + 1),
+        ...prevMapActions[actionsKey].slice(0, prevMapActions[indexKey] + 1),
         ...actions,
       ];
       const newIndex = newActions.length - 1;
       return {
-        ...prevMapState,
+        ...prevMapActions,
         [actionsKey]: newActions,
         [indexKey]: newIndex,
       };
     });
+    // Update map state by performing the actions on it
+    setCurrentMapState((prevMapState) => {
+      if (prevMapState) {
+        let shapes = prevMapState[shapesKey];
+        for (let action of actions) {
+          shapes = action.execute(shapes);
+        }
+        return {
+          ...prevMapState,
+          [shapesKey]: shapes,
+        };
+      }
+    });
   }
 
-  function updateDrawActionIndex(change, indexKey, actionsKey) {
+  function updateActionIndex(change, indexKey, actionsKey, shapesKey) {
+    const prevIndex = mapActions[indexKey];
     const newIndex = Math.min(
-      Math.max(currentMapState[indexKey] + change, -1),
-      currentMapState[actionsKey].length - 1
+      Math.max(mapActions[indexKey] + change, -1),
+      mapActions[actionsKey].length - 1
     );
 
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
+    setMapActions((prevMapActions) => ({
+      ...prevMapActions,
       [indexKey]: newIndex,
     }));
+
+    // Update map state by either performing the actions or undoing them
+    setCurrentMapState((prevMapState) => {
+      if (prevMapState) {
+        let shapes = prevMapState[shapesKey];
+        if (prevIndex < newIndex) {
+          // Redo
+          for (let i = prevIndex + 1; i < newIndex + 1; i++) {
+            let action = mapActions[actionsKey][i];
+            shapes = action.execute(shapes);
+          }
+        } else {
+          // Undo
+          for (let i = prevIndex; i > newIndex; i--) {
+            let action = mapActions[actionsKey][i];
+            shapes = action.undo(shapes);
+          }
+        }
+        return {
+          ...prevMapState,
+          [shapesKey]: shapes,
+        };
+      }
+    });
+
     return newIndex;
   }
 
   function handleMapDraw(action) {
-    addMapDrawActions([action], "mapDrawActionIndex", "mapDrawActions");
+    addMapActions(
+      [action],
+      "mapDrawActionIndex",
+      "mapDrawActions",
+      "drawShapes"
+    );
   }
 
   function handleMapDrawUndo() {
-    updateDrawActionIndex(-1, "mapDrawActionIndex", "mapDrawActions");
+    updateActionIndex(-1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
   }
 
   function handleMapDrawRedo() {
-    updateDrawActionIndex(1, "mapDrawActionIndex", "mapDrawActions");
+    updateActionIndex(1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
   }
 
   function handleFogDraw(action) {
-    addMapDrawActions([action], "fogDrawActionIndex", "fogDrawActions");
+    addMapActions(
+      [action],
+      "fogDrawActionIndex",
+      "fogDrawActions",
+      "fogShapes"
+    );
   }
 
   function handleFogDrawUndo() {
-    updateDrawActionIndex(-1, "fogDrawActionIndex", "fogDrawActions");
+    updateActionIndex(-1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
   }
 
   function handleFogDrawRedo() {
-    updateDrawActionIndex(1, "fogDrawActionIndex", "fogDrawActions");
+    updateActionIndex(1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
   }
+
+  // If map changes clear map actions
+  const previousMapIdRef = useRef();
+  useEffect(() => {
+    if (currentMap && currentMap.id !== previousMapIdRef.current) {
+      setMapActions(defaultMapActions);
+      previousMapIdRef.current = currentMap.id;
+    }
+  }, [currentMap]);
 
   function handleNoteChange(note) {
     setCurrentMapState((prevMapState) => ({
@@ -337,6 +409,7 @@ function NetworkedMapAndTokens({ session }) {
             ...map,
             resolutions: undefined,
             file: undefined,
+            thumbnail: undefined,
             // Remove last modified so if there is an error
             // during the map request the cache is invalid
             lastModified: 0,
@@ -493,10 +566,11 @@ function NetworkedMapAndTokens({ session }) {
       <Map
         map={currentMap}
         mapState={currentMapState}
+        mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onMapChange={handleMapChange}
-        onMapStateChange={handleMapStateChange}
+        onMapReset={handleMapReset}
         onMapDraw={handleMapDraw}
         onMapDrawUndo={handleMapDrawUndo}
         onMapDrawRedo={handleMapDrawRedo}

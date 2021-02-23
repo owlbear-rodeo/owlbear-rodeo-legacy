@@ -129,7 +129,6 @@ function Link({ href, children }) {
   if (linkText === "embed:") {
     return <Embed src={href} my={2} />;
   } else {
-    console.log(href);
     return <UILink href={href}>{children}</UILink>;
   }
 }

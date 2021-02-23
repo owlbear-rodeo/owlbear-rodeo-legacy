@@ -1,28 +1,26 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
 
-import useDataSource from "../../helpers/useDataSource";
-import useDebounce from "../../helpers/useDebounce";
-import usePrevious from "../../helpers/usePrevious";
-import { snapNodeToMap } from "../../helpers/map";
+import useDataSource from "../../hooks/useDataSource";
+import useDebounce from "../../hooks/useDebounce";
+import usePrevious from "../../hooks/usePrevious";
+import useGridSnapping from "../../hooks/useGridSnapping";
 
-import AuthContext from "../../contexts/AuthContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
-const snappingThreshold = 1 / 7;
-
 function MapToken({
   token,
   tokenState,
-  tokenSizePercent,
   onTokenStateChange,
   onTokenMenuOpen,
   onTokenDragStart,
@@ -32,13 +30,14 @@ function MapToken({
   fadeOnHover,
   map,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
     stageScale,
-  } = useContext(MapInteractionContext);
+  } = useMapInteraction();
+  const { gridCellPixelSize } = useGrid();
 
   const tokenSource = useDataSource(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
@@ -49,6 +48,8 @@ function MapToken({
       setTokenAspectRatio(tokenSourceImage.width / tokenSourceImage.height);
     }
   }, [tokenSourceImage]);
+
+  const snapPositionToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     const tokenGroup = event.target;
@@ -86,7 +87,7 @@ function MapToken({
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToMap(map, mapWidth, mapHeight, tokenGroup, snappingThreshold);
+      tokenGroup.position(snapPositionToGrid(tokenGroup.position()));
     }
   }
 
@@ -175,9 +176,12 @@ function MapToken({
     }
   }
 
-  const tokenWidth = tokenSizePercent * mapWidth * tokenState.size;
-  const tokenHeight =
-    tokenSizePercent * (mapWidth / tokenAspectRatio) * tokenState.size;
+  const minCellSize = Math.min(
+    gridCellPixelSize.width,
+    gridCellPixelSize.height
+  );
+  const tokenWidth = minCellSize * tokenState.size;
+  const tokenHeight = (minCellSize / tokenAspectRatio) * tokenState.size;
 
   const debouncedStageScale = useDebounce(stageScale, 50);
   const imageRef = useRef();

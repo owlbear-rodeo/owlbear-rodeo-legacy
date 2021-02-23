@@ -5,7 +5,7 @@ import Modal from "../components/Modal";
 
 import { getHMSDuration, getDurationHMS } from "../helpers/timer";
 
-import useSetting from "../helpers/useSetting";
+import useSetting from "../hooks/useSetting";
 
 function StartTimerModal({
   isOpen,

@@ -1,71 +1,80 @@
 import React from "react";
-import { Line, Group } from "react-konva";
+import { Group, Rect } from "react-konva";
+import useImage from "use-image";
 
-import { getStrokeWidth } from "../helpers/drawing";
+import Vector2 from "../helpers/Vector2";
 
-function Grid({ gridX, gridY, gridInset, strokeWidth, width, height, stroke }) {
-  if (!gridX || !gridY) {
+import { useGrid } from "../contexts/GridContext";
+
+import squarePatternDark from "../images/SquarePatternDark.png";
+import squarePatternLight from "../images/SquarePatternLight.png";
+import hexPatternDark from "../images/HexPatternDark.png";
+import hexPatternLight from "../images/HexPatternLight.png";
+
+function Grid({ stroke }) {
+  const { grid, gridPixelSize, gridOffset, gridCellPixelSize } = useGrid();
+  let imageSource;
+  if (grid.type === "square") {
+    if (stroke === "black") {
+      imageSource = squarePatternDark;
+    } else {
+      imageSource = squarePatternLight;
+    }
+  } else {
+    if (stroke === "black") {
+      imageSource = hexPatternDark;
+    } else {
+      imageSource = hexPatternLight;
+    }
+  }
+
+  const [patternImage] = useImage(imageSource);
+
+  if (!grid?.size.x || !grid?.size.y) {
     return null;
   }
 
-  const gridSizeNormalized = {
-    x: (gridInset.bottomRight.x - gridInset.topLeft.x) / gridX,
-    y: (gridInset.bottomRight.y - gridInset.topLeft.y) / gridY,
-  };
+  const negativeGridOffset = Vector2.multiply(gridOffset, -1);
 
-  const insetWidth = (gridInset.bottomRight.x - gridInset.topLeft.x) * width;
-  const insetHeight = (gridInset.bottomRight.y - gridInset.topLeft.y) * height;
-
-  const lineSpacingX = insetWidth / gridX;
-  const lineSpacingY = insetHeight / gridY;
-
-  const offsetX = gridInset.topLeft.x * width * -1;
-  const offsetY = gridInset.topLeft.y * height * -1;
-
-  const lines = [];
-  for (let x = 1; x < gridX; x++) {
-    lines.push(
-      <Line
-        key={`grid_x_${x}`}
-        points={[x * lineSpacingX, 0, x * lineSpacingX, insetHeight]}
-        stroke={stroke}
-        strokeWidth={getStrokeWidth(
-          strokeWidth,
-          gridSizeNormalized,
-          width,
-          height
-        )}
-        opacity={0.5}
-        offsetX={offsetX}
-        offsetY={offsetY}
-      />
-    );
-  }
-  for (let y = 1; y < gridY; y++) {
-    lines.push(
-      <Line
-        key={`grid_y_${y}`}
-        points={[0, y * lineSpacingY, insetWidth, y * lineSpacingY]}
-        stroke={stroke}
-        strokeWidth={getStrokeWidth(
-          strokeWidth,
-          gridSizeNormalized,
-          width,
-          height
-        )}
-        opacity={0.5}
-        offsetX={offsetX}
-        offsetY={offsetY}
-      />
-    );
+  let patternProps = {};
+  if (grid.type === "square") {
+    // Square grid pattern is 150 DPI
+    const scale = gridCellPixelSize.width / 300;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetX = gridCellPixelSize.width / 2;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.height / 2;
+  } else if (grid.type === "hexVertical") {
+    // Hex tile pattern is 153 DPI to better fit hex tiles
+    const scale = gridCellPixelSize.width / 153;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.radius / 2;
+  } else if (grid.type === "hexHorizontal") {
+    const scale = gridCellPixelSize.height / 153;
+    patternProps.fillPatternScaleX = scale;
+    patternProps.fillPatternScaleY = scale;
+    patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / 2;
+    patternProps.fillPatternRotation = 90;
   }
 
-  return <Group>{lines}</Group>;
+  return (
+    <Group>
+      <Rect
+        width={gridPixelSize.width}
+        height={gridPixelSize.height}
+        offset={negativeGridOffset}
+        fillPatternImage={patternImage}
+        fillPatternRepeat="repeat"
+        opacity={stroke === "black" ? 0.8 : 0.4}
+        {...patternProps}
+      />
+    </Group>
+  );
 }
 
 Grid.defaultProps = {
   strokeWidth: 0.1,
-  gridInset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
   stroke: "white",
 };
 

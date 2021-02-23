@@ -22,7 +22,7 @@ import RedoButton from "./RedoButton";
 
 import Divider from "../../Divider";
 
-import useKeyboard from "../../../helpers/useKeyboard";
+import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 function DrawingToolSettings({
   settings,

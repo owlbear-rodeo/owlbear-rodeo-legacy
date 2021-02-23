@@ -1,6 +1,8 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
+
+import { useKeyboard } from "../contexts/KeyboardContext";
 
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
@@ -13,7 +15,7 @@ function useStageInteraction(
   stageTranslateRef,
   layer,
   maxZoom = 10,
-  tool = "pan",
+  tool = "move",
   preventInteraction = false,
   gesture = {}
 ) {
@@ -21,7 +23,20 @@ function useStageInteraction(
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
 
-  const bind = useGesture(
+  // Prevent accessibility pinch to zoom on Mac
+  useEffect(() => {
+    function handleGesture(e) {
+      e.preventDefault();
+    }
+    window.addEventListener("gesturestart", handleGesture);
+    window.addEventListener("gesturechange", handleGesture);
+    return () => {
+      window.removeEventListener("gesturestart", handleGesture);
+      window.removeEventListener("gesturechange", handleGesture);
+    };
+  });
+
+  useGesture(
     {
       ...gesture,
       onWheelStart: (props) => {
@@ -31,12 +46,12 @@ function useStageInteraction(
         gesture.onWheelStart && gesture.onWheelStart(props);
       },
       onWheel: (props) => {
-        const { event } = props;
-        event.persist();
-        const { pixelY } = normalizeWheel(event);
         if (preventInteraction || !isInteractingWithCanvas.current) {
           return;
         }
+        const { event } = props;
+        const { pixelY } = normalizeWheel(event);
+
         const newScale = Math.min(
           Math.max(
             stageScale +
@@ -139,7 +154,7 @@ function useStageInteraction(
 
         const [dx, dy] = delta;
         const stageTranslate = stageTranslateRef.current;
-        if (tool === "pan") {
+        if (tool === "move") {
           const newTranslate = {
             x: stageTranslate.x + dx,
             y: stageTranslate.y + dy,
@@ -154,10 +169,50 @@ function useStageInteraction(
     {
       // Fix drawing using old pointer end position on touch devices when drawing new shapes
       drag: { delay: 300 },
+      domTarget: window,
+      eventOptions: {
+        passive: false,
+      },
     }
   );
 
-  return bind;
+  function handleKeyDown(event) {
+    // TODO: Find better way to detect whether keyboard event should fire.
+    // This one fires on all open stages
+    if (preventInteraction) {
+      return;
+    }
+    const { key, ctrlKey, metaKey } = event;
+    if (
+      (key === "=" || key === "+" || key === "-" || key === "_") &&
+      !ctrlKey &&
+      !metaKey
+    ) {
+      const pixelY = key === "=" || key === "+" ? -100 : 100;
+      const newScale = Math.min(
+        Math.max(
+          stageScale +
+            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+          minZoom
+        ),
+        maxZoom
+      );
+
+      // Center on pointer
+      const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      const newTranslate = {
+        x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+        y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+      };
+
+      stage.position(newTranslate);
+      stageTranslateRef.current = newTranslate;
+
+      onStageScaleChange(newScale);
+    }
+  }
+
+  useKeyboard(handleKeyDown);
 }
 
 export default useStageInteraction;

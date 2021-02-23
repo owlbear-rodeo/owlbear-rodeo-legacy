@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import useDataSource from "../../helpers/useDataSource";
+import useDataSource from "../../hooks/useDataSource";
 import {
   tokenSources as defaultTokenSources,
   unknownSource,
@@ -17,7 +17,12 @@ function TokenTile({
   canEdit,
   badges,
 }) {
-  const tokenSource = useDataSource(token, defaultTokenSources, unknownSource);
+  const isDefault = token.type === "default";
+  const tokenSource = useDataSource(
+    isDefault ? token : token.thumbnail,
+    defaultTokenSources,
+    unknownSource
+  );
 
   return (
     <Tile

@@ -21,6 +21,8 @@ const sharingAudio = raw("../docs/howTo/sharingAudio.md");
 const usingPointer = raw("../docs/howTo/usingPointer.md");
 const usingTimer = raw("../docs/howTo/usingTimer.md");
 const usingNotes = raw("../docs/howTo/usingNotes.md");
+const shortcuts = raw("../docs/howTo/shortcuts.md");
+const settings = raw("../docs/howTo/settings.md");
 
 function HowTo() {
   const location = useLocation();
@@ -128,12 +130,28 @@ function HowTo() {
             <Markdown source={usingTimer} assets={assets} />
           </Accordion>
         </div>
+        <div id="settings">
+          <Accordion
+            heading="Settings"
+            defaultOpen={location.hash === "#settings"}
+          >
+            <Markdown source={settings} assets={assets} />
+          </Accordion>
+        </div>
         <div id="sharingAudio">
           <Accordion
             heading="Sharing Audio (Experimental)"
             defaultOpen={location.hash === "#sharingAudio"}
           >
             <Markdown source={sharingAudio} assets={assets} />
+          </Accordion>
+        </div>
+        <div id="shortcuts">
+          <Accordion
+            heading="Shortcuts"
+            defaultOpen={location.hash === "#shortcuts"}
+          >
+            <Markdown source={shortcuts} assets={assets} />
           </Accordion>
         </div>
       </Flex>

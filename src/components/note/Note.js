@@ -1,15 +1,17 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Rect, Text } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 
-import AuthContext from "../../contexts/AuthContext";
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useGrid } from "../../contexts/GridContext";
 
-import { snapNodeToMap } from "../../helpers/map";
 import colors from "../../helpers/colors";
-import usePrevious from "../../helpers/usePrevious";
 
-const snappingThreshold = 1 / 5;
+import usePrevious from "../../hooks/usePrevious";
+import useGridSnapping from "../../hooks/useGridSnapping";
+
+const minTextSize = 16;
 
 function Note({
   note,
@@ -19,15 +21,21 @@ function Note({
   draggable,
   onNoteDragStart,
   onNoteDragEnd,
+  fadeOnHover,
 }) {
-  const { userId } = useContext(AuthContext);
-  const { mapWidth, mapHeight, setPreventMapInteraction } = useContext(
-    MapInteractionContext
-  );
+  const { userId } = useAuth();
+  const { mapWidth, mapHeight, setPreventMapInteraction } = useMapInteraction();
+  const { gridCellPixelSize } = useGrid();
 
-  const noteWidth = map && (mapWidth / map.grid.size.x) * note.size;
+  const minCellSize = Math.min(
+    gridCellPixelSize.width,
+    gridCellPixelSize.height
+  );
+  const noteWidth = minCellSize * note.size;
   const noteHeight = noteWidth;
   const notePadding = noteWidth / 10;
+
+  const snapPositionToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     onNoteDragStart && onNoteDragStart(event, note.id);
@@ -37,7 +45,7 @@ function Note({
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
-      snapNodeToMap(map, mapWidth, mapHeight, noteGroup, snappingThreshold);
+      noteGroup.position(snapPositionToGrid(noteGroup.position()));
     }
   }
 
@@ -89,6 +97,19 @@ function Note({
     }
   }
 
+  const [noteOpacity, setNoteOpacity] = useState(1);
+  function handlePointerEnter() {
+    if (fadeOnHover) {
+      setNoteOpacity(0.5);
+    }
+  }
+
+  function handlePointerLeave() {
+    if (noteOpacity !== 1.0) {
+      setNoteOpacity(1.0);
+    }
+  }
+
   const [fontSize, setFontSize] = useState(1);
   useEffect(() => {
     const text = textRef.current;
@@ -98,10 +119,10 @@ function Note({
     }
 
     function findFontSize() {
-      // Create an array from 1 / 10 of the note height to the full note height
+      // Create an array from 1 / minTextSize of the note height to the full note height
       const sizes = Array.from(
         { length: Math.ceil(noteHeight - notePadding * 2) },
-        (_, i) => i + Math.ceil(noteHeight / 10)
+        (_, i) => i + Math.ceil(noteHeight / minTextSize)
       );
 
       if (sizes.length > 0) {
@@ -149,7 +170,7 @@ function Note({
       onClick={handleClick}
       onTap={handleClick}
       width={noteWidth}
-      height={noteHeight}
+      height={note.textOnly ? undefined : noteHeight}
       offsetX={noteWidth / 2}
       offsetY={noteHeight / 2}
       draggable={draggable}
@@ -160,31 +181,37 @@ function Note({
       onMouseUp={handlePointerUp}
       onTouchStart={handlePointerDown}
       onTouchEnd={handlePointerUp}
-      opacity={note.visible ? 1.0 : 0.5}
+      onMouseEnter={handlePointerEnter}
+      onMouseLeave={handlePointerLeave}
+      opacity={note.visible ? noteOpacity : 0.5}
     >
-      <Rect
-        width={noteWidth}
-        height={noteHeight}
-        shadowColor="rgba(0, 0, 0, 0.16)"
-        shadowOffset={{ x: 0, y: 3 }}
-        shadowBlur={6}
-        cornerRadius={0.25}
-        fill={colors[note.color]}
-      />
+      {!note.textOnly && (
+        <Rect
+          width={noteWidth}
+          height={noteHeight}
+          shadowColor="rgba(0, 0, 0, 0.16)"
+          shadowOffset={{ x: 0, y: 3 }}
+          shadowBlur={6}
+          cornerRadius={0.25}
+          fill={colors[note.color]}
+        />
+      )}
       <Text
         text={note.text}
         fill={
-          note.color === "black" || note.color === "darkGray"
+          note.textOnly
+            ? colors[note.color]
+            : note.color === "black" || note.color === "darkGray"
             ? "white"
             : "black"
         }
-        align="center"
+        align="left"
         verticalAlign="middle"
         padding={notePadding}
         fontSize={fontSize}
         wrap="word"
         width={noteWidth}
-        height={noteHeight}
+        height={note.textOnly ? undefined : noteHeight}
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />

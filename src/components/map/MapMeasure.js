@@ -1,63 +1,59 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Group, Line, Text, Label, Tag } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
-import MapStageContext from "../../contexts/MapStageContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useMapStage } from "../../contexts/MapStageContext";
+import { useGrid } from "../../contexts/GridContext";
 
 import {
-  getBrushPositionForTool,
   getDefaultShapeData,
   getUpdatedShapeData,
-  getStrokeWidth,
 } from "../../helpers/drawing";
-import { getRelativePointerPositionNormalized } from "../../helpers/konva";
-import * as Vector2 from "../../helpers/vector2";
+import Vector2 from "../../helpers/Vector2";
+import { getRelativePointerPosition } from "../../helpers/konva";
+import { parseGridScale, gridDistance } from "../../helpers/grid";
 
-function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
-  const { stageScale, mapWidth, mapHeight, interactionEmitter } = useContext(
-    MapInteractionContext
-  );
-  const mapStageRef = useContext(MapStageContext);
+import useGridSnapping from "../../hooks/useGridSnapping";
+
+function MapMeasure({ map, active }) {
+  const {
+    stageScale,
+    mapWidth,
+    mapHeight,
+    interactionEmitter,
+  } = useMapInteraction();
+  const {
+    grid,
+    gridCellNormalizedSize,
+    gridStrokeWidth,
+    gridCellPixelSize,
+    gridOffset,
+  } = useGrid();
+  const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
-  function parseToolScale(scale) {
-    if (typeof scale === "string") {
-      const match = scale.match(/(\d*)(\.\d*)?([a-zA-Z]*)/);
-      const integer = parseFloat(match[1]);
-      const fractional = parseFloat(match[2]);
-      const unit = match[3] || "";
-      if (!isNaN(integer) && !isNaN(fractional)) {
-        return {
-          multiplier: integer + fractional,
-          unit: unit,
-          digits: match[2].length - 1,
-        };
-      } else if (!isNaN(integer) && isNaN(fractional)) {
-        return { multiplier: integer, unit: unit, digits: 0 };
-      }
-    }
-    return { multiplier: 1, unit: "", digits: 0 };
-  }
+  const gridScale = parseGridScale(active && grid.measurement.scale);
 
-  const measureScale = parseToolScale(active && selectedToolSettings.scale);
+  const snapPositionToGrid = useGridSnapping();
 
   useEffect(() => {
     if (!active) {
       return;
     }
     const mapStage = mapStageRef.current;
+    const mapImage = mapStage?.findOne("#mapImage");
 
     function getBrushPosition() {
       const mapImage = mapStage.findOne("#mapImage");
-      return getBrushPositionForTool(
-        map,
-        getRelativePointerPositionNormalized(mapImage),
-        map.snapToGrid,
-        false,
-        gridSize,
-        []
-      );
+      let position = getRelativePointerPosition(mapImage);
+      if (map.snapToGrid) {
+        position = snapPositionToGrid(position);
+      }
+      return Vector2.divide(position, {
+        x: mapImage.width(),
+        y: mapImage.height(),
+      });
     }
 
     function handleBrushDown() {
@@ -75,15 +71,24 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
           "line",
           drawingShapeData,
           brushPosition,
-          gridSize
+          gridCellNormalizedSize
         );
-        // Round the grid positions to the nearest 0.1 to aviod floating point issues
-        const precision = { x: 0.1, y: 0.1 };
-        const length = Vector2.distance(
-          Vector2.roundTo(Vector2.divide(points[0], gridSize), precision),
-          Vector2.roundTo(Vector2.divide(points[1], gridSize), precision),
-          selectedToolSettings.type
+        // Convert back to pixel values
+        const a = Vector2.subtract(
+          Vector2.multiply(points[0], {
+            x: mapImage.width(),
+            y: mapImage.height(),
+          }),
+          gridOffset
         );
+        const b = Vector2.subtract(
+          Vector2.multiply(points[1], {
+            x: mapImage.width(),
+            y: mapImage.height(),
+          }),
+          gridOffset
+        );
+        const length = gridDistance(grid, a, b, gridCellPixelSize);
         setDrawingShapeData({
           length,
           points,
@@ -122,13 +127,13 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
       <Group>
         <Line
           points={linePoints}
-          strokeWidth={getStrokeWidth(1.5, gridSize, mapWidth, mapHeight)}
+          strokeWidth={1.5 * gridStrokeWidth}
           stroke="hsla(230, 25%, 18%, 0.8)"
           lineCap="round"
         />
         <Line
           points={linePoints}
-          strokeWidth={getStrokeWidth(0.25, gridSize, mapWidth, mapHeight)}
+          strokeWidth={0.25 * gridStrokeWidth}
           stroke="white"
           lineCap="round"
         />
@@ -142,9 +147,9 @@ function MapMeasure({ map, selectedToolSettings, active, gridSize }) {
         >
           <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
           <Text
-            text={`${(shapeData.length * measureScale.multiplier).toFixed(
-              measureScale.digits
-            )}${measureScale.unit}`}
+            text={`${(shapeData.length * gridScale.multiplier).toFixed(
+              gridScale.digits
+            )}${gridScale.unit}`}
             fill="white"
             fontSize={24}
             padding={4}

@@ -4,7 +4,7 @@ import { useMedia } from "react-media";
 
 import RadioIconButton from "../../RadioIconButton";
 
-import EdgeSnappingToggle from "./EdgeSnappingToggle";
+import MultilayerToggle from "./MultilayerToggle";
 import FogPreviewToggle from "./FogPreviewToggle";
 import FogCutToggle from "./FogCutToggle";
 
@@ -20,7 +20,7 @@ import ToolSection from "./ToolSection";
 
 import Divider from "../../Divider";
 
-import useKeyboard from "../../../helpers/useKeyboard";
+import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 function BrushToolSettings({
   settings,
@@ -30,9 +30,7 @@ function BrushToolSettings({
 }) {
   // Keyboard shortcuts
   function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-    if (key === "Alt") {
-      onSettingChange({ useFogCut: !settings.useFogCut });
-    } else if (key === "p") {
+    if (key === "p") {
       onSettingChange({ type: "polygon" });
     } else if (key === "b") {
       onSettingChange({ type: "brush" });
@@ -40,8 +38,8 @@ function BrushToolSettings({
       onSettingChange({ type: "toggle" });
     } else if (key === "e") {
       onSettingChange({ type: "remove" });
-    } else if (key === "s") {
-      onSettingChange({ useEdgeSnapping: !settings.useEdgeSnapping });
+    } else if (key === "l") {
+      onSettingChange({ multilayer: !settings.multilayer });
     } else if (key === "f") {
       onSettingChange({ preview: !settings.preview });
     } else if (key === "c") {
@@ -65,13 +63,7 @@ function BrushToolSettings({
     }
   }
 
-  function handleKeyUp({ key }) {
-    if (key === "Alt") {
-      onSettingChange({ useFogCut: !settings.useFogCut });
-    }
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
+  useKeyboard(handleKeyDown);
 
   const isSmallScreen = useMedia({ query: "(max-width: 799px)" });
   const drawTools = [
@@ -128,11 +120,9 @@ function BrushToolSettings({
         onFogCutChange={(useFogCut) => onSettingChange({ useFogCut })}
         disabled={settings.preview}
       />
-      <EdgeSnappingToggle
-        useEdgeSnapping={settings.useEdgeSnapping}
-        onEdgeSnappingChange={(useEdgeSnapping) =>
-          onSettingChange({ useEdgeSnapping })
-        }
+      <MultilayerToggle
+        multilayer={settings.multilayer}
+        onMultilayerChange={(multilayer) => onSettingChange({ multilayer })}
         disabled={settings.preview}
       />
       <FogPreviewToggle

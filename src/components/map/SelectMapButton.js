@@ -1,23 +1,23 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { IconButton } from "theme-ui";
 
 import SelectMapModal from "../../modals/SelectMapModal";
 import SelectMapIcon from "../../icons/SelectMapIcon";
 
-import MapDataContext from "../../contexts/MapDataContext";
-import AuthContext from "../../contexts/AuthContext";
+import { useMapData } from "../../contexts/MapDataContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 function SelectMapButton({
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   currentMap,
   currentMapState,
   disabled,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { updateMapState } = useContext(MapDataContext);
-  const { userId } = useContext(AuthContext);
+  const { updateMapState } = useMapData();
+  const { userId } = useAuth();
   function openModal() {
     if (currentMapState && currentMap && currentMap.owner === userId) {
       updateMapState(currentMapState.mapId, currentMapState);
@@ -43,7 +43,7 @@ function SelectMapButton({
         isOpen={isModalOpen}
         onDone={handleDone}
         onMapChange={onMapChange}
-        onMapStateChange={onMapStateChange}
+        onMapReset={onMapReset}
         currentMap={currentMap}
       />
     </>

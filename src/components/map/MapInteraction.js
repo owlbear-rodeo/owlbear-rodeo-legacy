@@ -4,20 +4,23 @@ import ReactResizeDetector from "react-resize-detector";
 import { Stage, Layer, Image } from "react-konva";
 import { EventEmitter } from "events";
 
-import useMapImage from "../../helpers/useMapImage";
-import usePreventOverscroll from "../../helpers/usePreventOverscroll";
-import useKeyboard from "../../helpers/useKeyboard";
-import useStageInteraction from "../../helpers/useStageInteraction";
-import useImageCenter from "../../helpers/useImageCenter";
-import { getMapMaxZoom } from "../../helpers/map";
+import useMapImage from "../../hooks/useMapImage";
+import usePreventOverscroll from "../../hooks/usePreventOverscroll";
+import useStageInteraction from "../../hooks/useStageInteraction";
+import useImageCenter from "../../hooks/useImageCenter";
+
+import { getGridMaxZoom } from "../../helpers/grid";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import MapStageContext, {
-  MapStageProvider,
-} from "../../contexts/MapStageContext";
-import AuthContext from "../../contexts/AuthContext";
-import SettingsContext from "../../contexts/SettingsContext";
+import { MapStageProvider, useMapStage } from "../../contexts/MapStageContext";
+import AuthContext, { useAuth } from "../../contexts/AuthContext";
+import SettingsContext, { useSettings } from "../../contexts/SettingsContext";
 import KeyboardContext from "../../contexts/KeyboardContext";
+import TokenDataContext, {
+  useTokenData,
+} from "../../contexts/TokenDataContext";
+import { GridProvider } from "../../contexts/GridContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
 function MapInteraction({
   map,
@@ -52,7 +55,7 @@ function MapInteraction({
 
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapStageRef = useContext(MapStageContext);
+  const mapStageRef = useMapStage();
   const mapLayerRef = useRef();
   const mapImageRef = useRef();
 
@@ -81,20 +84,20 @@ function MapInteraction({
 
   const [interactionEmitter] = useState(new EventEmitter());
 
-  const bind = useStageInteraction(
+  useStageInteraction(
     mapStageRef.current,
     stageScale,
     setStageScale,
     stageTranslateRef,
     mapLayerRef.current,
-    getMapMaxZoom(map),
+    getGridMaxZoom(map?.grid),
     selectedToolId,
     preventMapInteraction,
     {
       onPinchStart: () => {
-        // Change to pan tool when pinching and zooming
+        // Change to move tool when pinching and zooming
         previousSelectedToolRef.current = selectedToolId;
-        onSelectedToolChange("pan");
+        onSelectedToolChange("move");
       },
       onPinchEnd: () => {
         onSelectedToolChange(previousSelectedToolRef.current);
@@ -112,24 +115,24 @@ function MapInteraction({
   );
 
   function handleKeyDown(event) {
-    // Change to pan tool when pressing space
-    if (event.key === " " && selectedToolId === "pan") {
-      // Stop active state on pan icon from being selected
+    // Change to move tool when pressing space
+    if (event.key === " " && selectedToolId === "move") {
+      // Stop active state on move icon from being selected
       event.preventDefault();
     }
     if (
       event.key === " " &&
-      selectedToolId !== "pan" &&
-      !disabledControls.includes("pan")
+      selectedToolId !== "move" &&
+      !disabledControls.includes("move")
     ) {
       event.preventDefault();
       previousSelectedToolRef.current = selectedToolId;
-      onSelectedToolChange("pan");
+      onSelectedToolChange("move");
     }
 
     // Basic keyboard shortcuts
-    if (event.key === "w" && !disabledControls.includes("pan")) {
-      onSelectedToolChange("pan");
+    if (event.key === "w" && !disabledControls.includes("move")) {
+      onSelectedToolChange("move");
     }
     if (event.key === "d" && !disabledControls.includes("drawing")) {
       onSelectedToolChange("drawing");
@@ -149,7 +152,7 @@ function MapInteraction({
   }
 
   function handleKeyUp(event) {
-    if (event.key === " " && selectedToolId === "pan") {
+    if (event.key === " " && selectedToolId === "move") {
       onSelectedToolChange(previousSelectedToolRef.current);
     }
   }
@@ -160,7 +163,7 @@ function MapInteraction({
 
   function getCursorForTool(tool) {
     switch (tool) {
-      case "pan":
+      case "move":
         return "move";
       case "fog":
       case "drawing":
@@ -176,8 +179,9 @@ function MapInteraction({
     }
   }
 
-  const auth = useContext(AuthContext);
-  const settings = useContext(SettingsContext);
+  const auth = useAuth();
+  const settings = useSettings();
+  const tokenData = useTokenData();
 
   const mapInteraction = {
     stageScale,
@@ -199,7 +203,6 @@ function MapInteraction({
         outline: "none",
       }}
       ref={containerRef}
-      {...bind()}
       className="map"
     >
       <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
@@ -222,9 +225,17 @@ function MapInteraction({
               <SettingsContext.Provider value={settings}>
                 <KeyboardContext.Provider value={keyboardValue}>
                   <MapInteractionProvider value={mapInteraction}>
-                    <MapStageProvider value={mapStageRef}>
-                      {mapLoaded && children}
-                    </MapStageProvider>
+                    <GridProvider
+                      grid={map?.grid}
+                      width={mapWidth}
+                      height={mapHeight}
+                    >
+                      <MapStageProvider value={mapStageRef}>
+                        <TokenDataContext.Provider value={tokenData}>
+                          {mapLoaded && children}
+                        </TokenDataContext.Provider>
+                      </MapStageProvider>
+                    </GridProvider>
                   </MapInteractionProvider>
                 </KeyboardContext.Provider>
               </SettingsContext.Provider>
@@ -233,7 +244,9 @@ function MapInteraction({
         </Stage>
       </ReactResizeDetector>
       <MapInteractionProvider value={mapInteraction}>
-        {controls}
+        <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+          {controls}
+        </GridProvider>
       </MapInteractionProvider>
     </Box>
   );

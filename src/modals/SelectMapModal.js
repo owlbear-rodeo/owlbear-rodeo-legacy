@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -13,18 +13,22 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
-import useKeyboard from "../helpers/useKeyboard";
-import { resizeImage } from "../helpers/image";
+import { resizeImage, createThumbnail } from "../helpers/image";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { getMapDefaultInset, getGridSize, gridSizeVaild } from "../helpers/map";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
-import * as Vector2 from "../helpers/vector2";
+import {
+  getGridDefaultInset,
+  getGridSizeFromImage,
+  gridSizeVaild,
+} from "../helpers/grid";
+import Vector2 from "../helpers/Vector2";
 
-import MapDataContext from "../contexts/MapDataContext";
-import AuthContext from "../contexts/AuthContext";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
+import { useMapData } from "../contexts/MapDataContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 
 const defaultMapProps = {
-  // Grid type
   showGrid: false,
   snapToGrid: true,
   quality: "original",
@@ -46,11 +50,11 @@ function SelectMapModal({
   isOpen,
   onDone,
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   // The map currently being view in the map screen
   currentMap,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     ownedMaps,
     mapStates,
@@ -60,7 +64,9 @@ function SelectMapModal({
     updateMap,
     updateMaps,
     mapsLoading,
-  } = useContext(MapDataContext);
+    getMapFromDB,
+    getMapStateFromDB,
+  } = useMapData();
 
   /**
    * Search
@@ -78,8 +84,10 @@ function SelectMapModal({
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   async function handleMapsGroup(group) {
+    setIsLoading(true);
     setIsGroupModalOpen(false);
-    updateMaps(selectedMapIds, { group });
+    await updateMaps(selectedMapIds, { group });
+    setIsLoading(false);
   }
 
   const [mapsByGroup, mapGroups] = useGroup(
@@ -94,7 +102,7 @@ function SelectMapModal({
    */
 
   const fileInputRef = useRef();
-  const [imageLoading, setImageLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleImagesUpload(files) {
     if (navigator.storage) {
@@ -116,7 +124,7 @@ function SelectMapModal({
       return Promise.reject();
     }
     let image = new Image();
-    setImageLoading(true);
+    setIsLoading(true);
 
     const buffer = await blobToBuffer(file);
     // Copy file to avoid permissions issues
@@ -148,7 +156,7 @@ function SelectMapModal({
           }
 
           if (!gridSize) {
-            gridSize = await getGridSize(image);
+            gridSize = await getGridSizeFromImage(image);
           }
 
           // Remove file extension
@@ -195,22 +203,28 @@ function SelectMapModal({
             }
           }
         }
+        // Create thumbnail
+        const thumbnail = await createThumbnail(image, file.type);
 
         handleMapAdd({
           // Save as a buffer to send with msgpack
           file: buffer,
           resolutions,
+          thumbnail,
           name,
           type: "file",
           grid: {
             size: gridSize,
-            inset: getMapDefaultInset(
+            inset: getGridDefaultInset(
+              { size: gridSize, type: "square" },
               image.width,
-              image.height,
-              gridSize.x,
-              gridSize.y
+              image.height
             ),
             type: "square",
+            measurement: {
+              type: "chebyshev",
+              scale: "5ft",
+            },
           },
           width: image.width,
           height: image.height,
@@ -221,7 +235,7 @@ function SelectMapModal({
           owner: userId,
           ...defaultMapProps,
         });
-        setImageLoading(false);
+        setIsLoading(false);
         URL.revokeObjectURL(url);
         resolve();
       };
@@ -257,6 +271,7 @@ function SelectMapModal({
 
   const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
   async function handleMapsRemove() {
+    setIsLoading(true);
     setIsMapsRemoveModalOpen(false);
     await removeMaps(selectedMapIds);
     setSelectedMapIds([]);
@@ -264,18 +279,21 @@ function SelectMapModal({
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
     }
+    setIsLoading(false);
   }
 
   const [isMapsResetModalOpen, setIsMapsResetModalOpen] = useState(false);
   async function handleMapsReset() {
+    setIsLoading(true);
     setIsMapsResetModalOpen(false);
     for (let id of selectedMapIds) {
       const newState = await resetMap(id);
       // Reset the state of the current map if needed
       if (currentMap && currentMap.id === id) {
-        onMapStateChange(newState);
+        onMapReset(newState);
       }
     }
+    setIsLoading(false);
   }
 
   // Either single, multiple or range
@@ -301,14 +319,21 @@ function SelectMapModal({
   }
 
   async function handleDone() {
-    if (imageLoading) {
+    if (isLoading) {
       return;
     }
     if (selectedMapIds.length === 1) {
       // Update last used for cache invalidation
       const lastUsed = Date.now();
-      await updateMap(selectedMapIds[0], { lastUsed });
-      onMapChange({ ...selectedMaps[0], lastUsed }, selectedMapStates[0]);
+      const map = selectedMaps[0];
+      const mapState = await getMapStateFromDB(map.id);
+      if (map.type === "file") {
+        await updateMap(map.id, { lastUsed });
+        const updatedMap = await getMapFromDB(map.id);
+        onMapChange(updatedMap, mapState);
+      } else {
+        onMapChange(map, mapState);
+      }
     } else {
       onMapChange(null, null);
     }
@@ -334,6 +359,10 @@ function SelectMapModal({
         selectedMapIds.length > 0 &&
         !selectedMaps.some((map) => map.type === "default")
       ) {
+        // Ensure all other modals are closed
+        setIsGroupModalOpen(false);
+        setIsEditModalOpen(false);
+        setIsMapsResetModalOpen(false);
         setIsMapsRemoveModalOpen(true);
       }
     }
@@ -409,7 +438,7 @@ function SelectMapModal({
           />
           <Button
             variant="primary"
-            disabled={imageLoading || selectedMapIds.length !== 1}
+            disabled={isLoading || selectedMapIds.length !== 1}
             onClick={handleDone}
             mt={2}
           >
@@ -417,12 +446,11 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
-      {(imageLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
+      {(isLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        map={selectedMaps.length === 1 && selectedMaps[0]}
-        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
+        mapId={selectedMaps.length === 1 && selectedMaps[0].id}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}

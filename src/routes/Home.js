@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Flex, Button, Image, Text, IconButton, Link } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
@@ -10,7 +10,7 @@ import GettingStartedModal from "../modals/GettingStartedModal";
 
 import HelpIcon from "../icons/HelpIcon";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 import RedditIcon from "../icons/SocialRedditIcon";
 import TwitterIcon from "../icons/SocialTwitterIcon";
@@ -28,7 +28,7 @@ function Home() {
   );
 
   // Reset password on visiting home
-  const { setPassword } = useContext(AuthContext);
+  const { setPassword } = useAuth();
   useEffect(() => {
     setPassword("");
   }, [setPassword]);

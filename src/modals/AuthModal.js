@@ -1,14 +1,12 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Input, Button, Label, Flex } from "theme-ui";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 import Modal from "../components/Modal";
 
-function AuthModal({ isOpen }) {
-  const { password, setPassword, setAuthenticationStatus } = useContext(
-    AuthContext
-  );
+function AuthModal({ isOpen, onSubmit }) {
+  const { password, setPassword } = useAuth();
   const [tmpPassword, setTempPassword] = useState(password);
 
   function handleChange(event) {
@@ -17,8 +15,8 @@ function AuthModal({ isOpen }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    setAuthenticationStatus("unknown");
     setPassword(tmpPassword);
+    onSubmit(tmpPassword);
   }
 
   const inputRef = useRef();
@@ -40,9 +38,7 @@ function AuthModal({ isOpen }) {
           autoComplete="off"
         />
         <Flex py={2}>
-          <Button sx={{ flexGrow: 1 }} disabled={!tmpPassword}>
-            Join
-          </Button>
+          <Button sx={{ flexGrow: 1 }}>Join</Button>
         </Flex>
       </Box>
     </Modal>

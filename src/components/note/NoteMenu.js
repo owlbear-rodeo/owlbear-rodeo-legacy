@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Flex, Text, IconButton, Textarea } from "theme-ui";
 
 import Slider from "../Slider";
@@ -7,14 +7,16 @@ import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
-import usePrevious from "../../helpers/usePrevious";
+import usePrevious from "../../hooks/usePrevious";
 
 import LockIcon from "../../icons/TokenLockIcon";
 import UnlockIcon from "../../icons/TokenUnlockIcon";
 import ShowIcon from "../../icons/TokenShowIcon";
 import HideIcon from "../../icons/TokenHideIcon";
+import NoteIcon from "../../icons/NoteToolIcon";
+import TextIcon from "../../icons/NoteTextIcon";
 
-import AuthContext from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const defaultNoteMaxSize = 6;
 
@@ -26,7 +28,7 @@ function NoteMenu({
   onNoteChange,
   map,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
 
   const wasOpen = usePrevious(isOpen);
 
@@ -51,7 +53,7 @@ function NoteMenu({
   }, [isOpen, note, wasOpen, noteNode]);
 
   function handleTextChange(event) {
-    const text = event.target.value.substring(0, 144);
+    const text = event.target.value.substring(0, 1024);
     note && onNoteChange({ ...note, text: text });
   }
 
@@ -73,6 +75,10 @@ function NoteMenu({
 
   function handleLockChange() {
     note && onNoteChange({ ...note, locked: !note.locked });
+  }
+
+  function handleModeChange() {
+    note && onNoteChange({ ...note, textOnly: !note.textOnly });
   }
 
   function handleModalContent(node) {
@@ -208,6 +214,13 @@ function NoteMenu({
               aria-label={note && note.locked ? "Unlock Note" : "Lock Note"}
             >
               {note && note.locked ? <LockIcon /> : <UnlockIcon />}
+            </IconButton>
+            <IconButton
+              onClick={handleModeChange}
+              title={note && note.textOnly ? "Note Mode" : "Text Mode"}
+              aria-label={note && note.textOnly ? "Note Mode" : "Text Mode"}
+            >
+              {note && note.textOnly ? <TextIcon /> : <NoteIcon />}
             </IconButton>
           </Flex>
         )}

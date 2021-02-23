@@ -1,16 +1,14 @@
-import { useContext } from "react";
-
 import get from "lodash.get";
 import set from "lodash.set";
 
-import SettingsContext from "../contexts/SettingsContext";
+import { useSettings } from "../contexts/SettingsContext";
 
 /**
  * Helper to get and set nested settings that are saved in local storage
  * @param {String} path The path to the setting within the Settings object provided by the SettingsContext
  */
 function useSetting(path) {
-  const { settings, setSettings } = useContext(SettingsContext);
+  const { settings, setSettings } = useSettings();
 
   const setting = get(settings, path);
 

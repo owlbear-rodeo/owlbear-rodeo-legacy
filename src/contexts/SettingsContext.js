@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 
 import { getSettings } from "../settings";
 
@@ -26,6 +26,14 @@ export function SettingsProvider({ children }) {
       {children}
     </SettingsContext.Provider>
   );
+}
+
+export function useSettings() {
+  const context = useContext(SettingsContext);
+  if (context === undefined) {
+    throw new Error("useSettings must be used within a SettingsProvider");
+  }
+  return context;
 }
 
 export default SettingsContext;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Input, Flex, Text, IconButton } from "theme-ui";
 
 import Slider from "../Slider";
@@ -7,14 +7,14 @@ import MapMenu from "../map/MapMenu";
 
 import colors, { colorOptions } from "../../helpers/colors";
 
-import usePrevious from "../../helpers/usePrevious";
+import usePrevious from "../../hooks/usePrevious";
 
 import LockIcon from "../../icons/TokenLockIcon";
 import UnlockIcon from "../../icons/TokenUnlockIcon";
 import ShowIcon from "../../icons/TokenShowIcon";
 import HideIcon from "../../icons/TokenHideIcon";
 
-import AuthContext from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const defaultTokenMaxSize = 6;
 function TokenMenu({
@@ -25,7 +25,7 @@ function TokenMenu({
   onTokenStateChange,
   map,
 }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
 
   const wasOpen = usePrevious(isOpen);
 
@@ -220,15 +220,15 @@ function TokenMenu({
           <Text
             as="label"
             variant="body2"
-            sx={{ width: "95%", fontSize: "16px" }}
+            sx={{ width: "65%", fontSize: "16px" }}
             p={1}
           >
-            Rotation:
+            Rotate:
           </Text>
           <Slider
             value={(tokenState && tokenState.rotation) || 0}
             onChange={handleRotationChange}
-            step={45}
+            step={15}
             min={0}
             max={360}
             mr={1}

@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -13,22 +13,24 @@ import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import blobToBuffer from "../helpers/blobToBuffer";
-import useKeyboard from "../helpers/useKeyboard";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
+import { createThumbnail } from "../helpers/image";
 
-import TokenDataContext from "../contexts/TokenDataContext";
-import AuthContext from "../contexts/AuthContext";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
+import { useTokenData } from "../contexts/TokenDataContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
-  const { userId } = useContext(AuthContext);
+  const { userId } = useAuth();
   const {
     ownedTokens,
     addToken,
     removeTokens,
     updateTokens,
     tokensLoading,
-  } = useContext(TokenDataContext);
+  } = useTokenData();
 
   /**
    * Search
@@ -46,8 +48,10 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   async function handleTokensGroup(group) {
+    setIsLoading(true);
     setIsGroupModalOpen(false);
     await updateTokens(selectedTokenIds, { group });
+    setIsLoading(false);
   }
 
   const [tokensByGroup, tokenGroups] = useGroup(
@@ -62,7 +66,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    */
 
   const fileInputRef = useRef();
-  const [imageLoading, setImageLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function openImageDialog() {
     if (fileInputRef.current) {
@@ -99,7 +103,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       name = Case.capital(name);
     }
     let image = new Image();
-    setImageLoading(true);
+    setIsLoading(true);
     const buffer = await blobToBuffer(file);
 
     // Copy file to avoid permissions issues
@@ -108,9 +112,12 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     const url = URL.createObjectURL(blob);
 
     return new Promise((resolve, reject) => {
-      image.onload = function () {
+      image.onload = async function () {
+        const thumbnail = await createThumbnail(image, file.type);
+
         handleTokenAdd({
           file: buffer,
+          thumbnail,
           name,
           id: shortid.generate(),
           type: "file",
@@ -125,7 +132,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           width: image.width,
           height: image.height,
         });
-        setImageLoading(false);
+        setIsLoading(false);
         resolve();
       };
       image.onerror = reject;
@@ -149,13 +156,17 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
   async function handleTokensRemove() {
+    setIsLoading(true);
     setIsTokensRemoveModalOpen(false);
     await removeTokens(selectedTokenIds);
     setSelectedTokenIds([]);
+    setIsLoading(false);
   }
 
   async function handleTokensHide(hideInSidebar) {
+    setIsLoading(true);
     await updateTokens(selectedTokenIds, { hideInSidebar });
+    setIsLoading(false);
   }
 
   // Either single, multiple or range
@@ -191,6 +202,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         selectedTokenIds.length > 0 &&
         !selectedTokens.some((token) => token.type === "default")
       ) {
+        // Ensure all other modals are closed
+        setIsEditModalOpen(false);
+        setIsGroupModalOpen(false);
         setIsTokensRemoveModalOpen(true);
       }
     }
@@ -264,18 +278,18 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           />
           <Button
             variant="primary"
-            disabled={imageLoading}
+            disabled={isLoading}
             onClick={onRequestClose}
           >
             Done
           </Button>
         </Flex>
       </ImageDrop>
-      {tokensLoading && <LoadingOverlay bg="overlay" />}
+      {(isLoading || tokensLoading) && <LoadingOverlay bg="overlay" />}
       <EditTokenModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        token={selectedTokens.length === 1 && selectedTokens[0]}
+        tokenId={selectedTokens.length === 1 && selectedTokens[0].id}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}

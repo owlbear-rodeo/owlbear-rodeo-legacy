@@ -1,3 +1,7 @@
+/**
+ * @param {Blob} blob
+ * @returns {Promise<Uint8Array>}
+ */
 async function blobToBuffer(blob) {
   if (blob.arrayBuffer) {
     const arrayBuffer = await blob.arrayBuffer();

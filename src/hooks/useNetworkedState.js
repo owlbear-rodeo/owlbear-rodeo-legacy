@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 
 import useDebounce from "./useDebounce";
-import { diff, applyChanges } from "./diff";
+import { diff, applyChanges } from "../helpers/diff";
 
 /**
  * @callback setNetworkedState

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Box, Text } from "theme-ui";
 
 import Banner from "../components/Banner";
@@ -77,6 +77,14 @@ export function DatabaseProvider({ children }) {
       </>
     </DatabaseContext.Provider>
   );
+}
+
+export function useDatabase() {
+  const context = useContext(DatabaseContext);
+  if (context === undefined) {
+    throw new Error("useDatabase must be used within a DatabaseProvider");
+  }
+  return context;
 }
 
 export default DatabaseContext;

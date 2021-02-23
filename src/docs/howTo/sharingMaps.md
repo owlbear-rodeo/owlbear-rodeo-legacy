@@ -32,8 +32,6 @@ To get access to these settings you can click the Edit Map button while a map is
 
 The topmost view of the Edit Map Screen is a grid editor. This allows you to visually set up any inset your map's grid may have.
 
-`Tip: When editing a grid you can use the arrow keys on your keyboard to nudge the grid in the vertical or horizontal direction.`
-
 Next there are the Column and Row properties. Columns represent how many grid cells your map has in the horizontal direction while Rows represents the amount of cells in the vertical direction.
 
 Next you can set the name of your map shown in the Map Select Screen.
@@ -49,14 +47,21 @@ To get access to these settings, click the Show More button under the Name input
 
 A brief summary of these settings is listed below.
 
-- Grid Type: Change the type of grid to use for the map. Currently only the Square type is supported however Hex will be added in a future release.
+- Grid Type: Change the type of grid to use for the map. Either Square, Hex Vertical and Hex Horizontal.
 - Draw Grid: When enabled Owlbear Rodeo will draw a grid on top of your map, this is useful if a custom map you have uploaded doesn't include a grid.
 - Snap to Grid: When enabled tokens, drawing, fog and measurements will attempt to snap to the grid.
+- Grid Measurement: How measurements should be calculated.
+  - Chessboard (D&D 5e): Distance on a chessboard.
+  - Alternating Diagonal (D&D 3.5e): Distance on a chessboard but diagonals alternate between 1 and 2 squares.
+  - Euclidean: Distance as the crow flies.
+  - Manhattan: Distance while only moving horizontal and vertical.
+- Grid Scale: How large is each grid cell.
 - Quality: When uploading a map Owlbear Rodeo will automatically generate various quality options, selecting a lower quality may help speed up map sending in resource constrained environments.
 - Allow others to edit: These properties control what other party members can edit when viewing your map.
   - Fog: Controls whether others can edit the maps fog (default disabled).
   - Drawings: Controls whether others can add drawings to the map (default enabled).
   - Tokens: Controls whether others can move tokens that they have not placed themselves (default enabled).
+  - Notes: Controls whether others can add or move notes (default enabled).
 
 ## Reseting, Removing and Grouping Maps
 

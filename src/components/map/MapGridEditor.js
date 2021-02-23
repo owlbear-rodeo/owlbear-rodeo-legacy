@@ -1,10 +1,10 @@
-import React, { useContext, useRef } from "react";
+import React, { useRef } from "react";
 import { Group, Circle, Rect } from "react-konva";
 
-import MapInteractionContext from "../../contexts/MapInteractionContext";
+import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
-import * as Vector2 from "../../helpers/vector2";
-import useKeyboard from "../../helpers/useKeyboard";
+import Vector2 from "../../helpers/Vector2";
 
 function MapGridEditor({ map, onGridChange }) {
   const {
@@ -12,7 +12,7 @@ function MapGridEditor({ map, onGridChange }) {
     mapHeight,
     stageScale,
     setPreventMapInteraction,
-  } = useContext(MapInteractionContext);
+  } = useMapInteraction();
 
   const mapSize = { x: mapWidth, y: mapHeight };
 
@@ -67,7 +67,7 @@ function MapGridEditor({ map, onGridChange }) {
     // Find distance and direction of dragging
     const previousPosition = handlePreviousPositionRef.current;
     const position = getHandleNormalizedPosition(handle);
-    const distance = Vector2.distance(previousPosition, position, "euclidean");
+    const distance = Vector2.distance(previousPosition, position);
     const direction = Vector2.normalize(
       Vector2.subtract(position, previousPosition)
     );
@@ -162,9 +162,12 @@ function MapGridEditor({ map, onGridChange }) {
     });
   }
 
-  function handleKeyDown({ key, shiftKey }) {
+  function handleKeyDown(event) {
+    const { key, shiftKey } = event;
     const nudgeAmount = shiftKey ? 2 : 0.5;
     if (key === "ArrowUp") {
+      // Stop arrow up/down scrolling if overflowing
+      event.preventDefault();
       nudgeGrid({ x: 0, y: -1 }, nudgeAmount);
     }
     if (key === "ArrowLeft") {
@@ -174,6 +177,7 @@ function MapGridEditor({ map, onGridChange }) {
       nudgeGrid({ x: 1, y: 0 }, nudgeAmount);
     }
     if (key === "ArrowDown") {
+      event.preventDefault();
       nudgeGrid({ x: 0, y: 1 }, nudgeAmount);
     }
   }

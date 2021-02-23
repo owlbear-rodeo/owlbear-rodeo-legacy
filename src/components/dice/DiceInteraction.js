@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { Box, Text } from "theme-ui";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { Vector3, Color4, Matrix } from "@babylonjs/core/Maths/math";
@@ -16,62 +17,70 @@ import "@babylonjs/loaders/glTF";
 
 import ReactResizeDetector from "react-resize-detector";
 
-import usePreventTouch from "../../helpers/usePreventTouch";
+import usePreventTouch from "../../hooks/usePreventTouch";
+
+import Banner from "../Banner";
 
 const diceThrowSpeed = 2;
 
 function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
+  const [error, setError] = useState();
+
   const sceneRef = useRef();
   const engineRef = useRef();
   const canvasRef = useRef();
   const containerRef = useRef();
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const engine = new Engine(canvas, true, {
-      preserveDrawingBuffer: true,
-      stencil: true,
-    });
-    const scene = new Scene(engine);
-    scene.clearColor = new Color4(0, 0, 0, 0);
-    // Enable physics
-    scene.enablePhysics(new Vector3(0, -98, 0), new AmmoJSPlugin(true, AMMO));
+    try {
+      const canvas = canvasRef.current;
+      const engine = new Engine(canvas, true, {
+        preserveDrawingBuffer: true,
+        stencil: true,
+      });
+      const scene = new Scene(engine);
+      scene.clearColor = new Color4(0, 0, 0, 0);
+      // Enable physics
+      scene.enablePhysics(new Vector3(0, -98, 0), new AmmoJSPlugin(true, AMMO));
 
-    let camera = new TargetCamera("camera", new Vector3(0, 33.5, 0), scene);
-    camera.fov = 0.65;
-    camera.setTarget(Vector3.Zero());
+      let camera = new TargetCamera("camera", new Vector3(0, 33.5, 0), scene);
+      camera.fov = 0.65;
+      camera.setTarget(Vector3.Zero());
 
-    onSceneMount && onSceneMount({ scene, engine, canvas });
+      onSceneMount && onSceneMount({ scene, engine, canvas });
 
-    engineRef.current = engine;
-    sceneRef.current = scene;
+      engineRef.current = engine;
+      sceneRef.current = scene;
 
-    engine.runRenderLoop(() => {
-      const scene = sceneRef.current;
-      const selectedMesh = selectedMeshRef.current;
-      if (selectedMesh && scene) {
-        const ray = scene.createPickingRay(
-          scene.pointerX,
-          scene.pointerY,
-          Matrix.Identity(),
-          camera
-        );
-        const currentPosition = selectedMesh.getAbsolutePosition();
-        let newPosition = ray.origin.scale(camera.globalPosition.y);
-        newPosition.y = currentPosition.y;
-        const delta = newPosition.subtract(currentPosition);
-        selectedMesh.setAbsolutePosition(newPosition);
-        const velocity = delta.scale(1000 / scene.deltaTime);
-        selectedMeshVelocityWindowRef.current = selectedMeshVelocityWindowRef.current.slice(
-          Math.max(
-            selectedMeshVelocityWindowRef.current.length -
-              selectedMeshVelocityWindowSize,
-            0
-          )
-        );
-        selectedMeshVelocityWindowRef.current.push(velocity);
-      }
-    });
+      engine.runRenderLoop(() => {
+        const scene = sceneRef.current;
+        const selectedMesh = selectedMeshRef.current;
+        if (selectedMesh && scene) {
+          const ray = scene.createPickingRay(
+            scene.pointerX,
+            scene.pointerY,
+            Matrix.Identity(),
+            camera
+          );
+          const currentPosition = selectedMesh.getAbsolutePosition();
+          let newPosition = ray.origin.scale(camera.globalPosition.y);
+          newPosition.y = currentPosition.y;
+          const delta = newPosition.subtract(currentPosition);
+          selectedMesh.setAbsolutePosition(newPosition);
+          const velocity = delta.scale(1000 / scene.deltaTime);
+          selectedMeshVelocityWindowRef.current = selectedMeshVelocityWindowRef.current.slice(
+            Math.max(
+              selectedMeshVelocityWindowRef.current.length -
+                selectedMeshVelocityWindowSize,
+              0
+            )
+          );
+          selectedMeshVelocityWindowRef.current.push(velocity);
+        }
+      });
+    } catch (error) {
+      setError(error);
+    }
   }, [onSceneMount]);
 
   const selectedMeshRef = useRef();
@@ -128,9 +137,11 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
 
   function handleResize(width, height) {
     const engine = engineRef.current;
-    engine.resize();
-    canvasRef.current.width = width;
-    canvasRef.current.height = height;
+    if (engine) {
+      engine.resize();
+      canvasRef.current.width = width;
+      canvasRef.current.height = height;
+    }
   }
 
   usePreventTouch(containerRef);
@@ -155,6 +166,13 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
           style={{ outline: "none" }}
         />
       </ReactResizeDetector>
+      <Banner isOpen={!!error} onRequestClose={() => setError()}>
+        <Box p={1}>
+          <Text as="p" variant="body2">
+            Error: {error && error.message}
+          </Text>
+        </Box>
+      </Banner>
     </div>
   );
 }

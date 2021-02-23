@@ -5,7 +5,7 @@ import ExpandMoreDiceIcon from "../../icons/ExpandMoreDiceIcon";
 
 import { DiceLoadingProvider } from "../../contexts/DiceLoadingContext";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 import LoadingOverlay from "../LoadingOverlay";
 

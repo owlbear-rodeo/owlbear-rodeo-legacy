@@ -8,9 +8,9 @@ import SelectMapButton from "./SelectMapButton";
 
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
-import MeasureToolSettings from "./controls/MeasureToolSettings";
+import PointerToolSettings from "./controls/PointerToolSettings";
 
-import PanToolIcon from "../../icons/PanToolIcon";
+import MoveToolIcon from "../../icons/MoveToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
 import BrushToolIcon from "../../icons/BrushToolIcon";
 import MeasureToolIcon from "../../icons/MeasureToolIcon";
@@ -20,11 +20,11 @@ import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 function MapContols({
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   currentMap,
   currentMapState,
   selectedToolId,
@@ -39,10 +39,10 @@ function MapContols({
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
 
   const toolsById = {
-    pan: {
-      id: "pan",
-      icon: <PanToolIcon />,
-      title: "Pan Tool (W)",
+    move: {
+      id: "move",
+      icon: <MoveToolIcon />,
+      title: "Move Tool (W)",
     },
     fog: {
       id: "fog",
@@ -60,12 +60,12 @@ function MapContols({
       id: "measure",
       icon: <MeasureToolIcon />,
       title: "Measure Tool (M)",
-      SettingsComponent: MeasureToolSettings,
     },
     pointer: {
       id: "pointer",
       icon: <PointerToolIcon />,
       title: "Pointer Tool (Q)",
+      SettingsComponent: PointerToolSettings,
     },
     note: {
       id: "note",
@@ -73,7 +73,7 @@ function MapContols({
       title: "Note Tool (N)",
     },
   };
-  const tools = ["pan", "fog", "drawing", "measure", "pointer", "note"];
+  const tools = ["move", "fog", "drawing", "measure", "pointer", "note"];
 
   const sections = [
     {
@@ -81,7 +81,7 @@ function MapContols({
       component: (
         <SelectMapButton
           onMapChange={onMapChange}
-          onMapStateChange={onMapStateChange}
+          onMapReset={onMapReset}
           currentMap={currentMap}
           currentMapState={currentMapState}
           disabled={disabledControls.includes("map")}

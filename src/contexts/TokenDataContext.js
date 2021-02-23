@@ -1,8 +1,15 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import * as Comlink from "comlink";
+import { decode } from "@msgpack/msgpack";
 
-import AuthContext from "./AuthContext";
-import DatabaseContext from "./DatabaseContext";
+import { useAuth } from "./AuthContext";
+import { useDatabase } from "./DatabaseContext";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -12,10 +19,16 @@ const TokenDataContext = React.createContext();
 
 const cachedTokenMax = 100;
 
-export function TokenDataProvider({ children }) {
-  const { database, databaseStatus } = useContext(DatabaseContext);
-  const { userId } = useContext(AuthContext);
+const worker = Comlink.wrap(new DatabaseWorker());
 
+export function TokenDataProvider({ children }) {
+  const { database, databaseStatus } = useDatabase();
+  const { userId } = useAuth();
+
+  /**
+   * Contains all tokens without any file data,
+   * to ensure file data is present call loadTokens
+   */
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);
 
@@ -23,7 +36,7 @@ export function TokenDataProvider({ children }) {
     if (!userId || !database || databaseStatus === "loading") {
       return;
     }
-    function getDefaultTokes() {
+    function getDefaultTokens() {
       const defaultTokensWithIds = [];
       for (let defaultToken of defaultTokens) {
         defaultTokensWithIds.push({
@@ -36,12 +49,22 @@ export function TokenDataProvider({ children }) {
       return defaultTokensWithIds;
     }
 
+    // Loads tokens without the file data to save memory
     async function loadTokens() {
-      const worker = Comlink.wrap(new DatabaseWorker());
-      await worker.loadData("tokens");
-      const storedTokens = await worker.data;
+      let storedTokens = [];
+      // Try to load tokens with worker, fallback to database if failed
+      const packedTokens = await worker.loadData("tokens");
+      if (packedTokens) {
+        storedTokens = decode(packedTokens);
+      } else {
+        console.warn("Unable to load tokens with worker, loading may be slow");
+        await database.table("tokens").each((token) => {
+          const { file, resolutions, ...rest } = token;
+          storedTokens.push(rest);
+        });
+      }
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
-      const defaultTokensWithIds = getDefaultTokes();
+      const defaultTokensWithIds = getDefaultTokens();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];
       setTokens(allTokens);
       setTokensLoading(false);
@@ -50,82 +73,28 @@ export function TokenDataProvider({ children }) {
     loadTokens();
   }, [userId, database, databaseStatus]);
 
-  async function addToken(token) {
-    await database.table("tokens").add(token);
-    setTokens((prevTokens) => [token, ...prevTokens]);
-    if (token.owner !== userId) {
-      await updateCache();
-    }
-  }
+  const tokensRef = useRef(tokens);
+  useEffect(() => {
+    tokensRef.current = tokens;
+  }, [tokens]);
 
-  async function removeToken(id) {
-    await database.table("tokens").delete(id);
-    setTokens((prevTokens) => {
-      const filtered = prevTokens.filter((token) => token.id !== id);
-      return filtered;
-    });
-  }
+  const getToken = useCallback((tokenId) => {
+    return tokensRef.current.find((token) => token.id === tokenId);
+  }, []);
 
-  async function removeTokens(ids) {
-    await database.table("tokens").bulkDelete(ids);
-    setTokens((prevTokens) => {
-      const filtered = prevTokens.filter((token) => !ids.includes(token.id));
-      return filtered;
-    });
-  }
-
-  async function updateToken(id, update) {
-    const change = { ...update, lastModified: Date.now() };
-    await database.table("tokens").update(id, change);
-    setTokens((prevTokens) => {
-      const newTokens = [...prevTokens];
-      const i = newTokens.findIndex((token) => token.id === id);
-      if (i > -1) {
-        newTokens[i] = { ...newTokens[i], ...change };
-      }
-      return newTokens;
-    });
-  }
-
-  async function updateTokens(ids, update) {
-    const change = { ...update, lastModified: Date.now() };
-    await Promise.all(
-      ids.map((id) => database.table("tokens").update(id, change))
-    );
-    setTokens((prevTokens) => {
-      const newTokens = [...prevTokens];
-      for (let id of ids) {
-        const i = newTokens.findIndex((token) => token.id === id);
-        if (i > -1) {
-          newTokens[i] = { ...newTokens[i], ...change };
-        }
-      }
-      return newTokens;
-    });
-  }
-
-  async function putToken(token) {
-    await database.table("tokens").put(token);
-    setTokens((prevTokens) => {
-      const newTokens = [...prevTokens];
-      const i = newTokens.findIndex((t) => t.id === token.id);
-      if (i > -1) {
-        newTokens[i] = { ...newTokens[i], ...token };
-      } else {
-        newTokens.unshift(token);
-      }
-      return newTokens;
-    });
-    if (token.owner !== userId) {
-      await updateCache();
-    }
-  }
+  const getTokenFromDB = useCallback(
+    async (tokenId) => {
+      let token = await database.table("tokens").get(tokenId);
+      return token;
+    },
+    [database]
+  );
 
   /**
    * Keep up to cachedTokenMax amount of tokens that you don't own
    * Sorted by when they we're last used
    */
-  async function updateCache() {
+  const updateCache = useCallback(async () => {
     const cachedTokens = await database
       .table("tokens")
       .where("owner")
@@ -137,20 +106,132 @@ export function TokenDataProvider({ children }) {
         .slice(0, cacheDeleteCount)
         .map((token) => token.id);
       database.table("tokens").where("id").anyOf(idsToDelete).delete();
-      setTokens((prevTokens) => {
-        return prevTokens.filter((token) => !idsToDelete.includes(token.id));
-      });
     }
-  }
+  }, [database, userId]);
 
-  function getToken(tokenId) {
-    return tokens.find((token) => token.id === tokenId);
-  }
+  const addToken = useCallback(
+    async (token) => {
+      await database.table("tokens").add(token);
+      if (token.owner !== userId) {
+        await updateCache();
+      }
+    },
+    [database, updateCache, userId]
+  );
 
-  async function getTokenFromDB(tokenId) {
-    let token = await database.table("tokens").get(tokenId);
-    return token;
-  }
+  const removeToken = useCallback(
+    async (id) => {
+      await database.table("tokens").delete(id);
+    },
+    [database]
+  );
+
+  const removeTokens = useCallback(
+    async (ids) => {
+      await database.table("tokens").bulkDelete(ids);
+    },
+    [database]
+  );
+
+  const updateToken = useCallback(
+    async (id, update) => {
+      const change = { ...update, lastModified: Date.now() };
+      await database.table("tokens").update(id, change);
+    },
+    [database]
+  );
+
+  const updateTokens = useCallback(
+    async (ids, update) => {
+      const change = { ...update, lastModified: Date.now() };
+      await Promise.all(
+        ids.map((id) => database.table("tokens").update(id, change))
+      );
+    },
+    [database]
+  );
+
+  const putToken = useCallback(
+    async (token) => {
+      await database.table("tokens").put(token);
+      if (token.owner !== userId) {
+        await updateCache();
+      }
+    },
+    [database, updateCache, userId]
+  );
+
+  const loadTokens = useCallback(
+    async (tokenIds) => {
+      const loadedTokens = await database.table("tokens").bulkGet(tokenIds);
+      const loadedTokensById = loadedTokens.reduce((obj, token) => {
+        obj[token.id] = token;
+        return obj;
+      }, {});
+      setTokens((prevTokens) => {
+        return prevTokens.map((prevToken) => {
+          if (prevToken.id in loadedTokensById) {
+            return loadedTokensById[prevToken.id];
+          } else {
+            return prevToken;
+          }
+        });
+      });
+    },
+    [database]
+  );
+
+  const unloadTokens = useCallback(async () => {
+    setTokens((prevTokens) => {
+      return prevTokens.map((prevToken) => {
+        const { file, ...rest } = prevToken;
+        return rest;
+      });
+    });
+  }, []);
+
+  // Create DB observable to sync creating and deleting
+  useEffect(() => {
+    if (!database || databaseStatus === "loading") {
+      return;
+    }
+
+    function handleTokenChanges(changes) {
+      for (let change of changes) {
+        if (change.table === "tokens") {
+          if (change.type === 1) {
+            // Created
+            const token = change.obj;
+            setTokens((prevTokens) => [token, ...prevTokens]);
+          } else if (change.type === 2) {
+            // Updated
+            const token = change.obj;
+            setTokens((prevTokens) => {
+              const newTokens = [...prevTokens];
+              const i = newTokens.findIndex((t) => t.id === token.id);
+              if (i > -1) {
+                newTokens[i] = token;
+              }
+              return newTokens;
+            });
+          } else if (change.type === 3) {
+            // Deleted
+            const id = change.key;
+            setTokens((prevTokens) => {
+              const filtered = prevTokens.filter((token) => token.id !== id);
+              return filtered;
+            });
+          }
+        }
+      }
+    }
+
+    database.on("changes", handleTokenChanges);
+
+    return () => {
+      database.on("changes").unsubscribe(handleTokenChanges);
+    };
+  }, [database, databaseStatus]);
 
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 
@@ -172,6 +253,8 @@ export function TokenDataProvider({ children }) {
     tokensById,
     tokensLoading,
     getTokenFromDB,
+    loadTokens,
+    unloadTokens,
   };
 
   return (
@@ -179,6 +262,14 @@ export function TokenDataProvider({ children }) {
       {children}
     </TokenDataContext.Provider>
   );
+}
+
+export function useTokenData() {
+  const context = useContext(TokenDataContext);
+  if (context === undefined) {
+    throw new Error("useTokenData must be used within a TokenDataProvider");
+  }
+  return context;
 }
 
 export default TokenDataContext;

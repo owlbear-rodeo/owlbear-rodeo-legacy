@@ -1,17 +1,35 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
 import TokenSettings from "../components/token/TokenSettings";
 import TokenPreview from "../components/token/TokenPreview";
+import LoadingOverlay from "../components/LoadingOverlay";
 
-import TokenDataContext from "../contexts/TokenDataContext";
+import { useTokenData } from "../contexts/TokenDataContext";
 
 import { isEmpty } from "../helpers/shared";
-import useResponsiveLayout from "../helpers/useResponsiveLayout";
 
-function EditTokenModal({ isOpen, onDone, token }) {
-  const { updateToken } = useContext(TokenDataContext);
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
+function EditTokenModal({ isOpen, onDone, tokenId }) {
+  const { updateToken, getTokenFromDB } = useTokenData();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState();
+  useEffect(() => {
+    async function loadToken() {
+      setIsLoading(true);
+      setToken(await getTokenFromDB(tokenId));
+      setIsLoading(false);
+    }
+
+    if (isOpen && tokenId) {
+      loadToken();
+    } else {
+      setToken();
+    }
+  }, [isOpen, tokenId, getTokenFromDB]);
 
   function handleClose() {
     setTokenSettingChanges({});
@@ -66,7 +84,20 @@ function EditTokenModal({ isOpen, onDone, token }) {
         <Label pt={2} pb={1}>
           Edit token
         </Label>
-        <TokenPreview token={selectedTokenWithChanges} />
+        {isLoading || !token ? (
+          <Flex
+            sx={{
+              width: "100%",
+              height: layout.screenSize === "large" ? "500px" : "300px",
+              position: "relative",
+            }}
+            bg="muted"
+          >
+            <LoadingOverlay />
+          </Flex>
+        ) : (
+          <TokenPreview token={selectedTokenWithChanges} />
+        )}
         <TokenSettings
           token={selectedTokenWithChanges}
           onSettingsChange={handleTokenSettingsChange}

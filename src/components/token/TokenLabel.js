@@ -1,37 +1,64 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Rect, Text, Group } from "react-konva";
 
-import useSetting from "../../helpers/useSetting";
+import useSetting from "../../hooks/useSetting";
 
 const maxTokenSize = 3;
 
 function TokenLabel({ tokenState, width, height }) {
   const [labelSize] = useSetting("map.labelSize");
 
-  const fontSize =
-    (height / 6 / tokenState.size) *
-    Math.min(tokenState.size, maxTokenSize) *
-    labelSize;
   const paddingY =
-    (height / 16 / tokenState.size) *
-    Math.min(tokenState.size, maxTokenSize) *
-    labelSize;
+    (height / 12 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
   const paddingX =
-    (height / 8 / tokenState.size) *
-    Math.min(tokenState.size, maxTokenSize) *
-    labelSize;
+    (height / 8 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
+
+  const [fontSize, setFontSize] = useState(1);
+  useEffect(() => {
+    const text = textSizerRef.current;
+
+    if (!text) {
+      return;
+    }
+
+    let fontSizes = [];
+    for (let size = 10 * labelSize; size >= 6; size--) {
+      fontSizes.push(
+        (height / size / tokenState.size) *
+          Math.min(tokenState.size, maxTokenSize) *
+          labelSize
+      );
+    }
+
+    function findFontSize() {
+      const size = fontSizes.reduce((prev, curr) => {
+        text.fontSize(curr);
+        const textWidth = text.getTextWidth() + paddingX * 2;
+        if (textWidth < width) {
+          return curr;
+        } else {
+          return prev;
+        }
+      });
+
+      setFontSize(size);
+    }
+
+    findFontSize();
+  }, [tokenState.label, width, height, tokenState, labelSize, paddingX]);
 
   const [rectWidth, setRectWidth] = useState(0);
   useEffect(() => {
     const text = textRef.current;
     if (text && tokenState.label) {
-      setRectWidth(text.getTextWidth() + paddingX);
+      setRectWidth(text.getTextWidth() + paddingX * 2);
     } else {
       setRectWidth(0);
     }
-  }, [tokenState.label, paddingX, width]);
+  }, [tokenState.label, paddingX, width, fontSize]);
 
   const textRef = useRef();
+  const textSizerRef = useRef();
 
   return (
     <Group y={height - (fontSize + paddingY) / 2}>
@@ -56,8 +83,15 @@ function TokenLabel({ tokenState, width, height }) {
         paddingX={paddingX}
         paddingY={paddingY}
         wrap="none"
-        ellipsis={true}
+        ellipsis={false}
         hitFunc={() => {}}
+      />
+      {/* Use an invisible text block to work out text sizing */}
+      <Text
+        visible={false}
+        ref={textSizerRef}
+        text={tokenState.label}
+        wrap="none"
       />
     </Group>
   );

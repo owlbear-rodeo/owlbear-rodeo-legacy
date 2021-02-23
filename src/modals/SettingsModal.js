@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Label,
   Flex,
@@ -13,19 +13,24 @@ import prettyBytes from "pretty-bytes";
 import Modal from "../components/Modal";
 import Slider from "../components/Slider";
 
-import AuthContext from "../contexts/AuthContext";
-import DatabaseContext from "../contexts/DatabaseContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
-import useSetting from "../helpers/useSetting";
+import useSetting from "../hooks/useSetting";
 
 import ConfirmModal from "./ConfirmModal";
+import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
-  const { database } = useContext(DatabaseContext);
-  const { userId } = useContext(AuthContext);
+  const { database, databaseStatus } = useDatabase();
+  const { userId } = useAuth();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
+  const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
+    "map.gridSnappingSensitivity"
+  );
   const [storageEstimate, setStorageEstimate] = useState();
+  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
   useEffect(() => {
     async function estimateStorage() {
@@ -111,6 +116,21 @@ function SettingsModal({ isOpen, onRequestClose }) {
               labelFunc={(value) => `${value}x`}
             />
           </Label>
+          <Label py={2}>
+            Grid Snapping Sensitivity
+            <Slider
+              step={0.05}
+              min={0}
+              max={0.5}
+              ml={1}
+              sx={{ width: "initial" }}
+              value={gridSnappingSensitivity}
+              onChange={(e) =>
+                setGridSnappingSensitivity(parseFloat(e.target.value))
+              }
+              labelFunc={(value) => `${value * 2}`}
+            />
+          </Label>
           <Divider bg="text" />
           <Flex py={2}>
             <Button sx={{ flexGrow: 1 }} onClick={handleClearCache}>
@@ -123,6 +143,15 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onClick={() => setIsDeleteModalOpen(true)}
             >
               Erase all content and reset
+            </Button>
+          </Flex>
+          <Flex py={2}>
+            <Button
+              sx={{ flexGrow: 1 }}
+              onClick={() => setIsImportExportModalOpen(true)}
+              disabled={databaseStatus !== "loaded"}
+            >
+              Import / Export Data
             </Button>
           </Flex>
           {storageEstimate && (
@@ -147,6 +176,10 @@ function SettingsModal({ isOpen, onRequestClose }) {
         label="Erase All Content?"
         description="This will remove all data including saved maps and tokens."
         confirmText="Erase"
+      />
+      <ImportExportModal
+        isOpen={isImportExportModalOpen}
+        onRequestClose={() => setIsImportExportModalOpen(false)}
       />
     </>
   );

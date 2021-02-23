@@ -1,17 +1,17 @@
-import React, { useContext, useRef } from "react";
+import React, { useRef } from "react";
 import { Box, Label, Input, Button, Flex, Checkbox } from "theme-ui";
 import { useHistory } from "react-router-dom";
 import shortid from "shortid";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
-import useSetting from "../helpers/useSetting";
+import useSetting from "../hooks/useSetting";
 
 import Modal from "../components/Modal";
 
 function StartModal({ isOpen, onRequestClose }) {
   let history = useHistory();
-  const { password, setPassword } = useContext(AuthContext);
+  const { password, setPassword } = useAuth();
 
   function handlePasswordChange(event) {
     setPassword(event.target.value);

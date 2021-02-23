@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
@@ -8,10 +8,11 @@ import Link from "../components/Link";
 import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
+import GameExpiredModal from "../modals/GameExpiredModal";
 
-import AuthContext from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
-import DatabaseContext from "../contexts/DatabaseContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 import { PlayerProvider } from "../contexts/PlayerContext";
 import { PartyProvider } from "../contexts/PartyContext";
 
@@ -22,39 +23,22 @@ import Session from "../network/Session";
 
 function Game() {
   const { id: gameId } = useParams();
-  const {
-    authenticationStatus,
-    password,
-    setAuthenticationStatus,
-  } = useContext(AuthContext);
-  const { databaseStatus } = useContext(DatabaseContext);
+  const { password } = useAuth();
+  const { databaseStatus } = useDatabase();
 
   const [session] = useState(new Session());
-  const [offline, setOffline] = useState();
+  const [sessionStatus, setSessionStatus] = useState();
+
   useEffect(() => {
     async function connect() {
       await session.connect();
-      setOffline(session.state === "offline");
     }
     connect();
-  }, [session]);
-
-  // Handle authentication status
-  useEffect(() => {
-    function handleAuthSuccess() {
-      setAuthenticationStatus("authenticated");
-    }
-    function handleAuthError() {
-      setAuthenticationStatus("unauthenticated");
-    }
-    session.on("authenticationSuccess", handleAuthSuccess);
-    session.on("authenticationError", handleAuthError);
 
     return () => {
-      session.off("authenticationSuccess", handleAuthSuccess);
-      session.off("authenticationError", handleAuthError);
+      session.disconnect();
     };
-  }, [setAuthenticationStatus, session]);
+  }, [session]);
 
   // Handle session errors
   const [peerError, setPeerError] = useState(null);
@@ -72,32 +56,43 @@ function Game() {
     };
   }, [session]);
 
-  // Handle connection
-  const [connected, setConnected] = useState(false);
   useEffect(() => {
-    function handleConnected() {
-      setConnected(true);
+    function handleStatus(status) {
+      setSessionStatus(status);
     }
 
-    function handleDisconnected() {
-      setConnected(false);
-    }
-
-    session.on("connected", handleConnected);
-    session.on("disconnected", handleDisconnected);
+    session.on("status", handleStatus);
 
     return () => {
-      session.off("connected", handleConnected);
-      session.off("disconnected", handleDisconnected);
+      session.off("status", handleStatus);
+    };
+  }, [session]);
+
+  const [gameExpired, setGameExpired] = useState(false);
+  useEffect(() => {
+    function handleGameExpired() {
+      setGameExpired(true);
+    }
+
+    session.on("gameExpired", handleGameExpired);
+
+    return () => {
+      session.off("gameExpired", handleGameExpired);
     };
   }, [session]);
 
   // Join game
   useEffect(() => {
-    if (session.state === "online" && databaseStatus !== "loading") {
+    if (sessionStatus === "ready" && databaseStatus !== "loading") {
       session.joinGame(gameId, password);
     }
-  }, [gameId, password, databaseStatus, session, offline]);
+  }, [gameId, password, databaseStatus, session, sessionStatus]);
+
+  function handleAuthSubmit(newPassword) {
+    if (databaseStatus !== "loading") {
+      session.joinGame(gameId, newPassword);
+    }
+  }
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
@@ -130,7 +125,11 @@ function Game() {
               </Text>
             </Box>
           </Banner>
-          <Banner isOpen={offline} onRequestClose={() => {}} allowClose={false}>
+          <Banner
+            isOpen={sessionStatus === "offline"}
+            onRequestClose={() => {}}
+            allowClose={false}
+          >
             <Box p={1}>
               <Text as="p" variant="body2">
                 Unable to connect to game, refresh to reconnect.
@@ -138,7 +137,7 @@ function Game() {
             </Box>
           </Banner>
           <Banner
-            isOpen={!connected && authenticationStatus === "authenticated"}
+            isOpen={sessionStatus === "reconnecting"}
             onRequestClose={() => {}}
             allowClose={false}
           >
@@ -148,8 +147,15 @@ function Game() {
               </Text>
             </Box>
           </Banner>
-          <AuthModal isOpen={authenticationStatus === "unauthenticated"} />
-          {authenticationStatus === "unknown" && !offline && <LoadingOverlay />}
+          <AuthModal
+            isOpen={sessionStatus === "auth"}
+            onSubmit={handleAuthSubmit}
+          />
+          <GameExpiredModal
+            isOpen={gameExpired}
+            onRequestClose={() => setGameExpired(false)}
+          />
+          {!sessionStatus && <LoadingOverlay />}
           <MapLoadingOverlay />
         </MapStageProvider>
       </PartyProvider>

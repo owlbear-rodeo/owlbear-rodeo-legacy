@@ -1,9 +1,8 @@
-import React, { useState, useContext, useEffect } from "react";
-import { Group } from "react-konva";
+import React, { useState } from "react";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
-import MapToken from "./MapToken";
+import MapTokens from "./MapTokens";
 import MapDrawing from "./MapDrawing";
 import MapFog from "./MapFog";
 import MapGrid from "./MapGrid";
@@ -11,23 +10,29 @@ import MapMeasure from "./MapMeasure";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 import MapNotes from "./MapNotes";
 
-import TokenDataContext from "../../contexts/TokenDataContext";
-import SettingsContext from "../../contexts/SettingsContext";
+import { useTokenData } from "../../contexts/TokenDataContext";
+import { useSettings } from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
 import NoteMenu from "../note/NoteMenu";
 import NoteDragOverlay from "../note/NoteDragOverlay";
 
-import { drawActionsToShapes } from "../../helpers/drawing";
+import {
+  AddShapeAction,
+  CutShapeAction,
+  EditShapeAction,
+  RemoveShapeAction,
+} from "../../actions";
 
 function Map({
   map,
   mapState,
+  mapActions,
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
-  onMapStateChange,
+  onMapReset,
   onMapDraw,
   onMapDrawUndo,
   onMapDrawRedo,
@@ -43,19 +48,10 @@ function Map({
   disabledTokens,
   session,
 }) {
-  const { tokensById } = useContext(TokenDataContext);
+  const { tokensById } = useTokenData();
 
-  const gridX = map && map.grid.size.x;
-  const gridY = map && map.grid.size.y;
-  const inset = map && map.grid.inset;
-  const gridSizeNormalized = {
-    x: gridX ? (inset.bottomRight.x - inset.topLeft.x) / gridX : 0,
-    y: gridY ? (inset.bottomRight.y - inset.topLeft.y) / gridY : 0,
-  };
-  const tokenSizePercent = gridSizeNormalized.x;
-
-  const [selectedToolId, setSelectedToolId] = useState("pan");
-  const { settings, setSettings } = useContext(SettingsContext);
+  const [selectedToolId, setSelectedToolId] = useState("move");
+  const { settings, setSettings } = useSettings();
 
   function handleToolSettingChange(tool, change) {
     setSettings((prevSettings) => ({
@@ -67,13 +63,12 @@ function Map({
     }));
   }
 
+  const drawShapes = Object.values(mapState?.drawShapes || {});
+  const fogShapes = Object.values(mapState?.fogShapes || {});
+
   function handleToolAction(action) {
     if (action === "eraseAll") {
-      onMapDraw({
-        type: "remove",
-        shapeIds: mapShapes.map((s) => s.id),
-        timestamp: Date.now(),
-      });
+      onMapDraw(new RemoveShapeAction(drawShapes.map((s) => s.id)));
     }
     if (action === "mapUndo") {
       onMapDrawUndo();
@@ -89,53 +84,36 @@ function Map({
     }
   }
 
-  const [mapShapes, setMapShapes] = useState([]);
-
   function handleMapShapeAdd(shape) {
-    onMapDraw({ type: "add", shapes: [shape] });
+    onMapDraw(new AddShapeAction([shape]));
   }
 
   function handleMapShapesRemove(shapeIds) {
-    onMapDraw({ type: "remove", shapeIds });
+    onMapDraw(new RemoveShapeAction(shapeIds));
   }
 
-  const [fogShapes, setFogShapes] = useState([]);
-
-  function handleFogShapeAdd(shape) {
-    onFogDraw({ type: "add", shapes: [shape] });
+  function handleFogShapesAdd(shapes) {
+    onFogDraw(new AddShapeAction(shapes));
   }
 
-  function handleFogShapeCut(shape) {
-    onFogDraw({ type: "cut", shapes: [shape] });
+  function handleFogShapesCut(shapes) {
+    onFogDraw(new CutShapeAction(shapes));
   }
 
   function handleFogShapesRemove(shapeIds) {
-    onFogDraw({ type: "remove", shapeIds });
+    onFogDraw(new RemoveShapeAction(shapeIds));
   }
 
   function handleFogShapesEdit(shapes) {
-    onFogDraw({ type: "edit", shapes });
+    onFogDraw(new EditShapeAction(shapes));
   }
-
-  // Replay the draw actions and convert them to shapes for the map drawing
-  useEffect(() => {
-    if (!mapState) {
-      return;
-    }
-    setMapShapes(
-      drawActionsToShapes(mapState.mapDrawActions, mapState.mapDrawActionIndex)
-    );
-    setFogShapes(
-      drawActionsToShapes(mapState.fogDrawActions, mapState.fogDrawActionIndex)
-    );
-  }, [mapState]);
 
   const disabledControls = [];
   if (!allowMapDrawing) {
     disabledControls.push("drawing");
   }
   if (!map) {
-    disabledControls.push("pan");
+    disabledControls.push("move");
     disabledControls.push("measure");
     disabledControls.push("pointer");
   }
@@ -150,24 +128,24 @@ function Map({
   }
 
   const disabledSettings = { fog: [], drawing: [] };
-  if (mapShapes.length === 0) {
+  if (drawShapes.length === 0) {
     disabledSettings.drawing.push("erase");
   }
-  if (!mapState || mapState.mapDrawActionIndex < 0) {
+  if (!mapState || mapActions.mapDrawActionIndex < 0) {
     disabledSettings.drawing.push("undo");
   }
   if (
     !mapState ||
-    mapState.mapDrawActionIndex === mapState.mapDrawActions.length - 1
+    mapActions.mapDrawActionIndex === mapActions.mapDrawActions.length - 1
   ) {
     disabledSettings.drawing.push("redo");
   }
-  if (!mapState || mapState.fogDrawActionIndex < 0) {
+  if (!mapState || mapActions.fogDrawActionIndex < 0) {
     disabledSettings.fog.push("undo");
   }
   if (
     !mapState ||
-    mapState.fogDrawActionIndex === mapState.fogDrawActions.length - 1
+    mapActions.fogDrawActionIndex === mapActions.fogDrawActions.length - 1
   ) {
     disabledSettings.fog.push("redo");
   }
@@ -175,7 +153,7 @@ function Map({
   const mapControls = (
     <MapControls
       onMapChange={onMapChange}
-      onMapStateChange={onMapStateChange}
+      onMapReset={onMapReset}
       currentMap={map}
       currentMapState={mapState}
       onSelectedToolChange={setSelectedToolId}
@@ -196,92 +174,17 @@ function Map({
     setIsTokenMenuOpen(true);
   }
 
-  function getMapTokenCategoryWeight(category) {
-    switch (category) {
-      case "character":
-        return 0;
-      case "vehicle":
-        return 1;
-      case "prop":
-        return 2;
-      default:
-        return 0;
-    }
-  }
-
-  // Sort so vehicles render below other tokens
-  function sortMapTokenStates(a, b, tokenDraggingOptions) {
-    const tokenA = tokensById[a.tokenId];
-    const tokenB = tokensById[b.tokenId];
-    if (tokenA && tokenB) {
-      // If categories are different sort in order "prop", "vehicle", "character"
-      if (tokenB.category !== tokenA.category) {
-        const aWeight = getMapTokenCategoryWeight(tokenA.category);
-        const bWeight = getMapTokenCategoryWeight(tokenB.category);
-        return bWeight - aWeight;
-      } else if (
-        tokenDraggingOptions &&
-        tokenDraggingOptions.dragging &&
-        tokenDraggingOptions.tokenState.id === a.id
-      ) {
-        // If dragging token a move above
-        return 1;
-      } else if (
-        tokenDraggingOptions &&
-        tokenDraggingOptions.dragging &&
-        tokenDraggingOptions.tokenState.id === b.id
-      ) {
-        // If dragging token b move above
-        return -1;
-      } else {
-        // Else sort so last modified is on top
-        return a.lastModified - b.lastModified;
-      }
-    } else if (tokenA) {
-      return 1;
-    } else if (tokenB) {
-      return -1;
-    } else {
-      return 0;
-    }
-  }
-
   const mapTokens = map && mapState && (
-    <Group>
-      {Object.values(mapState.tokens)
-        .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
-        .map((tokenState) => (
-          <MapToken
-            key={tokenState.id}
-            token={tokensById[tokenState.tokenId]}
-            tokenState={tokenState}
-            tokenSizePercent={tokenSizePercent}
-            onTokenStateChange={onMapTokenStateChange}
-            onTokenMenuOpen={handleTokenMenuOpen}
-            onTokenDragStart={(e) =>
-              setTokenDraggingOptions({
-                dragging: true,
-                tokenState,
-                tokenGroup: e.target,
-              })
-            }
-            onTokenDragEnd={() =>
-              setTokenDraggingOptions({
-                ...tokenDraggingOptions,
-                dragging: false,
-              })
-            }
-            draggable={
-              selectedToolId === "pan" &&
-              !(tokenState.id in disabledTokens) &&
-              !tokenState.locked
-            }
-            mapState={mapState}
-            fadeOnHover={selectedToolId === "drawing"}
-            map={map}
-          />
-        ))}
-    </Group>
+    <MapTokens
+      map={map}
+      mapState={mapState}
+      tokenDraggingOptions={tokenDraggingOptions}
+      setTokenDraggingOptions={setTokenDraggingOptions}
+      onMapTokenStateChange={onMapTokenStateChange}
+      handleTokenMenuOpen={handleTokenMenuOpen}
+      selectedToolId={selectedToolId}
+      disabledTokens={disabledTokens}
+    />
   );
 
   const tokenMenu = (
@@ -313,12 +216,11 @@ function Map({
   const mapDrawing = (
     <MapDrawing
       map={map}
-      shapes={mapShapes}
+      shapes={drawShapes}
       onShapeAdd={handleMapShapeAdd}
       onShapesRemove={handleMapShapesRemove}
       active={selectedToolId === "drawing"}
       toolSettings={settings.drawing}
-      gridSize={gridSizeNormalized}
     />
   );
 
@@ -326,13 +228,12 @@ function Map({
     <MapFog
       map={map}
       shapes={fogShapes}
-      onShapeAdd={handleFogShapeAdd}
-      onShapeCut={handleFogShapeCut}
+      onShapesAdd={handleFogShapesAdd}
+      onShapesCut={handleFogShapesCut}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
       active={selectedToolId === "fog"}
       toolSettings={settings.fog}
-      gridSize={gridSizeNormalized}
       editable={allowFogDrawing && !settings.fog.preview}
     />
   );
@@ -343,7 +244,6 @@ function Map({
     <MapMeasure
       map={map}
       active={selectedToolId === "measure"}
-      gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
     />
   );
@@ -351,7 +251,6 @@ function Map({
   const mapPointer = (
     <NetworkedMapPointer
       active={selectedToolId === "pointer"}
-      gridSize={gridSizeNormalized}
       session={session}
     />
   );
@@ -389,7 +288,6 @@ function Map({
     <MapNotes
       map={map}
       active={selectedToolId === "note"}
-      gridSize={gridSizeNormalized}
       selectedToolSettings={settings[selectedToolId]}
       onNoteAdd={onMapNoteChange}
       onNoteChange={onMapNoteChange}
@@ -403,7 +301,7 @@ function Map({
       onNoteMenuOpen={handleNoteMenuOpen}
       draggable={
         allowNoteEditing &&
-        (selectedToolId === "note" || selectedToolId === "pan")
+        (selectedToolId === "note" || selectedToolId === "move")
       }
       onNoteDragStart={(e, noteId) =>
         setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
@@ -411,6 +309,7 @@ function Map({
       onNoteDragEnd={() =>
         setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false })
       }
+      fadeOnHover={selectedToolId === "drawing"}
     />
   );
 
@@ -455,8 +354,8 @@ function Map({
       disabledControls={disabledControls}
     >
       {mapGrid}
-      {mapNotes}
       {mapDrawing}
+      {mapNotes}
       {mapTokens}
       {mapFog}
       {mapPointer}

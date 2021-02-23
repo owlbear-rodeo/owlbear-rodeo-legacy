@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import shortid from "shortid";
 
-import DatabaseContext from "./DatabaseContext";
+import { useDatabase } from "./DatabaseContext";
 
 import FakeStorage from "../helpers/FakeStorage";
 
@@ -18,15 +18,13 @@ try {
 }
 
 export function AuthProvider({ children }) {
-  const { database, databaseStatus } = useContext(DatabaseContext);
+  const { database, databaseStatus } = useDatabase();
 
   const [password, setPassword] = useState(storage.getItem("auth") || "");
 
   useEffect(() => {
     storage.setItem("auth", password);
   }, [password]);
-
-  const [authenticationStatus, setAuthenticationStatus] = useState("unknown");
 
   const [userId, setUserId] = useState();
   useEffect(() => {
@@ -51,10 +49,16 @@ export function AuthProvider({ children }) {
     userId,
     password,
     setPassword,
-    authenticationStatus,
-    setAuthenticationStatus,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within a AuthProvider");
+  }
+  return context;
 }
 
 export default AuthContext;
