@@ -29,6 +29,7 @@ if (process.env.REACT_APP_LOGGING === "true") {
       "Assertion failed: Input argument is not an HTMLInputElement",
       "Extension context invalidated",
       "InvalidStateError",
+      "Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing.",
     ],
   });
 }
