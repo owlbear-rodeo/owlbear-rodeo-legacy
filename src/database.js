@@ -9,7 +9,12 @@ import { createThumbnail } from "./helpers/image";
 
 // Helper to create a thumbnail for a file in a db
 async function createDataThumbnail(data) {
-  const url = URL.createObjectURL(new Blob([data.file]));
+  let url;
+  if (data?.resolutions?.low?.file) {
+    url = URL.createObjectURL(new Blob([data.resolutions.low.file]));
+  } else {
+    url = URL.createObjectURL(new Blob([data.file]));
+  }
   return await Dexie.waitFor(
     new Promise((resolve) => {
       let image = new Image();
@@ -363,11 +368,15 @@ const versions = {
   // 1.8.0 - Add thumbnail to maps and add measurement to grid
   19(v) {
     v.stores({}).upgrade(async (tx) => {
+      const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
+        .value;
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
       const thumbnails = {};
       for (let map of maps) {
         try {
-          thumbnails[map.id] = await createDataThumbnail(map);
+          if (map.owner === userId) {
+            thumbnails[map.id] = await createDataThumbnail(map);
+          }
         } catch {}
       }
       return tx
@@ -382,11 +391,15 @@ const versions = {
   // 1.8.0 - Add thumbnail to tokens
   20(v) {
     v.stores({}).upgrade(async (tx) => {
+      const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
+        .value;
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       const thumbnails = {};
       for (let token of tokens) {
         try {
-          thumbnails[token.id] = await createDataThumbnail(token);
+          if (token.owner === userId) {
+            thumbnails[token.id] = await createDataThumbnail(token);
+          }
         } catch {}
       }
       return tx
