@@ -1,4 +1,4 @@
-[embed:](https://www.youtube.com/embed/AMLmyaXMyYA)
+[embed:](https://www.youtube.com/embed/1ra7DoIsas8)
 
 The Fog Tool allows you to add hidden areas to control what the other party members can see on your map. To access the Fog Tool click the Fog Tool button in the top right of the map view.
 
