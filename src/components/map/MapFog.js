@@ -208,9 +208,7 @@ function MapFog({
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
           );
-          const subtractAction = new SubtractShapeAction(
-            mergeFogShapes(shapesToSubtract, !cut)
-          );
+          const subtractAction = new SubtractShapeAction(shapesToSubtract);
           const state = subtractAction.execute({
             [drawingShape.id]: drawingShape,
           });
@@ -381,9 +379,7 @@ function MapFog({
       const shapesToSubtract = shapes.filter((shape) =>
         cut ? !shape.visible : shape.visible
       );
-      const subtractAction = new SubtractShapeAction(
-        mergeFogShapes(shapesToSubtract, !cut)
-      );
+      const subtractAction = new SubtractShapeAction(shapesToSubtract);
       const state = subtractAction.execute({
         [polygonShape.id]: polygonShape,
       });
