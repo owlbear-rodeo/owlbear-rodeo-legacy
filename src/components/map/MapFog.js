@@ -66,6 +66,7 @@ function MapFog({
   const gridOffset = useGridOffset();
 
   const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
+  const [showFogGuides] = useSetting("fog.showGuides");
   const mapStageRef = useMapStage();
 
   const [drawingShape, setDrawingShape] = useState(null);
@@ -83,10 +84,12 @@ function MapFog({
     editable &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
-  const shouldRenderGuides =
+  const shouldUseGuides =
     active &&
     editable &&
     (toolSettings.type === "rectangle" || toolSettings.type === "polygon");
+
+  const shouldRenderGuides = shouldUseGuides && showFogGuides;
 
   const [patternImage] = useImage(diagonalPattern);
 
@@ -100,7 +103,7 @@ function MapFog({
     function getBrushPosition(snapping = true) {
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
-      if (snapping && shouldRenderGuides) {
+      if (shouldUseGuides && snapping) {
         for (let guide of guides) {
           if (guide.orientation === "vertical") {
             position.x = guide.start.x * mapWidth;
@@ -283,11 +286,7 @@ function MapFog({
     }
 
     function handlePointerMove() {
-      if (
-        editable &&
-        active &&
-        (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
-      ) {
+      if (shouldUseGuides) {
         let guides = [];
         const brushPosition = getBrushPosition(false);
         const absoluteBrushPosition = Vector2.multiply(brushPosition, {
@@ -573,12 +572,17 @@ function MapFog({
 
     if (editable) {
       const visibleShapes = shapes.filter(shapeVisible);
-      setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes, 5));
+      // Only use bounding box guides when rendering them
+      if (shouldRenderGuides) {
+        setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes, 5));
+      } else {
+        setFogShapeBoundingBoxes([]);
+      }
       setFogShapes(visibleShapes);
     } else {
       setFogShapes(mergeFogShapes(shapes));
     }
-  }, [shapes, editable, active, toolSettings]);
+  }, [shapes, editable, active, toolSettings, shouldRenderGuides]);
 
   const fogGroupRef = useRef();
 

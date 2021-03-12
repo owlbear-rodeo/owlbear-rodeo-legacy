@@ -29,6 +29,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
     "map.gridSnappingSensitivity"
   );
+  const [showFogGuides, setShowFogGuides] = useSetting("fog.showGuides");
   const [storageEstimate, setStorageEstimate] = useState();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
@@ -101,6 +102,13 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onChange={(e) =>
                 setColorMode(e.target.checked ? "light" : "default")
               }
+            />
+          </Label>
+          <Label py={2}>
+            <span style={{ marginRight: "4px" }}>Show fog guides</span>
+            <Checkbox
+              checked={showFogGuides}
+              onChange={(e) => setShowFogGuides(e.target.checked)}
             />
           </Label>
           <Label py={2}>

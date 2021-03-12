@@ -54,6 +54,11 @@ function loadVersions(settings) {
     newSettings.fog.multilayer = false;
     return newSettings;
   });
+  // v1.8.1 - Add show guides toggle
+  settings.version(6, (prev) => ({
+    ...prev,
+    fog: { ...prev.fog, showGuides: true },
+  }));
 }
 
 export function getSettings() {
