@@ -85,11 +85,24 @@ export function useImageSource(data, defaultSources, unknownSource, thumbnail) {
 
     function addImageSource(file) {
       if (file) {
-        const url = URL.createObjectURL(new Blob([file]));
-        setImageSources((prevSources) => ({
-          ...prevSources,
-          [id]: { url, id, references: 1 },
-        }));
+        setImageSources((prevSources) => {
+          if (id in prevSources) {
+            // Check if the image source is already added
+            return {
+              ...prevSources,
+              [id]: {
+                ...prevSources[id],
+                references: prevSources[id].references + 1,
+              },
+            };
+          } else {
+            const url = URL.createObjectURL(new Blob([file]));
+            return {
+              ...prevSources,
+              [id]: { url, id, references: 1 },
+            };
+          }
+        });
       }
     }
 
