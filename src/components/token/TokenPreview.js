@@ -6,11 +6,11 @@ import useImage from "use-image";
 
 import usePreventOverscroll from "../../hooks/usePreventOverscroll";
 import useStageInteraction from "../../hooks/useStageInteraction";
-import useDataSource from "../../hooks/useDataSource";
 import useImageCenter from "../../hooks/useImageCenter";
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import { GridProvider } from "../../contexts/GridContext";
+import { useImageSource } from "../../contexts/ImageSourceContext";
 
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
@@ -27,7 +27,7 @@ function TokenPreview({ token }) {
     }
   }, [token, tokenSourceData]);
 
-  const tokenSource = useDataSource(
+  const tokenSource = useImageSource(
     tokenSourceData,
     tokenSources,
     unknownSource

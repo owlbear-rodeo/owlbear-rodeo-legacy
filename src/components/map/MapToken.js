@@ -4,7 +4,6 @@ import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
 
-import useDataSource from "../../hooks/useDataSource";
 import useDebounce from "../../hooks/useDebounce";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
@@ -17,6 +16,7 @@ import {
   useDebouncedStageScale,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
+import { useImageSource } from "../../contexts/ImageSourceContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
@@ -44,7 +44,7 @@ function MapToken({
 
   const gridCellPixelSize = useGridCellPixelSize();
 
-  const tokenSource = useDataSource(token, tokenSources, unknownSource);
+  const tokenSource = useImageSource(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
   const [tokenAspectRatio, setTokenAspectRatio] = useState(1);
 

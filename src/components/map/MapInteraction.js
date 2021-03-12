@@ -21,6 +21,10 @@ import TokenDataContext, {
 } from "../../contexts/TokenDataContext";
 import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
+import {
+  ImageSourcesStateContext,
+  ImageSourcesUpdaterContext,
+} from "../../contexts/ImageSourceContext";
 
 function MapInteraction({
   map,
@@ -182,6 +186,8 @@ function MapInteraction({
   const auth = useAuth();
   const settings = useSettings();
   const tokenData = useTokenData();
+  const imageSources = useContext(ImageSourcesStateContext);
+  const setImageSources = useContext(ImageSourcesUpdaterContext);
 
   const mapInteraction = {
     stageScale,
@@ -232,7 +238,15 @@ function MapInteraction({
                     >
                       <MapStageProvider value={mapStageRef}>
                         <TokenDataContext.Provider value={tokenData}>
-                          {mapLoaded && children}
+                          <ImageSourcesStateContext.Provider
+                            value={imageSources}
+                          >
+                            <ImageSourcesUpdaterContext.Provider
+                              value={setImageSources}
+                            >
+                              {mapLoaded && children}
+                            </ImageSourcesUpdaterContext.Provider>
+                          </ImageSourcesStateContext.Provider>
                         </TokenDataContext.Provider>
                       </MapStageProvider>
                     </GridProvider>
