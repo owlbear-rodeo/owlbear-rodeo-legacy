@@ -170,11 +170,16 @@ function MapFog({
           ) {
             return prevShape;
           }
+          const simplified = simplifyPoints(
+            [...prevPoints, brushPosition],
+            gridCellNormalizedSize,
+            stageScale / 4
+          );
           return {
             ...prevShape,
             data: {
               ...prevShape.data,
-              points: [...prevPoints, brushPosition],
+              points: simplified,
             },
           };
         });
@@ -205,27 +210,14 @@ function MapFog({
         drawingShape
       ) {
         const cut = toolSettings.useFogCut;
-
-        let simplifiedShape = {
-          ...drawingShape,
-          data: {
-            ...drawingShape.data,
-            points: simplifyPoints(
-              drawingShape.data.points,
-              gridCellNormalizedSize,
-              Math.max(stageScale, 1)
-            ),
-          },
-        };
-
-        let drawingShapes = [simplifiedShape];
+        let drawingShapes = [drawingShape];
         if (!toolSettings.multilayer) {
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
           );
           const subtractAction = new SubtractShapeAction(shapesToSubtract);
           const state = subtractAction.execute({
-            [simplifiedShape.id]: simplifiedShape,
+            [drawingShape.id]: drawingShape,
           });
           drawingShapes = Object.values(state)
             .filter((shape) => shape.data.points.length > 2)
