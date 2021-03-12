@@ -284,6 +284,7 @@ function MapFog({
 
     function handlePointerMove() {
       if (
+        editable &&
         active &&
         (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
       ) {
@@ -572,7 +573,7 @@ function MapFog({
 
     if (editable) {
       const visibleShapes = shapes.filter(shapeVisible);
-      setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes));
+      setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes, 5));
       setFogShapes(visibleShapes);
     } else {
       setFogShapes(mergeFogShapes(shapes));
