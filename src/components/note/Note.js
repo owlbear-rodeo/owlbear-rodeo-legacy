@@ -3,8 +3,12 @@ import { Rect, Text } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useSetPreventMapInteraction,
+  useMapWidth,
+  useMapHeight,
+} from "../../contexts/MapInteractionContext";
+import { useGridCellPixelSize } from "../../contexts/GridContext";
 
 import colors from "../../helpers/colors";
 
@@ -24,8 +28,12 @@ function Note({
   fadeOnHover,
 }) {
   const { userId } = useAuth();
-  const { mapWidth, mapHeight, setPreventMapInteraction } = useMapInteraction();
-  const { gridCellPixelSize } = useGrid();
+
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const setPreventMapInteraction = useSetPreventMapInteraction();
+
+  const gridCellPixelSize = useGridCellPixelSize();
 
   const minCellSize = Math.min(
     gridCellPixelSize.width,

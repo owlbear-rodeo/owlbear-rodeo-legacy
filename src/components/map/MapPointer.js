@@ -1,9 +1,13 @@
 import React, { useEffect } from "react";
 import { Group } from "react-konva";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useMapWidth,
+  useMapHeight,
+  useInteractionEmitter,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useGrid } from "../../contexts/GridContext";
+import { useGridStrokeWidth } from "../../contexts/GridContext";
 
 import {
   getRelativePointerPositionNormalized,
@@ -22,8 +26,10 @@ function MapPointer({
   visible,
   color,
 }) {
-  const { mapWidth, mapHeight, interactionEmitter } = useMapInteraction();
-  const { gridStrokeWidth } = useGrid();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const interactionEmitter = useInteractionEmitter();
+  const gridStrokeWidth = useGridStrokeWidth();
   const mapStageRef = useMapStage();
 
   useEffect(() => {

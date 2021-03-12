@@ -5,9 +5,21 @@ import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useDebouncedStageScale,
+  useMapWidth,
+  useMapHeight,
+  useInteractionEmitter,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useGrid,
+  useGridCellPixelSize,
+  useGridCellNormalizedSize,
+  useGridStrokeWidth,
+  useGridCellPixelOffset,
+  useGridOffset,
+} from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
@@ -41,20 +53,18 @@ function MapFog({
   toolSettings,
   editable,
 }) {
-  const {
-    stageScale,
-    mapWidth,
-    mapHeight,
-    interactionEmitter,
-  } = useMapInteraction();
-  const {
-    grid,
-    gridCellNormalizedSize,
-    gridCellPixelSize,
-    gridStrokeWidth,
-    gridCellPixelOffset,
-    gridOffset,
-  } = useGrid();
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const interactionEmitter = useInteractionEmitter();
+
+  const grid = useGrid();
+  const gridCellNormalizedSize = useGridCellNormalizedSize();
+  const gridCellPixelSize = useGridCellPixelSize();
+  const gridStrokeWidth = useGridStrokeWidth();
+  const gridCellPixelOffset = useGridCellPixelOffset();
+  const gridOffset = useGridOffset();
+
   const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
   const mapStageRef = useMapStage();
 

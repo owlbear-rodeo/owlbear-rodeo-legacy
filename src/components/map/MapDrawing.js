@@ -2,9 +2,17 @@ import React, { useState, useEffect } from "react";
 import shortid from "shortid";
 import { Group, Line, Rect, Circle } from "react-konva";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useDebouncedStageScale,
+  useMapWidth,
+  useMapHeight,
+  useInteractionEmitter,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useGridCellNormalizedSize,
+  useGridStrokeWidth,
+} from "../../contexts/GridContext";
 
 import Vector2 from "../../helpers/Vector2";
 import {
@@ -25,13 +33,14 @@ function MapDrawing({
   active,
   toolSettings,
 }) {
-  const {
-    stageScale,
-    mapWidth,
-    mapHeight,
-    interactionEmitter,
-  } = useMapInteraction();
-  const { gridCellNormalizedSize, gridStrokeWidth } = useGrid();
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const interactionEmitter = useInteractionEmitter();
+
+  const gridCellNormalizedSize = useGridCellNormalizedSize();
+  const gridStrokeWidth = useGridStrokeWidth();
+
   const mapStageRef = useMapStage();
   const [drawingShape, setDrawingShape] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);

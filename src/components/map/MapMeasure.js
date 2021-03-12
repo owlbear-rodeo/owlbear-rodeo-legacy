@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Group, Line, Text, Label, Tag } from "react-konva";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useDebouncedStageScale,
+  useMapWidth,
+  useMapHeight,
+  useInteractionEmitter,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useGrid,
+  useGridCellPixelSize,
+  useGridCellNormalizedSize,
+  useGridStrokeWidth,
+  useGridOffset,
+} from "../../contexts/GridContext";
 
 import {
   getDefaultShapeData,
@@ -16,19 +27,17 @@ import { parseGridScale, gridDistance } from "../../helpers/grid";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
 function MapMeasure({ map, active }) {
-  const {
-    stageScale,
-    mapWidth,
-    mapHeight,
-    interactionEmitter,
-  } = useMapInteraction();
-  const {
-    grid,
-    gridCellNormalizedSize,
-    gridStrokeWidth,
-    gridCellPixelSize,
-    gridOffset,
-  } = useGrid();
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const interactionEmitter = useInteractionEmitter();
+
+  const grid = useGrid();
+  const gridCellNormalizedSize = useGridCellNormalizedSize();
+  const gridCellPixelSize = useGridCellPixelSize();
+  const gridStrokeWidth = useGridStrokeWidth();
+  const gridOffset = useGridOffset();
+
   const mapStageRef = useMapStage();
   const [drawingShapeData, setDrawingShapeData] = useState(null);
   const [isBrushDown, setIsBrushDown] = useState(false);

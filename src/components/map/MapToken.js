@@ -10,8 +10,13 @@ import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useSetPreventMapInteraction,
+  useMapWidth,
+  useMapHeight,
+  useDebouncedStageScale,
+} from "../../contexts/MapInteractionContext";
+import { useGridCellPixelSize } from "../../contexts/GridContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
@@ -31,13 +36,13 @@ function MapToken({
   map,
 }) {
   const { userId } = useAuth();
-  const {
-    setPreventMapInteraction,
-    mapWidth,
-    mapHeight,
-    stageScale,
-  } = useMapInteraction();
-  const { gridCellPixelSize } = useGrid();
+
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const setPreventMapInteraction = useSetPreventMapInteraction();
+
+  const gridCellPixelSize = useGridCellPixelSize();
 
   const tokenSource = useDataSource(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
