@@ -206,14 +206,26 @@ function MapFog({
       ) {
         const cut = toolSettings.useFogCut;
 
-        let drawingShapes = [drawingShape];
+        let simplifiedShape = {
+          ...drawingShape,
+          data: {
+            ...drawingShape.data,
+            points: simplifyPoints(
+              drawingShape.data.points,
+              gridCellNormalizedSize,
+              Math.max(stageScale, 1)
+            ),
+          },
+        };
+
+        let drawingShapes = [simplifiedShape];
         if (!toolSettings.multilayer) {
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
           );
           const subtractAction = new SubtractShapeAction(shapesToSubtract);
           const state = subtractAction.execute({
-            [drawingShape.id]: drawingShape,
+            [simplifiedShape.id]: simplifiedShape,
           });
           drawingShapes = Object.values(state)
             .filter((shape) => shape.data.points.length > 2)
@@ -222,24 +234,15 @@ function MapFog({
 
         if (drawingShapes.length > 0) {
           drawingShapes = drawingShapes.map((shape) => {
-            let shapeData = {};
             if (cut) {
-              shapeData = { id: shape.id, type: shape.type };
+              return {
+                id: shape.id,
+                type: shape.type,
+                data: shape.data,
+              };
             } else {
-              shapeData = { ...shape, color: "black" };
+              return { ...shape, color: "black" };
             }
-            return {
-              ...shapeData,
-              data: {
-                ...shape.data,
-                points: simplifyPoints(
-                  shape.data.points,
-                  gridCellNormalizedSize,
-                  // Downscale fog as smoothing doesn't currently work with edge snapping
-                  Math.max(stageScale, 1) / 2
-                ),
-              },
-            };
           });
 
           if (cut) {
