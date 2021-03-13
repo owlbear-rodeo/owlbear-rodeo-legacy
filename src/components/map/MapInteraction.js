@@ -10,21 +10,12 @@ import useStageInteraction from "../../hooks/useStageInteraction";
 import useImageCenter from "../../hooks/useImageCenter";
 
 import { getGridMaxZoom } from "../../helpers/grid";
+import KonvaBridge from "../../helpers/KonvaBridge";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import { MapStageProvider, useMapStage } from "../../contexts/MapStageContext";
-import AuthContext, { useAuth } from "../../contexts/AuthContext";
-import SettingsContext, { useSettings } from "../../contexts/SettingsContext";
-import KeyboardContext from "../../contexts/KeyboardContext";
-import TokenDataContext, {
-  useTokenData,
-} from "../../contexts/TokenDataContext";
+import { useMapStage } from "../../contexts/MapStageContext";
 import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
-import {
-  ImageSourcesStateContext,
-  ImageSourcesUpdaterContext,
-} from "../../contexts/ImageSourceContext";
 
 function MapInteraction({
   map,
@@ -162,8 +153,6 @@ function MapInteraction({
   }
 
   useKeyboard(handleKeyDown, handleKeyUp);
-  // Get keyboard context to pass to Konva
-  const keyboardValue = useContext(KeyboardContext);
 
   function getCursorForTool(tool) {
     switch (tool) {
@@ -171,9 +160,7 @@ function MapInteraction({
         return "move";
       case "fog":
       case "drawing":
-        return settings.settings[tool].type === "move"
-          ? "pointer"
-          : "crosshair";
+        return "crosshair";
       case "measure":
       case "pointer":
       case "note":
@@ -182,12 +169,6 @@ function MapInteraction({
         return "default";
     }
   }
-
-  const auth = useAuth();
-  const settings = useSettings();
-  const tokenData = useTokenData();
-  const imageSources = useContext(ImageSourcesStateContext);
-  const setImageSources = useContext(ImageSourcesUpdaterContext);
 
   const mapInteraction = {
     stageScale,
@@ -200,69 +181,49 @@ function MapInteraction({
   };
 
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        position: "relative",
-        cursor: getCursorForTool(selectedToolId),
-        touchAction: "none",
-        outline: "none",
-      }}
-      ref={containerRef}
-      className="map"
-    >
-      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
-        <Stage
-          width={stageWidth}
-          height={stageHeight}
-          scale={{ x: stageScale, y: stageScale }}
-          ref={mapStageRef}
+    <MapInteractionProvider value={mapInteraction}>
+      <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            position: "relative",
+            cursor: getCursorForTool(selectedToolId),
+            touchAction: "none",
+            outline: "none",
+          }}
+          ref={containerRef}
+          className="map"
         >
-          <Layer ref={mapLayerRef}>
-            <Image
-              image={mapLoaded && mapImageSource}
-              width={mapWidth}
-              height={mapHeight}
-              id="mapImage"
-              ref={mapImageRef}
-            />
-            {/* Forward auth context to konva elements */}
-            <AuthContext.Provider value={auth}>
-              <SettingsContext.Provider value={settings}>
-                <KeyboardContext.Provider value={keyboardValue}>
-                  <MapInteractionProvider value={mapInteraction}>
-                    <GridProvider
-                      grid={map?.grid}
-                      width={mapWidth}
-                      height={mapHeight}
-                    >
-                      <MapStageProvider value={mapStageRef}>
-                        <TokenDataContext.Provider value={tokenData}>
-                          <ImageSourcesStateContext.Provider
-                            value={imageSources}
-                          >
-                            <ImageSourcesUpdaterContext.Provider
-                              value={setImageSources}
-                            >
-                              {mapLoaded && children}
-                            </ImageSourcesUpdaterContext.Provider>
-                          </ImageSourcesStateContext.Provider>
-                        </TokenDataContext.Provider>
-                      </MapStageProvider>
-                    </GridProvider>
-                  </MapInteractionProvider>
-                </KeyboardContext.Provider>
-              </SettingsContext.Provider>
-            </AuthContext.Provider>
-          </Layer>
-        </Stage>
-      </ReactResizeDetector>
-      <MapInteractionProvider value={mapInteraction}>
-        <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+          <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+            <KonvaBridge
+              stageRender={(children) => (
+                <Stage
+                  width={stageWidth}
+                  height={stageHeight}
+                  scale={{ x: stageScale, y: stageScale }}
+                  ref={mapStageRef}
+                >
+                  {children}
+                </Stage>
+              )}
+            >
+              <Layer ref={mapLayerRef}>
+                <Image
+                  image={mapLoaded && mapImageSource}
+                  width={mapWidth}
+                  height={mapHeight}
+                  id="mapImage"
+                  ref={mapImageRef}
+                />
+
+                {mapLoaded && children}
+              </Layer>
+            </KonvaBridge>
+          </ReactResizeDetector>
           {controls}
-        </GridProvider>
-      </MapInteractionProvider>
-    </Box>
+        </Box>
+      </GridProvider>
+    </MapInteractionProvider>
   );
 }
 

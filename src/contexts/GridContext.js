@@ -37,19 +37,21 @@ const defaultValue = {
   gridCellPixelOffset: new Vector2(0, 0),
 };
 
-const GridContext = React.createContext(defaultValue.grid);
-const GridPixelSizeContext = React.createContext(defaultValue.gridPixelSize);
-const GridCellPixelSizeContext = React.createContext(
+export const GridContext = React.createContext(defaultValue.grid);
+export const GridPixelSizeContext = React.createContext(
+  defaultValue.gridPixelSize
+);
+export const GridCellPixelSizeContext = React.createContext(
   defaultValue.gridCellPixelSize
 );
-const GridCellNormalizedSizeContext = React.createContext(
+export const GridCellNormalizedSizeContext = React.createContext(
   defaultValue.gridCellNormalizedSize
 );
-const GridOffsetContext = React.createContext(defaultValue.gridOffset);
-const GridStrokeWidthContext = React.createContext(
+export const GridOffsetContext = React.createContext(defaultValue.gridOffset);
+export const GridStrokeWidthContext = React.createContext(
   defaultValue.gridStrokeWidth
 );
-const GridCellPixelOffsetContext = React.createContext(
+export const GridCellPixelOffsetContext = React.createContext(
   defaultValue.gridCellPixelOffset
 );
 

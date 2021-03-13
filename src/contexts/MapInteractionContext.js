@@ -1,14 +1,14 @@
 import React, { useContext } from "react";
 import useDebounce from "../hooks/useDebounce";
 
-const StageScaleContext = React.createContext();
-const DebouncedStageScaleContext = React.createContext();
-const StageWidthContext = React.createContext();
-const StageHeightContext = React.createContext();
-const SetPreventMapInteractionContext = React.createContext();
-const MapWidthContext = React.createContext();
-const MapHeightContext = React.createContext();
-const InteractionEmitterContext = React.createContext();
+export const StageScaleContext = React.createContext();
+export const DebouncedStageScaleContext = React.createContext();
+export const StageWidthContext = React.createContext();
+export const StageHeightContext = React.createContext();
+export const SetPreventMapInteractionContext = React.createContext();
+export const MapWidthContext = React.createContext();
+export const MapHeightContext = React.createContext();
+export const InteractionEmitterContext = React.createContext();
 
 export function MapInteractionProvider({ value, children }) {
   const {
@@ -32,7 +32,7 @@ export function MapInteractionProvider({ value, children }) {
               <MapHeightContext.Provider value={mapHeight}>
                 <StageScaleContext.Provider value={stageScale}>
                   <DebouncedStageScaleContext.Provider
-                    value={debouncedStageScale}
+                    value={debouncedStageScale || 1}
                   >
                     {children}
                   </DebouncedStageScaleContext.Provider>
