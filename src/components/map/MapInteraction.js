@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useContext } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Box } from "theme-ui";
 import ReactResizeDetector from "react-resize-detector";
 import { Stage, Layer, Image } from "react-konva";
