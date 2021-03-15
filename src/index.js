@@ -11,6 +11,12 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.css";
 
+console.log(
+  "env",
+  process.env,
+  "logging",
+  process.env.REACT_APP_LOGGING === "true"
+);
 if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn:
@@ -28,7 +34,9 @@ if (process.env.REACT_APP_LOGGING === "true") {
       "XDR encoding failure",
       "Assertion failed: Input argument is not an HTMLInputElement",
       "Extension context invalidated",
-      new RegExp("([InvalidStateError:\\s]*Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing([.]*[\\s]*))+"),
+      new RegExp(
+        "([InvalidStateError:\\s]*Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing([.]*[\\s]*))+"
+      ),
       // Random plugins/extensions
       "top.GLOBALS",
       // See: http://blog.errorception.com/2012/03/tale-of-unfindable-js-error.html
