@@ -72,18 +72,13 @@ export function useImageSource(data, defaultSources, unknownSource, thumbnail) {
     );
   }
 
-  const imageSourcesRef = useRef(imageSources);
-  useEffect(() => {
-    imageSourcesRef.current = imageSources;
-  }, [imageSources]);
-
   useEffect(() => {
     if (!data || data.type !== "file") {
       return;
     }
     const id = getImageFileId(data, thumbnail);
 
-    function addImageSource(file) {
+    function updateImageSource(file) {
       if (file) {
         setImageSources((prevSources) => {
           if (id in prevSources) {
@@ -92,6 +87,7 @@ export function useImageSource(data, defaultSources, unknownSource, thumbnail) {
               ...prevSources,
               [id]: {
                 ...prevSources[id],
+                // Increase references
                 references: prevSources[id].references + 1,
               },
             };
@@ -106,48 +102,41 @@ export function useImageSource(data, defaultSources, unknownSource, thumbnail) {
       }
     }
 
-    if (id in imageSourcesRef.current) {
-      // Increase references
-      setImageSources((prevSources) => ({
-        ...prevSources,
-        [id]: {
-          ...prevSources[id],
-          references: prevSources[id].references + 1,
-        },
-      }));
-    } else {
-      if (thumbnail) {
-        addImageSource(data.thumbnail.file);
-      } else if (data.resolutions) {
-        // Check is a resolution is specified
-        if (data.quality && data.resolutions[data.quality]) {
-          addImageSource(data.resolutions[data.quality].file);
-        }
-        // If no file available fallback to the highest resolution
-        else if (!data.file) {
-          const resolutionArray = Object.keys(data.resolutions);
-          addImageSource(
-            data.resolutions[resolutionArray[resolutionArray.length - 1]].file
-          );
-        } else {
-          addImageSource(data.file);
-        }
-      } else {
-        addImageSource(data.file);
+    if (thumbnail) {
+      updateImageSource(data.thumbnail.file);
+    } else if (data.resolutions) {
+      // Check is a resolution is specified
+      if (data.quality && data.resolutions[data.quality]) {
+        updateImageSource(data.resolutions[data.quality].file);
       }
+      // If no file available fallback to the highest resolution
+      else if (!data.file) {
+        const resolutionArray = Object.keys(data.resolutions);
+        updateImageSource(
+          data.resolutions[resolutionArray[resolutionArray.length - 1]].file
+        );
+      } else {
+        updateImageSource(data.file);
+      }
+    } else {
+      updateImageSource(data.file);
     }
 
     return () => {
       // Decrease references
-      if (id in imageSourcesRef.current) {
-        setImageSources((prevSources) => ({
-          ...prevSources,
-          [id]: {
-            ...prevSources[id],
-            references: prevSources[id].references - 1,
-          },
-        }));
-      }
+      setImageSources((prevSources) => {
+        if (id in prevSources) {
+          return {
+            ...prevSources,
+            [id]: {
+              ...prevSources[id],
+              references: prevSources[id].references - 1,
+            },
+          };
+        } else {
+          return prevSources;
+        }
+      });
     };
   }, [data, unknownSource, thumbnail, setImageSources]);
 
