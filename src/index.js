@@ -11,6 +11,11 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.css";
 
+// Pointer events shim
+if (!("PointerEvent" in window)) {
+  import("pepjs");
+}
+
 console.log(
   "env",
   process.env,
