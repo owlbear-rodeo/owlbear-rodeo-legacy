@@ -4,7 +4,7 @@ import {
   exportDB,
   peakImportFile,
 } from "@mitchemmc/dexie-export-import";
-import { encode } from "@msgpack/msgpack";
+import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
 
@@ -44,6 +44,27 @@ let service = {
         return Comlink.transfer(packed, [packed.buffer]);
       }
     } catch {}
+  },
+
+  /**
+   * Put data into table encoded by msgpack
+   * @param {Uint8Array} data
+   * @param {string} table
+   * @param {boolean} wait Whether to wait for the put to finish
+   */
+  async putData(data, table, wait = true) {
+    try {
+      let db = getDatabase({});
+      const decoded = decode(data);
+      if (wait) {
+        await db.table(table).put(decoded);
+      } else {
+        db.table(table).put(decoded);
+      }
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   /**
