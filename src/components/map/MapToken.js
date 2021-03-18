@@ -212,8 +212,6 @@ function MapToken({
         ),
       });
       image.drawHitFromCache();
-      // Force redraw
-      image.getLayer().draw();
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
 
