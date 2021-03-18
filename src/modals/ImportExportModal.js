@@ -117,7 +117,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImportSelectorClose() {
-    const importDB = getDatabase({}, importDBName);
+    const importDB = getDatabase({ addons: [] }, importDBName);
     await importDB.delete();
     importDB.close();
     setShowImportSelector(false);
@@ -129,7 +129,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setShowImportSelector(false);
     loadingProgressRef.current = 0;
 
-    const importDB = getDatabase({}, importDBName);
+    const importDB = getDatabase({ addons: [] }, importDBName);
     const db = getDatabase({});
     try {
       // Keep track of a mapping of old token ids to new ones to apply them to the map states

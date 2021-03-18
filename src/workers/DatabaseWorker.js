@@ -124,12 +124,16 @@ let service = {
     }
 
     // Ensure import DB is cleared before importing new data
-    let importDB = getDatabase({}, databaseName, 0);
+    let importDB = getDatabase({ addons: [] }, databaseName, 0);
     await importDB.delete();
     importDB.close();
 
     // Load import database up to it's desired version
-    importDB = getDatabase({}, databaseName, importMeta.data.databaseVersion);
+    importDB = getDatabase(
+      { addons: [] },
+      databaseName,
+      importMeta.data.databaseVersion
+    );
     await importInto(importDB, data, {
       progressCallback,
       acceptNameDiff: true,
