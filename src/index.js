@@ -16,12 +16,6 @@ if (!("PointerEvent" in window)) {
   import("pepjs");
 }
 
-console.log(
-  "env",
-  process.env,
-  "logging",
-  process.env.REACT_APP_LOGGING === "true"
-);
 if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn:
