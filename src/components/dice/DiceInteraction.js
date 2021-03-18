@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Box, Text } from "theme-ui";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { Vector3, Color4, Matrix } from "@babylonjs/core/Maths/math";
@@ -19,7 +18,7 @@ import ReactResizeDetector from "react-resize-detector";
 
 import usePreventTouch from "../../hooks/usePreventTouch";
 
-import Banner from "../Banner";
+import ErrorBanner from "../banner/ErrorBanner";
 
 const diceThrowSpeed = 2;
 
@@ -166,13 +165,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
           style={{ outline: "none" }}
         />
       </ReactResizeDetector>
-      <Banner isOpen={!!error} onRequestClose={() => setError()}>
-        <Box p={1}>
-          <Text as="p" variant="body2">
-            Error: {error && error.message}
-          </Text>
-        </Box>
-      </Banner>
+      <ErrorBanner error={error} onRequestClose={() => setError()} />
     </div>
   );
 }

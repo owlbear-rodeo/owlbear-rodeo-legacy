@@ -3,7 +3,7 @@ import { Text, IconButton, Box, Flex } from "theme-ui";
 
 import StreamMuteIcon from "../../icons/StreamMuteIcon";
 
-import Banner from "../Banner";
+import Banner from "../banner/Banner";
 import Slider from "../Slider";
 
 function Stream({ stream, nickname }) {

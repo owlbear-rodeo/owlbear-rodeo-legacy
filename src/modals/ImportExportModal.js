@@ -8,7 +8,7 @@ import { useToasts } from "react-toast-notifications";
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
-import Banner from "../components/Banner";
+import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { useAuth } from "../contexts/AuthContext";
 
@@ -271,13 +271,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             />
           </Box>
         )}
-        <Banner isOpen={!!error} onRequestClose={() => setError()}>
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              Error: {error && error.message}
-            </Text>
-          </Box>
-        </Banner>
+        <ErrorBanner error={error} onRequestClose={() => setError()} />
         <SelectDataModal
           isOpen={showImportSelector}
           onRequestClose={handleImportSelectorClose}

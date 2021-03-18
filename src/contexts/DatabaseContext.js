@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Box, Text } from "theme-ui";
 
-import Banner from "../components/Banner";
+import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { getDatabase } from "../database";
 
@@ -64,16 +63,10 @@ export function DatabaseProvider({ children }) {
     <DatabaseContext.Provider value={value}>
       <>
         {children}
-        <Banner
-          isOpen={!!databaseError}
+        <ErrorBanner
+          error={databaseError}
           onRequestClose={() => setDatabaseError()}
-        >
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              {databaseError && databaseError.message}
-            </Text>
-          </Box>
-        </Banner>
+        />
       </>
     </DatabaseContext.Provider>
   );

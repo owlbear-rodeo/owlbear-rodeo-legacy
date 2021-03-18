@@ -2,7 +2,13 @@ import React from "react";
 import Modal from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 
-function Banner({ isOpen, onRequestClose, children, allowClose }) {
+function Banner({
+  isOpen,
+  onRequestClose,
+  children,
+  allowClose,
+  backgroundColor,
+}) {
   const { theme } = useThemeUI();
 
   return (
@@ -12,7 +18,7 @@ function Banner({ isOpen, onRequestClose, children, allowClose }) {
       style={{
         overlay: { bottom: "0", top: "initial", zIndex: 2000 },
         content: {
-          backgroundColor: theme.colors.highlight,
+          backgroundColor: backgroundColor || theme.colors.highlight,
           color: "hsl(210, 50%, 96%)",
           top: "initial",
           left: "50%",
@@ -22,7 +28,7 @@ function Banner({ isOpen, onRequestClose, children, allowClose }) {
           border: "none",
           padding: "8px",
           margin: "8px",
-          paddingRight: "24px",
+          paddingRight: allowClose ? "24px" : "8px",
           maxWidth: "500px",
           transform: "translateX(-50%)",
         },

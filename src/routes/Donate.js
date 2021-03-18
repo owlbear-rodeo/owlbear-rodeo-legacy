@@ -12,7 +12,7 @@ import {
 import { useLocation } from "react-router-dom";
 
 import Footer from "../components/Footer";
-import Banner from "../components/Banner";
+import ErrorBanner from "../components/banner/ErrorBanner";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import { logError } from "../helpers/logging";
@@ -159,13 +159,7 @@ function Donate() {
       </Flex>
       <Footer />
       {loading && <LoadingOverlay />}
-      <Banner isOpen={!!error} onRequestClose={() => setError(null)}>
-        <Box p={1}>
-          <Text as="p" variant="body2">
-            {error}
-          </Text>
-        </Box>
-      </Banner>
+      <ErrorBanner error={error} onRequestClose={() => setError()} />
     </Flex>
   );
 }
