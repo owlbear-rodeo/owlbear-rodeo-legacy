@@ -61,6 +61,7 @@ let service = {
       } else {
         db.table(table).put(decoded);
       }
+      db.close();
       return true;
     } catch {
       return false;
