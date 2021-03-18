@@ -141,7 +141,11 @@ function SettingsModal({ isOpen, onRequestClose }) {
           </Label>
           <Divider bg="text" />
           <Flex py={2}>
-            <Button sx={{ flexGrow: 1 }} onClick={handleClearCache}>
+            <Button
+              sx={{ flexGrow: 1 }}
+              onClick={handleClearCache}
+              disabled={!database}
+            >
               Clear cache
             </Button>
           </Flex>
@@ -149,6 +153,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
             <Button
               sx={{ flexGrow: 1 }}
               onClick={() => setIsDeleteModalOpen(true)}
+              disabled={!database}
             >
               Erase all content and reset
             </Button>
