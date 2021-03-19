@@ -1,4 +1,5 @@
 import io from "socket.io-client";
+import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
 import Connection from "./Connection";
@@ -89,6 +90,7 @@ class Session extends EventEmitter {
 
       this.socket = io(process.env.REACT_APP_BROKER_URL, {
         withCredentials: true,
+        parser: msgParser,
       });
 
       this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
