@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -26,7 +26,7 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard } from "../contexts/KeyboardContext";
+import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 const defaultMapProps = {
   showGrid: false,
@@ -382,17 +382,12 @@ function SelectMapModal({
 
   useKeyboard(handleKeyDown, handleKeyUp);
 
-  // Set select mode to single when alt+tabing
-  useEffect(() => {
-    function handleBlur() {
-      setSelectMode("single");
-    }
+  // Set select mode to single when cmd+tabing
+  function handleBlur() {
+    setSelectMode("single");
+  }
 
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, []);
+  useBlur(handleBlur);
 
   const layout = useResponsiveLayout();
 
