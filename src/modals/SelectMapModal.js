@@ -328,9 +328,11 @@ function SelectMapModal({
       const map = selectedMaps[0];
       const mapState = await getMapStateFromDB(map.id);
       if (map.type === "file") {
+        setIsLoading(true);
         await updateMap(map.id, { lastUsed });
         const updatedMap = await getMapFromDB(map.id);
         onMapChange(updatedMap, mapState);
+        setIsLoading(false);
       } else {
         onMapChange(map, mapState);
       }
@@ -433,7 +435,7 @@ function SelectMapModal({
           />
           <Button
             variant="primary"
-            disabled={isLoading || selectedMapIds.length !== 1}
+            disabled={isLoading || selectedMapIds.length > 1}
             onClick={handleDone}
             mt={2}
           >
