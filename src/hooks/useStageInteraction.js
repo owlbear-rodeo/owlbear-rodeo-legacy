@@ -215,13 +215,13 @@ function useStageInteraction(
       onStageScaleChange(newScale);
     }
 
-    if (key === "Alt") {
+    if (key === "Shift") {
       setZoomSpeed(0.25);
     }
   }
 
   function handleKeyUp({ key }) {
-    if (key === "Alt") {
+    if (key === "Shift") {
       setZoomSpeed(1);
     }
   }

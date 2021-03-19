@@ -1,16 +1,17 @@
 ## General
 
-| Shortcut         | Description  |
-| ---------------- | ------------ |
-| W                | Move Tool    |
-| Space Bar (Hold) | Move Tool    |
-| F                | Fog Tool     |
-| D                | Drawing Tool |
-| M                | Measure Tool |
-| Q                | Pointer Tool |
-| N                | Note Tool    |
-| +                | Zoom In      |
-| -                | Zoom Out     |
+| Shortcut         | Description    |
+| ---------------- | -------------- |
+| W                | Move Tool      |
+| Space Bar (Hold) | Move Tool      |
+| F                | Fog Tool       |
+| D                | Drawing Tool   |
+| M                | Measure Tool   |
+| Q                | Pointer Tool   |
+| N                | Note Tool      |
+| +                | Zoom In        |
+| -                | Zoom Out       |
+| Shift + Zoom     | Precision Zoom |
 
 ## Fog Tool
 
