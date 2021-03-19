@@ -90,8 +90,6 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }) {
       bg="background"
       sx={{
         position: "relative",
-        // width: fullScreen ? "0" : "112px",
-        // minWidth: fullScreen ? "0" : "112px",
       }}
     >
       <Box
