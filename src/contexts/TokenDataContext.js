@@ -5,13 +5,10 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import * as Comlink from "comlink";
 import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
-
-import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
 import { tokens as defaultTokens } from "../tokens";
 
@@ -19,10 +16,8 @@ const TokenDataContext = React.createContext();
 
 const cachedTokenMax = 100;
 
-const worker = Comlink.wrap(new DatabaseWorker());
-
 export function TokenDataProvider({ children }) {
-  const { database, databaseStatus } = useDatabase();
+  const { database, databaseStatus, worker } = useDatabase();
   const { userId } = useAuth();
 
   /**
@@ -71,7 +66,7 @@ export function TokenDataProvider({ children }) {
     }
 
     loadTokens();
-  }, [userId, database, databaseStatus]);
+  }, [userId, database, databaseStatus, worker]);
 
   const tokensRef = useRef(tokens);
   useEffect(() => {

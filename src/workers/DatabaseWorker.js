@@ -22,7 +22,6 @@ let service = {
       if (key) {
         // Load specific item
         const data = await db.table(table).get(key);
-        db.close();
         return data;
       } else {
         // Load entire table
@@ -36,8 +35,6 @@ let service = {
             items.push(item);
           }
         });
-
-        db.close();
 
         // Pack data with msgpack so we can use transfer to avoid memory issues
         const packed = encode(items);
@@ -61,7 +58,6 @@ let service = {
       } else {
         db.table(table).put(decoded);
       }
-      db.close();
       return true;
     } catch {
       return false;
@@ -96,7 +92,6 @@ let service = {
       numRowsPerChunk: 1,
       prettyJson: true,
     });
-    db.close();
     return data;
   },
 
@@ -151,7 +146,6 @@ let service = {
       acceptVersionDiff: true,
     });
     importDB.close();
-    db.close();
   },
 };
 

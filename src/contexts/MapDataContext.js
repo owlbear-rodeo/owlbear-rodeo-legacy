@@ -11,8 +11,6 @@ import { decode, encode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
-import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
-
 import { maps as defaultMaps } from "../maps";
 
 const MapDataContext = React.createContext();
@@ -29,10 +27,8 @@ const defaultMapState = {
   notes: {},
 };
 
-const worker = Comlink.wrap(new DatabaseWorker());
-
 export function MapDataProvider({ children }) {
-  const { database, databaseStatus } = useDatabase();
+  const { database, databaseStatus, worker } = useDatabase();
   const { userId } = useAuth();
 
   const [maps, setMaps] = useState([]);
@@ -74,6 +70,7 @@ export function MapDataProvider({ children }) {
       let storedMaps = [];
       // Try to load maps with worker, fallback to database if failed
       const packedMaps = await worker.loadData("maps");
+      // let packedMaps;
       if (packedMaps) {
         storedMaps = decode(packedMaps);
       } else {
@@ -93,7 +90,7 @@ export function MapDataProvider({ children }) {
     }
 
     loadMaps();
-  }, [userId, database, databaseStatus]);
+  }, [userId, database, databaseStatus, worker]);
 
   const mapsRef = useRef(maps);
   useEffect(() => {
@@ -232,7 +229,7 @@ export function MapDataProvider({ children }) {
         await updateCache();
       }
     },
-    [database, updateCache, userId]
+    [database, updateCache, userId, worker]
   );
 
   // Create DB observable to sync creating and deleting

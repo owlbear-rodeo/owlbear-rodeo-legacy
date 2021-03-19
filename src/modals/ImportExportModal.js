@@ -11,18 +11,16 @@ import LoadingBar from "../components/LoadingBar";
 import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import SelectDataModal from "./SelectDataModal";
 
 import { getDatabase } from "../database";
 
-import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
-
-const worker = Comlink.wrap(new DatabaseWorker());
-
 const importDBName = "OwlbearRodeoImportDB";
 
 function ImportExportModal({ isOpen, onRequestClose }) {
+  const { worker } = useDatabase();
   const { userId } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);

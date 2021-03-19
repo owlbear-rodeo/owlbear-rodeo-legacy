@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useContext } from "react";
+import * as Comlink from "comlink";
 
 import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { getDatabase } from "../database";
 
+import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
+
 const DatabaseContext = React.createContext();
+
+const worker = Comlink.wrap(new DatabaseWorker());
 
 export function DatabaseProvider({ children }) {
   const [database, setDatabase] = useState();
   const [databaseStatus, setDatabaseStatus] = useState("loading");
   const [databaseError, setDatabaseError] = useState();
+  // const [worker] = useState(Comlink.wrap(new DatabaseWorker()))
 
   useEffect(() => {
     // Create a test database and open it to see if indexedDB is enabled
@@ -58,6 +64,7 @@ export function DatabaseProvider({ children }) {
     database,
     databaseStatus,
     databaseError,
+    worker,
   };
   return (
     <DatabaseContext.Provider value={value}>
