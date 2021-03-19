@@ -1,8 +1,8 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
-import { useKeyboard } from "../contexts/KeyboardContext";
+import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
@@ -22,6 +22,8 @@ function useStageInteraction(
   const isInteractingWithCanvas = useRef(false);
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
+
+  const [zoomSpeed, setZoomSpeed] = useState(1);
 
   // Prevent accessibility pinch to zoom on Mac
   useEffect(() => {
@@ -55,7 +57,8 @@ function useStageInteraction(
         const newScale = Math.min(
           Math.max(
             stageScale +
-              (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+              (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
+                window.innerHeight,
             minZoom
           ),
           maxZoom
@@ -99,7 +102,8 @@ function useStageInteraction(
         const originYDelta = originY - pinchPreviousOriginRef.current.y;
         const newScale = Math.min(
           Math.max(
-            stageScale + distanceDelta * touchZoomSpeed * stageScale,
+            stageScale +
+              distanceDelta * touchZoomSpeed * stageScale * zoomSpeed,
             minZoom
           ),
           maxZoom
@@ -176,13 +180,12 @@ function useStageInteraction(
     }
   );
 
-  function handleKeyDown(event) {
+  function handleKeyDown({ key, ctrlKey, metaKey }) {
     // TODO: Find better way to detect whether keyboard event should fire.
     // This one fires on all open stages
     if (preventInteraction) {
       return;
     }
-    const { key, ctrlKey, metaKey } = event;
     if (
       (key === "=" || key === "+" || key === "-" || key === "_") &&
       !ctrlKey &&
@@ -192,7 +195,8 @@ function useStageInteraction(
       const newScale = Math.min(
         Math.max(
           stageScale +
-            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+            (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
+              window.innerHeight,
           minZoom
         ),
         maxZoom
@@ -210,9 +214,25 @@ function useStageInteraction(
 
       onStageScaleChange(newScale);
     }
+
+    if (key === "Alt") {
+      setZoomSpeed(0.25);
+    }
   }
 
-  useKeyboard(handleKeyDown);
+  function handleKeyUp({ key }) {
+    if (key === "Alt") {
+      setZoomSpeed(1);
+    }
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+
+  function handleBlur() {
+    setZoomSpeed(1);
+  }
+
+  useBlur(handleBlur);
 }
 
 export default useStageInteraction;
