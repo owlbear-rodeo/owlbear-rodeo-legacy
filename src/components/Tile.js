@@ -71,6 +71,7 @@ function Tile({
           left: 0,
         }}
         src={src}
+        alt={title}
       />
       <Flex
         sx={{
