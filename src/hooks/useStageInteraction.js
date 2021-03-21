@@ -51,30 +51,34 @@ function useStageInteraction(
         if (preventInteraction || !isInteractingWithCanvas.current) {
           return;
         }
-        const { event } = props;
-        const { pixelY } = normalizeWheel(event);
+        const { event, last } = props;
+        if (!last) {
+          const { pixelY } = normalizeWheel(event);
 
-        const newScale = Math.min(
-          Math.max(
-            stageScale +
-              (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
-                window.innerHeight,
-            minZoom
-          ),
-          maxZoom
-        );
+          const newScale = Math.min(
+            Math.max(
+              stageScale +
+                (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
+                  window.innerHeight,
+              minZoom
+            ),
+            maxZoom
+          );
 
-        // Center on pointer
-        const pointer = stage.getPointerPosition();
-        const newTranslate = {
-          x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
-          y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
-        };
+          // Center on pointer
+          const pointer = stage.getPointerPosition();
+          const newTranslate = {
+            x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+            y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+          };
 
-        stage.position(newTranslate);
-        stageTranslateRef.current = newTranslate;
+          stage.position(newTranslate);
 
-        onStageScaleChange(newScale);
+          stageTranslateRef.current = newTranslate;
+
+          onStageScaleChange(newScale);
+        }
+
         gesture.onWheel && gesture.onWheel(props);
       },
       onPinchStart: (props) => {
