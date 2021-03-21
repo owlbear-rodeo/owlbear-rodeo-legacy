@@ -34,6 +34,8 @@ function ListToken({ token, className }) {
         }}
         // pass id into the dom element which is then used by the ProxyToken
         data-id={token.id}
+        alt={token.name}
+        title={token.name}
       />
     </Box>
   );
