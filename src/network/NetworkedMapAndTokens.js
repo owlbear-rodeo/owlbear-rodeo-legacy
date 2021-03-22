@@ -66,7 +66,7 @@ function NetworkedMapAndTokens({ session }) {
   );
 
   async function loadAssetManifestFromMap(map, mapState) {
-    const assets = { mapId: map.id };
+    const assets = {};
     if (map.type === "file") {
       const { id, lastModified, owner } = map;
       assets[`map-${id}`] = { type: "map", id, lastModified, owner };
@@ -85,7 +85,7 @@ function NetworkedMapAndTokens({ session }) {
         assets[`token-${id}`] = { type: "token", id, lastModified, owner };
       }
     }
-    setAssetManifest(assets, true, true);
+    setAssetManifest({ mapId: map.id, assets }, true, true);
   }
 
   function compareAssets(a, b) {
@@ -101,17 +101,24 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   function addAssetIfNeeded(asset) {
-    setAssetManifest((prevAssets) => {
-      const id = asset.type === "map" ? `map-${asset.id}` : `token-${asset.id}`;
-      const exists = id in prevAssets;
-      const needsUpdate = exists && assetNeedsUpdate(prevAssets[id], asset);
-      if (!exists || needsUpdate) {
-        return {
-          ...prevAssets,
-          [id]: asset,
-        };
+    setAssetManifest((prevManifest) => {
+      if (prevManifest?.assets) {
+        const id =
+          asset.type === "map" ? `map-${asset.id}` : `token-${asset.id}`;
+        const exists = id in prevManifest.assets;
+        const needsUpdate =
+          exists && assetNeedsUpdate(prevManifest.assets[id], asset);
+        if (!exists || needsUpdate) {
+          return {
+            ...prevManifest,
+            assets: {
+              ...prevManifest.assets,
+              [id]: asset,
+            },
+          };
+        }
       }
-      return prevAssets;
+      return prevManifest;
     });
   }
 
@@ -124,7 +131,7 @@ function NetworkedMapAndTokens({ session }) {
     }
 
     async function requestAssetsIfNeeded() {
-      for (let asset of Object.values(assetManifest)) {
+      for (let asset of Object.values(assetManifest.assets)) {
         if (
           asset.owner === userId ||
           requestingAssetsRef.current.has(asset.id)
@@ -144,8 +151,6 @@ function NetworkedMapAndTokens({ session }) {
         if (asset.type === "map") {
           const cachedMap = await getMapFromDB(asset.id);
           if (cachedMap && cachedMap.lastModified === asset.lastModified) {
-            requestingAssetsRef.current.delete(asset.id);
-          } else if (cachedMap && cachedMap.lastModified > asset.lastModified) {
             requestingAssetsRef.current.delete(asset.id);
           } else {
             session.sendTo(owner.sessionId, "mapRequest", asset.id);
