@@ -44,7 +44,7 @@ function NetworkedMapAndTokens({ session }) {
     isLoading,
   } = useMapLoading();
 
-  const { putToken, updateToken, getTokenFromDB } = useTokenData();
+  const { putToken, getTokenFromDB } = useTokenData();
   const { putMap, updateMap, getMapFromDB, updateMapState } = useMapData();
 
   const [currentMap, setCurrentMap] = useState(null);
@@ -61,14 +61,15 @@ function NetworkedMapAndTokens({ session }) {
     session,
     "manifest",
     500,
-    false
+    true,
+    "mapId"
   );
 
   async function loadAssetManifestFromMap(map, mapState) {
-    const assets = [];
+    const assets = { mapId: map.id };
     if (map.type === "file") {
       const { id, lastModified, owner } = map;
-      assets.push({ type: "map", id, lastModified, owner });
+      assets[`map-${id}`] = { type: "map", id, lastModified, owner };
     }
     let processedTokens = new Set();
     for (let tokenState of Object.values(mapState.tokens)) {
@@ -81,10 +82,10 @@ function NetworkedMapAndTokens({ session }) {
         processedTokens.add(tokenState.tokenId);
         // Omit file from token peer will request file if needed
         const { id, lastModified, owner } = token;
-        assets.push({ type: "token", id, lastModified, owner });
+        assets[`token-${id}`] = { type: "token", id, lastModified, owner };
       }
     }
-    setAssetManifest(assets);
+    setAssetManifest(assets, true, true);
   }
 
   function compareAssets(a, b) {
@@ -95,26 +96,23 @@ function NetworkedMapAndTokens({ session }) {
   function assetNeedsUpdate(oldAsset, newAsset) {
     return (
       compareAssets(oldAsset, newAsset) &&
-      oldAsset.lastModified > newAsset.lastModified
+      oldAsset.lastModified < newAsset.lastModified
     );
   }
 
   function addAssetIfNeeded(asset) {
-    // Asset needs updating
-    const exists = assetManifest?.some((oldAsset) =>
-      compareAssets(oldAsset, asset)
-    );
-    const needsUpdate = assetManifest?.some((oldAsset) =>
-      assetNeedsUpdate(oldAsset, asset)
-    );
-    if (!exists || needsUpdate) {
-      setAssetManifest((prevAssets) => [
-        ...(prevAssets || []).filter(
-          (prevAsset) => !compareAssets(prevAsset, asset)
-        ),
-        asset,
-      ]);
-    }
+    setAssetManifest((prevAssets) => {
+      const id = asset.type === "map" ? `map-${asset.id}` : `token-${asset.id}`;
+      const exists = id in prevAssets;
+      const needsUpdate = exists && assetNeedsUpdate(prevAssets[id], asset);
+      if (!exists || needsUpdate) {
+        return {
+          ...prevAssets,
+          [id]: asset,
+        };
+      }
+      return prevAssets;
+    });
   }
 
   // Keep track of assets we are already requesting to prevent from loading them multiple times
@@ -126,7 +124,7 @@ function NetworkedMapAndTokens({ session }) {
     }
 
     async function requestAssetsIfNeeded() {
-      for (let asset of assetManifest) {
+      for (let asset of Object.values(assetManifest)) {
         if (
           asset.owner === userId ||
           requestingAssetsRef.current.has(asset.id)
@@ -147,12 +145,7 @@ function NetworkedMapAndTokens({ session }) {
           const cachedMap = await getMapFromDB(asset.id);
           if (cachedMap && cachedMap.lastModified === asset.lastModified) {
             requestingAssetsRef.current.delete(asset.id);
-            continue;
           } else if (cachedMap && cachedMap.lastModified > asset.lastModified) {
-            // Update last used for cache invalidation
-            const lastUsed = Date.now();
-            await updateMap(cachedMap.id, { lastUsed });
-            setCurrentMap({ ...cachedMap, lastUsed });
             requestingAssetsRef.current.delete(asset.id);
           } else {
             session.sendTo(owner.sessionId, "mapRequest", asset.id);
@@ -160,15 +153,6 @@ function NetworkedMapAndTokens({ session }) {
         } else if (asset.type === "token") {
           const cachedToken = await getTokenFromDB(asset.id);
           if (cachedToken && cachedToken.lastModified === asset.lastModified) {
-            requestingAssetsRef.current.delete(asset.id);
-            continue;
-          } else if (
-            cachedToken &&
-            cachedToken.lastModified > asset.lastModified
-          ) {
-            // Update last used for cache invalidation
-            const lastUsed = Date.now();
-            await updateToken(cachedToken.id, { lastUsed });
             requestingAssetsRef.current.delete(asset.id);
           } else {
             session.sendTo(owner.sessionId, "tokenRequest", asset.id);
@@ -185,7 +169,6 @@ function NetworkedMapAndTokens({ session }) {
     getMapFromDB,
     getTokenFromDB,
     updateMap,
-    updateToken,
     userId,
   ]);
 

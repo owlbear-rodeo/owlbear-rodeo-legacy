@@ -41,7 +41,11 @@ function Tokens({ onMapTokenStateCreate }) {
         visible: true,
       });
       // Update last used for cache invalidation
-      updateToken(token.id, { lastUsed: Date.now() });
+      // Keep last modified the same
+      updateToken(token.id, {
+        lastUsed: Date.now(),
+        lastModified: token.lastModified,
+      });
     }
   }
 

@@ -130,7 +130,7 @@ export function TokenDataProvider({ children }) {
 
   const updateToken = useCallback(
     async (id, update) => {
-      const change = { ...update, lastModified: Date.now() };
+      const change = { lastModified: Date.now(), ...update };
       await database.table("tokens").update(id, change);
     },
     [database]
@@ -138,7 +138,7 @@ export function TokenDataProvider({ children }) {
 
   const updateTokens = useCallback(
     async (ids, update) => {
-      const change = { ...update, lastModified: Date.now() };
+      const change = { lastModified: Date.now(), ...update };
       await Promise.all(
         ids.map((id) => database.table("tokens").update(id, change))
       );
