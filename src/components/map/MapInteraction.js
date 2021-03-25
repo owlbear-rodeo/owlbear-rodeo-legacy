@@ -17,6 +17,8 @@ import { useMapStage } from "../../contexts/MapStageContext";
 import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
+import shortcuts from "../../shortcuts";
+
 function MapInteraction({
   map,
   mapState,
@@ -111,12 +113,12 @@ function MapInteraction({
 
   function handleKeyDown(event) {
     // Change to move tool when pressing space
-    if (event.key === " " && selectedToolId === "move") {
+    if (shortcuts.move(event) && selectedToolId === "move") {
       // Stop active state on move icon from being selected
       event.preventDefault();
     }
     if (
-      event.key === " " &&
+      shortcuts.move(event) &&
       selectedToolId !== "move" &&
       !disabledControls.includes("move")
     ) {
@@ -126,28 +128,28 @@ function MapInteraction({
     }
 
     // Basic keyboard shortcuts
-    if (event.key === "w" && !disabledControls.includes("move")) {
+    if (shortcuts.moveTool(event) && !disabledControls.includes("move")) {
       onSelectedToolChange("move");
     }
-    if (event.key === "d" && !disabledControls.includes("drawing")) {
+    if (shortcuts.drawingTool(event) && !disabledControls.includes("drawing")) {
       onSelectedToolChange("drawing");
     }
-    if (event.key === "f" && !disabledControls.includes("fog")) {
+    if (shortcuts.fogTool(event) && !disabledControls.includes("fog")) {
       onSelectedToolChange("fog");
     }
-    if (event.key === "m" && !disabledControls.includes("measure")) {
+    if (shortcuts.measureTool(event) && !disabledControls.includes("measure")) {
       onSelectedToolChange("measure");
     }
-    if (event.key === "q" && !disabledControls.includes("pointer")) {
+    if (shortcuts.pointerTool(event) && !disabledControls.includes("pointer")) {
       onSelectedToolChange("pointer");
     }
-    if (event.key === "n" && !disabledControls.includes("note")) {
+    if (shortcuts.noteTool(event) && !disabledControls.includes("note")) {
       onSelectedToolChange("note");
     }
   }
 
   function handleKeyUp(event) {
-    if (event.key === " " && selectedToolId === "move") {
+    if (shortcuts.move(event) && selectedToolId === "move") {
       onSelectedToolChange(previousSelectedToolRef.current);
     }
   }

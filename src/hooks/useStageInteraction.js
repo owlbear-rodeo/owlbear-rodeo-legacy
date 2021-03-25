@@ -4,6 +4,8 @@ import normalizeWheel from "normalize-wheel";
 
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
+import shortcuts from "../shortcuts";
+
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
@@ -184,18 +186,14 @@ function useStageInteraction(
     }
   );
 
-  function handleKeyDown({ key, ctrlKey, metaKey }) {
+  function handleKeyDown(event) {
     // TODO: Find better way to detect whether keyboard event should fire.
     // This one fires on all open stages
     if (preventInteraction) {
       return;
     }
-    if (
-      (key === "=" || key === "+" || key === "-" || key === "_") &&
-      !ctrlKey &&
-      !metaKey
-    ) {
-      const pixelY = key === "=" || key === "+" ? -100 : 100;
+    if (shortcuts.stageZoomIn(event) || shortcuts.stageZoomOut(event)) {
+      const pixelY = shortcuts.stageZoomIn(event) ? -100 : 100;
       const newScale = Math.min(
         Math.max(
           stageScale +
@@ -219,13 +217,13 @@ function useStageInteraction(
       onStageScaleChange(newScale);
     }
 
-    if (key === "Shift") {
+    if (shortcuts.stagePrecisionZoom(event)) {
       setZoomSpeed(0.25);
     }
   }
 
-  function handleKeyUp({ key }) {
-    if (key === "Shift") {
+  function handleKeyUp(event) {
+    if (shortcuts.stagePrecisionZoom(event)) {
       setZoomSpeed(1);
     }
   }

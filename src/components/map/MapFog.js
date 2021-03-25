@@ -42,6 +42,8 @@ import SubtractShapeAction from "../../actions/SubtractShapeAction";
 
 import useSetting from "../../hooks/useSetting";
 
+import shortcuts from "../../shortcuts";
+
 function MapFog({
   map,
   shapes,
@@ -402,16 +404,20 @@ function MapFog({
   }, [toolSettings, drawingShape, onShapesCut, onShapesAdd, shapes]);
 
   // Add keyboard shortcuts
-  function handleKeyDown({ key }) {
-    if (key === "Enter" && toolSettings.type === "polygon" && drawingShape) {
+  function handleKeyDown(event) {
+    if (
+      shortcuts.fogFinishPolygon(event) &&
+      toolSettings.type === "polygon" &&
+      drawingShape
+    ) {
       finishDrawingPolygon();
     }
-    if (key === "Escape" && drawingShape) {
+    if (shortcuts.fogCancelPolygon(event) && drawingShape) {
       setDrawingShape(null);
     }
     // Remove last point from polygon shape if delete pressed
     if (
-      (key === "Backspace" || key === "Delete") &&
+      shortcuts.delete(event) &&
       drawingShape &&
       toolSettings.type === "polygon"
     ) {

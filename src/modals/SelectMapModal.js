@@ -28,6 +28,8 @@ import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
+import shortcuts from "../shortcuts";
+
 const defaultMapProps = {
   showGrid: false,
   snapToGrid: true,
@@ -345,17 +347,17 @@ function SelectMapModal({
   /**
    * Shortcuts
    */
-  function handleKeyDown({ key }) {
+  function handleKeyDown(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift") {
+    if (shortcuts.selectRange(event)) {
       setSelectMode("range");
     }
-    if (key === "Control" || key === "Meta") {
+    if (shortcuts.selectMultiple(event)) {
       setSelectMode("multiple");
     }
-    if (key === "Backspace" || key === "Delete") {
+    if (shortcuts.delete(event)) {
       // Selected maps and none are default
       if (
         selectedMapIds.length > 0 &&
@@ -370,14 +372,14 @@ function SelectMapModal({
     }
   }
 
-  function handleKeyUp({ key }) {
+  function handleKeyUp(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift" && selectMode === "range") {
+    if (shortcuts.selectRange(event) && selectMode === "range") {
       setSelectMode("single");
     }
-    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
       setSelectMode("single");
     }
   }
