@@ -211,6 +211,7 @@ function NetworkedMapAndTokens({ session }) {
       session.socket?.emit("map", newMap);
     }
     if (!newMap || !newMapState) {
+      setAssetManifest(null, true, true);
       return;
     }
 
