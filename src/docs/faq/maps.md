@@ -31,3 +31,7 @@ We encourage users to create games every 24hrs. Any maps you have added or made 
 ### I can join my game but the spinner is constantly loading, why?
 
 This could mean that the service is currently down. Please visit us on Twitter or Reddit and let us know.
+
+### Unable to find owner for map?
+
+If you see a message labelled "Unable to find owner for map" please ensure that the owner of the map is connected to the game. If they are, they may need to refresh their browser to reconnect.

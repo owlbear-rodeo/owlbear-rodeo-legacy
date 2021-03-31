@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useToasts } from "react-toast-notifications";
 
 import { useTokenData } from "../contexts/TokenDataContext";
 import { useMapData } from "../contexts/MapDataContext";
@@ -35,6 +36,7 @@ const defaultMapActions = {
  * @param {NetworkedMapProps} props
  */
 function NetworkedMapAndTokens({ session }) {
+  const { addToast } = useToasts();
   const { userId } = useAuth();
   const partyState = useParty();
   const {
@@ -143,6 +145,9 @@ function NetworkedMapAndTokens({ session }) {
           (player) => player.userId === asset.owner
         );
         if (!owner) {
+          if (asset.type === "map") {
+            addToast("Unable to find owner for map");
+          }
           continue;
         }
 
