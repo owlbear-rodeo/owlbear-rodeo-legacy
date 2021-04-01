@@ -180,6 +180,7 @@ function NetworkedMapAndTokens({ session }) {
     getTokenFromDB,
     updateMap,
     userId,
+    addToast,
   ]);
 
   /**
