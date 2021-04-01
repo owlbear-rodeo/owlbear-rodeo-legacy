@@ -27,7 +27,7 @@ function Banner({
           bottom: "env(safe-area-inset-bottom)",
           border: "none",
           padding: "8px",
-          margin: "8px",
+          margin: "8px 0",
           paddingRight: allowClose ? "24px" : "8px",
           maxWidth: "500px",
           transform: "translateX(-50%)",
