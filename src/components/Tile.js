@@ -55,11 +55,7 @@ function Tile({
         e.stopPropagation();
         onSelect();
       }}
-      onDoubleClick={(e) => {
-        if (canEdit) {
-          onDoubleClick(e);
-        }
-      }}
+      onDoubleClick={onDoubleClick}
     >
       <UIImage
         sx={{

@@ -29,7 +29,7 @@ function MapTile({
       isSelected={isSelected}
       onSelect={() => onMapSelect(map)}
       onEdit={() => onMapEdit(map.id)}
-      onDoubleClick={onDone}
+      onDoubleClick={() => canEdit && onDone()}
       size={size}
       canEdit={canEdit}
       badges={badges}
