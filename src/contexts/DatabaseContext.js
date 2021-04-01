@@ -15,7 +15,6 @@ export function DatabaseProvider({ children }) {
   const [database, setDatabase] = useState();
   const [databaseStatus, setDatabaseStatus] = useState("loading");
   const [databaseError, setDatabaseError] = useState();
-  // const [worker] = useState(Comlink.wrap(new DatabaseWorker()))
 
   useEffect(() => {
     // Create a test database and open it to see if indexedDB is enabled
@@ -45,13 +44,19 @@ export function DatabaseProvider({ children }) {
     };
 
     function handleDatabaseError(event) {
+      event.preventDefault();
       if (event.reason?.name === "QuotaExceededError") {
-        event.preventDefault();
         setDatabaseError({
           name: event.reason.name,
           message: "Storage Quota Exceeded Please Clear Space and Try Again.",
         });
+      } else {
+        setDatabaseError({
+          name: event.reason.name,
+          message: "Something went wrong, please refresh your browser.",
+        });
       }
+      console.error(event.reason);
     }
     window.addEventListener("unhandledrejection", handleDatabaseError);
 
