@@ -45,7 +45,7 @@ export function DatabaseProvider({ children }) {
 
     function handleDatabaseError(event) {
       event.preventDefault();
-      if (event.reason?.name === "QuotaExceededError") {
+      if (event.reason?.message.startsWith("QuotaExceededError")) {
         setDatabaseError({
           name: event.reason.name,
           message: "Storage Quota Exceeded Please Clear Space and Try Again.",
