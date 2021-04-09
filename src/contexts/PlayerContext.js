@@ -62,32 +62,50 @@ export function PlayerProvider({ session, children }) {
   }, [playerState, database, databaseStatus]);
 
   useEffect(() => {
-    setPlayerState((prevState) => ({
-      ...prevState,
-      userId,
-    }));
+    if (userId) {
+      setPlayerState((prevState) => {
+        if (prevState) {
+          return {
+            ...prevState,
+            userId,
+          };
+        }
+        return prevState;
+      });
+    }
   }, [userId, setPlayerState]);
 
   useEffect(() => {
+    function updateSessionId() {
+      setPlayerState((prevState) => {
+        if (prevState) {
+          return {
+            ...prevState,
+            sessionId: session.id,
+          };
+        }
+        return prevState;
+      });
+    }
     function handleSocketConnect() {
       // Set the player state to trigger a sync
-      setPlayerState({ ...playerState, sessionId: session.id });
+      updateSessionId();
     }
 
     function handleSocketStatus(status) {
       if (status === "joined") {
-        setPlayerState({ ...playerState, sessionId: session.id });
+        updateSessionId();
       }
     }
 
     session.on("status", handleSocketStatus);
     session.socket?.on("connect", handleSocketConnect);
-    session.socket?.on("reconnect", handleSocketConnect);
+    session.socket?.io.on("reconnect", handleSocketConnect);
 
     return () => {
       session.off("status", handleSocketStatus);
       session.socket?.off("connect", handleSocketConnect);
-      session.socket?.off("reconnect", handleSocketConnect);
+      session.socket?.io.off("reconnect", handleSocketConnect);
     };
   });
 
