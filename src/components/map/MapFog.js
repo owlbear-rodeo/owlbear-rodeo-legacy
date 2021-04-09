@@ -69,6 +69,7 @@ function MapFog({
 
   const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
   const [showFogGuides] = useSetting("fog.showGuides");
+  const [editOpacity] = useSetting("fog.editOpacity");
   const mapStageRef = useMapStage();
 
   const [drawingShape, setDrawingShape] = useState(null);
@@ -499,14 +500,18 @@ function MapFog({
         onTouchEnd={eraseHoveredShapes}
         points={points}
         stroke={
-          editable ? colors.lightGray : colors[shape.color] || shape.color
+          editable && active
+            ? colors.lightGray
+            : colors[shape.color] || shape.color
         }
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
         lineJoin="round"
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
-        opacity={editable ? (!shape.visible ? 0.2 : 0.5) : 1}
+        opacity={
+          editable ? (!shape.visible ? editOpacity / 2 : editOpacity) : 1
+        }
         fillPatternImage={patternImage}
         fillPriority={editable && !shape.visible ? "pattern" : "color"}
         holes={holes}

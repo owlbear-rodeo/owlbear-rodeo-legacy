@@ -59,6 +59,11 @@ function loadVersions(settings) {
     ...prev,
     fog: { ...prev.fog, showGuides: true },
   }));
+  // v1.8.1 - Add fog edit opacity
+  settings.version(7, (prev) => ({
+    ...prev,
+    fog: { ...prev.fog, editOpacity: 0.5 },
+  }));
 }
 
 export function getSettings() {

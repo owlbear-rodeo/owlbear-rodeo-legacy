@@ -30,6 +30,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
     "map.gridSnappingSensitivity"
   );
   const [showFogGuides, setShowFogGuides] = useSetting("fog.showGuides");
+  const [fogEditOpacity, setFogEditOpacity] = useSetting("fog.editOpacity");
   const [storageEstimate, setStorageEstimate] = useState();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
@@ -109,6 +110,19 @@ function SettingsModal({ isOpen, onRequestClose }) {
             <Checkbox
               checked={showFogGuides}
               onChange={(e) => setShowFogGuides(e.target.checked)}
+            />
+          </Label>
+          <Label py={2}>
+            Fog Edit Opacity
+            <Slider
+              step={0.05}
+              min={0}
+              max={1}
+              ml={1}
+              sx={{ width: "initial" }}
+              value={fogEditOpacity}
+              onChange={(e) => setFogEditOpacity(parseFloat(e.target.value))}
+              labelFunc={(value) => `${Math.round(value * 100)}%`}
             />
           </Label>
           <Label py={2}>
