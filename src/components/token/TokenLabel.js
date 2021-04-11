@@ -45,7 +45,15 @@ function TokenLabel({ tokenState, width, height }) {
     }
 
     findFontSize();
-  }, [tokenState.label, width, height, tokenState, labelSize, paddingX]);
+  }, [
+    tokenState.label,
+    tokenState.visible,
+    width,
+    height,
+    tokenState,
+    labelSize,
+    paddingX,
+  ]);
 
   const [rectWidth, setRectWidth] = useState(0);
   useEffect(() => {

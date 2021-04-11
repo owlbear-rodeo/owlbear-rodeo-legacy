@@ -150,7 +150,7 @@ function Note({
     }
 
     findFontSize();
-  }, [note, note.text, noteWidth, noteHeight, notePadding]);
+  }, [note, note.text, note.visible, noteWidth, noteHeight, notePadding]);
 
   const textRef = useRef();
 
