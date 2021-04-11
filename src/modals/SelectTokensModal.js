@@ -277,6 +277,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             variant="primary"
             disabled={isLoading}
             onClick={onRequestClose}
+            mt={2}
           >
             Done
           </Button>
