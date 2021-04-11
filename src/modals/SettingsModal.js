@@ -97,7 +97,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
           <Divider bg="text" />
           <Label py={2}>Accessibility:</Label>
           <Label py={2}>
-            <span style={{ marginRight: "4px" }}>Light theme</span>
+            <span style={{ marginRight: "4px" }}>Light Theme</span>
             <Checkbox
               checked={colorMode === "light"}
               onChange={(e) =>
@@ -106,7 +106,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
             />
           </Label>
           <Label py={2}>
-            <span style={{ marginRight: "4px" }}>Show fog guides</span>
+            <span style={{ marginRight: "4px" }}>Show Fog Guides</span>
             <Checkbox
               checked={showFogGuides}
               onChange={(e) => setShowFogGuides(e.target.checked)}
@@ -160,7 +160,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onClick={handleClearCache}
               disabled={!database}
             >
-              Clear cache
+              Clear Cache
             </Button>
           </Flex>
           <Flex py={2}>
@@ -169,7 +169,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onClick={() => setIsDeleteModalOpen(true)}
               disabled={!database}
             >
-              Erase all content and reset
+              Erase All Content and Reset
             </Button>
           </Flex>
           <Flex py={2}>
