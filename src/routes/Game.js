@@ -11,6 +11,7 @@ import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 import GameExpiredModal from "../modals/GameExpiredModal";
+import ForceUpdateModal from "../modals/ForceUpdateModal";
 
 import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
@@ -83,6 +84,7 @@ function Game() {
     };
   }, [session]);
 
+
   // Join game
   useEffect(() => {
     if (sessionStatus === "ready" && databaseStatus !== "loading") {
@@ -136,6 +138,9 @@ function Game() {
           <GameExpiredModal
             isOpen={gameExpired}
             onRequestClose={() => setGameExpired(false)}
+          />
+          <ForceUpdateModal
+            isOpen={sessionStatus === "needs_update"}
           />
           {!sessionStatus && <LoadingOverlay />}
           <MapLoadingOverlay />
