@@ -120,11 +120,6 @@ function SelectMapModal({
       await navigator.storage.persist();
     }
 
-    // Set file input to null to allow adding the same image 2 times in a row
-    if (fileInputRef.current) {
-      fileInputRef.current.value = null;
-    }
-
     let mapFiles = [];
     for (let file of files) {
       if (file.size > 5e7) {
@@ -144,11 +139,21 @@ function SelectMapModal({
     for (let file of mapFiles) {
       await handleImageUpload(file);
     }
+
+    clearFileInput();
+  }
+
+  function clearFileInput() {
+    // Set file input to null to allow adding the same image 2 times in a row
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
   function handleLargeImageWarningCancel() {
     largeImageWarningFiles.current = undefined;
     setShowLargeImageWarning(false);
+    clearFileInput();
   }
 
   async function handleLargeImageWarningConfirm() {
@@ -158,6 +163,7 @@ function SelectMapModal({
       await handleImageUpload(file);
     }
     largeImageWarningFiles.current = undefined;
+    clearFileInput();
   }
 
   async function handleImageUpload(file) {
