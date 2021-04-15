@@ -144,9 +144,14 @@ function NetworkedMapAndTokens({ session }) {
         const owner = Object.values(partyState).find(
           (player) => player.userId === asset.owner
         );
+
         if (!owner) {
+          // Add no owner toast if asset is a map and we don't have it in out cache
           if (asset.type === "map") {
-            addToast("Unable to find owner for map");
+            const cachedMap = await getMapFromDB(asset.id);
+            if (!cachedMap) {
+              addToast("Unable to find owner for map");
+            }
           }
           continue;
         }
