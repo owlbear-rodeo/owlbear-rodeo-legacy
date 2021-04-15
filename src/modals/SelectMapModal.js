@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
+import { useToasts } from "react-toast-notifications";
 
 import EditMapModal from "./EditMapModal";
 import EditGroupModal from "./EditGroupModal";
@@ -56,6 +57,8 @@ function SelectMapModal({
   // The map currently being view in the map screen
   currentMap,
 }) {
+  const { addToast } = useToasts();
+
   const { userId } = useAuth();
   const {
     ownedMaps,
@@ -106,19 +109,55 @@ function SelectMapModal({
   const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
+    false
+  );
+  const largeImageWarningFiles = useRef();
+
   async function handleImagesUpload(files) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
     }
 
-    for (let file of files) {
-      await handleImageUpload(file);
-    }
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
+
+    let mapFiles = [];
+    for (let file of files) {
+      if (file.size > 5e7) {
+        addToast(`Unable to import map ${file.name} as it is over 50MB`);
+      } else {
+        mapFiles.push(file);
+      }
+    }
+
+    // Any file greater than 20MB
+    if (mapFiles.some((file) => file.size > 2e7)) {
+      largeImageWarningFiles.current = mapFiles;
+      setShowLargeImageWarning(true);
+      return;
+    }
+
+    for (let file of mapFiles) {
+      await handleImageUpload(file);
+    }
+  }
+
+  function handleLargeImageWarningCancel() {
+    largeImageWarningFiles.current = undefined;
+    setShowLargeImageWarning(false);
+  }
+
+  async function handleLargeImageWarningConfirm() {
+    setShowLargeImageWarning(false);
+    const files = largeImageWarningFiles.current;
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    largeImageWarningFiles.current = undefined;
   }
 
   async function handleImageUpload(file) {
@@ -485,6 +524,14 @@ function SelectMapModal({
           selectedMapIds.length > 1 ? "s" : ""
         }`}
         description="This operation cannot be undone."
+      />
+      <ConfirmModal
+        isOpen={isLargeImageWarningModalOpen}
+        onRequestClose={handleLargeImageWarningCancel}
+        onConfirm={handleLargeImageWarningConfirm}
+        confirmText="Continue"
+        label="Warning"
+        description="An imported image is larger than 20MB, this may cause slowness. Continue?"
       />
     </Modal>
   );

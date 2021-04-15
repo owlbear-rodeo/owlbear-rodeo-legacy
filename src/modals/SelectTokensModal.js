@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
+import { useToasts } from "react-toast-notifications";
 
 import EditTokenModal from "./EditTokenModal";
 import EditGroupModal from "./EditGroupModal";
@@ -25,6 +26,8 @@ import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 import shortcuts from "../shortcuts";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
+  const { addToast } = useToasts();
+
   const { userId } = useAuth();
   const {
     ownedTokens,
@@ -70,6 +73,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
+    false
+  );
+  const largeImageWarningFiles = useRef();
+
   function openImageDialog() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -82,13 +90,44 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       await navigator.storage.persist();
     }
 
-    for (let file of files) {
-      await handleImageUpload(file);
-    }
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
+
+    let tokenFiles = [];
+    for (let file of files) {
+      if (file.size > 5e7) {
+        addToast(`Unable to import token ${file.name} as it is over 50MB`);
+      } else {
+        tokenFiles.push(file);
+      }
+    }
+
+    // Any file greater than 20MB
+    if (tokenFiles.some((file) => file.size > 2e7)) {
+      largeImageWarningFiles.current = tokenFiles;
+      setShowLargeImageWarning(true);
+      return;
+    }
+
+    for (let file of tokenFiles) {
+      await handleImageUpload(file);
+    }
+  }
+
+  function handleLargeImageWarningCancel() {
+    largeImageWarningFiles.current = undefined;
+    setShowLargeImageWarning(false);
+  }
+
+  async function handleLargeImageWarningConfirm() {
+    setShowLargeImageWarning(false);
+    const files = largeImageWarningFiles.current;
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    largeImageWarningFiles.current = undefined;
   }
 
   async function handleImageUpload(file) {
@@ -313,6 +352,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           selectedTokenIds.length > 1 ? "s" : ""
         }`}
         description="This operation cannot be undone."
+      />
+      <ConfirmModal
+        isOpen={isLargeImageWarningModalOpen}
+        onRequestClose={handleLargeImageWarningCancel}
+        onConfirm={handleLargeImageWarningConfirm}
+        confirmText="Continue"
+        label="Warning"
+        description="An imported image is larger than 20MB, this may cause slowness. Continue?"
       />
     </Modal>
   );

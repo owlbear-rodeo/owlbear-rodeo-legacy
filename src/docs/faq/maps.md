@@ -14,7 +14,7 @@ This means that the token hasn’t loaded in just yet. If they still haven’t l
 
 ### How big can my maps be?
 
-Owlbear Rodeo doesn't impose a limit on map sizes but keep in mind the larger the map you upload the longer it will take for your players to load. We recommend trying to keep your maps under 10MB in size and under 8000px on the largest edge in resolution. If you accidently upload a map that is too big you can use the quality option in the map's settings to lower the size without needing to re-upload your map.
+Owlbear Rodeo has a map size limit of 50MB but keep in mind the larger the map you upload the longer it will take for your players to load. We recommend trying to keep your maps under 10MB in size and under 8000px on the largest edge in resolution. If you accidently upload a map that is too big you can use the quality option in the map's settings to lower the size without needing to re-upload your map.
 
 ### Where are my maps stored?
 
