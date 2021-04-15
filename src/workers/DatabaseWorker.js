@@ -7,6 +7,7 @@ import {
 import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
+import blobToBuffer from "../helpers/blobToBuffer";
 
 // Worker to load large amounts of database data on a separate thread
 let service = {
@@ -92,7 +93,10 @@ let service = {
       numRowsPerChunk: 1,
       prettyJson: true,
     });
-    return data;
+
+    const buffer = await blobToBuffer(data);
+
+    return Comlink.transfer(buffer, [buffer.buffer]);
   },
 
   /**

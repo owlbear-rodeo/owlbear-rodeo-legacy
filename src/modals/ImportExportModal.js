@@ -206,11 +206,12 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     const tokenIds = checkedTokens.map((token) => token.id);
 
     try {
-      const blob = await worker.exportData(
+      const buffer = await worker.exportData(
         Comlink.proxy(handleDBProgress),
         mapIds,
         tokenIds
       );
+      const blob = new Blob([buffer]);
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps, checkedTokens);
     } catch (e) {
