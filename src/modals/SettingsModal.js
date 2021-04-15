@@ -198,7 +198,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               </Text>
             </Flex>
           )}
-          {isLoading && <LoadingOverlay />}
+          {isLoading && <LoadingOverlay bg="overlay" />}
         </Flex>
       </Modal>
       <ConfirmModal

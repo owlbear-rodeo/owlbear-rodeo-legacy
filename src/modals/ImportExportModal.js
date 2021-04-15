@@ -263,11 +263,13 @@ function ImportExportModal({ isOpen, onRequestClose }) {
               left: 0,
             }}
           >
-            <LoadingOverlay />
-            <LoadingBar
-              isLoading={isLoading}
-              loadingProgressRef={loadingProgressRef}
-            />
+            <LoadingOverlay bg="overlay" />
+            <Box sx={{ zIndex: 3, position: "absolute", width: "100%" }}>
+              <LoadingBar
+                isLoading={isLoading}
+                loadingProgressRef={loadingProgressRef}
+              />
+            </Box>
           </Box>
         )}
         <ErrorBanner error={error} onRequestClose={() => setError()} />

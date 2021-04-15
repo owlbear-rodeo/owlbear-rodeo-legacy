@@ -276,7 +276,7 @@ function SelectDataModal({
             {confirmText}
           </Button>
         </Flex>
-        {isLoading && <LoadingOverlay />}
+        {isLoading && <LoadingOverlay bg="overlay" />}
       </Box>
     </Modal>
   );
