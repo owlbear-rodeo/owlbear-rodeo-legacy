@@ -31,7 +31,6 @@ function MapToken({
   onTokenDragStart,
   onTokenDragEnd,
   draggable,
-  mapState,
   fadeOnHover,
   map,
 }) {
@@ -111,7 +110,6 @@ function MapToken({
         mountedToken.moveTo(parent);
         mountedToken.absolutePosition(position);
         mountChanges[mountedToken.id()] = {
-          ...mapState.tokens[mountedToken.id()],
           x: mountedToken.x() / mapWidth,
           y: mountedToken.y() / mapHeight,
           lastModifiedBy: userId,
@@ -124,7 +122,6 @@ function MapToken({
     onTokenStateChange({
       ...mountChanges,
       [tokenState.id]: {
-        ...tokenState,
         x: tokenGroup.x() / mapWidth,
         y: tokenGroup.y() / mapHeight,
         lastModifiedBy: userId,

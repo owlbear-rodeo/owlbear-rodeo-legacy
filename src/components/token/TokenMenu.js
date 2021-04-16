@@ -51,8 +51,7 @@ function TokenMenu({
 
   function handleLabelChange(event) {
     const label = event.target.value.substring(0, 144);
-    tokenState &&
-      onTokenStateChange({ [tokenState.id]: { ...tokenState, label: label } });
+    tokenState && onTokenStateChange({ [tokenState.id]: { label: label } });
   }
 
   function handleStatusChange(status) {
@@ -66,35 +65,34 @@ function TokenMenu({
       statuses.add(status);
     }
     onTokenStateChange({
-      [tokenState.id]: { ...tokenState, statuses: [...statuses] },
+      [tokenState.id]: { statuses: [...statuses] },
     });
   }
 
   function handleSizeChange(event) {
     const newSize = parseFloat(event.target.value);
-    tokenState &&
-      onTokenStateChange({ [tokenState.id]: { ...tokenState, size: newSize } });
+    tokenState && onTokenStateChange({ [tokenState.id]: { size: newSize } });
   }
 
   function handleRotationChange(event) {
     const newRotation = parseInt(event.target.value);
     tokenState &&
       onTokenStateChange({
-        [tokenState.id]: { ...tokenState, rotation: newRotation },
+        [tokenState.id]: { rotation: newRotation },
       });
   }
 
   function handleVisibleChange() {
     tokenState &&
       onTokenStateChange({
-        [tokenState.id]: { ...tokenState, visible: !tokenState.visible },
+        [tokenState.id]: { visible: !tokenState.visible },
       });
   }
 
   function handleLockChange() {
     tokenState &&
       onTokenStateChange({
-        [tokenState.id]: { ...tokenState, locked: !tokenState.locked },
+        [tokenState.id]: { locked: !tokenState.locked },
       });
   }
 

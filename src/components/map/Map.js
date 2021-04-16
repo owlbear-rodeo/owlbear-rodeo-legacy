@@ -209,7 +209,6 @@ function Map({
       tokenGroup={tokenDraggingOptions && tokenDraggingOptions.tokenGroup}
       dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
       token={tokensById[tokenDraggingOptions.tokenState.tokenId]}
-      mapState={mapState}
     />
   );
 

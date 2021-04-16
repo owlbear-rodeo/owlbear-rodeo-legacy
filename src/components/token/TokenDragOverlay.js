@@ -15,7 +15,6 @@ function TokenDragOverlay({
   tokenState,
   tokenGroup,
   dragging,
-  mapState,
 }) {
   const { userId } = useAuth();
 
@@ -34,7 +33,6 @@ function TokenDragOverlay({
         mountedToken.absolutePosition(position);
         onTokenStateChange({
           [mountedToken.id()]: {
-            ...mapState.tokens[mountedToken.id()],
             x: mountedToken.x() / mapWidth,
             y: mountedToken.y() / mapHeight,
             lastModifiedBy: userId,

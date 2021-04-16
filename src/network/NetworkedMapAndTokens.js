@@ -377,20 +377,32 @@ function NetworkedMapAndTokens({ session }) {
       const { id, lastModified, owner } = token;
       addAssetIfNeeded({ type: "token", id, lastModified, owner });
     }
-    handleMapTokenStateChange({ [tokenState.id]: tokenState });
+    setCurrentMapState((prevMapState) => ({
+      ...prevMapState,
+      tokens: {
+        ...prevMapState.tokens,
+        [tokenState.id]: tokenState,
+      },
+    }));
   }
 
   function handleMapTokenStateChange(change) {
     if (!currentMapState) {
       return;
     }
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
-      tokens: {
-        ...prevMapState.tokens,
-        ...change,
-      },
-    }));
+    setCurrentMapState((prevMapState) => {
+      let tokens = { ...prevMapState.tokens };
+      for (let id in change) {
+        if (id in tokens) {
+          tokens[id] = { ...tokens[id], ...change[id] };
+        }
+      }
+
+      return {
+        ...prevMapState,
+        tokens,
+      };
+    });
   }
 
   function handleMapTokenStateRemove(tokenState) {

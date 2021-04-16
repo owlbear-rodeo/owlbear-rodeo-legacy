@@ -119,7 +119,6 @@ function MapTokens({
               !(tokenState.id in disabledTokens) &&
               !tokenState.locked
             }
-            mapState={mapState}
             fadeOnHover={selectedToolId === "drawing"}
             map={map}
           />
