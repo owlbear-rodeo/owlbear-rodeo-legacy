@@ -18,8 +18,7 @@ if (!("PointerEvent" in window)) {
 
 if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
-    dsn:
-      "https://bc1e2edfe7ca453f8e7357a48693979e@o467475.ingest.sentry.io/5493956",
+    dsn: process.env.REACT_APP_SENTRY_DSN,
     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
     // Ignore resize error as it is triggered by going fullscreen on slower computers
     // Ignore quota error
