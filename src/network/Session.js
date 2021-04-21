@@ -1,4 +1,5 @@
 import io from "socket.io-client";
+import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
 import Connection from "./Connection";
@@ -25,7 +26,7 @@ import { logError } from "../helpers/logging";
  * Session Status Event - Status of the session has changed
  *
  * @event Session#status
- * @property {"ready"|"joining"|"joined"|"offline"|"reconnecting"|"auth"} status
+ * @property {"ready"|"joining"|"joined"|"offline"|"reconnecting"|"auth"|"needs_update"} status
  */
 
 /**
@@ -89,6 +90,7 @@ class Session extends EventEmitter {
 
       this.socket = io(process.env.REACT_APP_BROKER_URL, {
         withCredentials: true,
+        parser: msgParser,
       });
 
       this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
@@ -99,6 +101,7 @@ class Session extends EventEmitter {
       this.socket.on("game_expired", this._handleGameExpired.bind(this));
       this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
       this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
+      this.socket.on("force_update", this._handleForceUpdate.bind(this));
 
       this.emit("status", "ready");
     } catch (error) {
@@ -195,7 +198,7 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit("join_game", gameId, password);
+    this.socket.emit("join_game", gameId, password, process.env.REACT_APP_VERSION);
     this.emit("status", "joining");
   }
 
@@ -415,6 +418,16 @@ class Session extends EventEmitter {
     if (this._gameId) {
       this.joinGame(this._gameId, this._password);
     }
+  }
+
+  _handleForceUpdate() {
+    /**
+     * Force Update Event - An update has been released
+     *
+     * @event Session#forceUpdate
+     */
+    this.socket.disconnect();
+    this.emit("status", "needs_update");
   }
 }
 

@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
+import { useToasts } from "react-toast-notifications";
 
 import EditMapModal from "./EditMapModal";
 import EditGroupModal from "./EditGroupModal";
@@ -26,7 +27,9 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard } from "../contexts/KeyboardContext";
+import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+
+import shortcuts from "../shortcuts";
 
 const defaultMapProps = {
   showGrid: false,
@@ -54,6 +57,8 @@ function SelectMapModal({
   // The map currently being view in the map screen
   currentMap,
 }) {
+  const { addToast } = useToasts();
+
   const { userId } = useAuth();
   const {
     ownedMaps,
@@ -104,19 +109,61 @@ function SelectMapModal({
   const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
+    false
+  );
+  const largeImageWarningFiles = useRef();
+
   async function handleImagesUpload(files) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
     }
 
+    let mapFiles = [];
     for (let file of files) {
+      if (file.size > 5e7) {
+        addToast(`Unable to import map ${file.name} as it is over 50MB`);
+      } else {
+        mapFiles.push(file);
+      }
+    }
+
+    // Any file greater than 20MB
+    if (mapFiles.some((file) => file.size > 2e7)) {
+      largeImageWarningFiles.current = mapFiles;
+      setShowLargeImageWarning(true);
+      return;
+    }
+
+    for (let file of mapFiles) {
       await handleImageUpload(file);
     }
+
+    clearFileInput();
+  }
+
+  function clearFileInput() {
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
+  }
+
+  function handleLargeImageWarningCancel() {
+    largeImageWarningFiles.current = undefined;
+    setShowLargeImageWarning(false);
+    clearFileInput();
+  }
+
+  async function handleLargeImageWarningConfirm() {
+    setShowLargeImageWarning(false);
+    const files = largeImageWarningFiles.current;
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    largeImageWarningFiles.current = undefined;
+    clearFileInput();
   }
 
   async function handleImageUpload(file) {
@@ -328,9 +375,11 @@ function SelectMapModal({
       const map = selectedMaps[0];
       const mapState = await getMapStateFromDB(map.id);
       if (map.type === "file") {
+        setIsLoading(true);
         await updateMap(map.id, { lastUsed });
         const updatedMap = await getMapFromDB(map.id);
         onMapChange(updatedMap, mapState);
+        setIsLoading(false);
       } else {
         onMapChange(map, mapState);
       }
@@ -343,17 +392,17 @@ function SelectMapModal({
   /**
    * Shortcuts
    */
-  function handleKeyDown({ key }) {
+  function handleKeyDown(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift") {
+    if (shortcuts.selectRange(event)) {
       setSelectMode("range");
     }
-    if (key === "Control" || key === "Meta") {
+    if (shortcuts.selectMultiple(event)) {
       setSelectMode("multiple");
     }
-    if (key === "Backspace" || key === "Delete") {
+    if (shortcuts.delete(event)) {
       // Selected maps and none are default
       if (
         selectedMapIds.length > 0 &&
@@ -368,31 +417,26 @@ function SelectMapModal({
     }
   }
 
-  function handleKeyUp({ key }) {
+  function handleKeyUp(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift" && selectMode === "range") {
+    if (shortcuts.selectRange(event) && selectMode === "range") {
       setSelectMode("single");
     }
-    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
       setSelectMode("single");
     }
   }
 
   useKeyboard(handleKeyDown, handleKeyUp);
 
-  // Set select mode to single when alt+tabing
-  useEffect(() => {
-    function handleBlur() {
-      setSelectMode("single");
-    }
+  // Set select mode to single when cmd+tabing
+  function handleBlur() {
+    setSelectMode("single");
+  }
 
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, []);
+  useBlur(handleBlur);
 
   const layout = useResponsiveLayout();
 
@@ -438,7 +482,7 @@ function SelectMapModal({
           />
           <Button
             variant="primary"
-            disabled={isLoading || selectedMapIds.length !== 1}
+            disabled={isLoading || selectedMapIds.length > 1}
             onClick={handleDone}
             mt={2}
           >
@@ -486,6 +530,14 @@ function SelectMapModal({
           selectedMapIds.length > 1 ? "s" : ""
         }`}
         description="This operation cannot be undone."
+      />
+      <ConfirmModal
+        isOpen={isLargeImageWarningModalOpen}
+        onRequestClose={handleLargeImageWarningCancel}
+        onConfirm={handleLargeImageWarningConfirm}
+        confirmText="Continue"
+        label="Warning"
+        description="An imported image is larger than 20MB, this may cause slowness. Continue?"
       />
     </Modal>
   );

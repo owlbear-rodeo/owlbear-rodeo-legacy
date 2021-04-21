@@ -8,21 +8,19 @@ import { useToasts } from "react-toast-notifications";
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
-import Banner from "../components/Banner";
+import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { useAuth } from "../contexts/AuthContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import SelectDataModal from "./SelectDataModal";
 
 import { getDatabase } from "../database";
 
-import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
-
-const worker = Comlink.wrap(new DatabaseWorker());
-
 const importDBName = "OwlbearRodeoImportDB";
 
 function ImportExportModal({ isOpen, onRequestClose }) {
+  const { worker } = useDatabase();
   const { userId } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +115,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImportSelectorClose() {
-    const importDB = getDatabase({}, importDBName);
+    const importDB = getDatabase({ addons: [] }, importDBName);
     await importDB.delete();
     importDB.close();
     setShowImportSelector(false);
@@ -129,7 +127,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setShowImportSelector(false);
     loadingProgressRef.current = 0;
 
-    const importDB = getDatabase({}, importDBName);
+    const importDB = getDatabase({ addons: [] }, importDBName);
     const db = getDatabase({});
     try {
       // Keep track of a mapping of old token ids to new ones to apply them to the map states
@@ -208,11 +206,12 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     const tokenIds = checkedTokens.map((token) => token.id);
 
     try {
-      const blob = await worker.exportData(
+      const buffer = await worker.exportData(
         Comlink.proxy(handleDBProgress),
         mapIds,
         tokenIds
       );
+      const blob = new Blob([buffer]);
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps, checkedTokens);
     } catch (e) {
@@ -264,20 +263,16 @@ function ImportExportModal({ isOpen, onRequestClose }) {
               left: 0,
             }}
           >
-            <LoadingOverlay />
-            <LoadingBar
-              isLoading={isLoading}
-              loadingProgressRef={loadingProgressRef}
-            />
+            <LoadingOverlay bg="overlay" />
+            <Box sx={{ zIndex: 3, position: "absolute", width: "100%" }}>
+              <LoadingBar
+                isLoading={isLoading}
+                loadingProgressRef={loadingProgressRef}
+              />
+            </Box>
           </Box>
         )}
-        <Banner isOpen={!!error} onRequestClose={() => setError()}>
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              Error: {error && error.message}
-            </Text>
-          </Box>
-        </Banner>
+        <ErrorBanner error={error} onRequestClose={() => setError()} />
         <SelectDataModal
           isOpen={showImportSelector}
           onRequestClose={handleImportSelectorClose}

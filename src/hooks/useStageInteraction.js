@@ -1,8 +1,10 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useGesture } from "react-use-gesture";
 import normalizeWheel from "normalize-wheel";
 
-import { useKeyboard } from "../contexts/KeyboardContext";
+import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+
+import shortcuts from "../shortcuts";
 
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
@@ -22,6 +24,8 @@ function useStageInteraction(
   const isInteractingWithCanvas = useRef(false);
   const pinchPreviousDistanceRef = useRef();
   const pinchPreviousOriginRef = useRef();
+
+  const [zoomSpeed, setZoomSpeed] = useState(1);
 
   // Prevent accessibility pinch to zoom on Mac
   useEffect(() => {
@@ -49,29 +53,34 @@ function useStageInteraction(
         if (preventInteraction || !isInteractingWithCanvas.current) {
           return;
         }
-        const { event } = props;
-        const { pixelY } = normalizeWheel(event);
+        const { event, last } = props;
+        if (!last) {
+          const { pixelY } = normalizeWheel(event);
 
-        const newScale = Math.min(
-          Math.max(
-            stageScale +
-              (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
-            minZoom
-          ),
-          maxZoom
-        );
+          const newScale = Math.min(
+            Math.max(
+              stageScale +
+                (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
+                  window.innerHeight,
+              minZoom
+            ),
+            maxZoom
+          );
 
-        // Center on pointer
-        const pointer = stage.getPointerPosition();
-        const newTranslate = {
-          x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
-          y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
-        };
+          // Center on pointer
+          const pointer = stage.getPointerPosition();
+          const newTranslate = {
+            x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+            y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+          };
 
-        stage.position(newTranslate);
-        stageTranslateRef.current = newTranslate;
+          stage.position(newTranslate);
 
-        onStageScaleChange(newScale);
+          stageTranslateRef.current = newTranslate;
+
+          onStageScaleChange(newScale);
+        }
+
         gesture.onWheel && gesture.onWheel(props);
       },
       onPinchStart: (props) => {
@@ -99,7 +108,8 @@ function useStageInteraction(
         const originYDelta = originY - pinchPreviousOriginRef.current.y;
         const newScale = Math.min(
           Math.max(
-            stageScale + distanceDelta * touchZoomSpeed * stageScale,
+            stageScale +
+              distanceDelta * touchZoomSpeed * stageScale * zoomSpeed,
             minZoom
           ),
           maxZoom
@@ -182,17 +192,13 @@ function useStageInteraction(
     if (preventInteraction) {
       return;
     }
-    const { key, ctrlKey, metaKey } = event;
-    if (
-      (key === "=" || key === "+" || key === "-" || key === "_") &&
-      !ctrlKey &&
-      !metaKey
-    ) {
-      const pixelY = key === "=" || key === "+" ? -100 : 100;
+    if (shortcuts.stageZoomIn(event) || shortcuts.stageZoomOut(event)) {
+      const pixelY = shortcuts.stageZoomIn(event) ? -100 : 100;
       const newScale = Math.min(
         Math.max(
           stageScale +
-            (pixelY * wheelZoomSpeed * stageScale) / window.innerHeight,
+            (pixelY * wheelZoomSpeed * stageScale * zoomSpeed) /
+              window.innerHeight,
           minZoom
         ),
         maxZoom
@@ -210,9 +216,25 @@ function useStageInteraction(
 
       onStageScaleChange(newScale);
     }
+
+    if (shortcuts.stagePrecisionZoom(event)) {
+      setZoomSpeed(0.25);
+    }
   }
 
-  useKeyboard(handleKeyDown);
+  function handleKeyUp(event) {
+    if (shortcuts.stagePrecisionZoom(event)) {
+      setZoomSpeed(1);
+    }
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+
+  function handleBlur() {
+    setZoomSpeed(1);
+  }
+
+  useBlur(handleBlur);
 }
 
 export default useStageInteraction;

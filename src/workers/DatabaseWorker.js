@@ -4,9 +4,10 @@ import {
   exportDB,
   peakImportFile,
 } from "@mitchemmc/dexie-export-import";
-import { encode } from "@msgpack/msgpack";
+import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
+import blobToBuffer from "../helpers/blobToBuffer";
 
 // Worker to load large amounts of database data on a separate thread
 let service = {
@@ -22,7 +23,6 @@ let service = {
       if (key) {
         // Load specific item
         const data = await db.table(table).get(key);
-        db.close();
         return data;
       } else {
         // Load entire table
@@ -37,13 +37,32 @@ let service = {
           }
         });
 
-        db.close();
-
         // Pack data with msgpack so we can use transfer to avoid memory issues
         const packed = encode(items);
         return Comlink.transfer(packed, [packed.buffer]);
       }
     } catch {}
+  },
+
+  /**
+   * Put data into table encoded by msgpack
+   * @param {Uint8Array} data
+   * @param {string} table
+   * @param {boolean} wait Whether to wait for the put to finish
+   */
+  async putData(data, table, wait = true) {
+    try {
+      let db = getDatabase({});
+      const decoded = decode(data);
+      if (wait) {
+        await db.table(table).put(decoded);
+      } else {
+        db.table(table).put(decoded);
+      }
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   /**
@@ -74,8 +93,10 @@ let service = {
       numRowsPerChunk: 1,
       prettyJson: true,
     });
-    db.close();
-    return data;
+
+    const buffer = await blobToBuffer(data);
+
+    return Comlink.transfer(buffer, [buffer.buffer]);
   },
 
   /**
@@ -102,12 +123,16 @@ let service = {
     }
 
     // Ensure import DB is cleared before importing new data
-    let importDB = getDatabase({}, databaseName, 0);
+    let importDB = getDatabase({ addons: [] }, databaseName, 0);
     await importDB.delete();
     importDB.close();
 
     // Load import database up to it's desired version
-    importDB = getDatabase({}, databaseName, importMeta.data.databaseVersion);
+    importDB = getDatabase(
+      { addons: [] },
+      databaseName,
+      importMeta.data.databaseVersion
+    );
     await importInto(importDB, data, {
       progressCallback,
       acceptNameDiff: true,
@@ -125,7 +150,6 @@ let service = {
       acceptVersionDiff: true,
     });
     importDB.close();
-    db.close();
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef } from "react";
 import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
@@ -10,9 +10,9 @@ import useImageCenter from "../../hooks/useImageCenter";
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import { getGridDefaultInset, getGridMaxZoom } from "../../helpers/grid";
+import KonvaBridge from "../../helpers/KonvaBridge";
 
 import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
-import KeyboardContext from "../../contexts/KeyboardContext";
 import { GridProvider } from "../../contexts/GridContext";
 
 import ResetMapIcon from "../../icons/ResetMapIcon";
@@ -90,10 +90,8 @@ function MapEditor({ map, onSettingsChange }) {
     setPreventMapInteraction,
     mapWidth,
     mapHeight,
+    interactionEmitter: null,
   };
-
-  // Get keyboard context to pass to Konva
-  const keyboardValue = useContext(KeyboardContext);
 
   const canEditGrid = map.type !== "default";
 
@@ -106,77 +104,90 @@ function MapEditor({ map, onSettingsChange }) {
   const layout = useResponsiveLayout();
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: layout.screenSize === "large" ? "500px" : "300px",
-        cursor: "move",
-        touchAction: "none",
-        outline: "none",
-        position: "relative",
-      }}
-      bg="muted"
-      ref={containerRef}
-    >
-      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
-        <Stage
-          width={stageWidth}
-          height={stageHeight}
-          scale={{ x: stageScale, y: stageScale }}
-          ref={mapStageRef}
+    <MapInteractionProvider value={mapInteraction}>
+      <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+        <Box
+          sx={{
+            width: "100%",
+            height: layout.screenSize === "large" ? "500px" : "300px",
+            cursor: "move",
+            touchAction: "none",
+            outline: "none",
+            position: "relative",
+          }}
+          bg="muted"
+          ref={containerRef}
         >
-          <Layer ref={mapLayerRef}>
-            <Image image={mapImageSource} width={mapWidth} height={mapHeight} />
-            <KeyboardContext.Provider value={keyboardValue}>
-              <MapInteractionProvider value={mapInteraction}>
+          <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+            <KonvaBridge
+              stageRender={(children) => (
+                <Stage
+                  width={stageWidth}
+                  height={stageHeight}
+                  scale={{ x: stageScale, y: stageScale }}
+                  ref={mapStageRef}
+                >
+                  {children}
+                </Stage>
+              )}
+            >
+              <Layer ref={mapLayerRef}>
+                <Image
+                  image={mapImageSource}
+                  width={mapWidth}
+                  height={mapHeight}
+                />
                 {showGridControls && canEditGrid && (
-                  <GridProvider
-                    grid={map.grid}
-                    width={mapWidth}
-                    height={mapHeight}
-                  >
+                  <>
                     <MapGrid map={map} />
                     <MapGridEditor map={map} onGridChange={handleGridChange} />
-                  </GridProvider>
+                  </>
                 )}
-              </MapInteractionProvider>
-            </KeyboardContext.Provider>
-          </Layer>
-        </Stage>
-      </ReactResizeDetector>
-      {gridChanged && (
-        <IconButton
-          title="Reset Grid"
-          aria-label="Reset Grid"
-          onClick={handleMapReset}
-          bg="overlay"
-          sx={{ borderRadius: "50%", position: "absolute", bottom: 0, left: 0 }}
-          m={2}
-        >
-          <ResetMapIcon />
-        </IconButton>
-      )}
-      {canEditGrid && (
-        <IconButton
-          title={showGridControls ? "Hide Grid Controls" : "Show Grid Controls"}
-          aria-label={
-            showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
-          }
-          onClick={() => setShowGridControls(!showGridControls)}
-          bg="overlay"
-          sx={{
-            borderRadius: "50%",
-            position: "absolute",
-            bottom: 0,
-            right: 0,
-          }}
-          m={2}
-          p="6px"
-        >
-          {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
-        </IconButton>
-      )}
-    </Box>
+              </Layer>
+            </KonvaBridge>
+          </ReactResizeDetector>
+          {gridChanged && (
+            <IconButton
+              title="Reset Grid"
+              aria-label="Reset Grid"
+              onClick={handleMapReset}
+              bg="overlay"
+              sx={{
+                borderRadius: "50%",
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+              }}
+              m={2}
+            >
+              <ResetMapIcon />
+            </IconButton>
+          )}
+          {canEditGrid && (
+            <IconButton
+              title={
+                showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
+              }
+              aria-label={
+                showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
+              }
+              onClick={() => setShowGridControls(!showGridControls)}
+              bg="overlay"
+              sx={{
+                borderRadius: "50%",
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+              }}
+              m={2}
+              p="6px"
+            >
+              {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
+            </IconButton>
+          )}
+        </Box>
+      </GridProvider>
+    </MapInteractionProvider>
   );
 }
 

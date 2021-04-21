@@ -20,9 +20,14 @@ class GemstoneDice extends Dice {
 
   static async loadMaterial(materialName, textures, scene) {
     let pbr = new PBRMaterial(materialName, scene);
-    pbr.albedoTexture = await importTextureAsync(textures.albedo);
-    pbr.normalTexture = await importTextureAsync(textures.normal);
-    pbr.metallicTexture = await importTextureAsync(textures.metalRoughness);
+    let [albedo, normal, metalRoughness] = await Promise.all([
+      importTextureAsync(textures.albedo),
+      importTextureAsync(textures.normal),
+      importTextureAsync(textures.metalRoughness),
+    ]);
+    pbr.albedoTexture = albedo;
+    pbr.normalTexture = normal;
+    pbr.metallicTexture = metalRoughness;
     pbr.useRoughnessFromMetallicTextureAlpha = false;
     pbr.useRoughnessFromMetallicTextureGreen = true;
     pbr.useMetallnessFromMetallicTextureBlue = true;

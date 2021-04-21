@@ -1,18 +1,23 @@
 import React, { useRef } from "react";
 import { Group, Circle, Rect } from "react-konva";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useDebouncedStageScale,
+  useMapWidth,
+  useMapHeight,
+  useSetPreventMapInteraction,
+} from "../../contexts/MapInteractionContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
 
+import shortcuts from "../../shortcuts";
+
 function MapGridEditor({ map, onGridChange }) {
-  const {
-    mapWidth,
-    mapHeight,
-    stageScale,
-    setPreventMapInteraction,
-  } = useMapInteraction();
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const setPreventMapInteraction = useSetPreventMapInteraction();
 
   const mapSize = { x: mapWidth, y: mapHeight };
 
@@ -163,20 +168,19 @@ function MapGridEditor({ map, onGridChange }) {
   }
 
   function handleKeyDown(event) {
-    const { key, shiftKey } = event;
-    const nudgeAmount = shiftKey ? 2 : 0.5;
-    if (key === "ArrowUp") {
+    const nudgeAmount = event.shiftKey ? 2 : 0.5;
+    if (shortcuts.gridNudgeUp(event)) {
       // Stop arrow up/down scrolling if overflowing
       event.preventDefault();
       nudgeGrid({ x: 0, y: -1 }, nudgeAmount);
     }
-    if (key === "ArrowLeft") {
+    if (shortcuts.gridNudgeLeft(event)) {
       nudgeGrid({ x: -1, y: 0 }, nudgeAmount);
     }
-    if (key === "ArrowRight") {
+    if (shortcuts.gridNudgeRight(event)) {
       nudgeGrid({ x: 1, y: 0 }, nudgeAmount);
     }
-    if (key === "ArrowDown") {
+    if (shortcuts.gridNudgeDown(event)) {
       event.preventDefault();
       nudgeGrid({ x: 0, y: 1 }, nudgeAmount);
     }

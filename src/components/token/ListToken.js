@@ -2,16 +2,17 @@ import React, { useRef } from "react";
 import { Box, Image } from "theme-ui";
 
 import usePreventTouch from "../../hooks/usePreventTouch";
-import useDataSource from "../../hooks/useDataSource";
+
+import { useImageSource } from "../../contexts/ImageSourceContext";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
 function ListToken({ token, className }) {
-  const isDefault = token.type === "default";
-  const tokenSource = useDataSource(
-    isDefault ? token : token.thumbnail,
+  const tokenSource = useImageSource(
+    token,
     tokenSources,
-    unknownSource
+    unknownSource,
+    token.type === "file"
   );
 
   const imageRef = useRef();
@@ -33,6 +34,8 @@ function ListToken({ token, className }) {
         }}
         // pass id into the dom element which is then used by the ProxyToken
         data-id={token.id}
+        alt={token.name}
+        title={token.name}
       />
     </Box>
   );

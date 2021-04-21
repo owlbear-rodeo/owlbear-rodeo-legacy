@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
+import { useToasts } from "react-toast-notifications";
 
 import EditTokenModal from "./EditTokenModal";
 import EditGroupModal from "./EditGroupModal";
@@ -20,9 +21,13 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard } from "../contexts/KeyboardContext";
+import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+
+import shortcuts from "../shortcuts";
 
 function SelectTokensModal({ isOpen, onRequestClose }) {
+  const { addToast } = useToasts();
+
   const { userId } = useAuth();
   const {
     ownedTokens,
@@ -68,6 +73,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
+    false
+  );
+  const largeImageWarningFiles = useRef();
+
   function openImageDialog() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -80,13 +90,50 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       await navigator.storage.persist();
     }
 
+    let tokenFiles = [];
     for (let file of files) {
+      if (file.size > 5e7) {
+        addToast(`Unable to import token ${file.name} as it is over 50MB`);
+      } else {
+        tokenFiles.push(file);
+      }
+    }
+
+    // Any file greater than 20MB
+    if (tokenFiles.some((file) => file.size > 2e7)) {
+      largeImageWarningFiles.current = tokenFiles;
+      setShowLargeImageWarning(true);
+      return;
+    }
+
+    for (let file of tokenFiles) {
       await handleImageUpload(file);
     }
+
+    clearFileInput();
+  }
+
+  function clearFileInput() {
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
+  }
+
+  function handleLargeImageWarningCancel() {
+    largeImageWarningFiles.current = undefined;
+    setShowLargeImageWarning(false);
+    clearFileInput();
+  }
+
+  async function handleLargeImageWarningConfirm() {
+    setShowLargeImageWarning(false);
+    const files = largeImageWarningFiles.current;
+    for (let file of files) {
+      await handleImageUpload(file);
+    }
+    largeImageWarningFiles.current = undefined;
+    clearFileInput();
   }
 
   async function handleImageUpload(file) {
@@ -186,17 +233,17 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   /**
    * Shortcuts
    */
-  function handleKeyDown({ key }) {
+  function handleKeyDown(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift") {
+    if (shortcuts.selectRange(event)) {
       setSelectMode("range");
     }
-    if (key === "Control" || key === "Meta") {
+    if (shortcuts.selectMultiple(event)) {
       setSelectMode("multiple");
     }
-    if (key === "Backspace" || key === "Delete") {
+    if (shortcuts.delete(event)) {
       // Selected tokens and none are default
       if (
         selectedTokenIds.length > 0 &&
@@ -210,31 +257,26 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     }
   }
 
-  function handleKeyUp({ key }) {
+  function handleKeyUp(event) {
     if (!isOpen) {
       return;
     }
-    if (key === "Shift" && selectMode === "range") {
+    if (shortcuts.selectRange(event) && selectMode === "range") {
       setSelectMode("single");
     }
-    if ((key === "Control" || key === "Meta") && selectMode === "multiple") {
+    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
       setSelectMode("single");
     }
   }
 
   useKeyboard(handleKeyDown, handleKeyUp);
 
-  // Set select mode to single when alt+tabing
-  useEffect(() => {
-    function handleBlur() {
-      setSelectMode("single");
-    }
+  // Set select mode to single when cmd+tabing
+  function handleBlur() {
+    setSelectMode("single");
+  }
 
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, []);
+  useBlur(handleBlur);
 
   const layout = useResponsiveLayout();
 
@@ -280,6 +322,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             variant="primary"
             disabled={isLoading}
             onClick={onRequestClose}
+            mt={2}
           >
             Done
           </Button>
@@ -315,6 +358,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           selectedTokenIds.length > 1 ? "s" : ""
         }`}
         description="This operation cannot be undone."
+      />
+      <ConfirmModal
+        isOpen={isLargeImageWarningModalOpen}
+        onRequestClose={handleLargeImageWarningCancel}
+        onConfirm={handleLargeImageWarningConfirm}
+        confirmText="Continue"
+        label="Warning"
+        description="An imported image is larger than 20MB, this may cause slowness. Continue?"
       />
     </Modal>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -27,7 +27,7 @@ function MapNotes({
   onNoteDragEnd,
   fadeOnHover,
 }) {
-  const { interactionEmitter } = useMapInteraction();
+  const interactionEmitter = useInteractionEmitter();
   const { userId } = useAuth();
   const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);

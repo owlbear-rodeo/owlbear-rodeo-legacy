@@ -14,10 +14,31 @@ import DiceRoll from "./DiceRoll";
 
 import { getDiceRollTotal } from "../../helpers/dice";
 
+const diceIcons = [
+  { type: "d20", Icon: D20Icon },
+  { type: "d12", Icon: D12Icon },
+  { type: "d10", Icon: D10Icon },
+  { type: "d8", Icon: D8Icon },
+  { type: "d6", Icon: D6Icon },
+  { type: "d4", Icon: D4Icon },
+  { type: "d100", Icon: D100Icon },
+];
+
 function DiceRolls({ rolls }) {
   const total = getDiceRollTotal(rolls);
 
   const [expanded, setExpanded] = useState(false);
+
+  let expandedRolls = [];
+  for (let icon of diceIcons) {
+    if (rolls.some((roll) => roll.type === icon.type)) {
+      expandedRolls.push(
+        <DiceRoll rolls={rolls} type={icon.type} key={icon.type}>
+          <icon.Icon />
+        </DiceRoll>
+      );
+    }
+  }
 
   return (
     total > 0 && (
@@ -40,27 +61,7 @@ function DiceRolls({ rolls }) {
               flexDirection: "column",
             }}
           >
-            <DiceRoll rolls={rolls} type="d20">
-              <D20Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d12">
-              <D12Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d10">
-              <D10Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d8">
-              <D8Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d6">
-              <D6Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d4">
-              <D4Icon />
-            </DiceRoll>
-            <DiceRoll rolls={rolls} type="d100">
-              <D100Icon />
-            </DiceRoll>
+            {expandedRolls}
           </Flex>
         )}
       </Flex>

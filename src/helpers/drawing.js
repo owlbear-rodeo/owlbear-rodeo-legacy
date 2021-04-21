@@ -260,11 +260,15 @@ export function mergeFogShapes(shapes, ignoreHidden = true) {
 
 /**
  * @param {Fog[]} shapes
+ * @param {boolean} maxPoints Max amount of points per shape to get bounds for
  * @returns {Vector2.BoundingBox[]}
  */
-export function getFogShapesBoundingBoxes(shapes) {
+export function getFogShapesBoundingBoxes(shapes, maxPoints = 0) {
   let boxes = [];
   for (let shape of shapes) {
+    if (maxPoints > 0 && shape.data.points.length > maxPoints) {
+      continue;
+    }
     boxes.push(Vector2.getBoundingBox(shape.data.points));
   }
   return boxes;

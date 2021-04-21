@@ -12,6 +12,7 @@ import prettyBytes from "pretty-bytes";
 
 import Modal from "../components/Modal";
 import Slider from "../components/Slider";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 import { useAuth } from "../contexts/AuthContext";
 import { useDatabase } from "../contexts/DatabaseContext";
@@ -29,8 +30,11 @@ function SettingsModal({ isOpen, onRequestClose }) {
   const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
     "map.gridSnappingSensitivity"
   );
+  const [showFogGuides, setShowFogGuides] = useSetting("fog.showGuides");
+  const [fogEditOpacity, setFogEditOpacity] = useSetting("fog.editOpacity");
   const [storageEstimate, setStorageEstimate] = useState();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function estimateStorage() {
@@ -52,12 +56,14 @@ function SettingsModal({ isOpen, onRequestClose }) {
   }, [isOpen]);
 
   async function handleEraseAllData() {
+    setIsLoading(true);
     localStorage.clear();
     await database.delete();
     window.location.reload();
   }
 
   async function handleClearCache() {
+    setIsLoading(true);
     // Clear saved settings
     localStorage.clear();
     // Clear map cache
@@ -95,12 +101,32 @@ function SettingsModal({ isOpen, onRequestClose }) {
           <Divider bg="text" />
           <Label py={2}>Accessibility:</Label>
           <Label py={2}>
-            <span style={{ marginRight: "4px" }}>Light theme</span>
+            <span style={{ marginRight: "4px" }}>Light Theme</span>
             <Checkbox
               checked={colorMode === "light"}
               onChange={(e) =>
                 setColorMode(e.target.checked ? "light" : "default")
               }
+            />
+          </Label>
+          <Label py={2}>
+            <span style={{ marginRight: "4px" }}>Show Fog Guides</span>
+            <Checkbox
+              checked={showFogGuides}
+              onChange={(e) => setShowFogGuides(e.target.checked)}
+            />
+          </Label>
+          <Label py={2}>
+            Fog Edit Opacity
+            <Slider
+              step={0.05}
+              min={0}
+              max={1}
+              ml={1}
+              sx={{ width: "initial" }}
+              value={fogEditOpacity}
+              onChange={(e) => setFogEditOpacity(parseFloat(e.target.value))}
+              labelFunc={(value) => `${Math.round(value * 100)}%`}
             />
           </Label>
           <Label py={2}>
@@ -133,16 +159,21 @@ function SettingsModal({ isOpen, onRequestClose }) {
           </Label>
           <Divider bg="text" />
           <Flex py={2}>
-            <Button sx={{ flexGrow: 1 }} onClick={handleClearCache}>
-              Clear cache
+            <Button
+              sx={{ flexGrow: 1 }}
+              onClick={handleClearCache}
+              disabled={!database}
+            >
+              Clear Cache
             </Button>
           </Flex>
           <Flex py={2}>
             <Button
               sx={{ flexGrow: 1 }}
               onClick={() => setIsDeleteModalOpen(true)}
+              disabled={!database}
             >
-              Erase all content and reset
+              Erase All Content and Reset
             </Button>
           </Flex>
           <Flex py={2}>
@@ -167,6 +198,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               </Text>
             </Flex>
           )}
+          {isLoading && <LoadingOverlay bg="overlay" />}
         </Flex>
       </Modal>
       <ConfirmModal

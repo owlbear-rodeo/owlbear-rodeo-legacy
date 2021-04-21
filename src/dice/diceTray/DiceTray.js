@@ -117,17 +117,33 @@ class DiceTray {
   }
 
   async loadMeshes() {
-    this.singleMesh = (
-      await SceneLoader.ImportMeshAsync("", singleMeshSource, "", this.scene)
-    ).meshes[1];
+    let [
+      singleMeshes,
+      doubleMeshes,
+      singleAlbedoTexture,
+      singleNormalTexture,
+      singleMetalRoughnessTexture,
+      doubleAlbedoTexture,
+      doubleNormalTexture,
+      doubleMetalRoughnessTexture,
+    ] = await Promise.all([
+      SceneLoader.ImportMeshAsync("", singleMeshSource, "", this.scene),
+      SceneLoader.ImportMeshAsync("", doubleMeshSource, "", this.scene),
+      importTextureAsync(singleAlbedo),
+      importTextureAsync(singleNormal),
+      importTextureAsync(singleMetalRoughness),
+      importTextureAsync(doubleAlbedo),
+      importTextureAsync(doubleNormal),
+      importTextureAsync(doubleMetalRoughness),
+    ]);
+
+    this.singleMesh = singleMeshes.meshes[1];
     this.singleMesh.id = "dice_tray_single";
     this.singleMesh.name = "dice_tray";
     let singleMaterial = new PBRMaterial("dice_tray_mat_single", this.scene);
-    singleMaterial.albedoTexture = await importTextureAsync(singleAlbedo);
-    singleMaterial.normalTexture = await importTextureAsync(singleNormal);
-    singleMaterial.metallicTexture = await importTextureAsync(
-      singleMetalRoughness
-    );
+    singleMaterial.albedoTexture = singleAlbedoTexture;
+    singleMaterial.normalTexture = singleNormalTexture;
+    singleMaterial.metallicTexture = singleMetalRoughnessTexture;
     singleMaterial.useRoughnessFromMetallicTextureAlpha = false;
     singleMaterial.useRoughnessFromMetallicTextureGreen = true;
     singleMaterial.useMetallnessFromMetallicTextureBlue = true;
@@ -137,17 +153,13 @@ class DiceTray {
     this.shadowGenerator.addShadowCaster(this.singleMesh);
     this.singleMesh.isVisible = this.size === "single";
 
-    this.doubleMesh = (
-      await SceneLoader.ImportMeshAsync("", doubleMeshSource, "", this.scene)
-    ).meshes[1];
+    this.doubleMesh = doubleMeshes.meshes[1];
     this.doubleMesh.id = "dice_tray_double";
     this.doubleMesh.name = "dice_tray";
     let doubleMaterial = new PBRMaterial("dice_tray_mat_double", this.scene);
-    doubleMaterial.albedoTexture = await importTextureAsync(doubleAlbedo);
-    doubleMaterial.normalTexture = await importTextureAsync(doubleNormal);
-    doubleMaterial.metallicTexture = await importTextureAsync(
-      doubleMetalRoughness
-    );
+    doubleMaterial.albedoTexture = doubleAlbedoTexture;
+    doubleMaterial.normalTexture = doubleNormalTexture;
+    doubleMaterial.metallicTexture = doubleMetalRoughnessTexture;
     doubleMaterial.useRoughnessFromMetallicTextureAlpha = false;
     doubleMaterial.useRoughnessFromMetallicTextureGreen = true;
     doubleMaterial.useMetallnessFromMetallicTextureBlue = true;

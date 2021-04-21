@@ -4,7 +4,12 @@ import useImage from "use-image";
 
 import Vector2 from "../helpers/Vector2";
 
-import { useGrid } from "../contexts/GridContext";
+import {
+  useGrid,
+  useGridPixelSize,
+  useGridOffset,
+  useGridCellPixelSize,
+} from "../contexts/GridContext";
 
 import squarePatternDark from "../images/SquarePatternDark.png";
 import squarePatternLight from "../images/SquarePatternLight.png";
@@ -12,7 +17,11 @@ import hexPatternDark from "../images/HexPatternDark.png";
 import hexPatternLight from "../images/HexPatternLight.png";
 
 function Grid({ stroke }) {
-  const { grid, gridPixelSize, gridOffset, gridCellPixelSize } = useGrid();
+  const grid = useGrid();
+  const gridPixelSize = useGridPixelSize();
+  const gridOffset = useGridOffset();
+  const gridCellPixelSize = useGridCellPixelSize();
+
   let imageSource;
   if (grid.type === "square") {
     if (stroke === "black") {

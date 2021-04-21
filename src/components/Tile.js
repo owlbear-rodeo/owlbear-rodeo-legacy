@@ -55,11 +55,7 @@ function Tile({
         e.stopPropagation();
         onSelect();
       }}
-      onDoubleClick={(e) => {
-        if (canEdit) {
-          onDoubleClick(e);
-        }
-      }}
+      onDoubleClick={onDoubleClick}
     >
       <UIImage
         sx={{
@@ -71,6 +67,7 @@ function Tile({
           left: 0,
         }}
         src={src}
+        alt={title}
       />
       <Flex
         sx={{

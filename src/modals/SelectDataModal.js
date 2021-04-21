@@ -28,7 +28,7 @@ function SelectDataModal({
     async function loadData() {
       if (isOpen && databaseName) {
         setIsLoading(true);
-        const db = getDatabase({}, databaseName);
+        const db = getDatabase({ addons: [] }, databaseName);
         let loadedMaps = {};
         let loadedTokensByMap = {};
         let loadedTokens = {};
@@ -276,7 +276,7 @@ function SelectDataModal({
             {confirmText}
           </Button>
         </Flex>
-        {isLoading && <LoadingOverlay />}
+        {isLoading && <LoadingOverlay bg="overlay" />}
       </Box>
     </Modal>
   );

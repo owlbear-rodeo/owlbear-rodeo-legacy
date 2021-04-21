@@ -6,13 +6,17 @@ import DiceTiles from "../components/dice/DiceTiles";
 
 import { dice } from "../dice";
 
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
 function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }) {
   const [selectedDice, setSelectedDice] = useState(defaultDice);
+  const layout = useResponsiveLayout();
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "542px", width: "calc(100% - 16px)" }}
+      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
       <Flex
         sx={{

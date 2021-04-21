@@ -14,7 +14,7 @@ This means that the token hasn’t loaded in just yet. If they still haven’t l
 
 ### How big can my maps be?
 
-Owlbear Rodeo doesn't impose a limit on map sizes but keep in mind the larger the map you upload the longer it will take for your players to load. We recommend trying to keep your maps under 10MB with a good internet connection and under 5MB with slower internet. If you accidently upload a map that is too big you can use the quality option in the map's settings to lower the size without needing to re-upload your map.
+Owlbear Rodeo has a map size limit of 50MB but keep in mind the larger the map you upload the longer it will take for your players to load. We recommend trying to keep your maps under 10MB in size and under 8000px on the largest edge in resolution. If you accidently upload a map that is too big you can use the quality option in the map's settings to lower the size without needing to re-upload your map.
 
 ### Where are my maps stored?
 
@@ -31,3 +31,7 @@ We encourage users to create games every 24hrs. Any maps you have added or made 
 ### I can join my game but the spinner is constantly loading, why?
 
 This could mean that the service is currently down. Please visit us on Twitter or Reddit and let us know.
+
+### Unable to find owner for map?
+
+If you see a message labelled "Unable to find owner for map" please ensure that the owner of the map is connected to the game. If they are, they may need to refresh their browser to reconnect.

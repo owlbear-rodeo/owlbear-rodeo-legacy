@@ -7,7 +7,12 @@ import {
 
 import useSetting from "./useSetting";
 
-import { useGrid } from "../contexts/GridContext";
+import {
+  useGrid,
+  useGridOffset,
+  useGridCellPixelSize,
+  useGridCellPixelOffset,
+} from "../contexts/GridContext";
 
 /**
  * Returns a function that when called will snap a node to the current grid
@@ -19,12 +24,10 @@ function useGridSnapping(snappingSensitivity) {
   );
   snappingSensitivity = snappingSensitivity || defaultSnappingSensitivity;
 
-  const {
-    grid,
-    gridOffset,
-    gridCellPixelSize,
-    gridCellPixelOffset,
-  } = useGrid();
+  const grid = useGrid();
+  const gridOffset = useGridOffset();
+  const gridCellPixelSize = useGridCellPixelSize();
+  const gridCellPixelOffset = useGridCellPixelOffset();
 
   /**
    * @param {Vector2} node The node to snap

@@ -24,6 +24,8 @@ import Divider from "../../Divider";
 
 import { useKeyboard } from "../../../contexts/KeyboardContext";
 
+import shortcuts from "../../../shortcuts";
+
 function DrawingToolSettings({
   settings,
   onSettingChange,
@@ -31,36 +33,26 @@ function DrawingToolSettings({
   disabledActions,
 }) {
   // Keyboard shotcuts
-  function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-    if (key === "b") {
+  function handleKeyDown(event) {
+    if (shortcuts.drawBrush(event)) {
       onSettingChange({ type: "brush" });
-    } else if (key === "p") {
+    } else if (shortcuts.drawPaint(event)) {
       onSettingChange({ type: "paint" });
-    } else if (key === "l") {
+    } else if (shortcuts.drawLine(event)) {
       onSettingChange({ type: "line" });
-    } else if (key === "r") {
+    } else if (shortcuts.drawRect(event)) {
       onSettingChange({ type: "rectangle" });
-    } else if (key === "c") {
+    } else if (shortcuts.drawCircle(event)) {
       onSettingChange({ type: "circle" });
-    } else if (key === "t") {
+    } else if (shortcuts.drawTriangle(event)) {
       onSettingChange({ type: "triangle" });
-    } else if (key === "e") {
+    } else if (shortcuts.drawErase(event)) {
       onSettingChange({ type: "erase" });
-    } else if (key === "o") {
+    } else if (shortcuts.drawBlend(event)) {
       onSettingChange({ useBlending: !settings.useBlending });
-    } else if (
-      (key === "z" || key === "Z") &&
-      (ctrlKey || metaKey) &&
-      shiftKey &&
-      !disabledActions.includes("redo")
-    ) {
+    } else if (shortcuts.redo(event) && !disabledActions.includes("redo")) {
       onToolAction("mapRedo");
-    } else if (
-      key === "z" &&
-      (ctrlKey || metaKey) &&
-      !shiftKey &&
-      !disabledActions.includes("undo")
-    ) {
+    } else if (shortcuts.undo(event) && !disabledActions.includes("undo")) {
       onToolAction("mapUndo");
     }
   }

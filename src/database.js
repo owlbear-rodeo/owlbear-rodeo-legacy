@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import Dexie, { Version, DexieOptions } from "dexie";
 import "dexie-observable";
+import shortid from "shortid";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
@@ -414,9 +415,25 @@ const versions = {
   21(v) {
     v.stores({});
   },
+  // v1.8.1 - Shorten fog shape ids
+  22(v) {
+    v.stores({}).upgrade((tx) => {
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id of Object.keys(state.fogShapes)) {
+            const newId = shortid.generate();
+            state.fogShapes[newId] = state.fogShapes[id];
+            state.fogShapes[newId].id = newId;
+            delete state.fogShapes[id];
+          }
+        });
+    });
+  },
 };
 
-const latestVersion = 21;
+const latestVersion = 22;
 
 /**
  * Load versions onto a database up to a specific version number

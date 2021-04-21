@@ -27,13 +27,15 @@ class Dice {
       const mesh = await this.loadMesh(source, material, scene);
       meshes[type] = mesh;
     };
-    await addToMeshes("d4", d4Source);
-    await addToMeshes("d6", d6Source);
-    await addToMeshes("d8", d8Source);
-    await addToMeshes("d10", d10Source);
-    await addToMeshes("d12", d12Source);
-    await addToMeshes("d20", d20Source);
-    await addToMeshes("d100", d100Source);
+    await Promise.all([
+      addToMeshes("d4", d4Source),
+      addToMeshes("d6", d6Source),
+      addToMeshes("d8", d8Source),
+      addToMeshes("d10", d10Source),
+      addToMeshes("d12", d12Source),
+      addToMeshes("d20", d20Source),
+      addToMeshes("d100", d100Source),
+    ]);
     return meshes;
   }
 
@@ -51,9 +53,14 @@ class Dice {
 
   static async loadMaterial(materialName, textures, scene) {
     let pbr = new PBRMaterial(materialName, scene);
-    pbr.albedoTexture = await importTextureAsync(textures.albedo);
-    pbr.normalTexture = await importTextureAsync(textures.normal);
-    pbr.metallicTexture = await importTextureAsync(textures.metalRoughness);
+    let [albedo, normal, metalRoughness] = await Promise.all([
+      importTextureAsync(textures.albedo),
+      importTextureAsync(textures.normal),
+      importTextureAsync(textures.metalRoughness),
+    ]);
+    pbr.albedoTexture = albedo;
+    pbr.normalTexture = normal;
+    pbr.metallicTexture = metalRoughness;
     pbr.useRoughnessFromMetallicTextureAlpha = false;
     pbr.useRoughnessFromMetallicTextureGreen = true;
     pbr.useMetallnessFromMetallicTextureBlue = true;

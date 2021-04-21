@@ -4,14 +4,19 @@ import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
 
-import useDataSource from "../../hooks/useDataSource";
 import useDebounce from "../../hooks/useDebounce";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useSetPreventMapInteraction,
+  useMapWidth,
+  useMapHeight,
+  useDebouncedStageScale,
+} from "../../contexts/MapInteractionContext";
+import { useGridCellPixelSize } from "../../contexts/GridContext";
+import { useImageSource } from "../../contexts/ImageSourceContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
@@ -26,20 +31,19 @@ function MapToken({
   onTokenDragStart,
   onTokenDragEnd,
   draggable,
-  mapState,
   fadeOnHover,
   map,
 }) {
   const { userId } = useAuth();
-  const {
-    setPreventMapInteraction,
-    mapWidth,
-    mapHeight,
-    stageScale,
-  } = useMapInteraction();
-  const { gridCellPixelSize } = useGrid();
 
-  const tokenSource = useDataSource(token, tokenSources, unknownSource);
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const setPreventMapInteraction = useSetPreventMapInteraction();
+
+  const gridCellPixelSize = useGridCellPixelSize();
+
+  const tokenSource = useImageSource(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
   const [tokenAspectRatio, setTokenAspectRatio] = useState(1);
 
@@ -106,7 +110,6 @@ function MapToken({
         mountedToken.moveTo(parent);
         mountedToken.absolutePosition(position);
         mountChanges[mountedToken.id()] = {
-          ...mapState.tokens[mountedToken.id()],
           x: mountedToken.x() / mapWidth,
           y: mountedToken.y() / mapHeight,
           lastModifiedBy: userId,
@@ -119,7 +122,6 @@ function MapToken({
     onTokenStateChange({
       ...mountChanges,
       [tokenState.id]: {
-        ...tokenState,
         x: tokenGroup.x() / mapWidth,
         y: tokenGroup.y() / mapHeight,
         lastModifiedBy: userId,
@@ -207,8 +209,6 @@ function MapToken({
         ),
       });
       image.drawHitFromCache();
-      // Force redraw
-      image.getLayer().draw();
     }
   }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
 

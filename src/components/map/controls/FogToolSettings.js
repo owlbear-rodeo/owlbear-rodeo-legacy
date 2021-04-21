@@ -22,6 +22,8 @@ import Divider from "../../Divider";
 
 import { useKeyboard } from "../../../contexts/KeyboardContext";
 
+import shortcuts from "../../../shortcuts";
+
 function BrushToolSettings({
   settings,
   onSettingChange,
@@ -29,36 +31,26 @@ function BrushToolSettings({
   disabledActions,
 }) {
   // Keyboard shortcuts
-  function handleKeyDown({ key, ctrlKey, metaKey, shiftKey }) {
-    if (key === "p") {
+  function handleKeyDown(event) {
+    if (shortcuts.fogPolygon(event)) {
       onSettingChange({ type: "polygon" });
-    } else if (key === "b") {
+    } else if (shortcuts.fogBrush(event)) {
       onSettingChange({ type: "brush" });
-    } else if (key === "t") {
+    } else if (shortcuts.fogToggle(event)) {
       onSettingChange({ type: "toggle" });
-    } else if (key === "e") {
+    } else if (shortcuts.fogErase(event)) {
       onSettingChange({ type: "remove" });
-    } else if (key === "l") {
+    } else if (shortcuts.fogLayer(event)) {
       onSettingChange({ multilayer: !settings.multilayer });
-    } else if (key === "f") {
+    } else if (shortcuts.fogPreview(event)) {
       onSettingChange({ preview: !settings.preview });
-    } else if (key === "c") {
+    } else if (shortcuts.fogCut(event)) {
       onSettingChange({ useFogCut: !settings.useFogCut });
-    } else if (key === "r") {
+    } else if (shortcuts.fogRectangle(event)) {
       onSettingChange({ type: "rectangle" });
-    } else if (
-      (key === "z" || key === "Z") &&
-      (ctrlKey || metaKey) &&
-      shiftKey &&
-      !disabledActions.includes("redo")
-    ) {
+    } else if (shortcuts.redo(event) && !disabledActions.includes("redo")) {
       onToolAction("fogRedo");
-    } else if (
-      key === "z" &&
-      (ctrlKey || metaKey) &&
-      !shiftKey &&
-      !disabledActions.includes("undo")
-    ) {
+    } else if (shortcuts.undo(event) && !disabledActions.includes("undo")) {
       onToolAction("fogUndo");
     }
   }

@@ -20,8 +20,13 @@ class GlassDice extends Dice {
 
   static async loadMaterial(materialName, textures, scene) {
     let pbr = new PBRMaterial(materialName, scene);
-    pbr.albedoTexture = await importTextureAsync(textures.albedo);
-    pbr.normalTexture = await importTextureAsync(textures.normal);
+    let [albedo, normal, mask] = await Promise.all([
+      importTextureAsync(textures.albedo),
+      importTextureAsync(textures.normal),
+      importTextureAsync(textures.mask),
+    ]);
+    pbr.albedoTexture = albedo;
+    pbr.normalTexture = normal;
     pbr.roughness = 0.25;
     pbr.metallic = 0;
     pbr.subSurface.isRefractionEnabled = true;
@@ -32,7 +37,7 @@ class GlassDice extends Dice {
     pbr.subSurface.minimumThickness = 10;
     pbr.subSurface.maximumThickness = 10;
     pbr.subSurface.tintColor = new Color3(43 / 255, 1, 115 / 255);
-    pbr.subSurface.thicknessTexture = await importTextureAsync(textures.mask);
+    pbr.subSurface.thicknessTexture = mask;
     pbr.subSurface.useMaskFromThicknessTexture = true;
 
     return pbr;

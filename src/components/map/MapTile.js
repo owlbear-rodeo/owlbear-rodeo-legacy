@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import useDataSource from "../../hooks/useDataSource";
+import { useImageSource } from "../../contexts/ImageSourceContext";
 import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
 function MapTile({
@@ -15,11 +15,11 @@ function MapTile({
   canEdit,
   badges,
 }) {
-  const isDefault = map.type === "default";
-  const mapSource = useDataSource(
-    isDefault ? map : map.thumbnail,
+  const mapSource = useImageSource(
+    map,
     defaultMapSources,
-    unknownSource
+    unknownSource,
+    map.type === "file"
   );
 
   return (
@@ -29,7 +29,7 @@ function MapTile({
       isSelected={isSelected}
       onSelect={() => onMapSelect(map)}
       onEdit={() => onMapEdit(map.id)}
-      onDoubleClick={onDone}
+      onDoubleClick={() => canEdit && onDone()}
       size={size}
       canEdit={canEdit}
       badges={badges}

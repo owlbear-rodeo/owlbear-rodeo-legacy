@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import useImage from "use-image";
 
-import useDataSource from "../../hooks/useDataSource";
+import { useImageSource } from "../../contexts/ImageSourceContext";
+
 import { mapSources as defaultMapSources } from "../../maps";
 
 import { getImageLightness } from "../../helpers/image";
@@ -17,7 +18,7 @@ function MapGrid({ map }) {
       mapSourceMap = map.resolutions[resolutionArray[0]];
     }
   }
-  const mapSource = useDataSource(mapSourceMap, defaultMapSources);
+  const mapSource = useImageSource(mapSourceMap, defaultMapSources);
   const [mapImage, mapLoadingStatus] = useImage(mapSource);
 
   const [isImageLight, setIsImageLight] = useState(true);

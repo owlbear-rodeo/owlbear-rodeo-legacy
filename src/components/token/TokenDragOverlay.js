@@ -1,7 +1,10 @@
 import React from "react";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useMapWidth,
+  useMapHeight,
+} from "../../contexts/MapInteractionContext";
 
 import DragOverlay from "../DragOverlay";
 
@@ -12,10 +15,11 @@ function TokenDragOverlay({
   tokenState,
   tokenGroup,
   dragging,
-  mapState,
 }) {
   const { userId } = useAuth();
-  const { mapWidth, mapHeight } = useMapInteraction();
+
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
 
   function handleTokenRemove() {
     // Handle other tokens when a vehicle gets deleted
@@ -29,7 +33,6 @@ function TokenDragOverlay({
         mountedToken.absolutePosition(position);
         onTokenStateChange({
           [mountedToken.id()]: {
-            ...mapState.tokens[mountedToken.id()],
             x: mountedToken.x() / mapWidth,
             y: mountedToken.y() / mapHeight,
             lastModifiedBy: userId,

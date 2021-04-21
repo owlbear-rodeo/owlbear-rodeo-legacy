@@ -2,13 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
 
-import Banner from "../components/Banner";
+import Banner from "../components/banner/Banner";
+import ReconnectBanner from "../components/banner/ReconnectBanner";
+import OfflineBanner from "../components/banner/OfflineBanner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
 import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 import GameExpiredModal from "../modals/GameExpiredModal";
+import ForceUpdateModal from "../modals/ForceUpdateModal";
 
 import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
@@ -81,6 +84,7 @@ function Game() {
     };
   }, [session]);
 
+
   // Join game
   useEffect(() => {
     if (sessionStatus === "ready" && databaseStatus !== "loading") {
@@ -125,28 +129,8 @@ function Game() {
               </Text>
             </Box>
           </Banner>
-          <Banner
-            isOpen={sessionStatus === "offline"}
-            onRequestClose={() => {}}
-            allowClose={false}
-          >
-            <Box p={1}>
-              <Text as="p" variant="body2">
-                Unable to connect to game, refresh to reconnect.
-              </Text>
-            </Box>
-          </Banner>
-          <Banner
-            isOpen={sessionStatus === "reconnecting"}
-            onRequestClose={() => {}}
-            allowClose={false}
-          >
-            <Box p={1}>
-              <Text as="p" variant="body2">
-                Disconnected. Attempting to reconnect...
-              </Text>
-            </Box>
-          </Banner>
+          <OfflineBanner isOpen={sessionStatus === "offline"} />
+          <ReconnectBanner isOpen={sessionStatus === "reconnecting"} />
           <AuthModal
             isOpen={sessionStatus === "auth"}
             onSubmit={handleAuthSubmit}
@@ -154,6 +138,9 @@ function Game() {
           <GameExpiredModal
             isOpen={gameExpired}
             onRequestClose={() => setGameExpired(false)}
+          />
+          <ForceUpdateModal
+            isOpen={sessionStatus === "needs_update"}
           />
           {!sessionStatus && <LoadingOverlay />}
           <MapLoadingOverlay />

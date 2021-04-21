@@ -5,9 +5,21 @@ import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
-import { useMapInteraction } from "../../contexts/MapInteractionContext";
+import {
+  useDebouncedStageScale,
+  useMapWidth,
+  useMapHeight,
+  useInteractionEmitter,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useGrid } from "../../contexts/GridContext";
+import {
+  useGrid,
+  useGridCellPixelSize,
+  useGridCellNormalizedSize,
+  useGridStrokeWidth,
+  useGridCellPixelOffset,
+  useGridOffset,
+} from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import Vector2 from "../../helpers/Vector2";
@@ -30,6 +42,8 @@ import SubtractShapeAction from "../../actions/SubtractShapeAction";
 
 import useSetting from "../../hooks/useSetting";
 
+import shortcuts from "../../shortcuts";
+
 function MapFog({
   map,
   shapes,
@@ -41,21 +55,21 @@ function MapFog({
   toolSettings,
   editable,
 }) {
-  const {
-    stageScale,
-    mapWidth,
-    mapHeight,
-    interactionEmitter,
-  } = useMapInteraction();
-  const {
-    grid,
-    gridCellNormalizedSize,
-    gridCellPixelSize,
-    gridStrokeWidth,
-    gridCellPixelOffset,
-    gridOffset,
-  } = useGrid();
+  const stageScale = useDebouncedStageScale();
+  const mapWidth = useMapWidth();
+  const mapHeight = useMapHeight();
+  const interactionEmitter = useInteractionEmitter();
+
+  const grid = useGrid();
+  const gridCellNormalizedSize = useGridCellNormalizedSize();
+  const gridCellPixelSize = useGridCellPixelSize();
+  const gridStrokeWidth = useGridStrokeWidth();
+  const gridCellPixelOffset = useGridCellPixelOffset();
+  const gridOffset = useGridOffset();
+
   const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
+  const [showFogGuides] = useSetting("fog.showGuides");
+  const [editOpacity] = useSetting("fog.editOpacity");
   const mapStageRef = useMapStage();
 
   const [drawingShape, setDrawingShape] = useState(null);
@@ -73,10 +87,12 @@ function MapFog({
     editable &&
     (toolSettings.type === "toggle" || toolSettings.type === "remove");
 
-  const shouldRenderGuides =
+  const shouldUseGuides =
     active &&
     editable &&
     (toolSettings.type === "rectangle" || toolSettings.type === "polygon");
+
+  const shouldRenderGuides = shouldUseGuides && showFogGuides;
 
   const [patternImage] = useImage(diagonalPattern);
 
@@ -90,7 +106,7 @@ function MapFog({
     function getBrushPosition(snapping = true) {
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
-      if (snapping && shouldRenderGuides) {
+      if (shouldUseGuides && snapping) {
         for (let guide of guides) {
           if (guide.orientation === "vertical") {
             position.x = guide.start.x * mapWidth;
@@ -157,11 +173,16 @@ function MapFog({
           ) {
             return prevShape;
           }
+          const simplified = simplifyPoints(
+            [...prevPoints, brushPosition],
+            gridCellNormalizedSize,
+            stageScale / 4
+          );
           return {
             ...prevShape,
             data: {
               ...prevShape.data,
-              points: [...prevPoints, brushPosition],
+              points: simplified,
             },
           };
         });
@@ -192,15 +213,12 @@ function MapFog({
         drawingShape
       ) {
         const cut = toolSettings.useFogCut;
-
         let drawingShapes = [drawingShape];
         if (!toolSettings.multilayer) {
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
           );
-          const subtractAction = new SubtractShapeAction(
-            mergeFogShapes(shapesToSubtract, !cut)
-          );
+          const subtractAction = new SubtractShapeAction(shapesToSubtract);
           const state = subtractAction.execute({
             [drawingShape.id]: drawingShape,
           });
@@ -211,24 +229,15 @@ function MapFog({
 
         if (drawingShapes.length > 0) {
           drawingShapes = drawingShapes.map((shape) => {
-            let shapeData = {};
             if (cut) {
-              shapeData = { id: shape.id, type: shape.type };
+              return {
+                id: shape.id,
+                type: shape.type,
+                data: shape.data,
+              };
             } else {
-              shapeData = { ...shape, color: "black" };
+              return { ...shape, color: "black" };
             }
-            return {
-              ...shapeData,
-              data: {
-                ...shape.data,
-                points: simplifyPoints(
-                  shape.data.points,
-                  gridCellNormalizedSize,
-                  // Downscale fog as smoothing doesn't currently work with edge snapping
-                  Math.max(stageScale, 1) / 2
-                ),
-              },
-            };
           });
 
           if (cut) {
@@ -275,10 +284,7 @@ function MapFog({
     }
 
     function handlePointerMove() {
-      if (
-        active &&
-        (toolSettings.type === "polygon" || toolSettings.type === "rectangle")
-      ) {
+      if (shouldUseGuides) {
         let guides = [];
         const brushPosition = getBrushPosition(false);
         const absoluteBrushPosition = Vector2.multiply(brushPosition, {
@@ -371,9 +377,7 @@ function MapFog({
       const shapesToSubtract = shapes.filter((shape) =>
         cut ? !shape.visible : shape.visible
       );
-      const subtractAction = new SubtractShapeAction(
-        mergeFogShapes(shapesToSubtract, !cut)
-      );
+      const subtractAction = new SubtractShapeAction(shapesToSubtract);
       const state = subtractAction.execute({
         [polygonShape.id]: polygonShape,
       });
@@ -401,16 +405,20 @@ function MapFog({
   }, [toolSettings, drawingShape, onShapesCut, onShapesAdd, shapes]);
 
   // Add keyboard shortcuts
-  function handleKeyDown({ key }) {
-    if (key === "Enter" && toolSettings.type === "polygon" && drawingShape) {
+  function handleKeyDown(event) {
+    if (
+      shortcuts.fogFinishPolygon(event) &&
+      toolSettings.type === "polygon" &&
+      drawingShape
+    ) {
       finishDrawingPolygon();
     }
-    if (key === "Escape" && drawingShape) {
+    if (shortcuts.fogCancelPolygon(event) && drawingShape) {
       setDrawingShape(null);
     }
     // Remove last point from polygon shape if delete pressed
     if (
-      (key === "Backspace" || key === "Delete") &&
+      shortcuts.delete(event) &&
       drawingShape &&
       toolSettings.type === "polygon"
     ) {
@@ -492,14 +500,18 @@ function MapFog({
         onTouchEnd={eraseHoveredShapes}
         points={points}
         stroke={
-          editable ? colors.lightGray : colors[shape.color] || shape.color
+          editable && active
+            ? colors.lightGray
+            : colors[shape.color] || shape.color
         }
         fill={colors[shape.color] || shape.color}
         closed
         lineCap="round"
         lineJoin="round"
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
-        opacity={editable ? (!shape.visible ? 0.2 : 0.5) : 1}
+        opacity={
+          editable ? (!shape.visible ? editOpacity / 2 : editOpacity) : 1
+        }
         fillPatternImage={patternImage}
         fillPriority={editable && !shape.visible ? "pattern" : "color"}
         holes={holes}
@@ -566,12 +578,17 @@ function MapFog({
 
     if (editable) {
       const visibleShapes = shapes.filter(shapeVisible);
-      setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes));
+      // Only use bounding box guides when rendering them
+      if (shouldRenderGuides) {
+        setFogShapeBoundingBoxes(getFogShapesBoundingBoxes(visibleShapes, 5));
+      } else {
+        setFogShapeBoundingBoxes([]);
+      }
       setFogShapes(visibleShapes);
     } else {
       setFogShapes(mergeFogShapes(shapes));
     }
-  }, [shapes, editable, active, toolSettings]);
+  }, [shapes, editable, active, toolSettings, shouldRenderGuides]);
 
   const fogGroupRef = useRef();
 

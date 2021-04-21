@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import useImage from "use-image";
 
-import useDataSource from "./useDataSource";
+import { useImageSource } from "../contexts/ImageSourceContext";
 
 import { mapSources as defaultMapSources } from "../maps";
 
 function useMapImage(map) {
-  const mapSource = useDataSource(map, defaultMapSources);
+  const mapSource = useImageSource(map, defaultMapSources);
   const [mapSourceImage, mapSourceImageStatus] = useImage(mapSource);
 
   // Create a map source that only updates when the image is fully loaded

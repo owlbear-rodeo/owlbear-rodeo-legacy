@@ -74,4 +74,21 @@ export function useKeyboard(onKeyDown, onKeyUp) {
   });
 }
 
+/**
+ * Handler to handle a blur event. Useful when using a shortcut that uses the Alt or Cmd
+ * @param {FocusEvent} onBlur
+ */
+export function useBlur(onBlur) {
+  useEffect(() => {
+    if (onBlur) {
+      window.addEventListener("blur", onBlur);
+    }
+    return () => {
+      if (onBlur) {
+        window.removeEventListener("blur", onBlur);
+      }
+    };
+  });
+}
+
 export default KeyboardContext;

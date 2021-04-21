@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Box, Text } from "theme-ui";
+import * as Comlink from "comlink";
 
-import Banner from "../components/Banner";
+import ErrorBanner from "../components/banner/ErrorBanner";
 
 import { getDatabase } from "../database";
 
+import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
+
 const DatabaseContext = React.createContext();
+
+const worker = Comlink.wrap(new DatabaseWorker());
 
 export function DatabaseProvider({ children }) {
   const [database, setDatabase] = useState();
@@ -40,13 +44,19 @@ export function DatabaseProvider({ children }) {
     };
 
     function handleDatabaseError(event) {
-      if (event.reason?.name === "QuotaExceededError") {
-        event.preventDefault();
+      event.preventDefault();
+      if (event.reason?.message.startsWith("QuotaExceededError")) {
         setDatabaseError({
           name: event.reason.name,
           message: "Storage Quota Exceeded Please Clear Space and Try Again.",
         });
+      } else {
+        setDatabaseError({
+          name: event.reason.name,
+          message: "Something went wrong, please refresh your browser.",
+        });
       }
+      console.error(event.reason);
     }
     window.addEventListener("unhandledrejection", handleDatabaseError);
 
@@ -59,21 +69,16 @@ export function DatabaseProvider({ children }) {
     database,
     databaseStatus,
     databaseError,
+    worker,
   };
   return (
     <DatabaseContext.Provider value={value}>
       <>
         {children}
-        <Banner
-          isOpen={!!databaseError}
+        <ErrorBanner
+          error={databaseError}
           onRequestClose={() => setDatabaseError()}
-        >
-          <Box p={1}>
-            <Text as="p" variant="body2">
-              {databaseError && databaseError.message}
-            </Text>
-          </Box>
-        </Banner>
+        />
       </>
     </DatabaseContext.Provider>
   );
