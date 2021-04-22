@@ -2,6 +2,7 @@
 import Dexie, { Version, DexieOptions } from "dexie";
 import "dexie-observable";
 import shortid from "shortid";
+import { v4 as uuid } from "uuid";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
@@ -431,9 +432,139 @@ const versions = {
         });
     });
   },
+  // v1.9.0 - Move map assets into new table
+  23(v) {
+    v.stores({ assets: "id" }).upgrade((tx) => {
+      tx.table("maps").each((map) => {
+        let assets = [];
+        assets.push({
+          id: uuid(),
+          file: map.file,
+          width: map.width,
+          height: map.height,
+          mime: "",
+          prevId: map.id,
+          prevType: "map",
+        });
+
+        for (let resolution in map.resolutions) {
+          const mapRes = map.resolutions[resolution];
+          assets.push({
+            id: uuid(),
+            file: mapRes.file,
+            width: mapRes.width,
+            height: mapRes.height,
+            mime: "",
+            prevId: map.id,
+            prevType: "mapResolution",
+            resolution,
+          });
+        }
+
+        assets.push({
+          id: uuid(),
+          file: map.thumbnail.file,
+          width: map.thumbnail.width,
+          height: map.thumbnail.height,
+          mime: "",
+          prevId: map.id,
+          prevType: "mapThumbnail",
+        });
+
+        tx.table("assets").bulkAdd(assets);
+      });
+    });
+  },
+  // v1.9.0 - Move token assets into new table
+  24(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("tokens").each((token) => {
+        let assets = [];
+        assets.push({
+          id: uuid(),
+          file: token.file,
+          width: token.width,
+          height: token.height,
+          mime: "",
+          prevId: token.id,
+          prevType: "token",
+        });
+        assets.push({
+          id: uuid(),
+          file: token.thumbnail.file,
+          width: token.thumbnail.width,
+          height: token.thumbnail.height,
+          mime: "",
+          prevId: token.id,
+          prevType: "tokenThumbnail",
+        });
+        tx.table("assets").bulkAdd(assets);
+      });
+    });
+  },
+  // v1.9.0 - Create foreign keys for assets
+  25(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("assets").each((asset) => {
+        if (asset.prevType === "map") {
+          tx.table("maps").update(asset.prevId, {
+            file: asset.id,
+            width: undefined,
+            height: undefined,
+          });
+        } else if (asset.prevType === "token") {
+          tx.table("tokens").update(asset.prevId, {
+            file: asset.id,
+            width: undefined,
+            height: undefined,
+          });
+        } else if (asset.prevType === "mapThumbnail") {
+          tx.table("maps").update(asset.prevId, { thumbnail: asset.id });
+        } else if (asset.prevType === "tokenThumbnail") {
+          tx.table("tokens").update(asset.prevId, { thumbnail: asset.id });
+        } else if (asset.prevType === "mapResolution") {
+          tx.table("maps").update(asset.prevId, {
+            resolutions: undefined,
+            [asset.resolution]: asset.id,
+          });
+        }
+      });
+    });
+  },
+  // v1.9.0 - Remove asset migration helpers
+  26(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("assets")
+        .toCollection()
+        .modify((asset) => {
+          delete asset.prevId;
+          if (asset.prevType === "mapResolution") {
+            delete asset.resolution;
+          }
+          delete asset.prevType;
+        });
+    });
+  },
+  // v1.9.0 - Remap map resolution assets
+  27(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("maps")
+        .toCollection()
+        .modify((map) => {
+          const resolutions = ["low", "medium", "high", "ultra"];
+          map.resolutions = {};
+          for (let res of resolutions) {
+            if (res in map) {
+              map.resolutions[res] = map[res];
+              delete map[res];
+            }
+          }
+        });
+    });
+  },
 };
 
-const latestVersion = 22;
+const latestVersion = 27;
 
 /**
  * Load versions onto a database up to a specific version number

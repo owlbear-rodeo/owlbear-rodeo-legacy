@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 import { mapSources as defaultMapSources, unknownSource } from "../../maps";
 
 function MapTile({
@@ -15,7 +15,7 @@ function MapTile({
   canEdit,
   badges,
 }) {
-  const mapSource = useImageSource(
+  const mapURL = useDataURL(
     map,
     defaultMapSources,
     unknownSource,
@@ -24,7 +24,7 @@ function MapTile({
 
   return (
     <Tile
-      src={mapSource}
+      src={mapURL}
       title={map.name}
       isSelected={isSelected}
       onSelect={() => onMapSelect(map)}

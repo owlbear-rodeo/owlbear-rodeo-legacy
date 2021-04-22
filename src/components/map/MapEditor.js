@@ -23,7 +23,7 @@ import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
 
 function MapEditor({ map, onSettingsChange }) {
-  const [mapImageSource] = useMapImage(map);
+  const [mapImage] = useMapImage(map);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -132,11 +132,7 @@ function MapEditor({ map, onSettingsChange }) {
               )}
             >
               <Layer ref={mapLayerRef}>
-                <Image
-                  image={mapImageSource}
-                  width={mapWidth}
-                  height={mapHeight}
-                />
+                <Image image={mapImage} width={mapWidth} height={mapHeight} />
                 {showGridControls && canEditGrid && (
                   <>
                     <MapGrid map={map} />

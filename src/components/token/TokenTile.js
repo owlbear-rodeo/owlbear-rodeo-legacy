@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useAssetURL } from "../../contexts/AssetsContext";
 
 import {
   tokenSources as defaultTokenSources,
@@ -18,7 +18,7 @@ function TokenTile({
   canEdit,
   badges,
 }) {
-  const tokenSource = useImageSource(
+  const tokenURL = useAssetURL(
     token,
     defaultTokenSources,
     unknownSource,
@@ -27,7 +27,7 @@ function TokenTile({
 
   return (
     <Tile
-      src={tokenSource}
+      src={tokenURL}
       title={token.name}
       isSelected={isSelected}
       onSelect={() => onTokenSelect(token)}

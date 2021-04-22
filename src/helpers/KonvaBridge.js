@@ -23,10 +23,10 @@ import AuthContext, { useAuth } from "../contexts/AuthContext";
 import SettingsContext, { useSettings } from "../contexts/SettingsContext";
 import KeyboardContext from "../contexts/KeyboardContext";
 import TokenDataContext, { useTokenData } from "../contexts/TokenDataContext";
-import {
-  ImageSourcesStateContext,
-  ImageSourcesUpdaterContext,
-} from "../contexts/ImageSourceContext";
+import AssetsContext, {
+  AssetURLsStateContext,
+  AssetURLsUpdaterContext,
+} from "../contexts/AssetsContext";
 import {
   useGrid,
   useGridCellPixelSize,
@@ -52,8 +52,9 @@ function KonvaBridge({ stageRender, children }) {
   const auth = useAuth();
   const settings = useSettings();
   const tokenData = useTokenData();
-  const imageSources = useContext(ImageSourcesStateContext);
-  const setImageSources = useContext(ImageSourcesUpdaterContext);
+  const assets = useContext(AssetsContext);
+  const assetURLs = useContext(AssetURLsStateContext);
+  const setAssetURLs = useContext(AssetURLsUpdaterContext);
   const keyboardValue = useContext(KeyboardContext);
 
   const stageScale = useStageScale();
@@ -78,61 +79,63 @@ function KonvaBridge({ stageRender, children }) {
       <SettingsContext.Provider value={settings}>
         <KeyboardContext.Provider value={keyboardValue}>
           <MapStageProvider value={mapStageRef}>
-            <TokenDataContext.Provider value={tokenData}>
-              <ImageSourcesStateContext.Provider value={imageSources}>
-                <ImageSourcesUpdaterContext.Provider value={setImageSources}>
-                  <InteractionEmitterContext.Provider
-                    value={interactionEmitter}
-                  >
-                    <SetPreventMapInteractionContext.Provider
-                      value={setPreventMapInteraction}
+            <AssetsContext.Provider value={assets}>
+              <AssetURLsStateContext.Provider value={assetURLs}>
+                <AssetURLsUpdaterContext.Provider value={setAssetURLs}>
+                  <TokenDataContext.Provider value={tokenData}>
+                    <InteractionEmitterContext.Provider
+                      value={interactionEmitter}
                     >
-                      <StageWidthContext.Provider value={stageWidth}>
-                        <StageHeightContext.Provider value={stageHeight}>
-                          <MapWidthContext.Provider value={mapWidth}>
-                            <MapHeightContext.Provider value={mapHeight}>
-                              <StageScaleContext.Provider value={stageScale}>
-                                <DebouncedStageScaleContext.Provider
-                                  value={debouncedStageScale}
-                                >
-                                  <GridContext.Provider value={grid}>
-                                    <GridPixelSizeContext.Provider
-                                      value={gridPixelSize}
-                                    >
-                                      <GridCellPixelSizeContext.Provider
-                                        value={gridCellPixelSize}
+                      <SetPreventMapInteractionContext.Provider
+                        value={setPreventMapInteraction}
+                      >
+                        <StageWidthContext.Provider value={stageWidth}>
+                          <StageHeightContext.Provider value={stageHeight}>
+                            <MapWidthContext.Provider value={mapWidth}>
+                              <MapHeightContext.Provider value={mapHeight}>
+                                <StageScaleContext.Provider value={stageScale}>
+                                  <DebouncedStageScaleContext.Provider
+                                    value={debouncedStageScale}
+                                  >
+                                    <GridContext.Provider value={grid}>
+                                      <GridPixelSizeContext.Provider
+                                        value={gridPixelSize}
                                       >
-                                        <GridCellNormalizedSizeContext.Provider
-                                          value={gridCellNormalizedSize}
+                                        <GridCellPixelSizeContext.Provider
+                                          value={gridCellPixelSize}
                                         >
-                                          <GridOffsetContext.Provider
-                                            value={gridOffset}
+                                          <GridCellNormalizedSizeContext.Provider
+                                            value={gridCellNormalizedSize}
                                           >
-                                            <GridStrokeWidthContext.Provider
-                                              value={gridStrokeWidth}
+                                            <GridOffsetContext.Provider
+                                              value={gridOffset}
                                             >
-                                              <GridCellPixelOffsetContext.Provider
-                                                value={gridCellPixelOffset}
+                                              <GridStrokeWidthContext.Provider
+                                                value={gridStrokeWidth}
                                               >
-                                                {children}
-                                              </GridCellPixelOffsetContext.Provider>
-                                            </GridStrokeWidthContext.Provider>
-                                          </GridOffsetContext.Provider>
-                                        </GridCellNormalizedSizeContext.Provider>
-                                      </GridCellPixelSizeContext.Provider>
-                                    </GridPixelSizeContext.Provider>
-                                  </GridContext.Provider>
-                                </DebouncedStageScaleContext.Provider>
-                              </StageScaleContext.Provider>
-                            </MapHeightContext.Provider>
-                          </MapWidthContext.Provider>
-                        </StageHeightContext.Provider>
-                      </StageWidthContext.Provider>
-                    </SetPreventMapInteractionContext.Provider>
-                  </InteractionEmitterContext.Provider>
-                </ImageSourcesUpdaterContext.Provider>
-              </ImageSourcesStateContext.Provider>
-            </TokenDataContext.Provider>
+                                                <GridCellPixelOffsetContext.Provider
+                                                  value={gridCellPixelOffset}
+                                                >
+                                                  {children}
+                                                </GridCellPixelOffsetContext.Provider>
+                                              </GridStrokeWidthContext.Provider>
+                                            </GridOffsetContext.Provider>
+                                          </GridCellNormalizedSizeContext.Provider>
+                                        </GridCellPixelSizeContext.Provider>
+                                      </GridPixelSizeContext.Provider>
+                                    </GridContext.Provider>
+                                  </DebouncedStageScaleContext.Provider>
+                                </StageScaleContext.Provider>
+                              </MapHeightContext.Provider>
+                            </MapWidthContext.Provider>
+                          </StageHeightContext.Provider>
+                        </StageWidthContext.Provider>
+                      </SetPreventMapInteractionContext.Provider>
+                    </InteractionEmitterContext.Provider>
+                  </TokenDataContext.Provider>
+                </AssetURLsUpdaterContext.Provider>
+              </AssetURLsStateContext.Provider>
+            </AssetsContext.Provider>
           </MapStageProvider>
         </KeyboardContext.Provider>
       </SettingsContext.Provider>

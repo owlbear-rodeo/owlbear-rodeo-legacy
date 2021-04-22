@@ -3,12 +3,12 @@ import { Box, Image } from "theme-ui";
 
 import usePreventTouch from "../../hooks/usePreventTouch";
 
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
 function ListToken({ token, className }) {
-  const tokenSource = useImageSource(
+  const tokenURL = useDataURL(
     token,
     tokenSources,
     unknownSource,
@@ -22,7 +22,7 @@ function ListToken({ token, className }) {
   return (
     <Box my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
       <Image
-        src={tokenSource}
+        src={tokenURL}
         ref={imageRef}
         className={className}
         sx={{

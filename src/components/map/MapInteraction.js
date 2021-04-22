@@ -28,7 +28,7 @@ function MapInteraction({
   onSelectedToolChange,
   disabledControls,
 }) {
-  const [mapImageSource, mapImageSourceStatus] = useMapImage(map);
+  const [mapImage, mapImageStatus] = useMapImage(map);
 
   // Map loaded taking in to account different resolutions
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -36,14 +36,15 @@ function MapInteraction({
     if (
       !map ||
       !mapState ||
+      // FIXME
       (map.type === "file" && !map.file && !map.resolutions) ||
       mapState.mapId !== map.id
     ) {
       setMapLoaded(false);
-    } else if (mapImageSourceStatus === "loaded") {
+    } else if (mapImageStatus === "loaded") {
       setMapLoaded(true);
     }
-  }, [mapImageSourceStatus, map, mapState]);
+  }, [mapImageStatus, map, mapState]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -211,7 +212,7 @@ function MapInteraction({
             >
               <Layer ref={mapLayerRef}>
                 <Image
-                  image={mapLoaded && mapImageSource}
+                  image={mapLoaded && mapImage}
                   width={mapWidth}
                   height={mapHeight}
                   id="mapImage"

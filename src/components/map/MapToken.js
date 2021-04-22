@@ -16,7 +16,7 @@ import {
   useDebouncedStageScale,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
@@ -43,7 +43,7 @@ function MapToken({
 
   const gridCellPixelSize = useGridCellPixelSize();
 
-  const tokenSource = useImageSource(token, tokenSources, unknownSource);
+  const tokenSource = useDataURL(token, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
   const [tokenAspectRatio, setTokenAspectRatio] = useState(1);
 
