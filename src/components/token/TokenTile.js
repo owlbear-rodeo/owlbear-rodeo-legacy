@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-import { useAssetURL } from "../../contexts/AssetsContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import {
   tokenSources as defaultTokenSources,
@@ -18,7 +18,7 @@ function TokenTile({
   canEdit,
   badges,
 }) {
-  const tokenURL = useAssetURL(
+  const tokenURL = useDataURL(
     token,
     defaultTokenSources,
     unknownSource,
