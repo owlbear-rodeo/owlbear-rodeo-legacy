@@ -26,15 +26,17 @@ function TokenSettings({ token, onSettingsChange }) {
         />
       </Box>
       <Box mt={2}>
-        <Label mb={1}>Category</Label>
+        <Label mb={1}>Default Category</Label>
         <Select
           options={categorySettings}
           value={
             !tokenEmpty &&
-            categorySettings.find((s) => s.value === token.category)
+            categorySettings.find((s) => s.value === token.defaultCategory)
           }
           isDisabled={tokenEmpty || token.type === "default"}
-          onChange={(option) => onSettingsChange("category", option.value)}
+          onChange={(option) =>
+            onSettingsChange("defaultCategory", option.value)
+          }
           isSearchable={false}
         />
       </Box>

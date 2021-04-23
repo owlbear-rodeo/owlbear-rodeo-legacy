@@ -24,7 +24,6 @@ import TokenLabel from "../token/TokenLabel";
 import { tokenSources, unknownSource } from "../../tokens";
 
 function MapToken({
-  token,
   tokenState,
   onTokenStateChange,
   onTokenMenuOpen,
@@ -43,7 +42,7 @@ function MapToken({
 
   const gridCellPixelSize = useGridCellPixelSize();
 
-  const tokenSource = useDataURL(token, tokenSources, unknownSource);
+  const tokenSource = useDataURL(tokenState, tokenSources, unknownSource);
   const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
   const [tokenAspectRatio, setTokenAspectRatio] = useState(1);
 
@@ -59,7 +58,7 @@ function MapToken({
     const tokenGroup = event.target;
     const tokenImage = imageRef.current;
 
-    if (token && token.category === "vehicle") {
+    if (tokenState.category === "vehicle") {
       // Enable hit detection for .intersects() function
       Konva.hitOnDragEnabled = true;
 
@@ -99,7 +98,7 @@ function MapToken({
     const tokenGroup = event.target;
 
     const mountChanges = {};
-    if (token && token.category === "vehicle") {
+    if (tokenState.category === "vehicle") {
       Konva.hitOnDragEnabled = false;
 
       const parent = tokenGroup.getParent();
@@ -196,8 +195,16 @@ function MapToken({
     const canvas = image.getCanvas();
     const pixelRatio = canvas.pixelRatio || 1;
 
-    if (tokenSourceStatus === "loaded" && tokenWidth > 0 && tokenHeight > 0) {
-      const maxImageSize = token ? Math.max(token.width, token.height) : 512; // Default to 512px
+    if (
+      tokenSourceStatus === "loaded" &&
+      tokenWidth > 0 &&
+      tokenHeight > 0 &&
+      tokenSourceImage
+    ) {
+      const maxImageSize = Math.max(
+        tokenSourceImage.width,
+        tokenSourceImage.height
+      );
       const maxTokenSize = Math.max(tokenWidth, tokenHeight);
       // Constrain image buffer to original image size
       const maxRatio = maxImageSize / maxTokenSize;
@@ -210,7 +217,13 @@ function MapToken({
       });
       image.drawHitFromCache();
     }
-  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
+  }, [
+    debouncedStageScale,
+    tokenWidth,
+    tokenHeight,
+    tokenSourceStatus,
+    tokenSourceImage,
+  ]);
 
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;
@@ -232,8 +245,8 @@ function MapToken({
 
   // Token name is used by on click to find whether a token is a vehicle or prop
   let tokenName = "";
-  if (token) {
-    tokenName = token.category;
+  if (tokenState) {
+    tokenName = tokenState.category;
   }
   if (tokenState && tokenState.locked) {
     tokenName = tokenName + "-locked";

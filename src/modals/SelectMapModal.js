@@ -252,13 +252,15 @@ function SelectMapModal({
                 height: resized.height,
                 id: assetId,
                 mime: file.type,
+                owner: userId,
               };
               assets.push(asset);
             }
           }
         }
         // Create thumbnail
-        const thumbnail = await createThumbnail(image, file.type);
+        const thumbnailImage = await createThumbnail(image, file.type);
+        const thumbnail = { ...thumbnailImage, id: uuid(), owner: userId };
         assets.push(thumbnail);
 
         const fileAsset = {
@@ -267,6 +269,7 @@ function SelectMapModal({
           width: image.width,
           height: image.height,
           mime: file.type,
+          owner: userId,
         };
         assets.push(fileAsset);
 

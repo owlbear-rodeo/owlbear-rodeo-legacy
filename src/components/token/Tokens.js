@@ -25,12 +25,13 @@ function Tokens({ onMapTokenStateCreate }) {
   function handleProxyDragEnd(isOnMap, token) {
     if (isOnMap && onMapTokenStateCreate) {
       // Create a token state from the dragged token
-      onMapTokenStateCreate({
+      let tokenState = {
         id: shortid.generate(),
         tokenId: token.id,
         owner: userId,
         size: token.defaultSize,
-        label: "",
+        category: token.defaultCategory,
+        label: token.defaultLabel,
         statuses: [],
         x: token.x,
         y: token.y,
@@ -39,7 +40,15 @@ function Tokens({ onMapTokenStateCreate }) {
         rotation: 0,
         locked: false,
         visible: true,
-      });
+        type: token.type,
+      };
+      if (token.type === "file") {
+        tokenState.file = token.file;
+      } else if (token.type === "default") {
+        tokenState.key = token.key;
+      }
+      onMapTokenStateCreate(tokenState);
+      // TODO: Remove when cache is moved to assets
       // Update last used for cache invalidation
       // Keep last modified the same
       updateToken(token.id, {

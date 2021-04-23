@@ -12,6 +12,7 @@ import { omit } from "../helpers/shared";
  * @property {number} height
  * @property {Uint8Array} file
  * @property {string} mime
+ * @property {string} owner
  */
 
 /**
@@ -26,9 +27,15 @@ import { omit } from "../helpers/shared";
  */
 
 /**
+ * @callback putAsset
+ * @param {Asset} asset
+ */
+
+/**
  * @typedef AssetsContext
  * @property {getAsset} getAsset
  * @property {addAssets} addAssets
+ * @property {putAsset} putAsset
  */
 
 /**
@@ -54,9 +61,17 @@ export function AssetsProvider({ children }) {
     [database]
   );
 
+  const putAsset = useCallback(
+    async (asset) => {
+      return database.table("assets").put(asset);
+    },
+    [database]
+  );
+
   const value = {
     getAsset,
     addAssets,
+    putAsset,
   };
 
   return (

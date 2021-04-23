@@ -163,7 +163,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     return new Promise((resolve, reject) => {
       image.onload = async function () {
         let assets = [];
-        const thumbnail = await createThumbnail(image, file.type);
+        const thumbnailImage = await createThumbnail(image, file.type);
+        const thumbnail = { ...thumbnailImage, id: uuid(), owner: userId };
         assets.push(thumbnail);
 
         const fileAsset = {
@@ -172,6 +173,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           width: image.width,
           height: image.height,
           mime: file.type,
+          owner: userId,
         };
         assets.push(fileAsset);
 
@@ -186,7 +188,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           lastUsed: Date.now(),
           owner: userId,
           defaultSize: 1,
-          category: "character",
+          defaultCategory: "character",
+          defaultLabel: "",
           hideInSidebar: false,
           group: "",
           width: image.width,

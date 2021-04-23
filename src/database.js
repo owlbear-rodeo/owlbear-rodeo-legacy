@@ -3,6 +3,7 @@ import Dexie, { Version, DexieOptions } from "dexie";
 import "dexie-observable";
 import shortid from "shortid";
 import { v4 as uuid } from "uuid";
+import Case from "case";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
@@ -434,7 +435,7 @@ const versions = {
   },
   // v1.9.0 - Move map assets into new table
   23(v) {
-    v.stores({ assets: "id" }).upgrade((tx) => {
+    v.stores({ assets: "id, owner" }).upgrade((tx) => {
       tx.table("maps").each((map) => {
         let assets = [];
         assets.push({
@@ -558,9 +559,46 @@ const versions = {
         });
     });
   },
+  28(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("tokens")
+        .toCollection()
+        .modify((token) => {
+          token.defaultCategory = token.category;
+          delete token.category;
+          token.defaultLabel = "";
+        });
+    });
+  },
+  29(v) {
+    v.stores().upgrade((tx) => {
+      tx.table("states")
+        .toCollection()
+        .modify(async (state) => {
+          for (let tokenState of Object.values(state.tokens)) {
+            if (!tokenState.tokenId.startsWith("__default")) {
+              const token = await tx.table("tokens").get(tokenState.tokenId);
+              if (token) {
+                tokenState.category = token.defaultCategory;
+                tokenState.file = token.file;
+                tokenState.type = "file";
+              } else {
+                tokenState.category = "character";
+                tokenState.type = "file";
+                tokenState.file = "";
+              }
+            } else {
+              tokenState.category = "character";
+              tokenState.type = "default";
+              tokenState.key = Case.camel(tokenState.tokenId.slice(10));
+            }
+          }
+        });
+    });
+  },
 };
 
-const latestVersion = 27;
+const latestVersion = 29;
 
 /**
  * Load versions onto a database up to a specific version number

@@ -20,10 +20,6 @@ export function TokenDataProvider({ children }) {
   const { database, databaseStatus, worker } = useDatabase();
   const { userId } = useAuth();
 
-  /**
-   * Contains all tokens without any file data,
-   * to ensure file data is present call loadTokens
-   */
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);
 
@@ -44,7 +40,6 @@ export function TokenDataProvider({ children }) {
       return defaultTokensWithIds;
     }
 
-    // Loads tokens without the file data to save memory
     async function loadTokens() {
       let storedTokens = [];
       // Try to load tokens with worker, fallback to database if failed
@@ -156,35 +151,6 @@ export function TokenDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
-  const loadTokens = useCallback(
-    async (tokenIds) => {
-      const loadedTokens = await database.table("tokens").bulkGet(tokenIds);
-      const loadedTokensById = loadedTokens.reduce((obj, token) => {
-        obj[token.id] = token;
-        return obj;
-      }, {});
-      setTokens((prevTokens) => {
-        return prevTokens.map((prevToken) => {
-          if (prevToken.id in loadedTokensById) {
-            return loadedTokensById[prevToken.id];
-          } else {
-            return prevToken;
-          }
-        });
-      });
-    },
-    [database]
-  );
-
-  const unloadTokens = useCallback(async () => {
-    setTokens((prevTokens) => {
-      return prevTokens.map((prevToken) => {
-        const { file, ...rest } = prevToken;
-        return rest;
-      });
-    });
-  }, []);
-
   // Create DB observable to sync creating and deleting
   useEffect(() => {
     if (!database || databaseStatus === "loading") {
@@ -248,8 +214,6 @@ export function TokenDataProvider({ children }) {
     tokensById,
     tokensLoading,
     getTokenFromDB,
-    loadTokens,
-    unloadTokens,
   };
 
   return (

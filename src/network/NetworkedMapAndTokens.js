@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useToasts } from "react-toast-notifications";
 
-import { useTokenData } from "../contexts/TokenDataContext";
 import { useMapData } from "../contexts/MapDataContext";
 import { useMapLoading } from "../contexts/MapLoadingContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 import { useParty } from "../contexts/PartyContext";
+import { useAssets } from "../contexts/AssetsContext";
 
 import { omit } from "../helpers/shared";
+import { getMapPreviewAsset } from "../helpers/map";
 
 import useDebounce from "../hooks/useDebounce";
 import useNetworkedState from "../hooks/useNetworkedState";
@@ -46,8 +47,8 @@ function NetworkedMapAndTokens({ session }) {
     isLoading,
   } = useMapLoading();
 
-  const { putToken, getTokenFromDB } = useTokenData();
-  const { putMap, updateMap, getMapFromDB, updateMapState } = useMapData();
+  const { updateMapState } = useMapData();
+  const { getAsset, putAsset } = useAssets();
 
   const [currentMap, setCurrentMap] = useState(null);
   const [currentMapState, setCurrentMapState] = useNetworkedState(
@@ -69,48 +70,39 @@ function NetworkedMapAndTokens({ session }) {
 
   async function loadAssetManifestFromMap(map, mapState) {
     const assets = {};
+    const { owner } = map;
     if (map.type === "file") {
-      const { id, lastModified, owner } = map;
-      assets[`map-${id}`] = { type: "map", id, lastModified, owner };
+      const previewId = getMapPreviewAsset(map);
+      if (previewId) {
+        assets[previewId] = { id: previewId, owner };
+      }
+      const qualityId = map.resolutions[map.quality];
+      if (qualityId) {
+        assets[qualityId] = { id: qualityId, owner };
+      } else {
+        assets[map.file] = { id: map.file, owner };
+      }
     }
     let processedTokens = new Set();
     for (let tokenState of Object.values(mapState.tokens)) {
-      const token = await getTokenFromDB(tokenState.tokenId);
       if (
-        token &&
-        token.type === "file" &&
-        !processedTokens.has(tokenState.tokenId)
+        tokenState.file &&
+        !processedTokens.has(tokenState.file) &&
+        tokenState.owner === owner
       ) {
-        processedTokens.add(tokenState.tokenId);
-        // Omit file from token peer will request file if needed
-        const { id, lastModified, owner } = token;
-        assets[`token-${id}`] = { type: "token", id, lastModified, owner };
+        processedTokens.add(tokenState.file);
+        assets[tokenState.file] = { id: tokenState.file, owner };
       }
     }
     setAssetManifest({ mapId: map.id, assets }, true, true);
   }
 
-  function compareAssets(a, b) {
-    return a.type === b.type && a.id === b.id;
-  }
-
-  // Return true if an asset is out of date
-  function assetNeedsUpdate(oldAsset, newAsset) {
-    return (
-      compareAssets(oldAsset, newAsset) &&
-      oldAsset.lastModified < newAsset.lastModified
-    );
-  }
-
   function addAssetIfNeeded(asset) {
     setAssetManifest((prevManifest) => {
       if (prevManifest?.assets) {
-        const id =
-          asset.type === "map" ? `map-${asset.id}` : `token-${asset.id}`;
+        const id = asset.id;
         const exists = id in prevManifest.assets;
-        const needsUpdate =
-          exists && assetNeedsUpdate(prevManifest.assets[id], asset);
-        if (!exists || needsUpdate) {
+        if (!exists) {
           return {
             ...prevManifest,
             assets: {
@@ -145,48 +137,28 @@ function NetworkedMapAndTokens({ session }) {
           (player) => player.userId === asset.owner
         );
 
+        const cachedAsset = await getAsset(asset.id);
         if (!owner) {
-          // Add no owner toast if asset is a map and we don't have it in out cache
-          if (asset.type === "map") {
-            const cachedMap = await getMapFromDB(asset.id);
-            if (!cachedMap) {
-              addToast("Unable to find owner for map");
-            }
+          // Add no owner toast if we don't have asset in out cache
+          if (!cachedAsset) {
+            // TODO: Stop toast from appearing multiple times
+            addToast("Unable to find owner for asset");
           }
           continue;
         }
 
         requestingAssetsRef.current.add(asset.id);
 
-        if (asset.type === "map") {
-          const cachedMap = await getMapFromDB(asset.id);
-          if (cachedMap && cachedMap.lastModified === asset.lastModified) {
-            requestingAssetsRef.current.delete(asset.id);
-          } else {
-            session.sendTo(owner.sessionId, "mapRequest", asset.id);
-          }
-        } else if (asset.type === "token") {
-          const cachedToken = await getTokenFromDB(asset.id);
-          if (cachedToken && cachedToken.lastModified === asset.lastModified) {
-            requestingAssetsRef.current.delete(asset.id);
-          } else {
-            session.sendTo(owner.sessionId, "tokenRequest", asset.id);
-          }
+        if (cachedAsset) {
+          requestingAssetsRef.current.delete(asset.id);
+        } else {
+          session.sendTo(owner.sessionId, "assetRequest", asset.id);
         }
       }
     }
 
     requestAssetsIfNeeded();
-  }, [
-    assetManifest,
-    partyState,
-    session,
-    getMapFromDB,
-    getTokenFromDB,
-    updateMap,
-    userId,
-    addToast,
-  ]);
+  }, [assetManifest, partyState, session, userId, addToast, getAsset]);
 
   /**
    * Map state
@@ -215,12 +187,8 @@ function NetworkedMapAndTokens({ session }) {
     setCurrentMapState(newMapState, true, true);
     setCurrentMap(newMap);
 
-    if (newMap && newMap.type === "file") {
-      const { file, resolutions, thumbnail, ...rest } = newMap;
-      session.socket?.emit("map", rest);
-    } else {
-      session.socket?.emit("map", newMap);
-    }
+    session.socket?.emit("map", newMap);
+
     if (!newMap || !newMapState) {
       setAssetManifest(null, true, true);
       return;
@@ -371,11 +339,8 @@ function NetworkedMapAndTokens({ session }) {
     if (!currentMap || !currentMapState) {
       return;
     }
-    // If file type token send the token to the other peers
-    const token = await getTokenFromDB(tokenState.tokenId);
-    if (token && token.type === "file") {
-      const { id, lastModified, owner } = token;
-      addAssetIfNeeded({ type: "token", id, lastModified, owner });
+    if (tokenState.file) {
+      addAssetIfNeeded({ id: tokenState.file, owner: tokenState.owner });
     }
     setCurrentMapState((prevMapState) => ({
       ...prevMapState,
@@ -414,101 +379,21 @@ function NetworkedMapAndTokens({ session }) {
 
   useEffect(() => {
     async function handlePeerData({ id, data, reply }) {
-      if (id === "mapRequest") {
-        const map = await getMapFromDB(data);
-        function replyWithMap(preview, resolution) {
-          let response = {
-            ...map,
-            resolutions: undefined,
-            file: undefined,
-            thumbnail: undefined,
-            // Remove last modified so if there is an error
-            // during the map request the cache is invalid
-            lastModified: 0,
-            // Add last used for cache invalidation
-            lastUsed: Date.now(),
-          };
-          // Send preview if available
-          if (map.resolutions[preview]) {
-            response.resolutions = { [preview]: map.resolutions[preview] };
-            reply("mapResponse", response, "map");
-          }
-          // Send full map at the desired resolution if available
-          if (map.resolutions[resolution]) {
-            response.file = map.resolutions[resolution].file;
-          } else if (map.file) {
-            // The resolution might not exist for other users so send the file instead
-            response.file = map.file;
-          } else {
-            return;
-          }
-          // Add last modified back to file to set cache as valid
-          response.lastModified = map.lastModified;
-          reply("mapResponse", response, "map");
-        }
-
-        switch (map.quality) {
-          case "low":
-            replyWithMap(undefined, "low");
-            break;
-          case "medium":
-            replyWithMap("low", "medium");
-            break;
-          case "high":
-            replyWithMap("medium", "high");
-            break;
-          case "ultra":
-            replyWithMap("medium", "ultra");
-            break;
-          case "original":
-            if (map.resolutions) {
-              if (map.resolutions.medium) {
-                replyWithMap("medium");
-              } else if (map.resolutions.low) {
-                replyWithMap("low");
-              } else {
-                replyWithMap();
-              }
-            } else {
-              replyWithMap();
-            }
-            break;
-          default:
-            replyWithMap();
-        }
+      if (id === "assetRequest") {
+        const asset = await getAsset(data);
+        reply("assetResponse", asset);
       }
 
-      if (id === "mapResponse") {
-        const newMap = data;
-        if (newMap?.id) {
-          setCurrentMap(newMap);
-          await putMap(newMap);
-          // If we have the final map resolution
-          if (newMap.lastModified > 0) {
-            requestingAssetsRef.current.delete(newMap.id);
-          }
-        }
-        assetLoadFinish();
-      }
-
-      if (id === "tokenRequest") {
-        const token = await getTokenFromDB(data);
-        // Add a last used property for cache invalidation
-        reply("tokenResponse", { ...token, lastUsed: Date.now() }, "token");
-      }
-      if (id === "tokenResponse") {
-        const newToken = data;
-        if (newToken?.id) {
-          await putToken(newToken);
-          requestingAssetsRef.current.delete(newToken.id);
-        }
+      if (id === "assetResponse") {
+        await putAsset(data);
+        requestingAssetsRef.current.delete(data.id);
         assetLoadFinish();
       }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
       if (count === 1) {
-        // Corresponding asset load finished called in token and map response
+        // Corresponding asset load finished called in asset response
         assetLoadStart();
       }
       assetProgressUpdate({ id, total, count });
@@ -516,12 +401,7 @@ function NetworkedMapAndTokens({ session }) {
 
     async function handleSocketMap(map) {
       if (map) {
-        if (map.type === "file") {
-          const fullMap = await getMapFromDB(map.id);
-          setCurrentMap(fullMap || map);
-        } else {
-          setCurrentMap(map);
-        }
+        setCurrentMap(map);
       } else {
         setCurrentMap(null);
       }
