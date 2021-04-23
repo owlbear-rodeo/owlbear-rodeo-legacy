@@ -111,7 +111,7 @@ class Session extends EventEmitter {
   }
 
   disconnect() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
   }
 
   /**
@@ -198,7 +198,12 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit("join_game", gameId, password, process.env.REACT_APP_VERSION);
+    this.socket.emit(
+      "join_game",
+      gameId,
+      password,
+      process.env.REACT_APP_VERSION
+    );
     this.emit("status", "joining");
   }
 
