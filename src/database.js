@@ -509,14 +509,10 @@ const versions = {
         if (asset.prevType === "map") {
           tx.table("maps").update(asset.prevId, {
             file: asset.id,
-            width: undefined,
-            height: undefined,
           });
         } else if (asset.prevType === "token") {
           tx.table("tokens").update(asset.prevId, {
             file: asset.id,
-            width: undefined,
-            height: undefined,
           });
         } else if (asset.prevType === "mapThumbnail") {
           tx.table("maps").update(asset.prevId, { thumbnail: asset.id });

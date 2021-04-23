@@ -21,8 +21,14 @@ import { omit } from "../helpers/shared";
  */
 
 /**
+ * @callback addAssets
+ * @param {Asset[]} assets
+ */
+
+/**
  * @typedef AssetsContext
  * @property {getAsset} getAsset
+ * @property {addAssets} addAssets
  */
 
 /**
@@ -31,7 +37,7 @@ import { omit } from "../helpers/shared";
 const AssetsContext = React.createContext();
 
 export function AssetsProvider({ children }) {
-  const { worker } = useDatabase();
+  const { worker, database } = useDatabase();
 
   const getAsset = useCallback(
     async (assetId) => {
@@ -41,10 +47,20 @@ export function AssetsProvider({ children }) {
     [worker]
   );
 
+  const addAssets = useCallback(
+    async (assets) => {
+      return database.table("assets").bulkAdd(assets);
+    },
+    [database]
+  );
+
+  const value = {
+    getAsset,
+    addAssets,
+  };
+
   return (
-    <AssetsContext.Provider value={{ getAsset }}>
-      {children}
-    </AssetsContext.Provider>
+    <AssetsContext.Provider value={value}>{children}</AssetsContext.Provider>
   );
 }
 
@@ -107,10 +123,10 @@ export function AssetURLsProvider({ children }) {
  * @param {string} assetId
  * @param {"file"|"default"} type
  * @param {Object.<string, string>} defaultSources
- * @param {string} unknownSource
- * @returns {string}
+ * @param {string|undefined} unknownSource
+ * @returns {string|undefined}
  */
-export function useAssetURL(assetId, type, defaultSources, unknownSource = "") {
+export function useAssetURL(assetId, type, defaultSources, unknownSource) {
   const assetURLs = useContext(AssetURLsStateContext);
   if (assetURLs === undefined) {
     throw new Error("useAssetURL must be used within a AssetURLsProvider");
@@ -183,7 +199,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource = "") {
   }
 
   if (type === "file") {
-    return assetURLs[assetId]?.url;
+    return assetURLs[assetId]?.url || unknownSource;
   }
 
   return unknownSource;
@@ -210,14 +226,14 @@ const dataResolutions = ["ultra", "high", "medium", "low"];
  * Load a map or token into a URL taking into account a thumbnail and multiple resolutions
  * @param {FileData|DefaultData} data
  * @param {Object.<string, string>} defaultSources
- * @param {string} unknownSource
+ * @param {string|undefined} unknownSource
  * @param {boolean} thumbnail
- * @returns {string}
+ * @returns {string|undefined}
  */
 export function useDataURL(
   data,
   defaultSources,
-  unknownSource = "",
+  unknownSource,
   thumbnail = false
 ) {
   const { database } = useDatabase();

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
-import shortid from "shortid";
+import { v4 as uuid } from "uuid";
 import Case from "case";
 import { useToasts } from "react-toast-notifications";
 
@@ -22,6 +22,7 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { useAssets } from "../contexts/AssetsContext";
 
 import shortcuts from "../shortcuts";
 
@@ -36,6 +37,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     updateTokens,
     tokensLoading,
   } = useTokenData();
+  const { addAssets } = useAssets();
 
   /**
    * Search
@@ -160,13 +162,24 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
     return new Promise((resolve, reject) => {
       image.onload = async function () {
+        let assets = [];
         const thumbnail = await createThumbnail(image, file.type);
+        assets.push(thumbnail);
 
-        handleTokenAdd({
+        const fileAsset = {
+          id: uuid(),
           file: buffer,
-          thumbnail,
+          width: image.width,
+          height: image.height,
+          mime: file.type,
+        };
+        assets.push(fileAsset);
+
+        const token = {
           name,
-          id: shortid.generate(),
+          thumbnail: thumbnail.id,
+          file: fileAsset.id,
+          id: uuid(),
           type: "file",
           created: Date.now(),
           lastModified: Date.now(),
@@ -178,8 +191,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           group: "",
           width: image.width,
           height: image.height,
-        });
+        };
+
+        handleTokenAdd(token, assets);
         setIsLoading(false);
+        URL.revokeObjectURL(url);
         resolve();
       };
       image.onerror = reject;
@@ -196,8 +212,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     selectedTokenIds.includes(token.id)
   );
 
-  function handleTokenAdd(token) {
-    addToken(token);
+  async function handleTokenAdd(token, assets) {
+    await addToken(token);
+    await addAssets(assets);
     setSelectedTokenIds([token.id]);
   }
 

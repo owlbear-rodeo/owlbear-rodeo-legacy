@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+
 import blobToBuffer from "./blobToBuffer";
 
 const lightnessDetectionOffset = 0.1;
@@ -88,12 +90,12 @@ export async function resizeImage(image, size, type, quality) {
 }
 
 /**
- * @typedef ImageFile
- * @property {Uint8Array|null} file
+ * @typedef Asset
+ * @property {string} id
  * @property {number} width
  * @property {number} height
- * @property {"file"} type
- * @property {string} id
+ * @property {Uint8Array} file
+ * @property {string} mime
  */
 
 /**
@@ -102,7 +104,7 @@ export async function resizeImage(image, size, type, quality) {
  * @param {string} type the mime type of the image
  * @param {number} size the width and height of the thumbnail
  * @param {number} quality if image is a jpeg or webp this is the quality setting
- * @returns {Promise<ImageFile>}
+ * @returns {Promise<Asset>}
  */
 export async function createThumbnail(image, type, size = 300, quality = 0.5) {
   let canvas = document.createElement("canvas");
@@ -150,7 +152,7 @@ export async function createThumbnail(image, type, size = 300, quality = 0.5) {
     file: thumbnailBuffer,
     width: thumbnailImage.width,
     height: thumbnailImage.height,
-    type: "file",
-    id: "thumbnail",
+    mime: type,
+    id: uuid(),
   };
 }

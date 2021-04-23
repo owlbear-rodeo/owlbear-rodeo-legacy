@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
-import shortid from "shortid";
+import { v4 as uuid } from "uuid";
 import Case from "case";
 import { useToasts } from "react-toast-notifications";
 
@@ -28,6 +28,7 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { useAssets } from "../contexts/AssetsContext";
 
 import shortcuts from "../shortcuts";
 
@@ -72,6 +73,7 @@ function SelectMapModal({
     getMapFromDB,
     getMapStateFromDB,
   } = useMapData();
+  const { addAssets } = useAssets();
 
   /**
    * Search
@@ -221,6 +223,8 @@ function SelectMapModal({
           gridSize = { x: 22, y: 22 };
         }
 
+        let assets = [];
+
         // Create resolutions
         const resolutions = {};
         for (let resolution of mapResolutions) {
@@ -239,26 +243,38 @@ function SelectMapModal({
               resolution.quality
             );
             if (resized.blob) {
+              const assetId = uuid();
+              resolutions[resolution.id] = assetId;
               const resizedBuffer = await blobToBuffer(resized.blob);
-              resolutions[resolution.id] = {
+              const asset = {
                 file: resizedBuffer,
                 width: resized.width,
                 height: resized.height,
-                type: "file",
-                id: resolution.id,
+                id: assetId,
+                mime: file.type,
               };
+              assets.push(asset);
             }
           }
         }
         // Create thumbnail
         const thumbnail = await createThumbnail(image, file.type);
+        assets.push(thumbnail);
 
-        handleMapAdd({
-          // Save as a buffer to send with msgpack
+        const fileAsset = {
+          id: uuid(),
           file: buffer,
-          resolutions,
-          thumbnail,
+          width: image.width,
+          height: image.height,
+          mime: file.type,
+        };
+        assets.push(fileAsset);
+
+        const map = {
           name,
+          resolutions,
+          file: fileAsset.id,
+          thumbnail: thumbnail.id,
           type: "file",
           grid: {
             size: gridSize,
@@ -275,13 +291,15 @@ function SelectMapModal({
           },
           width: image.width,
           height: image.height,
-          id: shortid.generate(),
+          id: uuid(),
           created: Date.now(),
           lastModified: Date.now(),
           lastUsed: Date.now(),
           owner: userId,
           ...defaultMapProps,
-        });
+        };
+
+        handleMapAdd(map, assets);
         setIsLoading(false);
         URL.revokeObjectURL(url);
         resolve();
@@ -311,8 +329,9 @@ function SelectMapModal({
     selectedMapIds.includes(state.mapId)
   );
 
-  async function handleMapAdd(map) {
+  async function handleMapAdd(map, assets) {
     await addMap(map);
+    await addAssets(assets);
     setSelectedMapIds([map.id]);
   }
 
