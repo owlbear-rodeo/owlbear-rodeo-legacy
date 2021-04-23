@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
+// eslint-disable-next-line no-unused-vars
+import Dexie from "dexie";
 import * as Comlink from "comlink";
 
 import ErrorBanner from "../components/banner/ErrorBanner";
@@ -7,6 +9,17 @@ import { getDatabase } from "../database";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
+/**
+ * @typedef DatabaseContext
+ * @property {Dexie|undefined} database
+ * @property {any} worker
+ * @property {string} databaseStatus
+ * @property {Error|undefined} databaseError
+ */
+
+/**
+ * @type {React.Context<undefined|DatabaseContext>}
+ */
 const DatabaseContext = React.createContext();
 
 const worker = Comlink.wrap(new DatabaseWorker());
