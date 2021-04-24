@@ -11,14 +11,6 @@ import Grid from "../Grid";
 
 function MapGrid({ map }) {
   let mapSourceMap = map;
-  // Use lowest resolution for grid lightness
-  if (map && map.type === "file" && map.resolutions) {
-    // FIXME - move to resolutions array
-    const resolutionArray = Object.keys(map.resolutions);
-    if (resolutionArray.length > 0) {
-      mapSourceMap.quality = resolutionArray[0];
-    }
-  }
   const mapURL = useDataURL(mapSourceMap, defaultMapSources);
   const [mapImage, mapLoadingStatus] = useImage(mapURL);
 
