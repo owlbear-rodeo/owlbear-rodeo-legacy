@@ -30,16 +30,9 @@ function MapInteraction({
 }) {
   const [mapImage, mapImageStatus] = useMapImage(map);
 
-  // Map loaded taking in to account different resolutions
   const [mapLoaded, setMapLoaded] = useState(false);
   useEffect(() => {
-    if (
-      !map ||
-      !mapState ||
-      // FIXME
-      (map.type === "file" && !map.file && !map.resolutions) ||
-      mapState.mapId !== map.id
-    ) {
+    if (!map || !mapState || mapState.mapId !== map.id) {
       setMapLoaded(false);
     } else if (mapImageStatus === "loaded") {
       setMapLoaded(true);

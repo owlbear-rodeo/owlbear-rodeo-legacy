@@ -24,6 +24,7 @@
     "fake-indexeddb": "^3.1.2",
     "file-saver": "^2.0.5",
     "fuse.js": "^6.4.6",
+    "image-outline": "^0.1.0",
     "interactjs": "^1.10.8",
     "konva": "^7.2.5",
     "lodash.clonedeep": "^4.5.0",

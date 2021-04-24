@@ -4,11 +4,13 @@ import "dexie-observable";
 import shortid from "shortid";
 import { v4 as uuid } from "uuid";
 import Case from "case";
+import imageOutline from "image-outline";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
 import { convertOldActionsToShapes } from "./actions";
 import { createThumbnail } from "./helpers/image";
+import Vector2 from "./helpers/Vector2";
 
 // Helper to create a thumbnail for a file in a db
 async function createDataThumbnail(data) {
@@ -478,7 +480,7 @@ const versions = {
   },
   // v1.9.0 - Move token assets into new table
   24(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("tokens").each((token) => {
         let assets = [];
         assets.push({
@@ -505,7 +507,7 @@ const versions = {
   },
   // v1.9.0 - Create foreign keys for assets
   25(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("assets").each((asset) => {
         if (asset.prevType === "map") {
           tx.table("maps").update(asset.prevId, {
@@ -530,7 +532,7 @@ const versions = {
   },
   // v1.9.0 - Remove asset migration helpers
   26(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("assets")
         .toCollection()
         .modify((asset) => {
@@ -544,7 +546,7 @@ const versions = {
   },
   // v1.9.0 - Remap map resolution assets
   27(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("maps")
         .toCollection()
         .modify((map) => {
@@ -559,19 +561,40 @@ const versions = {
         });
     });
   },
+  // v1.9.0 - Move tokens to use more defaults and add token outline
   28(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("tokens")
         .toCollection()
-        .modify((token) => {
+        .modify(async (token) => {
           token.defaultCategory = token.category;
           delete token.category;
           token.defaultLabel = "";
+          if (token.width === token.height) {
+            token.outline = [
+              { x: 0.5, y: 0.0 },
+              { x: 0.85, y: 0.15 },
+              { x: 1.0, y: 0.5 },
+              { x: 0.85, y: 0.85 },
+              { x: 0.5, y: 1.0 },
+              { x: 0.15, y: 0.85 },
+              { x: 0.0, y: 0.5 },
+              { x: 0.15, y: 0.15 },
+            ];
+          } else {
+            token.outline = [
+              { x: 0.0, y: 0.0 },
+              { x: 1.0, y: 0.0 },
+              { x: 1.0, y: 1.0 },
+              { x: 0.0, y: 1.0 },
+            ];
+          }
         });
     });
   },
+  // v1.9.0 - Move tokens to use more defaults and add token outline
   29(v) {
-    v.stores().upgrade((tx) => {
+    v.stores({}).upgrade((tx) => {
       tx.table("states")
         .toCollection()
         .modify(async (state) => {
@@ -582,15 +605,38 @@ const versions = {
                 tokenState.category = token.defaultCategory;
                 tokenState.file = token.file;
                 tokenState.type = "file";
+                tokenState.outline = token.outline;
+                tokenState.width = token.width;
+                tokenState.height = token.height;
               } else {
                 tokenState.category = "character";
                 tokenState.type = "file";
                 tokenState.file = "";
+                tokenState.outline = [
+                  { x: 0.0, y: 0.0 },
+                  { x: 1.0, y: 0.0 },
+                  { x: 1.0, y: 1.0 },
+                  { x: 0.0, y: 1.0 },
+                ];
+                tokenState.width = 256;
+                tokenState.height = 256;
               }
             } else {
               tokenState.category = "character";
               tokenState.type = "default";
               tokenState.key = Case.camel(tokenState.tokenId.slice(10));
+              tokenState.outline = [
+                { x: 0.5, y: 0.0 },
+                { x: 0.85, y: 0.15 },
+                { x: 1.0, y: 0.5 },
+                { x: 0.85, y: 0.85 },
+                { x: 0.5, y: 1.0 },
+                { x: 0.15, y: 0.85 },
+                { x: 0.0, y: 0.5 },
+                { x: 0.15, y: 0.15 },
+              ];
+              tokenState.width = 256;
+              tokenState.height = 256;
             }
           }
         });

@@ -3,6 +3,7 @@ import { Flex, Label, Button } from "theme-ui";
 import { v4 as uuid } from "uuid";
 import Case from "case";
 import { useToasts } from "react-toast-notifications";
+import imageOutline from "image-outline";
 
 import EditTokenModal from "./EditTokenModal";
 import EditGroupModal from "./EditGroupModal";
@@ -16,6 +17,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import blobToBuffer from "../helpers/blobToBuffer";
 import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
 import { createThumbnail } from "../helpers/image";
+import Vector2 from "../helpers/Vector2";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
@@ -177,6 +179,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         };
         assets.push(fileAsset);
 
+        let outline = imageOutline(image).map(({ x, y }) => ({
+          x: x / image.width,
+          y: y / image.height,
+        }));
+        if (outline.length > 100) {
+          outline = Vector2.resample(outline, 100);
+        }
+
         const token = {
           name,
           thumbnail: thumbnail.id,
@@ -194,6 +204,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           group: "",
           width: image.width,
           height: image.height,
+          outline,
         };
 
         handleTokenAdd(token, assets);

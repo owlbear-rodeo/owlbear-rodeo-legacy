@@ -41,6 +41,9 @@ function Tokens({ onMapTokenStateCreate }) {
         locked: false,
         visible: true,
         type: token.type,
+        outline: token.outline,
+        width: token.width,
+        height: token.height,
       };
       if (token.type === "file") {
         tokenState.file = token.file;
