@@ -152,9 +152,15 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
   }
 
   const { getAsset } = useAssets();
+  const { database, databaseStatus } = useDatabase();
 
   useEffect(() => {
-    if (!assetId || type !== "file") {
+    if (
+      !assetId ||
+      type !== "file" ||
+      !database ||
+      databaseStatus === "loading"
+    ) {
       return;
     }
 
@@ -163,16 +169,16 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
       if (asset) {
         setAssetURLs((prevURLs) => {
           if (assetId in prevURLs) {
-            // Check if the asset url is already added
+            // Check if the asset url is already added and increase references
             return {
               ...prevURLs,
               [assetId]: {
                 ...prevURLs[assetId],
-                // Increase references
                 references: prevURLs[assetId].references + 1,
               },
             };
           } else {
+            // Create url if the asset doesn't have a url
             const url = URL.createObjectURL(
               new Blob([asset.file], { type: asset.mime })
             );
@@ -187,7 +193,38 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
 
     updateAssetURL();
 
+    // Update the url when the asset is added to the db after the hook is used
+    function handleAssetChanges(changes) {
+      for (let change of changes) {
+        const id = change.key;
+        if (
+          change.table === "assets" &&
+          id === assetId &&
+          (change.type === 1 || change.type === 2)
+        ) {
+          const asset = change.obj;
+          setAssetURLs((prevURLs) => {
+            if (!(assetId in prevURLs)) {
+              const url = URL.createObjectURL(
+                new Blob([asset.file], { type: asset.mime })
+              );
+              return {
+                ...prevURLs,
+                [assetId]: { url, id: assetId, references: 1 },
+              };
+            } else {
+              return prevURLs;
+            }
+          });
+        }
+      }
+    }
+
+    database.on("changes", handleAssetChanges);
+
     return () => {
+      database.on("changes").unsubscribe(handleAssetChanges);
+
       // Decrease references
       setAssetURLs((prevURLs) => {
         if (assetId in prevURLs) {
@@ -203,7 +240,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         }
       });
     };
-  }, [assetId, setAssetURLs, getAsset, type]);
+  }, [assetId, setAssetURLs, getAsset, type, database, databaseStatus]);
 
   if (!assetId) {
     return unknownSource;
@@ -219,8 +256,6 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
 
   return unknownSource;
 }
-
-const dataResolutions = ["ultra", "high", "medium", "low"];
 
 /**
  * @typedef FileData
@@ -251,53 +286,35 @@ export function useDataURL(
   unknownSource,
   thumbnail = false
 ) {
-  const { database } = useDatabase();
   const [assetId, setAssetId] = useState();
 
   useEffect(() => {
     if (!data) {
       return;
     }
-    async function loastAssetId() {
+    async function loadAssetId() {
       if (data.type === "default") {
         setAssetId(data.key);
       } else {
         if (thumbnail) {
           setAssetId(data.thumbnail);
-        } else if (data.resolutions) {
-          const fileKeys = await database
-            .table("assets")
-            .where("id")
-            .equals(data.file)
-            .primaryKeys();
-          const fileExists = fileKeys.length > 0;
-          // Check if a resolution is specified
-          if (data.quality && data.resolutions[data.quality]) {
-            setAssetId(data.resolutions[data.quality]);
-          }
-          // If no file available fallback to the highest resolution
-          else if (!fileExists) {
-            for (let res of dataResolutions) {
-              if (res in data.resolutions) {
-                setAssetId(data.resolutions[res]);
-                break;
-              }
-            }
-          } else {
-            setAssetId(data.file);
-          }
+        } else if (data.resolutions && data.quality !== "original") {
+          setAssetId(data.resolutions[data.quality]);
         } else {
           setAssetId(data.file);
         }
       }
     }
 
-    loastAssetId();
-  }, [data, thumbnail, database]);
+    loadAssetId();
+  }, [data, thumbnail]);
 
-  const type = data?.type || "default";
-
-  const assetURL = useAssetURL(assetId, type, defaultSources, unknownSource);
+  const assetURL = useAssetURL(
+    assetId,
+    data?.type,
+    defaultSources,
+    unknownSource
+  );
   return assetURL;
 }
 

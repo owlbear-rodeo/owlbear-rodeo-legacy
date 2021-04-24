@@ -9,7 +9,6 @@ import { useParty } from "../contexts/PartyContext";
 import { useAssets } from "../contexts/AssetsContext";
 
 import { omit } from "../helpers/shared";
-import { getMapPreviewAsset } from "../helpers/map";
 
 import useDebounce from "../hooks/useDebounce";
 import useNetworkedState from "../hooks/useNetworkedState";
@@ -72,10 +71,6 @@ function NetworkedMapAndTokens({ session }) {
     const assets = {};
     const { owner } = map;
     if (map.type === "file") {
-      const previewId = getMapPreviewAsset(map);
-      if (previewId) {
-        assets[previewId] = { id: previewId, owner };
-      }
       const qualityId = map.resolutions[map.quality];
       if (qualityId) {
         assets[qualityId] = { id: qualityId, owner };
