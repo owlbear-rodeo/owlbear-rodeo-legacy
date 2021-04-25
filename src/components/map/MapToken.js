@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Image as KonvaImage, Group, Line } from "react-konva";
+import { Image as KonvaImage, Group, Line, Rect, Circle } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
@@ -246,6 +246,37 @@ function MapToken({
     tokenName = tokenName + "-locked";
   }
 
+  let outline = tokenState.outline;
+  if (Array.isArray(tokenState.outline)) {
+    outline = [...outline]; // Copy array so we can edit it imutably
+    for (let i = 0; i < outline.length; i += 2) {
+      // Scale outline to the token
+      outline[i] = (outline[i] / tokenState.width) * tokenWidth;
+      outline[i + 1] = (outline[i + 1] / tokenState.height) * tokenHeight;
+    }
+  }
+
+  function renderOutline() {
+    const sharedProps = {
+      fill: colors.black,
+      width: tokenWidth,
+      height: tokenHeight,
+      x: 0,
+      y: 0,
+      rotation: tokenState.rotation,
+      offsetX: tokenWidth / 2,
+      offsetY: tokenHeight / 2,
+      opacity: 0.8,
+    };
+    if (outline === "rect") {
+      return <Rect {...sharedProps} />;
+    } else if (outline === "circle") {
+      return <Circle {...sharedProps} offsetX={0} offsetY={0} />;
+    } else {
+      return <Line {...sharedProps} points={outline} closed tension={0.33} />;
+    }
+  }
+
   return (
     <animated.Group
       {...props}
@@ -268,24 +299,7 @@ function MapToken({
       id={tokenState.id}
     >
       {!tokenImage ? (
-        <Group opacity={0.8}>
-          <Line
-            points={tokenState.outline
-              .map(({ x, y }) => [x * tokenWidth, y * tokenHeight])
-              .flat(1)}
-            fill={colors.black}
-            width={tokenWidth}
-            height={tokenHeight}
-            x={0}
-            y={0}
-            rotation={tokenState.rotation}
-            offsetX={tokenWidth / 2}
-            offsetY={tokenHeight / 2}
-            closed
-            // Round edges for more complex shapes
-            tension={tokenState.outline.length > 6 ? 0.333 : 0}
-          />
-        </Group>
+        renderOutline()
       ) : (
         <KonvaImage
           ref={imageRef}

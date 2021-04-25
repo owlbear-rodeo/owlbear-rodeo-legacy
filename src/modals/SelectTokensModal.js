@@ -179,13 +179,14 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         };
         assets.push(fileAsset);
 
-        let outline = imageOutline(image).map(({ x, y }) => ({
-          x: x / image.width,
-          y: y / image.height,
-        }));
+        let outline = imageOutline(image);
         if (outline.length > 100) {
           outline = Vector2.resample(outline, 100);
         }
+        // Flatten and round outline to save on storage size
+        outline = outline
+          .map(({ x, y }) => [Math.round(x), Math.round(y)])
+          .flat();
 
         const token = {
           name,

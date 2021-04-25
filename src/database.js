@@ -4,13 +4,11 @@ import "dexie-observable";
 import shortid from "shortid";
 import { v4 as uuid } from "uuid";
 import Case from "case";
-import imageOutline from "image-outline";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
 import { convertOldActionsToShapes } from "./actions";
 import { createThumbnail } from "./helpers/image";
-import Vector2 from "./helpers/Vector2";
 
 // Helper to create a thumbnail for a file in a db
 async function createDataThumbnail(data) {
@@ -571,23 +569,9 @@ const versions = {
           delete token.category;
           token.defaultLabel = "";
           if (token.width === token.height) {
-            token.outline = [
-              { x: 0.5, y: 0.0 },
-              { x: 0.85, y: 0.15 },
-              { x: 1.0, y: 0.5 },
-              { x: 0.85, y: 0.85 },
-              { x: 0.5, y: 1.0 },
-              { x: 0.15, y: 0.85 },
-              { x: 0.0, y: 0.5 },
-              { x: 0.15, y: 0.15 },
-            ];
+            token.outline = "circle";
           } else {
-            token.outline = [
-              { x: 0.0, y: 0.0 },
-              { x: 1.0, y: 0.0 },
-              { x: 1.0, y: 1.0 },
-              { x: 0.0, y: 1.0 },
-            ];
+            token.outline = "rect";
           }
         });
     });
@@ -612,12 +596,7 @@ const versions = {
                 tokenState.category = "character";
                 tokenState.type = "file";
                 tokenState.file = "";
-                tokenState.outline = [
-                  { x: 0.0, y: 0.0 },
-                  { x: 1.0, y: 0.0 },
-                  { x: 1.0, y: 1.0 },
-                  { x: 0.0, y: 1.0 },
-                ];
+                tokenState.outline = "rect";
                 tokenState.width = 256;
                 tokenState.height = 256;
               }
@@ -625,16 +604,7 @@ const versions = {
               tokenState.category = "character";
               tokenState.type = "default";
               tokenState.key = Case.camel(tokenState.tokenId.slice(10));
-              tokenState.outline = [
-                { x: 0.5, y: 0.0 },
-                { x: 0.85, y: 0.15 },
-                { x: 1.0, y: 0.5 },
-                { x: 0.85, y: 0.85 },
-                { x: 0.5, y: 1.0 },
-                { x: 0.15, y: 0.85 },
-                { x: 0.0, y: 0.5 },
-                { x: 0.15, y: 0.15 },
-              ];
+              tokenState.outline = "circle";
               tokenState.width = 256;
               tokenState.height = 256;
             }

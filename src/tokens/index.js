@@ -90,16 +90,7 @@ export const tokens = Object.keys(tokenSources).map((key) => ({
   hideInSidebar: false,
   width: 256,
   height: 256,
-  outline: [
-    { x: 0.5, y: 0.0 },
-    { x: 0.85, y: 0.15 },
-    { x: 1.0, y: 0.5 },
-    { x: 0.85, y: 0.85 },
-    { x: 0.5, y: 1.0 },
-    { x: 0.15, y: 0.85 },
-    { x: 0.0, y: 0.5 },
-    { x: 0.15, y: 0.15 },
-  ],
+  outline: "circle",
 }));
 
 export const unknownSource = unknown;
