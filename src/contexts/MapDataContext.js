@@ -64,7 +64,6 @@ export function MapDataProvider({ children }) {
       return defaultMapsWithIds;
     }
 
-    // Loads maps without the file data to save memory
     async function loadMaps() {
       let storedMaps = [];
       // Try to load maps with worker, fallback to database if failed
@@ -75,8 +74,7 @@ export function MapDataProvider({ children }) {
       } else {
         console.warn("Unable to load maps with worker, loading may be slow");
         await database.table("maps").each((map) => {
-          const { file, resolutions, ...rest } = map;
-          storedMaps.push(rest);
+          storedMaps.push(map);
         });
       }
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
@@ -152,18 +150,23 @@ export function MapDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
-  const removeMap = useCallback(
-    async (id) => {
-      await database.table("maps").delete(id);
-      await database.table("states").delete(id);
-    },
-    [database]
-  );
-
   const removeMaps = useCallback(
     async (ids) => {
+      const maps = await database.table("maps").bulkGet(ids);
+      // Remove assets linked with maps
+      let assetIds = [];
+      for (let map of maps) {
+        if (map.type === "file") {
+          assetIds.push(map.file);
+          assetIds.push(map.thumbnail);
+          for (let res of Object.values(map.resolutions)) {
+            assetIds.push(res);
+          }
+        }
+      }
       await database.table("maps").bulkDelete(ids);
       await database.table("states").bulkDelete(ids);
+      await database.table("assets").bulkDelete(assetIds);
     },
     [database]
   );
@@ -293,7 +296,6 @@ export function MapDataProvider({ children }) {
     ownedMaps,
     mapStates,
     addMap,
-    removeMap,
     removeMaps,
     resetMap,
     updateMap,

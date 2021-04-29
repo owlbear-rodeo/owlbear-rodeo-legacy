@@ -49,8 +49,7 @@ export function TokenDataProvider({ children }) {
       } else {
         console.warn("Unable to load tokens with worker, loading may be slow");
         await database.table("tokens").each((token) => {
-          const { file, resolutions, ...rest } = token;
-          storedTokens.push(rest);
+          storedTokens.push(token);
         });
       }
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
@@ -109,16 +108,18 @@ export function TokenDataProvider({ children }) {
     [database, updateCache, userId]
   );
 
-  const removeToken = useCallback(
-    async (id) => {
-      await database.table("tokens").delete(id);
-    },
-    [database]
-  );
-
   const removeTokens = useCallback(
     async (ids) => {
+      const tokens = await database.table("tokens").bulkGet(ids);
+      let assetIds = [];
+      for (let token of tokens) {
+        if (token.type === "file") {
+          assetIds.push(token.file);
+          assetIds.push(token.thumbnail);
+        }
+      }
       await database.table("tokens").bulkDelete(ids);
+      await database.table("assets").bulkDelete(assetIds);
     },
     [database]
   );
@@ -205,7 +206,6 @@ export function TokenDataProvider({ children }) {
     tokens,
     ownedTokens,
     addToken,
-    removeToken,
     removeTokens,
     updateToken,
     updateTokens,
