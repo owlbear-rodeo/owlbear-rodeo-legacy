@@ -5,8 +5,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import * as Comlink from "comlink";
-import { decode, encode } from "@msgpack/msgpack";
+import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
@@ -215,16 +214,7 @@ export function MapDataProvider({ children }) {
    */
   const putMap = useCallback(
     async (map) => {
-      // Attempt to use worker to put map to avoid UI lockup
-      const packedMap = encode(map);
-      const success = await worker.putData(
-        Comlink.transfer(packedMap, [packedMap.buffer]),
-        "maps",
-        false
-      );
-      if (!success) {
-        await database.table("maps").put(map);
-      }
+      await database.table("maps").put(map);
       if (map.owner !== userId) {
         await updateCache();
       }

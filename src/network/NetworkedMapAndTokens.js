@@ -65,14 +65,6 @@ function NetworkedMapAndTokens({ session }) {
   async function loadAssetManifestFromMap(map, mapState) {
     const assets = {};
     const { owner } = map;
-    if (map.type === "file") {
-      const qualityId = map.resolutions[map.quality];
-      if (qualityId) {
-        assets[qualityId] = { id: qualityId, owner };
-      } else {
-        assets[map.file] = { id: map.file, owner };
-      }
-    }
     let processedTokens = new Set();
     for (let tokenState of Object.values(mapState.tokens)) {
       if (
@@ -82,6 +74,15 @@ function NetworkedMapAndTokens({ session }) {
       ) {
         processedTokens.add(tokenState.file);
         assets[tokenState.file] = { id: tokenState.file, owner };
+      }
+    }
+    if (map.type === "file") {
+      assets[map.thumbnail] = { id: map.thumbnail, owner };
+      const qualityId = map.resolutions[map.quality];
+      if (qualityId) {
+        assets[qualityId] = { id: qualityId, owner };
+      } else {
+        assets[map.file] = { id: map.file, owner };
       }
     }
     setAssetManifest({ mapId: map.id, assets }, true, true);
@@ -144,8 +145,8 @@ function NetworkedMapAndTokens({ session }) {
         if (cachedAsset) {
           requestingAssetsRef.current.delete(asset.id);
         } else {
-          session.sendTo(owner.sessionId, "assetRequest", asset.id);
           assetLoadStart(asset.id);
+          session.sendTo(owner.sessionId, "assetRequest", asset);
         }
       }
     }
@@ -381,7 +382,7 @@ function NetworkedMapAndTokens({ session }) {
   useEffect(() => {
     async function handlePeerData({ id, data, reply }) {
       if (id === "assetRequest") {
-        const asset = await getAsset(data);
+        const asset = await getAsset(data.id);
         reply("assetResponse", asset, undefined, asset.id);
       }
 

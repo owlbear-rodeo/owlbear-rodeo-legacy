@@ -11,7 +11,12 @@ import Grid from "../Grid";
 
 function MapGrid({ map }) {
   let mapSourceMap = map;
-  const mapURL = useDataURL(mapSourceMap, defaultMapSources);
+  const mapURL = useDataURL(
+    mapSourceMap,
+    defaultMapSources,
+    undefined,
+    map.type === "file"
+  );
   const [mapImage, mapLoadingStatus] = useImage(mapURL);
 
   const [isImageLight, setIsImageLight] = useState(true);

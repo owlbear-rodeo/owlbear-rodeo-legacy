@@ -65,21 +65,12 @@ class Connection extends SimplePeer {
   sendObject(object, channel, chunkId) {
     try {
       const packedData = encode(object);
-      if (packedData.byteLength > MAX_BUFFER_SIZE) {
-        const chunks = this.chunk(packedData, chunkId);
-        for (let chunk of chunks) {
-          if (this.dataChannels[channel]) {
-            this.dataChannels[channel].write(encode(chunk));
-          } else {
-            this.write(encode(chunk));
-          }
-        }
-        return;
-      } else {
+      const chunks = this.chunk(packedData, chunkId);
+      for (let chunk of chunks) {
         if (this.dataChannels[channel]) {
-          this.dataChannels[channel].write(packedData);
+          this.dataChannels[channel].write(encode(chunk));
         } else {
-          this.write(packedData);
+          this.write(encode(chunk));
         }
       }
     } catch (error) {

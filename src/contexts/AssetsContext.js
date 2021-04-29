@@ -1,5 +1,6 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
-import { decode } from "@msgpack/msgpack";
+import * as Comlink from "comlink";
+import { encode } from "@msgpack/msgpack";
 
 import { useDatabase } from "./DatabaseContext";
 
@@ -48,10 +49,9 @@ export function AssetsProvider({ children }) {
 
   const getAsset = useCallback(
     async (assetId) => {
-      const packed = await worker.loadData("assets", assetId);
-      return decode(packed);
+      return await database.table("assets").get(assetId);
     },
-    [worker]
+    [database]
   );
 
   const addAssets = useCallback(
@@ -63,7 +63,15 @@ export function AssetsProvider({ children }) {
 
   const putAsset = useCallback(
     async (asset) => {
-      return database.table("assets").put(asset);
+      // Attempt to use worker to put map to avoid UI lockup
+      const packedAsset = encode(asset);
+      const success = await worker.putData(
+        Comlink.transfer(packedAsset, [packedAsset.buffer]),
+        "assets"
+      );
+      if (!success) {
+        await database.table("assets").put(asset);
+      }
     },
     [database]
   );
