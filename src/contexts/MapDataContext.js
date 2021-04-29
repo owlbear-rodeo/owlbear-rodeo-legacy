@@ -219,7 +219,7 @@ export function MapDataProvider({ children }) {
         await updateCache();
       }
     },
-    [database, updateCache, userId, worker]
+    [database, updateCache, userId]
   );
 
   // Create DB observable to sync creating and deleting

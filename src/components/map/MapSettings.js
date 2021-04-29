@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Flex, Box, Label, Input, Checkbox, IconButton } from "theme-ui";
 
 import ExpandMoreIcon from "../../icons/ExpandMoreIcon";
 
 import { isEmpty } from "../../helpers/shared";
 import { getGridUpdatedInset } from "../../helpers/grid";
+
+import { useDataURL } from "../../contexts/AssetsContext";
+import { mapSources as defaultMapSources } from "../../maps";
 
 import Divider from "../Divider";
 import Select from "../Select";
@@ -116,16 +119,22 @@ function MapSettings({
     onSettingsChange("grid", grid);
   }
 
-  function getMapSize() {
-    let size = 0;
-    if (map.quality === "original") {
-      size = map.file.length;
-    } else {
-      size = map.resolutions[map.quality].file.length;
+  const mapURL = useDataURL(map, defaultMapSources);
+  const [mapSize, setMapSize] = useState(0);
+  useEffect(() => {
+    async function updateMapSize() {
+      if (mapURL) {
+        const response = await fetch(mapURL);
+        const blob = await response.blob();
+        let size = blob.size;
+        size /= 1000000; // Bytes to Megabytes
+        setMapSize(size.toFixed(2));
+      } else {
+        setMapSize(0);
+      }
     }
-    size /= 1000000; // Bytes to Megabytes
-    return `${size.toFixed(2)}MB`;
-  }
+    updateMapSize();
+  }, [mapURL]);
 
   const mapEmpty = !map || isEmpty(map);
   const mapStateEmpty = !mapState || isEmpty(mapState);
@@ -269,7 +278,7 @@ function MapSettings({
                 />
               </Box>
               <Label sx={{ width: "50%" }} ml={2}>
-                Size: {getMapSize()}
+                Size: {mapSize > 0 && `${mapSize}MB`}
               </Label>
             </Flex>
           )}

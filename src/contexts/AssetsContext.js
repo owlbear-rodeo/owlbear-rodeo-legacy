@@ -73,7 +73,7 @@ export function AssetsProvider({ children }) {
         await database.table("assets").put(asset);
       }
     },
-    [database]
+    [database, worker]
   );
 
   const value = {

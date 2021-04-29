@@ -516,7 +516,8 @@ function SelectMapModal({
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        mapId={selectedMaps.length === 1 && selectedMaps[0].id}
+        map={selectedMaps.length === 1 && selectedMaps[0]}
+        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}
