@@ -66,26 +66,24 @@ function SettingsModal({ isOpen, onRequestClose }) {
     setIsLoading(true);
     // Clear saved settings
     localStorage.clear();
-    // Clear map cache
-    await database.table("maps").where("owner").notEqual(userId).delete();
-    // Find all other peoples tokens who aren't benig used in a map state and delete them
-    const tokens = await database
-      .table("tokens")
+
+    const assets = await database
+      .table("assets")
       .where("owner")
       .notEqual(userId)
       .toArray();
     const states = await database.table("states").toArray();
-    for (let token of tokens) {
+    for (let asset of assets) {
       let inUse = false;
       for (let state of states) {
         for (let tokenState of Object.values(state.tokens)) {
-          if (token.id === tokenState.tokenId) {
+          if (tokenState.type === "file" && asset.id === tokenState.file) {
             inUse = true;
           }
         }
       }
       if (!inUse) {
-        database.table("tokens").delete(token.id);
+        await database.table("assets").delete(asset.id);
       }
     }
     window.location.reload();

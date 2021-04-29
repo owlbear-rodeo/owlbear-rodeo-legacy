@@ -559,7 +559,7 @@ const versions = {
         });
     });
   },
-  // v1.9.0 - Move tokens to use more defaults and add token outline
+  // v1.9.0 - Move tokens to use more defaults and add token outline to tokens
   28(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("tokens")
@@ -576,7 +576,7 @@ const versions = {
         });
     });
   },
-  // v1.9.0 - Move tokens to use more defaults and add token outline
+  // v1.9.0 - Move tokens to use more defaults and add token outline to token states
   29(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("states")
@@ -610,6 +610,20 @@ const versions = {
             }
           }
         });
+    });
+  },
+  // v1.9.0 - Remove maps not owned by user as cache is now done on the asset level
+  30(v) {
+    v.stores({}).upgrade(async (tx) => {
+      const userId = (await tx.table("user").get("userId")).value;
+      tx.table("maps").where("owner").notEqual(userId).delete();
+    });
+  },
+  // v1.9.0 - Remove tokens not owned by user as cache is now done on the asset level
+  31(v) {
+    v.stores({}).upgrade(async (tx) => {
+      const userId = (await tx.table("user").get("userId")).value;
+      tx.table("tokens").where("owner").notEqual(userId).delete();
     });
   },
 };
