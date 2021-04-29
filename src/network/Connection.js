@@ -55,13 +55,18 @@ class Connection extends SimplePeer {
     }
   }
 
-  // Custom send function with encoding, chunking and data channel support
-  // Uses `write` to send the data to allow for buffer / backpressure handling
-  sendObject(object, channel) {
+  /**
+   * Custom send function with encoding, chunking and data channel support
+   * Uses `write` to send the data to allow for buffer / backpressure handling
+   * @param {any} object
+   * @param {string=} channel
+   * @param {string=} chunkId Optional ID to use for chunking
+   */
+  sendObject(object, channel, chunkId) {
     try {
       const packedData = encode(object);
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
-        const chunks = this.chunk(packedData);
+        const chunks = this.chunk(packedData, chunkId);
         for (let chunk of chunks) {
           if (this.dataChannels[channel]) {
             this.dataChannels[channel].write(encode(chunk));
@@ -100,11 +105,17 @@ class Connection extends SimplePeer {
   }
 
   // Converted from https://github.com/peers/peerjs/
-  chunk(data) {
+  /**
+   * Chunk byte array
+   * @param {Uint8Array} data
+   * @param {string=} chunkId
+   * @returns {Uint8Array[]}
+   */
+  chunk(data, chunkId) {
     const chunks = [];
     const size = data.byteLength;
     const total = Math.ceil(size / MAX_BUFFER_SIZE);
-    const id = shortid.generate();
+    const id = chunkId || shortid.generate();
 
     let index = 0;
     let start = 0;

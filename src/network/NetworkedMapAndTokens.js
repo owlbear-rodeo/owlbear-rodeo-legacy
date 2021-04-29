@@ -39,12 +39,7 @@ function NetworkedMapAndTokens({ session }) {
   const { addToast } = useToasts();
   const { userId } = useAuth();
   const partyState = useParty();
-  const {
-    assetLoadStart,
-    assetLoadFinish,
-    assetProgressUpdate,
-    isLoading,
-  } = useMapLoading();
+  const { assetLoadStart, assetProgressUpdate, isLoading } = useMapLoading();
 
   const { updateMapState } = useMapData();
   const { getAsset, putAsset } = useAssets();
@@ -115,7 +110,7 @@ function NetworkedMapAndTokens({ session }) {
   const requestingAssetsRef = useRef(new Set());
 
   useEffect(() => {
-    if (!assetManifest) {
+    if (!assetManifest || !userId) {
       return;
     }
 
@@ -132,6 +127,9 @@ function NetworkedMapAndTokens({ session }) {
           (player) => player.userId === asset.owner
         );
 
+        // Ensure requests are added before any async operation to prevent them from sending twice
+        requestingAssetsRef.current.add(asset.id);
+
         const cachedAsset = await getAsset(asset.id);
         if (!owner) {
           // Add no owner toast if we don't have asset in out cache
@@ -139,21 +137,29 @@ function NetworkedMapAndTokens({ session }) {
             // TODO: Stop toast from appearing multiple times
             addToast("Unable to find owner for asset");
           }
+          requestingAssetsRef.current.delete(asset.id);
           continue;
         }
-
-        requestingAssetsRef.current.add(asset.id);
 
         if (cachedAsset) {
           requestingAssetsRef.current.delete(asset.id);
         } else {
           session.sendTo(owner.sessionId, "assetRequest", asset.id);
+          assetLoadStart(asset.id);
         }
       }
     }
 
     requestAssetsIfNeeded();
-  }, [assetManifest, partyState, session, userId, addToast, getAsset]);
+  }, [
+    assetManifest,
+    partyState,
+    session,
+    userId,
+    addToast,
+    getAsset,
+    assetLoadStart,
+  ]);
 
   /**
    * Map state
@@ -376,21 +382,16 @@ function NetworkedMapAndTokens({ session }) {
     async function handlePeerData({ id, data, reply }) {
       if (id === "assetRequest") {
         const asset = await getAsset(data);
-        reply("assetResponse", asset);
+        reply("assetResponse", asset, undefined, asset.id);
       }
 
       if (id === "assetResponse") {
         await putAsset(data);
         requestingAssetsRef.current.delete(data.id);
-        assetLoadFinish();
       }
     }
 
     function handlePeerDataProgress({ id, total, count }) {
-      if (count === 1) {
-        // Corresponding asset load finished called in asset response
-        assetLoadStart();
-      }
       assetProgressUpdate({ id, total, count });
     }
 
