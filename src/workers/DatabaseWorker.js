@@ -58,21 +58,44 @@ let service = {
   /**
    * Export current database
    * @param {function} progressCallback
-   * @param {string[]} maps An array of map ids to export
-   * @param {string[]} tokens An array of token ids to export
+   * @param {string[]} mapIds An array of map ids to export
+   * @param {string[]} tokenIds An array of token ids to export
    */
-  async exportData(progressCallback, maps, tokens) {
+  async exportData(progressCallback, mapIds, tokenIds) {
     let db = getDatabase({});
+
+    // Add assets for selected maps and tokens
+    const maps = await db.table("maps").where("id").anyOf(mapIds).toArray();
+    const tokens = await db
+      .table("tokens")
+      .where("id")
+      .anyOf(tokenIds)
+      .toArray();
+    const assetIds = [];
+    for (let map of maps) {
+      assetIds.push(map.file);
+      assetIds.push(map.thumbnail);
+      for (let res of Object.values(map.resolutions)) {
+        assetIds.push(res);
+      }
+    }
+    for (let token of tokens) {
+      assetIds.push(token.file);
+      assetIds.push(token.thumbnail);
+    }
 
     const filter = (table, value) => {
       if (table === "maps") {
-        return maps.includes(value.id);
+        return mapIds.includes(value.id);
       }
       if (table === "states") {
-        return maps.includes(value.mapId);
+        return mapIds.includes(value.mapId);
       }
       if (table === "tokens") {
-        return tokens.includes(value.id);
+        return tokenIds.includes(value.id);
+      }
+      if (table === "assets") {
+        return assetIds.includes(value.id);
       }
       return false;
     };

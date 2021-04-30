@@ -3,6 +3,7 @@ import { Box, Label, Text, Button, Flex } from "theme-ui";
 import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
 import shortid from "shortid";
+import { v4 as uuid } from "uuid";
 import { useToasts } from "react-toast-notifications";
 
 import Modal from "../components/Modal";
@@ -132,15 +133,29 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     try {
       // Keep track of a mapping of old token ids to new ones to apply them to the map states
       let newTokenIds = {};
+      // Mapping of old asset ids to new asset ids
+      let newAssetIds = {};
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
         const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
         let newTokens = [];
         for (let token of tokensToAdd) {
-          const newId = shortid.generate();
+          // Generate new ids
+          const newId = uuid();
           newTokenIds[token.id] = newId;
-          // Generate new id and change owner
-          newTokens.push({ ...token, id: newId, owner: userId });
+          const newFileId = uuid();
+          const newThumbnailId = uuid();
+          newAssetIds[token.file] = newFileId;
+          newAssetIds[token.thumbnail] = newThumbnailId;
+
+          // Change ids and owner
+          newTokens.push({
+            ...token,
+            id: newId,
+            owner: userId,
+            file: newFileId,
+            thumbnail: newThumbnailId,
+          });
         }
         await db.table("tokens").bulkAdd(newTokens);
       }
@@ -158,15 +173,44 @@ function ImportExportModal({ isOpen, onRequestClose }) {
               state.tokens[tokenState.id].tokenId =
                 newTokenIds[tokenState.tokenId];
             }
+            if (tokenState.type === "file" && tokenState.file in newAssetIds) {
+              state.tokens[tokenState.id].file = newAssetIds[tokenState.file];
+            }
           }
-          const newId = shortid.generate();
-          // Generate new id and change owner
-          newMaps.push({ ...map, id: newId, owner: userId });
+          // Generate new ids
+          const newId = uuid();
+          const newFileId = uuid();
+          const newThumbnailId = uuid();
+          newAssetIds[map.file] = newFileId;
+          newAssetIds[map.thumbnail] = newThumbnailId;
+          const newResolutionIds = {};
+          for (let res of Object.keys(map.resolutions)) {
+            newResolutionIds[res] = uuid();
+            newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+          }
+          // Change ids and owner
+          newMaps.push({
+            ...map,
+            id: newId,
+            owner: userId,
+            file: newFileId,
+            thumbnail: newThumbnailId,
+            resolutions: newResolutionIds,
+          });
           newStates.push({ ...state, mapId: newId });
         }
         await db.table("maps").bulkAdd(newMaps);
         await db.table("states").bulkAdd(newStates);
       }
+      // Add assets with new ids
+      const assetsToAdd = await importDB
+        .table("assets")
+        .bulkGet(Object.keys(newAssetIds));
+      let assets = [];
+      for (let asset of assetsToAdd) {
+        assets.push({ ...asset, id: newAssetIds[asset.id] });
+      }
+      await db.table("assets").bulkAdd(assets);
       addSuccessToast("Imported", checkedMaps, checkedTokens);
     } catch (e) {
       console.error(e);
