@@ -44,8 +44,15 @@ import { omit } from "../helpers/shared";
  */
 const AssetsContext = React.createContext();
 
+// 100 MB max cache size
+const maxCacheSize = 1e8;
+
 export function AssetsProvider({ children }) {
   const { worker, database } = useDatabase();
+
+  useEffect(() => {
+    worker.cleanAssetCache(maxCacheSize);
+  }, [worker]);
 
   const getAsset = useCallback(
     async (assetId) => {
@@ -56,7 +63,7 @@ export function AssetsProvider({ children }) {
 
   const addAssets = useCallback(
     async (assets) => {
-      return database.table("assets").bulkAdd(assets);
+      await database.table("assets").bulkAdd(assets);
     },
     [database]
   );

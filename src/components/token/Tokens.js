@@ -19,7 +19,7 @@ const listTokenClassName = "list-token";
 
 function Tokens({ onMapTokenStateCreate }) {
   const { userId } = useAuth();
-  const { ownedTokens, tokens, updateToken } = useTokenData();
+  const { ownedTokens, tokens } = useTokenData();
   const [fullScreen] = useSetting("map.fullScreen");
 
   function handleProxyDragEnd(isOnMap, token) {
@@ -51,13 +51,6 @@ function Tokens({ onMapTokenStateCreate }) {
         tokenState.key = token.key;
       }
       onMapTokenStateCreate(tokenState);
-      // TODO: Remove when cache is moved to assets
-      // Update last used for cache invalidation
-      // Keep last modified the same
-      updateToken(token.id, {
-        lastUsed: Date.now(),
-        lastModified: token.lastModified,
-      });
     }
   }
 

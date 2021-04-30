@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
@@ -13,9 +7,6 @@ import { useDatabase } from "./DatabaseContext";
 import { maps as defaultMaps } from "../maps";
 
 const MapDataContext = React.createContext();
-
-// Maximum number of maps to keep in the cache
-const cachedMapMax = 15;
 
 const defaultMapState = {
   tokens: {},
@@ -89,16 +80,7 @@ export function MapDataProvider({ children }) {
     loadMaps();
   }, [userId, database, databaseStatus, worker]);
 
-  const mapsRef = useRef(maps);
-  useEffect(() => {
-    mapsRef.current = maps;
-  }, [maps]);
-
-  const getMap = useCallback((mapId) => {
-    return mapsRef.current.find((map) => map.id === mapId);
-  }, []);
-
-  const getMapFromDB = useCallback(
+  const getMap = useCallback(
     async (mapId) => {
       let map = await database.table("maps").get(mapId);
       return map;
@@ -106,32 +88,13 @@ export function MapDataProvider({ children }) {
     [database]
   );
 
-  const getMapStateFromDB = useCallback(
+  const getMapState = useCallback(
     async (mapId) => {
       let mapState = await database.table("states").get(mapId);
       return mapState;
     },
     [database]
   );
-
-  /**
-   * Keep up to cachedMapMax amount of maps that you don't own
-   * Sorted by when they we're last used
-   */
-  const updateCache = useCallback(async () => {
-    const cachedMaps = await database
-      .table("maps")
-      .where("owner")
-      .notEqual(userId)
-      .sortBy("lastUsed");
-    if (cachedMaps.length > cachedMapMax) {
-      const cacheDeleteCount = cachedMaps.length - cachedMapMax;
-      const idsToDelete = cachedMaps
-        .slice(0, cacheDeleteCount)
-        .map((map) => map.id);
-      database.table("maps").where("id").anyOf(idsToDelete).delete();
-    }
-  }, [database, userId]);
 
   /**
    * Adds a map to the database, also adds an assosiated state for that map
@@ -143,11 +106,8 @@ export function MapDataProvider({ children }) {
       const state = { ...defaultMapState, mapId: map.id };
       await database.table("maps").add(map);
       await database.table("states").add(state);
-      if (map.owner !== userId) {
-        await updateCache();
-      }
     },
-    [database, updateCache, userId]
+    [database]
   );
 
   const removeMaps = useCallback(
@@ -182,16 +142,9 @@ export function MapDataProvider({ children }) {
 
   const updateMap = useCallback(
     async (id, update) => {
-      // fake-indexeddb throws an error when updating maps in production.
-      // Catch that error and use put when it fails
-      try {
-        await database.table("maps").update(id, update);
-      } catch (error) {
-        const map = (await getMapFromDB(id)) || {};
-        await database.table("maps").put({ ...map, id, ...update });
-      }
+      await database.table("maps").update(id, update);
     },
-    [database, getMapFromDB]
+    [database]
   );
 
   const updateMaps = useCallback(
@@ -208,21 +161,6 @@ export function MapDataProvider({ children }) {
       await database.table("states").update(id, update);
     },
     [database]
-  );
-
-  /**
-   * Adds a map to the database if none exists or replaces a map if it already exists
-   * Note: this does not add a map state to do that use AddMap
-   * @param {Object} map the map to put
-   */
-  const putMap = useCallback(
-    async (map) => {
-      await database.table("maps").put(map);
-      if (map.owner !== userId) {
-        await updateCache();
-      }
-    },
-    [database, updateCache, userId]
   );
 
   // Create DB observable to sync creating and deleting
@@ -301,11 +239,9 @@ export function MapDataProvider({ children }) {
     updateMap,
     updateMaps,
     updateMapState,
-    putMap,
     getMap,
-    getMapFromDB,
     mapsLoading,
-    getMapStateFromDB,
+    getMapState,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>

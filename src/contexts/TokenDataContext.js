@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
@@ -13,8 +7,6 @@ import { useDatabase } from "./DatabaseContext";
 import { tokens as defaultTokens } from "../tokens";
 
 const TokenDataContext = React.createContext();
-
-const cachedTokenMax = 100;
 
 export function TokenDataProvider({ children }) {
   const { database, databaseStatus, worker } = useDatabase();
@@ -62,16 +54,7 @@ export function TokenDataProvider({ children }) {
     loadTokens();
   }, [userId, database, databaseStatus, worker]);
 
-  const tokensRef = useRef(tokens);
-  useEffect(() => {
-    tokensRef.current = tokens;
-  }, [tokens]);
-
-  const getToken = useCallback((tokenId) => {
-    return tokensRef.current.find((token) => token.id === tokenId);
-  }, []);
-
-  const getTokenFromDB = useCallback(
+  const getToken = useCallback(
     async (tokenId) => {
       let token = await database.table("tokens").get(tokenId);
       return token;
@@ -79,33 +62,11 @@ export function TokenDataProvider({ children }) {
     [database]
   );
 
-  /**
-   * Keep up to cachedTokenMax amount of tokens that you don't own
-   * Sorted by when they we're last used
-   */
-  const updateCache = useCallback(async () => {
-    const cachedTokens = await database
-      .table("tokens")
-      .where("owner")
-      .notEqual(userId)
-      .sortBy("lastUsed");
-    if (cachedTokens.length > cachedTokenMax) {
-      const cacheDeleteCount = cachedTokens.length - cachedTokenMax;
-      const idsToDelete = cachedTokens
-        .slice(0, cacheDeleteCount)
-        .map((token) => token.id);
-      database.table("tokens").where("id").anyOf(idsToDelete).delete();
-    }
-  }, [database, userId]);
-
   const addToken = useCallback(
     async (token) => {
       await database.table("tokens").add(token);
-      if (token.owner !== userId) {
-        await updateCache();
-      }
     },
-    [database, updateCache, userId]
+    [database]
   );
 
   const removeTokens = useCallback(
@@ -140,16 +101,6 @@ export function TokenDataProvider({ children }) {
       );
     },
     [database]
-  );
-
-  const putToken = useCallback(
-    async (token) => {
-      await database.table("tokens").put(token);
-      if (token.owner !== userId) {
-        await updateCache();
-      }
-    },
-    [database, updateCache, userId]
   );
 
   // Create DB observable to sync creating and deleting
@@ -209,11 +160,9 @@ export function TokenDataProvider({ children }) {
     removeTokens,
     updateToken,
     updateTokens,
-    putToken,
-    getToken,
     tokensById,
     tokensLoading,
-    getTokenFromDB,
+    getToken,
   };
 
   return (

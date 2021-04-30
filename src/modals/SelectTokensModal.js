@@ -196,7 +196,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           type: "file",
           created: Date.now(),
           lastModified: Date.now(),
-          lastUsed: Date.now(),
           owner: userId,
           defaultSize: 1,
           defaultCategory: "character",

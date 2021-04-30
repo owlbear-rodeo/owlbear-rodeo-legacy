@@ -67,11 +67,9 @@ function SelectMapModal({
     addMap,
     removeMaps,
     resetMap,
-    updateMap,
     updateMaps,
     mapsLoading,
-    getMapFromDB,
-    getMapStateFromDB,
+    getMapState,
   } = useMapData();
   const { addAssets } = useAssets();
 
@@ -260,7 +258,11 @@ function SelectMapModal({
         }
         // Create thumbnail
         const thumbnailImage = await createThumbnail(image, file.type);
-        const thumbnail = { ...thumbnailImage, id: uuid(), owner: userId };
+        const thumbnail = {
+          ...thumbnailImage,
+          id: uuid(),
+          owner: userId,
+        };
         assets.push(thumbnail);
 
         const fileAsset = {
@@ -297,7 +299,6 @@ function SelectMapModal({
           id: uuid(),
           created: Date.now(),
           lastModified: Date.now(),
-          lastUsed: Date.now(),
           owner: userId,
           ...defaultMapProps,
         };
@@ -392,19 +393,11 @@ function SelectMapModal({
       return;
     }
     if (selectedMapIds.length === 1) {
-      // Update last used for cache invalidation
-      const lastUsed = Date.now();
+      setIsLoading(true);
       const map = selectedMaps[0];
-      const mapState = await getMapStateFromDB(map.id);
-      if (map.type === "file") {
-        setIsLoading(true);
-        await updateMap(map.id, { lastUsed });
-        const updatedMap = await getMapFromDB(map.id);
-        onMapChange(updatedMap, mapState);
-        setIsLoading(false);
-      } else {
-        onMapChange(map, mapState);
-      }
+      const mapState = await getMapState(map.id);
+      onMapChange(map, mapState);
+      setIsLoading(false);
     } else {
       onMapChange(null, null);
     }

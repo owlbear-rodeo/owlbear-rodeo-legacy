@@ -556,6 +556,7 @@ const versions = {
               delete map[res];
             }
           }
+          delete map.lastUsed;
         });
     });
   },
@@ -573,6 +574,7 @@ const versions = {
           } else {
             token.outline = "rect";
           }
+          delete token.lastUsed;
         });
     });
   },

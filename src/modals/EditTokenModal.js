@@ -13,14 +13,14 @@ import { isEmpty } from "../helpers/shared";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditTokenModal({ isOpen, onDone, tokenId }) {
-  const { updateToken, getTokenFromDB } = useTokenData();
+  const { updateToken, getToken } = useTokenData();
 
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState();
   useEffect(() => {
     async function loadToken() {
       setIsLoading(true);
-      setToken(await getTokenFromDB(tokenId));
+      setToken(await getToken(tokenId));
       setIsLoading(false);
     }
 
@@ -29,7 +29,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
     } else {
       setToken();
     }
-  }, [isOpen, tokenId, getTokenFromDB]);
+  }, [isOpen, tokenId, getToken]);
 
   function handleClose() {
     setTokenSettingChanges({});

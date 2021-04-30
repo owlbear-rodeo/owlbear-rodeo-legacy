@@ -141,6 +141,43 @@ let service = {
     });
     importDB.close();
   },
+
+  /**
+   * Ensure the asset cache doesn't go over `maxCacheSize` by removing cached assets
+   * Removes largest assets first
+   * @param {number} maxCacheSize Max size of cache in bytes
+   */
+  async cleanAssetCache(maxCacheSize) {
+    try {
+      let db = getDatabase({});
+      const userId = (await db.table("user").get("userId")).value;
+      const cachedAssets = await db
+        .table("assets")
+        .where("owner")
+        .notEqual(userId)
+        .toArray();
+      const totalSize = cachedAssets.reduce(
+        (acc, cur) => acc + cur.file.byteLength,
+        0
+      );
+      if (totalSize > maxCacheSize) {
+        // Remove largest assets first
+        const largestAssets = cachedAssets.sort(
+          (a, b) => b.file.byteLength - a.file.byteLength
+        );
+        let assetsToDelete = [];
+        let deletedBytes = 0;
+        for (let asset of largestAssets) {
+          assetsToDelete.push(asset.id);
+          deletedBytes += asset.file.byteLength;
+          if (totalSize - deletedBytes < maxCacheSize) {
+            break;
+          }
+        }
+        await db.table("assets").bulkDelete(assetsToDelete);
+      }
+    } catch {}
+  },
 };
 
 Comlink.expose(service);
