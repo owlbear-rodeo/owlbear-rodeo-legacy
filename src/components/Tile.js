@@ -57,18 +57,20 @@ function Tile({
       }}
       onDoubleClick={onDoubleClick}
     >
-      <UIImage
-        sx={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        src={src}
-        alt={title}
-      />
+      {src && (
+        <UIImage
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+          src={src}
+          alt={title}
+        />
+      )}
       <Flex
         sx={{
           position: "absolute",

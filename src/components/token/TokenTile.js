@@ -4,10 +4,7 @@ import Tile from "../Tile";
 
 import { useDataURL } from "../../contexts/AssetsContext";
 
-import {
-  tokenSources as defaultTokenSources,
-  unknownSource,
-} from "../../tokens";
+import { tokenSources as defaultTokenSources } from "../../tokens";
 
 function TokenTile({
   token,
@@ -21,7 +18,7 @@ function TokenTile({
   const tokenURL = useDataURL(
     token,
     defaultTokenSources,
-    unknownSource,
+    undefined,
     token.type === "file"
   );
 

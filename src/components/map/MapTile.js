@@ -3,7 +3,7 @@ import React from "react";
 import Tile from "../Tile";
 
 import { useDataURL } from "../../contexts/AssetsContext";
-import { mapSources as defaultMapSources, unknownSource } from "../../maps";
+import { mapSources as defaultMapSources } from "../../maps";
 
 function MapTile({
   map,
@@ -18,7 +18,7 @@ function MapTile({
   const mapURL = useDataURL(
     map,
     defaultMapSources,
-    unknownSource,
+    undefined,
     map.type === "file"
   );
 
