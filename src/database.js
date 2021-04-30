@@ -580,35 +580,40 @@ const versions = {
   },
   // v1.9.0 - Move tokens to use more defaults and add token outline to token states
   29(v) {
-    v.stores({}).upgrade((tx) => {
+    v.stores({}).upgrade(async (tx) => {
+      const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       tx.table("states")
         .toCollection()
-        .modify(async (state) => {
-          for (let tokenState of Object.values(state.tokens)) {
-            if (!tokenState.tokenId.startsWith("__default")) {
-              const token = await tx.table("tokens").get(tokenState.tokenId);
+        .modify((state) => {
+          for (let id in state.tokens) {
+            if (!state.tokens[id].tokenId.startsWith("__default")) {
+              const token = tokens.find(
+                (token) => token.id === state.tokens[id].tokenId
+              );
               if (token) {
-                tokenState.category = token.defaultCategory;
-                tokenState.file = token.file;
-                tokenState.type = "file";
-                tokenState.outline = token.outline;
-                tokenState.width = token.width;
-                tokenState.height = token.height;
+                state.tokens[id].category = token.defaultCategory;
+                state.tokens[id].file = token.file;
+                state.tokens[id].type = "file";
+                state.tokens[id].outline = token.outline;
+                state.tokens[id].width = token.width;
+                state.tokens[id].height = token.height;
               } else {
-                tokenState.category = "character";
-                tokenState.type = "file";
-                tokenState.file = "";
-                tokenState.outline = "rect";
-                tokenState.width = 256;
-                tokenState.height = 256;
+                state.tokens[id].category = "character";
+                state.tokens[id].type = "file";
+                state.tokens[id].file = "";
+                state.tokens[id].outline = "rect";
+                state.tokens[id].width = 256;
+                state.tokens[id].height = 256;
               }
             } else {
-              tokenState.category = "character";
-              tokenState.type = "default";
-              tokenState.key = Case.camel(tokenState.tokenId.slice(10));
-              tokenState.outline = "circle";
-              tokenState.width = 256;
-              tokenState.height = 256;
+              state.tokens[id].category = "character";
+              state.tokens[id].type = "default";
+              state.tokens[id].key = Case.camel(
+                state.tokens[id].tokenId.slice(10)
+              );
+              state.tokens[id].outline = "circle";
+              state.tokens[id].width = 256;
+              state.tokens[id].height = 256;
             }
           }
         });
@@ -617,20 +622,24 @@ const versions = {
   // v1.9.0 - Remove maps not owned by user as cache is now done on the asset level
   30(v) {
     v.stores({}).upgrade(async (tx) => {
-      const userId = (await tx.table("user").get("userId")).value;
-      tx.table("maps").where("owner").notEqual(userId).delete();
+      const userId = await tx.table("user").get("userId");
+      if (userId) {
+        tx.table("maps").where("owner").notEqual(userId.value).delete();
+      }
     });
   },
   // v1.9.0 - Remove tokens not owned by user as cache is now done on the asset level
   31(v) {
     v.stores({}).upgrade(async (tx) => {
-      const userId = (await tx.table("user").get("userId")).value;
-      tx.table("tokens").where("owner").notEqual(userId).delete();
+      const userId = await tx.table("user").get("userId");
+      if (userId) {
+        tx.table("tokens").where("owner").notEqual(userId.value).delete();
+      }
     });
   },
 };
 
-const latestVersion = 29;
+const latestVersion = 31;
 
 /**
  * Load versions onto a database up to a specific version number
