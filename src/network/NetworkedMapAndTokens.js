@@ -18,7 +18,7 @@ import useNetworkedState from "../hooks/useNetworkedState";
 import Session from "./Session";
 
 import Map from "../components/map/Map";
-import Tokens from "../components/token/Tokens";
+import TokenBar from "../components/token/TokenBar";
 
 const defaultMapActions = {
   mapDrawActions: [],
@@ -475,7 +475,7 @@ function NetworkedMapAndTokens({ session }) {
         disabledTokens={disabledMapTokens}
         session={session}
       />
-      <Tokens onMapTokenStateCreate={handleMapTokenStateCreate} />
+      <TokenBar onMapTokenStateCreate={handleMapTokenStateCreate} />
     </>
   );
 }

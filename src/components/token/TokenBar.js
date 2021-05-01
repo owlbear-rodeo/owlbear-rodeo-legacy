@@ -17,7 +17,7 @@ import { useTokenData } from "../../contexts/TokenDataContext";
 
 const listTokenClassName = "list-token";
 
-function Tokens({ onMapTokenStateCreate }) {
+function TokenBar({ onMapTokenStateCreate }) {
   const { userId } = useAuth();
   const { ownedTokens, tokens } = useTokenData();
   const [fullScreen] = useSetting("map.fullScreen");
@@ -96,4 +96,4 @@ function Tokens({ onMapTokenStateCreate }) {
   );
 }
 
-export default Tokens;
+export default TokenBar;
