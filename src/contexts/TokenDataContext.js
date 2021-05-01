@@ -4,8 +4,6 @@ import { decode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
-import { tokens as defaultTokens } from "../tokens";
-
 const TokenDataContext = React.createContext();
 
 export function TokenDataProvider({ children }) {
@@ -18,18 +16,6 @@ export function TokenDataProvider({ children }) {
   useEffect(() => {
     if (!userId || !database || databaseStatus === "loading") {
       return;
-    }
-    function getDefaultTokens() {
-      const defaultTokensWithIds = [];
-      for (let defaultToken of defaultTokens) {
-        defaultTokensWithIds.push({
-          ...defaultToken,
-          id: `__default-${defaultToken.name}`,
-          owner: userId,
-          group: "default",
-        });
-      }
-      return defaultTokensWithIds;
     }
 
     async function loadTokens() {
@@ -45,9 +31,7 @@ export function TokenDataProvider({ children }) {
         });
       }
       const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
-      const defaultTokensWithIds = getDefaultTokens();
-      const allTokens = [...sortedTokens, ...defaultTokensWithIds];
-      setTokens(allTokens);
+      setTokens(sortedTokens);
       setTokensLoading(false);
     }
 

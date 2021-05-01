@@ -18,18 +18,46 @@ export const mapSources = {
   wood: woodImage,
 };
 
-export const maps = Object.keys(mapSources).map((key) => ({
-  key,
-  name: Case.capital(key),
-  grid: {
-    size: { x: 22, y: 22 },
-    inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
-    type: "square",
-    measurement: { type: "chebyshev", scale: "5ft" },
-  },
-  width: 1024,
-  height: 1024,
-  type: "default",
-}));
+export function getDefaultMaps(userId) {
+  const mapKeys = Object.keys(mapSources);
+  let maps = [];
+  let mapStates = [];
+  for (let i = 0; i < mapKeys.length; i++) {
+    const key = mapKeys[i];
+    const name = Case.capital(key);
+    const id = `__default-${name}`;
+    const map = {
+      id,
+      key,
+      name,
+      owner: userId,
+      grid: {
+        size: { x: 22, y: 22 },
+        inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+        type: "square",
+        measurement: { type: "chebyshev", scale: "5ft" },
+      },
+      width: 1024,
+      height: 1024,
+      type: "default",
+      created: mapKeys.length - i,
+      lastModified: Date.now(),
+      showGrid: false,
+      snapToGrid: true,
+      group: "",
+    };
+    maps.push(map);
+    const state = {
+      mapId: id,
+      tokens: {},
+      drawShapes: {},
+      fogShapes: {},
+      editFlags: ["drawing", "tokens", "notes"],
+      notes: {},
+    };
+    mapStates.push(state);
+  }
+  return { maps, mapStates };
+}
 
 export const unknownSource = unknownImage;

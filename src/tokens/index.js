@@ -80,17 +80,32 @@ function getDefaultTokenSize(key) {
   }
 }
 
-export const tokens = Object.keys(tokenSources).map((key) => ({
-  key,
-  name: Case.capital(key),
-  type: "default",
-  defaultSize: getDefaultTokenSize(key),
-  defaultLabel: "",
-  defaultCategory: "character",
-  hideInSidebar: false,
-  width: 256,
-  height: 256,
-  outline: "circle",
-}));
+export function getDefaultTokens(userId) {
+  const tokenKeys = Object.keys(tokenSources);
+  let tokens = [];
+  for (let i = 0; i < tokenKeys.length; i++) {
+    const key = tokenKeys[i];
+    const name = Case.capital(key);
+    const token = {
+      key,
+      name,
+      id: `__default-${name}`,
+      type: "default",
+      defaultSize: getDefaultTokenSize(key),
+      defaultLabel: "",
+      defaultCategory: "character",
+      hideInSidebar: false,
+      width: 256,
+      height: 256,
+      outline: "circle",
+      owner: userId,
+      group: "default",
+      created: tokenKeys.length - i,
+      lastModified: Date.now(),
+    };
+    tokens.push(token);
+  }
+  return tokens;
+}
 
 export const unknownSource = unknown;

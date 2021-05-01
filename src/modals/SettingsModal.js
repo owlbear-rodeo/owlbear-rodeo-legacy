@@ -58,6 +58,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
   async function handleEraseAllData() {
     setIsLoading(true);
     localStorage.clear();
+    database.close();
     await database.delete();
     window.location.reload();
   }

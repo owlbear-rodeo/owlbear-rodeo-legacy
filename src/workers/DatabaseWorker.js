@@ -144,7 +144,8 @@ let service = {
     importDB = getDatabase(
       { addons: [] },
       databaseName,
-      importMeta.data.databaseVersion
+      importMeta.data.databaseVersion,
+      false
     );
     await importInto(importDB, data, {
       progressCallback,

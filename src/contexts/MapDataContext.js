@@ -4,8 +4,6 @@ import { decode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
-import { maps as defaultMaps } from "../maps";
-
 const MapDataContext = React.createContext();
 
 const defaultMapState = {
@@ -30,30 +28,6 @@ export function MapDataProvider({ children }) {
     if (!userId || !database || databaseStatus === "loading") {
       return;
     }
-    async function getDefaultMaps() {
-      const defaultMapsWithIds = [];
-      for (let i = 0; i < defaultMaps.length; i++) {
-        const defaultMap = defaultMaps[i];
-        const id = `__default-${defaultMap.name}`;
-        defaultMapsWithIds.push({
-          ...defaultMap,
-          id,
-          owner: userId,
-          // Emulate the time increasing to avoid sort errors
-          created: Date.now() + i,
-          lastModified: Date.now() + i,
-          showGrid: false,
-          snapToGrid: true,
-          group: "default",
-        });
-        // Add a state for the map if there isn't one already
-        const state = await database.table("states").get(id);
-        if (!state) {
-          await database.table("states").add({ ...defaultMapState, mapId: id });
-        }
-      }
-      return defaultMapsWithIds;
-    }
 
     async function loadMaps() {
       let storedMaps = [];
@@ -68,10 +42,9 @@ export function MapDataProvider({ children }) {
           storedMaps.push(map);
         });
       }
+      // TODO: remove sort when groups are added
       const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
-      const defaultMapsWithIds = await getDefaultMaps();
-      const allMaps = [...sortedMaps, ...defaultMapsWithIds];
-      setMaps(allMaps);
+      setMaps(sortedMaps);
       const storedStates = await database.table("states").toArray();
       setMapStates(storedStates);
       setMapsLoading(false);

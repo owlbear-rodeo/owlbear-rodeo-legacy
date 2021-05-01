@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import shortid from "shortid";
 
 import { useDatabase } from "./DatabaseContext";
 
@@ -35,10 +34,6 @@ export function AuthProvider({ children }) {
       const storedUserId = await database.table("user").get("userId");
       if (storedUserId) {
         setUserId(storedUserId.value);
-      } else {
-        const id = shortid.generate();
-        setUserId(id);
-        database.table("user").add({ key: "userId", value: id });
       }
     }
 
