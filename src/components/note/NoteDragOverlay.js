@@ -1,6 +1,6 @@
 import React from "react";
 
-import DragOverlay from "../DragOverlay";
+import DragOverlay from "../map/DragOverlay";
 
 function NoteDragOverlay({ onNoteRemove, noteId, noteGroup, dragging }) {
   function handleNoteRemove() {

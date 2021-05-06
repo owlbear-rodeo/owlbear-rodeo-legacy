@@ -5,6 +5,7 @@
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
     "@babylonjs/loaders": "^4.2.0",
+    "@dnd-kit/core": "3.0.0",
     "@mitchemmc/dexie-export-import": "^1.0.1",
     "@msgpack/msgpack": "^2.4.1",
     "@sentry/react": "^6.2.2",
@@ -25,7 +26,6 @@
     "file-saver": "^2.0.5",
     "fuse.js": "^6.4.6",
     "image-outline": "^0.1.0",
-    "interactjs": "^1.10.8",
     "konva": "^7.2.5",
     "lodash.clonedeep": "^4.5.0",
     "lodash.get": "^4.4.2",

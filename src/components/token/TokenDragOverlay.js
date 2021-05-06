@@ -6,7 +6,7 @@ import {
   useMapHeight,
 } from "../../contexts/MapInteractionContext";
 
-import DragOverlay from "../DragOverlay";
+import DragOverlay from "../map/DragOverlay";
 
 function TokenDragOverlay({
   onTokenStateRemove,

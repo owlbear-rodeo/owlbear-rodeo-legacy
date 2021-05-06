@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Box } from "theme-ui";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
@@ -17,6 +18,8 @@ import TokenMenu from "../token/TokenMenu";
 import TokenDragOverlay from "../token/TokenDragOverlay";
 import NoteMenu from "../note/NoteMenu";
 import NoteDragOverlay from "../note/NoteDragOverlay";
+
+import Droppable from "../Droppable";
 
 import {
   AddShapeAction,
@@ -336,30 +339,34 @@ function Map({
   );
 
   return (
-    <MapInteraction
-      map={map}
-      mapState={mapState}
-      controls={
-        <>
-          {mapControls}
-          {tokenMenu}
-          {noteMenu}
-          {tokenDragOverlay}
-          {noteDragOverlay}
-        </>
-      }
-      selectedToolId={selectedToolId}
-      onSelectedToolChange={setSelectedToolId}
-      disabledControls={disabledControls}
-    >
-      {mapGrid}
-      {mapDrawing}
-      {mapNotes}
-      {mapTokens}
-      {mapFog}
-      {mapPointer}
-      {mapMeasure}
-    </MapInteraction>
+    <Box sx={{ flexGrow: 1 }}>
+      <Droppable id="map" disabled={!map}>
+        <MapInteraction
+          map={map}
+          mapState={mapState}
+          controls={
+            <>
+              {mapControls}
+              {tokenMenu}
+              {noteMenu}
+              {tokenDragOverlay}
+              {noteDragOverlay}
+            </>
+          }
+          selectedToolId={selectedToolId}
+          onSelectedToolChange={setSelectedToolId}
+          disabledControls={disabledControls}
+        >
+          {mapGrid}
+          {mapDrawing}
+          {mapNotes}
+          {mapTokens}
+          {mapFog}
+          {mapPointer}
+          {mapMeasure}
+        </MapInteraction>
+      </Droppable>
+    </Box>
   );
 }
 

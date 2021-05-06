@@ -13,12 +13,8 @@ import Donate from "./routes/Donate";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { DatabaseProvider } from "./contexts/DatabaseContext";
-import { MapDataProvider } from "./contexts/MapDataContext";
-import { TokenDataProvider } from "./contexts/TokenDataContext";
-import { MapLoadingProvider } from "./contexts/MapLoadingContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { KeyboardProvider } from "./contexts/KeyboardContext";
-import { AssetsProvider, AssetURLsProvider } from "./contexts/AssetsContext";
 
 import { ToastProvider } from "./components/Toast";
 
@@ -49,17 +45,7 @@ function App() {
                       <FAQ />
                     </Route>
                     <Route path="/game/:id">
-                      <AssetsProvider>
-                        <AssetURLsProvider>
-                          <MapLoadingProvider>
-                            <MapDataProvider>
-                              <TokenDataProvider>
-                                <Game />
-                              </TokenDataProvider>
-                            </MapDataProvider>
-                          </MapLoadingProvider>
-                        </AssetURLsProvider>
-                      </AssetsProvider>
+                      <Game />
                     </Route>
                     <Route path="/">
                       <Home />

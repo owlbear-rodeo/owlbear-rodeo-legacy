@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, IconButton } from "theme-ui";
 
-import RemoveTokenIcon from "../icons/RemoveTokenIcon";
+import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 
 function DragOverlay({ dragging, node, onRemove }) {
   const [isRemoveHovered, setIsRemoveHovered] = useState(false);

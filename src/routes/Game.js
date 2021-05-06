@@ -18,6 +18,10 @@ import { MapStageProvider } from "../contexts/MapStageContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 import { PlayerProvider } from "../contexts/PlayerContext";
 import { PartyProvider } from "../contexts/PartyContext";
+import { AssetsProvider, AssetURLsProvider } from "../contexts/AssetsContext";
+import { MapDataProvider } from "../contexts/MapDataContext";
+import { TokenDataProvider } from "../contexts/TokenDataContext";
+import { MapLoadingProvider } from "../contexts/MapLoadingContext";
 
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
@@ -84,7 +88,6 @@ function Game() {
     };
   }, [session]);
 
-
   // Join game
   useEffect(() => {
     if (sessionStatus === "ready" && databaseStatus !== "loading") {
@@ -103,50 +106,62 @@ function Game() {
   const mapStageRef = useRef();
 
   return (
-    <PlayerProvider session={session}>
-      <PartyProvider session={session}>
-        <MapStageProvider value={mapStageRef}>
-          <Flex sx={{ flexDirection: "column", height: "100%" }}>
-            <Flex
-              sx={{
-                justifyContent: "space-between",
-                flexGrow: 1,
-                height: "100%",
-              }}
-            >
-              <NetworkedParty session={session} gameId={gameId} />
-              <NetworkedMapAndTokens session={session} />
-            </Flex>
-          </Flex>
-          <Banner
-            isOpen={!!peerError}
-            onRequestClose={() => setPeerError(null)}
-          >
-            <Box p={1}>
-              <Text as="p" variant="body2">
-                {peerError} See <Link to="/faq#connection">FAQ</Link> for more
-                information.
-              </Text>
-            </Box>
-          </Banner>
-          <OfflineBanner isOpen={sessionStatus === "offline"} />
-          <ReconnectBanner isOpen={sessionStatus === "reconnecting"} />
-          <AuthModal
-            isOpen={sessionStatus === "auth"}
-            onSubmit={handleAuthSubmit}
-          />
-          <GameExpiredModal
-            isOpen={gameExpired}
-            onRequestClose={() => setGameExpired(false)}
-          />
-          <ForceUpdateModal
-            isOpen={sessionStatus === "needs_update"}
-          />
-          {!sessionStatus && <LoadingOverlay />}
-          <MapLoadingOverlay />
-        </MapStageProvider>
-      </PartyProvider>
-    </PlayerProvider>
+    <AssetsProvider>
+      <AssetURLsProvider>
+        <MapLoadingProvider>
+          <MapDataProvider>
+            <TokenDataProvider>
+              <PlayerProvider session={session}>
+                <PartyProvider session={session}>
+                  <MapStageProvider value={mapStageRef}>
+                    <Flex sx={{ flexDirection: "column", height: "100%" }}>
+                      <Flex
+                        sx={{
+                          justifyContent: "space-between",
+                          flexGrow: 1,
+                          height: "100%",
+                        }}
+                      >
+                        <NetworkedParty session={session} gameId={gameId} />
+                        <NetworkedMapAndTokens session={session} />
+                      </Flex>
+                    </Flex>
+                    <Banner
+                      isOpen={!!peerError}
+                      onRequestClose={() => setPeerError(null)}
+                    >
+                      <Box p={1}>
+                        <Text as="p" variant="body2">
+                          {peerError} See <Link to="/faq#connection">FAQ</Link>{" "}
+                          for more information.
+                        </Text>
+                      </Box>
+                    </Banner>
+                    <OfflineBanner isOpen={sessionStatus === "offline"} />
+                    <ReconnectBanner
+                      isOpen={sessionStatus === "reconnecting"}
+                    />
+                    <AuthModal
+                      isOpen={sessionStatus === "auth"}
+                      onSubmit={handleAuthSubmit}
+                    />
+                    <GameExpiredModal
+                      isOpen={gameExpired}
+                      onRequestClose={() => setGameExpired(false)}
+                    />
+                    <ForceUpdateModal
+                      isOpen={sessionStatus === "needs_update"}
+                    />
+                    {!sessionStatus && <LoadingOverlay />}
+                    <MapLoadingOverlay />
+                  </MapStageProvider>
+                </PartyProvider>
+              </PlayerProvider>
+            </TokenDataProvider>
+          </MapDataProvider>
+        </MapLoadingProvider>
+      </AssetURLsProvider>
+    </AssetsProvider>
   );
 }
 

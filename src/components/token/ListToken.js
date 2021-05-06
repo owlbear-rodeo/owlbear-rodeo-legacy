@@ -7,7 +7,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 
 import { tokenSources, unknownSource } from "../../tokens";
 
-function ListToken({ token, className }) {
+function ListToken({ token }) {
   const tokenURL = useDataURL(
     token,
     tokenSources,
@@ -20,11 +20,10 @@ function ListToken({ token, className }) {
   usePreventTouch(imageRef);
 
   return (
-    <Box my={2} mx={3} sx={{ width: "48px", height: "48px" }}>
+    <Box py={1} sx={{ width: "48px", height: "56px" }}>
       <Image
         src={tokenURL}
         ref={imageRef}
-        className={className}
         sx={{
           userSelect: "none",
           touchAction: "none",
@@ -32,8 +31,6 @@ function ListToken({ token, className }) {
           height: "100%",
           objectFit: "cover",
         }}
-        // pass id into the dom element which is then used by the ProxyToken
-        data-id={token.id}
         alt={token.name}
         title={token.name}
       />
