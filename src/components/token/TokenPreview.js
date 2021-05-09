@@ -15,7 +15,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
 
-import { tokenSources, unknownSource } from "../../tokens";
+import { tokenSources } from "../../tokens";
 
 import Grid from "../Grid";
 
@@ -27,7 +27,7 @@ function TokenPreview({ token }) {
     }
   }, [token, tokenSourceData]);
 
-  const tokenURL = useDataURL(tokenSourceData, tokenSources, unknownSource);
+  const tokenURL = useDataURL(tokenSourceData, tokenSources);
   const [tokenSourceImage] = useImage(tokenURL);
 
   const [stageWidth, setStageWidth] = useState(1);
