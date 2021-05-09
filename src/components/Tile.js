@@ -28,7 +28,7 @@ function Tile({
         overflow: "hidden",
         userSelect: "none",
       }}
-      bg="muted"
+      bg="background"
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
