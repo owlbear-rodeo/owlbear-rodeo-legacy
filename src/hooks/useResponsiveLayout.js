@@ -21,7 +21,13 @@ function useResponsiveLayout() {
     ? "medium"
     : "large";
 
-  return { screenSize, modalSize, tileSize };
+  const gridTemplate = isLargeScreen
+    ? "1fr 1fr 1fr 1fr"
+    : isMediumScreen
+    ? "1fr 1fr 1fr"
+    : "1fr 1fr";
+
+  return { screenSize, modalSize, tileSize, gridTemplate };
 }
 
 export default useResponsiveLayout;

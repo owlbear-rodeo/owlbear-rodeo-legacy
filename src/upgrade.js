@@ -639,9 +639,23 @@ export const versions = {
       tx.table("tokens").bulkAdd(tokens);
     });
   },
+  // v1.9.0 -
+  33(v) {
+    v.stores({ groups: "id" }).upgrade(async (tx) => {
+      let maps = await Dexie.waitFor(tx.table("maps").toArray());
+      maps = maps.sort((a, b) => b.created - a.created);
+      const mapIds = maps.map((map) => map.id);
+      tx.table("groups").add({ id: "maps", data: mapIds });
+
+      let tokens = await Dexie.waitFor(tx.table("tokens").toArray());
+      tokens = tokens.sort((a, b) => b.created - a.created);
+      const tokenIds = tokens.map((token) => token.id);
+      tx.table("groups").add({ id: "tokens", data: tokenIds });
+    });
+  },
 };
 
-export const latestVersion = 32;
+export const latestVersion = 33;
 
 /**
  * Load versions onto a database up to a specific version number

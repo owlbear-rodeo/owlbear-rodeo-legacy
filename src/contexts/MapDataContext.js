@@ -22,6 +22,7 @@ export function MapDataProvider({ children }) {
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);
   const [mapsLoading, setMapsLoading] = useState(true);
+  const [mapGroups, setMapGroups] = useState([]);
 
   // Load maps from the database and ensure state is properly setup
   useEffect(() => {
@@ -42,11 +43,12 @@ export function MapDataProvider({ children }) {
           storedMaps.push(map);
         });
       }
-      // TODO: remove sort when groups are added
-      const sortedMaps = storedMaps.sort((a, b) => b.created - a.created);
-      setMaps(sortedMaps);
+      setMaps(storedMaps);
       const storedStates = await database.table("states").toArray();
       setMapStates(storedStates);
+      const group = await database.table("groups").get("maps");
+      const storedGroups = group.data;
+      setMapGroups(storedGroups);
       setMapsLoading(false);
     }
 
@@ -70,7 +72,7 @@ export function MapDataProvider({ children }) {
   );
 
   /**
-   * Adds a map to the database, also adds an assosiated state for that map
+   * Adds a map to the database, also adds an assosiated state and group for that map
    * @param {Object} map map to add
    */
   const addMap = useCallback(
@@ -79,6 +81,10 @@ export function MapDataProvider({ children }) {
       const state = { ...defaultMapState, mapId: map.id };
       await database.table("maps").add(map);
       await database.table("states").add(state);
+      const group = await database.table("groups").get("maps");
+      await database
+        .table("groups")
+        .update("maps", { data: [map.id, ...group.data] });
     },
     [database]
   );
@@ -132,6 +138,15 @@ export function MapDataProvider({ children }) {
   const updateMapState = useCallback(
     async (id, update) => {
       await database.table("states").update(id, update);
+    },
+    [database]
+  );
+
+  const updateMapGroups = useCallback(
+    async (groups) => {
+      // Update group state immediately to avoid animation delay
+      setMapGroups(groups);
+      await database.table("groups").update("maps", { data: groups });
     },
     [database]
   );
@@ -190,6 +205,11 @@ export function MapDataProvider({ children }) {
             });
           }
         }
+        if (change.table === "groups") {
+          if (change.type === 2 && change.key === "maps") {
+            setMapGroups(change.obj.data);
+          }
+        }
       }
     }
 
@@ -200,12 +220,10 @@ export function MapDataProvider({ children }) {
     };
   }, [database, databaseStatus]);
 
-  const ownedMaps = maps.filter((map) => map.owner === userId);
-
   const value = {
     maps,
-    ownedMaps,
     mapStates,
+    mapGroups,
     addMap,
     removeMaps,
     resetMap,
@@ -215,6 +233,7 @@ export function MapDataProvider({ children }) {
     getMap,
     mapsLoading,
     getMapState,
+    updateMapGroups,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>

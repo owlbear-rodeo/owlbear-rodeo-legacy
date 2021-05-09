@@ -1,12 +1,9 @@
 import React, { useRef, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
-import { v4 as uuid } from "uuid";
-import Case from "case";
+
 import { useToasts } from "react-toast-notifications";
-import imageOutline from "image-outline";
 
 import EditTokenModal from "./EditTokenModal";
-import EditGroupModal from "./EditGroupModal";
 import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
@@ -14,10 +11,8 @@ import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import blobToBuffer from "../helpers/blobToBuffer";
-import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { createThumbnail } from "../helpers/image";
-import Vector2 from "../helpers/Vector2";
+import { handleItemSelect } from "../helpers/select";
+import { createTokenFromFile } from "../helpers/token";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
@@ -33,11 +28,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   const { userId } = useAuth();
   const {
-    ownedTokens,
+    tokens,
     addToken,
     removeTokens,
     updateTokens,
     tokensLoading,
+    tokenGroups,
+    updateTokenGroups,
   } = useTokenData();
   const { addAssets } = useAssets();
 
@@ -45,30 +42,11 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    * Search
    */
   const [search, setSearch] = useState("");
-  const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
+  // const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
 
   function handleSearchChange(event) {
     setSearch(event.target.value);
   }
-
-  /**
-   * Group
-   */
-  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-
-  async function handleTokensGroup(group) {
-    setIsLoading(true);
-    setIsGroupModalOpen(false);
-    await updateTokens(selectedTokenIds, { group });
-    setIsLoading(false);
-  }
-
-  const [tokensByGroup, tokenGroups] = useGroup(
-    ownedTokens,
-    filteredTokens,
-    !!search,
-    filteredTokenScores
-  );
 
   /**
    * Image Upload
@@ -141,80 +119,12 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   }
 
   async function handleImageUpload(file) {
-    let name = "Unknown Token";
-    if (file.name) {
-      // Remove file extension
-      name = file.name.replace(/\.[^/.]+$/, "");
-      // Removed grid size expression
-      name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
-      // Clean string
-      name = name.replace(/ +/g, " ");
-      name = name.trim();
-      // Capitalize and remove underscores
-      name = Case.capital(name);
-    }
-    let image = new Image();
     setIsLoading(true);
-    const buffer = await blobToBuffer(file);
-
-    // Copy file to avoid permissions issues
-    const blob = new Blob([buffer]);
-    // Create and load the image temporarily to get its dimensions
-    const url = URL.createObjectURL(blob);
-
-    return new Promise((resolve, reject) => {
-      image.onload = async function () {
-        let assets = [];
-        const thumbnailImage = await createThumbnail(image, file.type);
-        const thumbnail = { ...thumbnailImage, id: uuid(), owner: userId };
-        assets.push(thumbnail);
-
-        const fileAsset = {
-          id: uuid(),
-          file: buffer,
-          width: image.width,
-          height: image.height,
-          mime: file.type,
-          owner: userId,
-        };
-        assets.push(fileAsset);
-
-        let outline = imageOutline(image);
-        if (outline.length > 100) {
-          outline = Vector2.resample(outline, 100);
-        }
-        // Flatten and round outline to save on storage size
-        outline = outline
-          .map(({ x, y }) => [Math.round(x), Math.round(y)])
-          .flat();
-
-        const token = {
-          name,
-          thumbnail: thumbnail.id,
-          file: fileAsset.id,
-          id: uuid(),
-          type: "file",
-          created: Date.now(),
-          lastModified: Date.now(),
-          owner: userId,
-          defaultSize: 1,
-          defaultCategory: "character",
-          defaultLabel: "",
-          hideInSidebar: false,
-          group: "",
-          width: image.width,
-          height: image.height,
-          outline,
-        };
-
-        handleTokenAdd(token, assets);
-        setIsLoading(false);
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      image.onerror = reject;
-      image.src = url;
-    });
+    const { token, assets } = await createTokenFromFile(file, userId);
+    await addToken(token);
+    await addAssets(assets);
+    setSelectedTokenIds([token.id]);
+    setIsLoading(false);
   }
 
   /**
@@ -222,15 +132,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    */
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTokenIds, setSelectedTokenIds] = useState([]);
-  const selectedTokens = ownedTokens.filter((token) =>
+  const selectedTokens = tokens.filter((token) =>
     selectedTokenIds.includes(token.id)
   );
-
-  async function handleTokenAdd(token, assets) {
-    await addToken(token);
-    await addAssets(assets);
-    setSelectedTokenIds([token.id]);
-  }
 
   const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
   async function handleTokensRemove() {
@@ -255,9 +159,8 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       token,
       selectMode,
       selectedTokenIds,
-      setSelectedTokenIds,
-      tokensByGroup,
-      tokenGroups
+      setSelectedTokenIds
+      // TODO: Rework group support
     );
   }
 
@@ -282,7 +185,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       ) {
         // Ensure all other modals are closed
         setIsEditModalOpen(false);
-        setIsGroupModalOpen(false);
         setIsTokensRemoveModalOpen(true);
       }
     }
@@ -335,7 +237,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             Edit or import a token
           </Label>
           <TokenTiles
-            tokens={tokensByGroup}
+            tokens={tokens}
             groups={tokenGroups}
             onTokenAdd={openImageDialog}
             onTokenEdit={() => setIsEditModalOpen(true)}
@@ -346,7 +248,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
             onSelectModeChange={setSelectMode}
             search={search}
             onSearchChange={handleSearchChange}
-            onTokensGroup={() => setIsGroupModalOpen(true)}
+            onTokensGroup={updateTokenGroups}
             onTokensHide={handleTokensHide}
           />
           <Button
@@ -364,21 +266,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
         tokenId={selectedTokens.length === 1 && selectedTokens[0].id}
-      />
-      <EditGroupModal
-        isOpen={isGroupModalOpen}
-        onChange={handleTokensGroup}
-        groups={tokenGroups.filter(
-          (group) => group !== "" && group !== "default"
-        )}
-        onRequestClose={() => setIsGroupModalOpen(false)}
-        // Select the default group by testing whether all selected tokens are the same
-        defaultGroup={
-          selectedTokens.length > 0 &&
-          selectedTokens
-            .map((map) => map.group)
-            .reduce((prev, curr) => (prev === curr ? curr : undefined))
-        }
       />
       <ConfirmModal
         isOpen={isTokensRemoveModalOpen}

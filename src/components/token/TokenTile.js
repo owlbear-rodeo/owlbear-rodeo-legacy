@@ -11,7 +11,6 @@ function TokenTile({
   isSelected,
   onTokenSelect,
   onTokenEdit,
-  size,
   canEdit,
   badges,
 }) {
@@ -29,7 +28,6 @@ function TokenTile({
       isSelected={isSelected}
       onSelect={() => onTokenSelect(token)}
       onEdit={() => onTokenEdit(token.id)}
-      size={size}
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Token"

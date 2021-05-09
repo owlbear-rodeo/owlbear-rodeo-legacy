@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex } from "theme-ui";
+import { Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
 import DiceTile from "./DiceTile";
@@ -13,16 +13,16 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
     <SimpleBar
       style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
     >
-      <Flex
+      <Grid
         p={2}
         pb={4}
         bg="muted"
         sx={{
-          flexWrap: "wrap",
           borderRadius: "4px",
           minHeight: layout.screenSize === "large" ? "600px" : "400px",
-          alignContent: "flex-start",
         }}
+        gap={2}
+        columns={layout.gridTemplate}
       >
         {dice.map((dice) => (
           <DiceTile
@@ -34,7 +34,7 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
             size={layout.tileSize}
           />
         ))}
-      </Flex>
+      </Grid>
     </SimpleBar>
   );
 }

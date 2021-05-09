@@ -17,15 +17,16 @@ function StyledModal({
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{
-        overlay: { backgroundColor: "rgba(0, 0, 0, 0.73)", zIndex: 100 },
+        overlay: {
+          backgroundColor: "rgba(0, 0, 0, 0.73)",
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
         content: {
           backgroundColor: theme.colors.background,
-          top: "50%",
-          left: "50%",
-          right: "auto",
-          bottom: "auto",
-          marginRight: "-50%",
-          transform: "translate(-50%, -50%)",
+          inset: "initial",
           maxHeight: "100%",
           ...style,
         },

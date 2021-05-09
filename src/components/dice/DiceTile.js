@@ -2,7 +2,7 @@ import React from "react";
 
 import Tile from "../Tile";
 
-function DiceTile({ dice, isSelected, onDiceSelect, onDone, size }) {
+function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
   return (
     <Tile
       src={dice.preview}
@@ -10,7 +10,6 @@ function DiceTile({ dice, isSelected, onDiceSelect, onDone, size }) {
       isSelected={isSelected}
       onSelect={() => onDiceSelect(dice)}
       onDoubleClick={() => onDone(dice)}
-      size={size}
     />
   );
 }

@@ -35,6 +35,7 @@ export function useSearch(items, search) {
   return [filteredItems, filteredItemScores];
 }
 
+// TODO: Rework group support
 // Helper for grouping items
 export function useGroup(items, filteredItems, useFiltered, filteredScores) {
   const itemsByGroup = groupBy(useFiltered ? filteredItems : items, "group");
@@ -92,41 +93,43 @@ export function handleItemSelect(
       });
       break;
     case "range":
-      // Create items array
-      let items = itemGroups.reduce(
-        (acc, group) => [...acc, ...itemsByGroup[group]],
-        []
-      );
+      /// TODO: Fix when new groups system is added
+      return;
+    // Create items array
+    // let items = itemGroups.reduce(
+    //   (acc, group) => [...acc, ...itemsByGroup[group]],
+    //   []
+    // );
 
-      // Add all items inbetween the previous selected item and the current selected
-      if (selectedIds.length > 0) {
-        const mapIndex = items.findIndex((m) => m.id === item.id);
-        const lastIndex = items.findIndex(
-          (m) => m.id === selectedIds[selectedIds.length - 1]
-        );
-        let idsToAdd = [];
-        let idsToRemove = [];
-        const direction = mapIndex > lastIndex ? 1 : -1;
-        for (
-          let i = lastIndex + direction;
-          direction < 0 ? i >= mapIndex : i <= mapIndex;
-          i += direction
-        ) {
-          const itemId = items[i].id;
-          if (selectedIds.includes(itemId)) {
-            idsToRemove.push(itemId);
-          } else {
-            idsToAdd.push(itemId);
-          }
-        }
-        setSelectedIds((prev) => {
-          let ids = [...prev, ...idsToAdd];
-          return ids.filter((id) => !idsToRemove.includes(id));
-        });
-      } else {
-        setSelectedIds([item.id]);
-      }
-      break;
+    // // Add all items inbetween the previous selected item and the current selected
+    // if (selectedIds.length > 0) {
+    //   const mapIndex = items.findIndex((m) => m.id === item.id);
+    //   const lastIndex = items.findIndex(
+    //     (m) => m.id === selectedIds[selectedIds.length - 1]
+    //   );
+    //   let idsToAdd = [];
+    //   let idsToRemove = [];
+    //   const direction = mapIndex > lastIndex ? 1 : -1;
+    //   for (
+    //     let i = lastIndex + direction;
+    //     direction < 0 ? i >= mapIndex : i <= mapIndex;
+    //     i += direction
+    //   ) {
+    //     const itemId = items[i].id;
+    //     if (selectedIds.includes(itemId)) {
+    //       idsToRemove.push(itemId);
+    //     } else {
+    //       idsToAdd.push(itemId);
+    //     }
+    //   }
+    //   setSelectedIds((prev) => {
+    //     let ids = [...prev, ...idsToAdd];
+    //     return ids.filter((id) => !idsToRemove.includes(id));
+    //   });
+    // } else {
+    //   setSelectedIds([item.id]);
+    // }
+    // break;
     default:
       setSelectedIds([]);
   }

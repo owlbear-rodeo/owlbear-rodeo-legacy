@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useToasts } from "react-toast-notifications";
-import { v4 as uuid } from "uuid";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useMapLoading } from "../contexts/MapLoadingContext";
@@ -8,9 +7,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 import { useParty } from "../contexts/PartyContext";
 import { useAssets } from "../contexts/AssetsContext";
-import { DragProvider } from "../contexts/DragContext";
-import { useTokenData } from "../contexts/TokenDataContext";
-import { useMapStage } from "../contexts/MapStageContext";
 
 import { omit } from "../helpers/shared";
 
@@ -44,10 +40,8 @@ function NetworkedMapAndTokens({ session }) {
   const { userId } = useAuth();
   const partyState = useParty();
   const { assetLoadStart, assetProgressUpdate, isLoading } = useMapLoading();
-  const mapStageRef = useMapStage();
 
   const { updateMapState } = useMapData();
-  const { tokensById } = useTokenData();
   const { getAsset, putAsset } = useAssets();
 
   const [currentMap, setCurrentMap] = useState(null);
@@ -385,53 +379,6 @@ function NetworkedMapAndTokens({ session }) {
     });
   }
 
-  function handleDragEnd({ active, over }) {
-    const tokenId = active?.data?.current?.tokenId;
-    const token = tokensById[tokenId];
-    const mapStage = mapStageRef.current;
-    if (over?.id === "map" && tokenId && token && mapStage) {
-      const mapImage = mapStage.findOne("#mapImage");
-      // TODO: Get proper pointer position when dnd-kit is updated
-      // https://github.com/clauderic/dnd-kit/issues/238
-      const pointerPosition = {
-        x: over.rect.width / 2,
-        y: over.rect.height / 2,
-      };
-      const transform = mapImage.getAbsoluteTransform().copy().invert();
-      const relativePosition = transform.point(pointerPosition);
-      const normalizedPosition = {
-        x: relativePosition.x / mapImage.width(),
-        y: relativePosition.y / mapImage.height(),
-      };
-      let tokenState = {
-        id: uuid(),
-        tokenId: token.id,
-        owner: userId,
-        size: token.defaultSize,
-        category: token.defaultCategory,
-        label: token.defaultLabel,
-        statuses: [],
-        x: normalizedPosition.x,
-        y: normalizedPosition.y,
-        lastModifiedBy: userId,
-        lastModified: Date.now(),
-        rotation: 0,
-        locked: false,
-        visible: true,
-        type: token.type,
-        outline: token.outline,
-        width: token.width,
-        height: token.height,
-      };
-      if (token.type === "file") {
-        tokenState.file = token.file;
-      } else if (token.type === "default") {
-        tokenState.key = token.key;
-      }
-      handleMapTokenStateCreate(tokenState);
-    }
-  }
-
   useEffect(() => {
     async function handlePeerData({ id, data, reply }) {
       if (id === "assetRequest") {
@@ -504,7 +451,7 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   return (
-    <DragProvider onDragEnd={handleDragEnd}>
+    <>
       <Map
         map={currentMap}
         mapState={currentMapState}
@@ -528,8 +475,8 @@ function NetworkedMapAndTokens({ session }) {
         disabledTokens={disabledMapTokens}
         session={session}
       />
-      <TokenBar />
-    </DragProvider>
+      <TokenBar onMapTokenStateCreate={handleMapTokenStateCreate} />
+    </>
   );
 }
 

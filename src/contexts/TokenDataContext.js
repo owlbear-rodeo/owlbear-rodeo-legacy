@@ -12,6 +12,7 @@ export function TokenDataProvider({ children }) {
 
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);
+  const [tokenGroups, setTokenGroups] = useState([]);
 
   useEffect(() => {
     if (!userId || !database || databaseStatus === "loading") {
@@ -30,8 +31,10 @@ export function TokenDataProvider({ children }) {
           storedTokens.push(token);
         });
       }
-      const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
-      setTokens(sortedTokens);
+      setTokens(storedTokens);
+      const group = await database.table("groups").get("tokens");
+      const storedGroups = group.data;
+      setTokenGroups(storedGroups);
       setTokensLoading(false);
     }
 
@@ -46,9 +49,14 @@ export function TokenDataProvider({ children }) {
     [database]
   );
 
+  // Add token and add it to the token group
   const addToken = useCallback(
     async (token) => {
       await database.table("tokens").add(token);
+      const group = await database.table("groups").get("tokens");
+      await database
+        .table("groups")
+        .update("tokens", { data: [token.id, ...group.data] });
     },
     [database]
   );
@@ -87,6 +95,15 @@ export function TokenDataProvider({ children }) {
     [database]
   );
 
+  const updateTokenGroups = useCallback(
+    async (groups) => {
+      // Update group state immediately to avoid animation delay
+      setTokenGroups(groups);
+      await database.table("groups").update("tokens", { data: groups });
+    },
+    [database]
+  );
+
   // Create DB observable to sync creating and deleting
   useEffect(() => {
     if (!database || databaseStatus === "loading") {
@@ -120,6 +137,11 @@ export function TokenDataProvider({ children }) {
             });
           }
         }
+        if (change.table === "groups") {
+          if (change.type === 2 && change.key === "tokens") {
+            setTokenGroups(change.obj.data);
+          }
+        }
       }
     }
 
@@ -130,8 +152,6 @@ export function TokenDataProvider({ children }) {
     };
   }, [database, databaseStatus]);
 
-  const ownedTokens = tokens.filter((token) => token.owner === userId);
-
   const tokensById = tokens.reduce((obj, token) => {
     obj[token.id] = token;
     return obj;
@@ -139,14 +159,15 @@ export function TokenDataProvider({ children }) {
 
   const value = {
     tokens,
-    ownedTokens,
     addToken,
+    tokenGroups,
     removeTokens,
     updateToken,
     updateTokens,
     tokensById,
     tokensLoading,
     getToken,
+    updateTokenGroups,
   };
 
   return (

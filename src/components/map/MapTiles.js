@@ -1,15 +1,16 @@
 import React from "react";
-import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
+import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import Case from "case";
+import { DndContext } from "@dnd-kit/core";
+import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
-import GroupIcon from "../../icons/GroupIcon";
 
 import MapTile from "./MapTile";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
+import Sortable from "../Sortable";
 
 import { useDatabase } from "../../contexts/DatabaseContext";
 
@@ -73,107 +74,111 @@ function MapTiles({
 
   const multipleSelected = selectedMaps.length > 1;
 
+  function handleDragEnd({ active, over }) {
+    if (active && over && active.id !== over.id) {
+      const oldIndex = groups.indexOf(active.id);
+      const newIndex = groups.indexOf(over.id);
+      onMapsGroup(arrayMove(groups, oldIndex, newIndex));
+    }
+  }
+
   return (
-    <Box sx={{ position: "relative" }}>
-      <FilterBar
-        onFocus={() => onMapSelect()}
-        search={search}
-        onSearchChange={onSearchChange}
-        selectMode={selectMode}
-        onSelectModeChange={onSelectModeChange}
-        onAdd={onMapAdd}
-        addTitle="Add Map"
-      />
-      <SimpleBar
-        style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
-      >
-        <Flex
-          p={2}
-          pb={4}
-          pt={databaseStatus === "disabled" ? 4 : 2}
-          bg="muted"
-          sx={{
-            flexWrap: "wrap",
-            borderRadius: "4px",
-            minHeight: layout.screenSize === "large" ? "600px" : "400px",
-            alignContent: "flex-start",
-          }}
-          onClick={() => onMapSelect()}
-        >
-          {groups.map((group) => (
-            <React.Fragment key={group}>
-              <Label mx={1} mt={2}>
-                {Case.capital(group)}
-              </Label>
-              {maps[group].map(mapToTile)}
-            </React.Fragment>
-          ))}
-        </Flex>
-      </SimpleBar>
-      {databaseStatus === "disabled" && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "39px",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            borderRadius: "2px",
-          }}
-          bg="highlight"
-          p={1}
-        >
-          <Text as="p" variant="body2">
-            Map saving is unavailable. See <Link to="/faq#saving">FAQ</Link> for
-            more information.
-          </Text>
-        </Box>
-      )}
-      {selectedMaps.length > 0 && (
-        <Flex
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            justifyContent: "space-between",
-          }}
-          bg="overlay"
-        >
-          <Close
-            title="Clear Selection"
-            aria-label="Clear Selection"
-            onClick={() => onMapSelect()}
+    <DndContext onDragEnd={handleDragEnd}>
+      <SortableContext items={groups}>
+        <Box sx={{ position: "relative" }}>
+          <FilterBar
+            onFocus={() => onMapSelect()}
+            search={search}
+            onSearchChange={onSearchChange}
+            selectMode={selectMode}
+            onSelectModeChange={onSelectModeChange}
+            onAdd={onMapAdd}
+            addTitle="Add Map"
           />
-          <Flex>
-            <IconButton
-              aria-label={multipleSelected ? "Group Maps" : "Group Map"}
-              title={multipleSelected ? "Group Maps" : "Group Map"}
-              onClick={() => onMapsGroup()}
-              disabled={hasSelectedDefaultMap}
+          <SimpleBar
+            style={{
+              height: layout.screenSize === "large" ? "600px" : "400px",
+            }}
+          >
+            <Grid
+              p={2}
+              pb={4}
+              pt={databaseStatus === "disabled" ? 4 : 2}
+              bg="muted"
+              sx={{
+                borderRadius: "4px",
+                minHeight: layout.screenSize === "large" ? "600px" : "400px",
+                overflow: "hidden",
+              }}
+              gap={2}
+              columns={layout.gridTemplate}
+              onClick={() => onMapSelect()}
             >
-              <GroupIcon />
-            </IconButton>
-            <IconButton
-              aria-label={multipleSelected ? "Reset Maps" : "Reset Map"}
-              title={multipleSelected ? "Reset Maps" : "Reset Map"}
-              onClick={() => onMapsReset()}
-              disabled={!hasMapState}
+              {groups.map((mapId) => (
+                <Sortable id={mapId} key={mapId}>
+                  {mapToTile(maps.find((map) => map.id === mapId))}
+                </Sortable>
+              ))}
+            </Grid>
+          </SimpleBar>
+          {databaseStatus === "disabled" && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "39px",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                borderRadius: "2px",
+              }}
+              bg="highlight"
+              p={1}
             >
-              <ResetMapIcon />
-            </IconButton>
-            <IconButton
-              aria-label={multipleSelected ? "Remove Maps" : "Remove Map"}
-              title={multipleSelected ? "Remove Maps" : "Remove Map"}
-              onClick={() => onMapsRemove()}
-              disabled={hasSelectedDefaultMap}
+              <Text as="p" variant="body2">
+                Map saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
+                for more information.
+              </Text>
+            </Box>
+          )}
+          {selectedMaps.length > 0 && (
+            <Flex
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                justifyContent: "space-between",
+              }}
+              bg="overlay"
             >
-              <RemoveMapIcon />
-            </IconButton>
-          </Flex>
-        </Flex>
-      )}
-    </Box>
+              <Close
+                title="Clear Selection"
+                aria-label="Clear Selection"
+                onClick={() => onMapSelect()}
+              />
+              <Flex>
+                <IconButton
+                  aria-label={multipleSelected ? "Reset Maps" : "Reset Map"}
+                  title={multipleSelected ? "Reset Maps" : "Reset Map"}
+                  onClick={() => onMapsReset()}
+                  disabled={!hasMapState}
+                >
+                  <ResetMapIcon />
+                </IconButton>
+                <IconButton
+                  aria-label={multipleSelected ? "Remove Maps" : "Remove Map"}
+                  title={multipleSelected ? "Remove Maps" : "Remove Map"}
+                  onClick={() => onMapsRemove()}
+                  disabled={hasSelectedDefaultMap}
+                >
+                  <RemoveMapIcon />
+                </IconButton>
+              </Flex>
+            </Flex>
+          )}
+        </Box>
+      </SortableContext>
+    </DndContext>
   );
 }
 

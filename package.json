@@ -5,7 +5,8 @@
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
     "@babylonjs/loaders": "^4.2.0",
-    "@dnd-kit/core": "3.0.0",
+    "@dnd-kit/core": "^3.0.2",
+    "@dnd-kit/sortable": "^3.0.1",
     "@mitchemmc/dexie-export-import": "^1.0.1",
     "@msgpack/msgpack": "^2.4.1",
     "@sentry/react": "^6.2.2",
