@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
@@ -35,6 +36,7 @@ function MapTiles({
 }) {
   const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
+  const [dragId, setDragId] = useState();
 
   let hasMapState = false;
   for (let state of selectedMapStates) {
@@ -74,7 +76,12 @@ function MapTiles({
 
   const multipleSelected = selectedMaps.length > 1;
 
+  function handleDragStart({ active }) {
+    setDragId(active.id);
+  }
+
   function handleDragEnd({ active, over }) {
+    setDragId();
     if (active && over && active.id !== over.id) {
       const oldIndex = groups.indexOf(active.id);
       const newIndex = groups.indexOf(over.id);
@@ -83,7 +90,7 @@ function MapTiles({
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <SortableContext items={groups}>
         <Box sx={{ position: "relative" }}>
           <FilterBar
@@ -177,6 +184,12 @@ function MapTiles({
             </Flex>
           )}
         </Box>
+        {createPortal(
+          <DragOverlay>
+            {dragId && mapToTile(maps.find((maps) => maps.id === dragId))}
+          </DragOverlay>,
+          document.body
+        )}
       </SortableContext>
     </DndContext>
   );

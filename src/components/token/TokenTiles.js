@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
@@ -34,6 +35,7 @@ function TokenTiles({
 }) {
   const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
+  const [dragId, setDragId] = useState();
 
   let hasSelectedDefaultToken = selectedTokens.some(
     (token) => token.type === "default"
@@ -77,7 +79,12 @@ function TokenTiles({
     }
   }
 
+  function handleDragStart({ active }) {
+    setDragId(active.id);
+  }
+
   function handleDragEnd({ active, over }) {
+    setDragId();
     if (active && over && active.id !== over.id) {
       const oldIndex = groups.indexOf(active.id);
       const newIndex = groups.indexOf(over.id);
@@ -86,7 +93,7 @@ function TokenTiles({
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <SortableContext items={groups}>
         <Box sx={{ position: "relative" }}>
           <FilterBar
@@ -181,6 +188,12 @@ function TokenTiles({
             </Flex>
           )}
         </Box>
+        {createPortal(
+          <DragOverlay>
+            {dragId && tokenToTile(tokens.find((token) => token.id === dragId))}
+          </DragOverlay>,
+          document.body
+        )}
       </SortableContext>
     </DndContext>
   );
