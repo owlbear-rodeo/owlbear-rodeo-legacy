@@ -19,8 +19,6 @@ import TokenDragOverlay from "../token/TokenDragOverlay";
 import NoteMenu from "../note/NoteMenu";
 import NoteDragOverlay from "../note/NoteDragOverlay";
 
-import Droppable from "../Droppable";
-
 import {
   AddShapeAction,
   CutShapeAction,
@@ -340,32 +338,30 @@ function Map({
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Droppable id="map" disabled={!map}>
-        <MapInteraction
-          map={map}
-          mapState={mapState}
-          controls={
-            <>
-              {mapControls}
-              {tokenMenu}
-              {noteMenu}
-              {tokenDragOverlay}
-              {noteDragOverlay}
-            </>
-          }
-          selectedToolId={selectedToolId}
-          onSelectedToolChange={setSelectedToolId}
-          disabledControls={disabledControls}
-        >
-          {mapGrid}
-          {mapDrawing}
-          {mapNotes}
-          {mapTokens}
-          {mapFog}
-          {mapPointer}
-          {mapMeasure}
-        </MapInteraction>
-      </Droppable>
+      <MapInteraction
+        map={map}
+        mapState={mapState}
+        controls={
+          <>
+            {mapControls}
+            {tokenMenu}
+            {noteMenu}
+            {tokenDragOverlay}
+            {noteDragOverlay}
+          </>
+        }
+        selectedToolId={selectedToolId}
+        onSelectedToolChange={setSelectedToolId}
+        disabledControls={disabledControls}
+      >
+        {mapGrid}
+        {mapDrawing}
+        {mapNotes}
+        {mapTokens}
+        {mapFog}
+        {mapPointer}
+        {mapMeasure}
+      </MapInteraction>
     </Box>
   );
 }
