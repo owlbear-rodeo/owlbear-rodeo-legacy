@@ -20,6 +20,10 @@ function populate(db) {
     db.table("states").bulkAdd(mapStates);
     const tokens = getDefaultTokens(userId);
     db.table("tokens").bulkAdd(tokens);
+    db.table("groups").bulkAdd([
+      { id: "maps", data: maps.map((map) => map.id) },
+      { id: "tokens", data: tokens.map((token) => token.id) },
+    ]);
   });
 }
 
