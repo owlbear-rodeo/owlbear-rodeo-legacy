@@ -179,31 +179,48 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
       return;
     }
 
-    async function updateAssetURL() {
-      const asset = await getAsset(assetId);
-      if (asset) {
-        setAssetURLs((prevURLs) => {
-          if (assetId in prevURLs) {
-            // Check if the asset url is already added and increase references
-            return {
-              ...prevURLs,
-              [assetId]: {
-                ...prevURLs[assetId],
-                references: prevURLs[assetId].references + 1,
-              },
-            };
-          } else {
-            // Create url if the asset doesn't have a url
-            const url = URL.createObjectURL(
-              new Blob([asset.file], { type: asset.mime })
-            );
-            return {
-              ...prevURLs,
-              [assetId]: { url, id: assetId, references: 1 },
-            };
-          }
-        });
+    function updateAssetURL() {
+      function increaseReferences(prevURLs) {
+        return {
+          ...prevURLs,
+          [assetId]: {
+            ...prevURLs[assetId],
+            references: prevURLs[assetId].references + 1,
+          },
+        };
       }
+
+      function createURL(prevURLs, asset) {
+        const url = URL.createObjectURL(
+          new Blob([asset.file], { type: asset.mime })
+        );
+        return {
+          ...prevURLs,
+          [assetId]: { url, id: assetId, references: 1 },
+        };
+      }
+      setAssetURLs((prevURLs) => {
+        if (assetId in prevURLs) {
+          // Check if the asset url is already added and increase references
+          return increaseReferences(prevURLs);
+        } else {
+          getAsset(assetId).then((asset) => {
+            if (!asset) {
+              return;
+            }
+            setAssetURLs((prevURLs) => {
+              if (assetId in prevURLs) {
+                // Check again if it exists
+                return increaseReferences(prevURLs);
+              } else {
+                // Create url if the asset doesn't have a url
+                return createURL(prevURLs, asset);
+              }
+            });
+          });
+          return prevURLs;
+        }
+      });
     }
 
     updateAssetURL();
@@ -307,7 +324,7 @@ export function useDataURL(
     if (!data) {
       return;
     }
-    async function loadAssetId() {
+    function loadAssetId() {
       if (data.type === "default") {
         setAssetId(data.key);
       } else {
