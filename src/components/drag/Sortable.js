@@ -13,11 +13,10 @@ function Sortable({ id, children }) {
 
   const style = {
     cursor: "pointer",
-    touchAction: "none",
     opacity: isDragging ? 0.25 : undefined,
     transform:
       transform && `translate3d(${transform.x}px, ${transform.y}px, 0px)`,
-    zIndex: isDragging ? 100 : 0,
+    zIndex: isDragging ? 100 : undefined,
     transition,
   };
 

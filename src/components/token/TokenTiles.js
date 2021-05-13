@@ -1,9 +1,6 @@
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 import TokenHideIcon from "../../icons/TokenHideIcon";
@@ -12,7 +9,9 @@ import TokenShowIcon from "../../icons/TokenShowIcon";
 import TokenTile from "./TokenTile";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
-import Sortable from "../Sortable";
+
+import Sortable from "../drag/Sortable";
+import SortableTiles from "../drag/SortableTiles";
 
 import { useDatabase } from "../../contexts/DatabaseContext";
 
@@ -35,14 +34,14 @@ function TokenTiles({
 }) {
   const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
-  const [dragId, setDragId] = useState();
 
   let hasSelectedDefaultToken = selectedTokens.some(
     (token) => token.type === "default"
   );
   let allTokensVisible = selectedTokens.every((token) => !token.hideInSidebar);
 
-  function tokenToTile(token) {
+  function tokenToTile(tokenId) {
+    const token = tokens.find((token) => token.id === tokenId);
     const isSelected = selectedTokens.includes(token);
     return (
       <TokenTile
@@ -79,123 +78,104 @@ function TokenTiles({
     }
   }
 
-  function handleDragStart({ active }) {
-    setDragId(active.id);
-  }
-
-  function handleDragEnd({ active, over }) {
-    setDragId();
-    if (active && over && active.id !== over.id) {
-      const oldIndex = groups.indexOf(active.id);
-      const newIndex = groups.indexOf(over.id);
-      onTokensGroup(arrayMove(groups, oldIndex, newIndex));
-    }
-  }
-
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <SortableContext items={groups}>
-        <Box sx={{ position: "relative" }}>
-          <FilterBar
-            onFocus={() => onTokenSelect()}
-            search={search}
-            onSearchChange={onSearchChange}
-            selectMode={selectMode}
-            onSelectModeChange={onSelectModeChange}
-            onAdd={onTokenAdd}
-            addTitle="Add Token"
-          />
-          <SimpleBar
-            style={{
-              height: layout.screenSize === "large" ? "600px" : "400px",
+    <SortableTiles
+      groups={groups}
+      onGroupChange={onTokensGroup}
+      renderTile={tokenToTile}
+    >
+      <Box sx={{ position: "relative" }}>
+        <FilterBar
+          onFocus={() => onTokenSelect()}
+          search={search}
+          onSearchChange={onSearchChange}
+          selectMode={selectMode}
+          onSelectModeChange={onSelectModeChange}
+          onAdd={onTokenAdd}
+          addTitle="Add Token"
+        />
+        <SimpleBar
+          style={{
+            height: layout.screenSize === "large" ? "600px" : "400px",
+          }}
+        >
+          <Grid
+            p={2}
+            pb={4}
+            pt={databaseStatus === "disabled" ? 4 : 2}
+            bg="muted"
+            sx={{
+              borderRadius: "4px",
+              minHeight: layout.screenSize === "large" ? "600px" : "400px",
             }}
+            gap={2}
+            columns={layout.gridTemplate}
+            onClick={() => onTokenSelect()}
           >
-            <Grid
-              p={2}
-              pb={4}
-              pt={databaseStatus === "disabled" ? 4 : 2}
-              bg="muted"
-              sx={{
-                borderRadius: "4px",
-                minHeight: layout.screenSize === "large" ? "600px" : "400px",
-              }}
-              gap={2}
-              columns={layout.gridTemplate}
-              onClick={() => onTokenSelect()}
-            >
-              {groups.map((tokenId) => (
-                <Sortable id={tokenId} key={tokenId}>
-                  {tokenToTile(tokens.find((token) => token.id === tokenId))}
-                </Sortable>
-              ))}
-            </Grid>
-          </SimpleBar>
-          {databaseStatus === "disabled" && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: "39px",
-                left: 0,
-                right: 0,
-                textAlign: "center",
-                borderRadius: "2px",
-              }}
-              bg="highlight"
-              p={1}
-            >
-              <Text as="p" variant="body2">
-                Token saving is unavailable. See{" "}
-                <Link to="/faq#saving">FAQ</Link> for more information.
-              </Text>
-            </Box>
-          )}
-          {selectedTokens.length > 0 && (
-            <Flex
-              sx={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                justifyContent: "space-between",
-              }}
-              bg="overlay"
-            >
-              <Close
-                title="Clear Selection"
-                aria-label="Clear Selection"
-                onClick={() => onTokenSelect()}
-              />
-              <Flex>
-                <IconButton
-                  aria-label={hideTitle}
-                  title={hideTitle}
-                  disabled={hasSelectedDefaultToken}
-                  onClick={() => onTokensHide(allTokensVisible)}
-                >
-                  {allTokensVisible ? <TokenShowIcon /> : <TokenHideIcon />}
-                </IconButton>
-                <IconButton
-                  aria-label={
-                    multipleSelected ? "Remove Tokens" : "Remove Token"
-                  }
-                  title={multipleSelected ? "Remove Tokens" : "Remove Token"}
-                  onClick={() => onTokensRemove()}
-                  disabled={hasSelectedDefaultToken}
-                >
-                  <RemoveTokenIcon />
-                </IconButton>
-              </Flex>
-            </Flex>
-          )}
-        </Box>
-        {createPortal(
-          <DragOverlay>
-            {dragId && tokenToTile(tokens.find((token) => token.id === dragId))}
-          </DragOverlay>,
-          document.body
+            {groups.map((tokenId) => (
+              <Sortable id={tokenId} key={tokenId}>
+                {tokenToTile(tokenId)}
+              </Sortable>
+            ))}
+          </Grid>
+        </SimpleBar>
+        {databaseStatus === "disabled" && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "39px",
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              borderRadius: "2px",
+            }}
+            bg="highlight"
+            p={1}
+          >
+            <Text as="p" variant="body2">
+              Token saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
+              for more information.
+            </Text>
+          </Box>
         )}
-      </SortableContext>
-    </DndContext>
+        {selectedTokens.length > 0 && (
+          <Flex
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              justifyContent: "space-between",
+            }}
+            bg="overlay"
+          >
+            <Close
+              title="Clear Selection"
+              aria-label="Clear Selection"
+              onClick={() => onTokenSelect()}
+            />
+            <Flex>
+              <IconButton
+                aria-label={hideTitle}
+                title={hideTitle}
+                disabled={hasSelectedDefaultToken}
+                onClick={() => onTokensHide(allTokensVisible)}
+              >
+                {allTokensVisible ? <TokenShowIcon /> : <TokenHideIcon />}
+              </IconButton>
+              <IconButton
+                aria-label={multipleSelected ? "Remove Tokens" : "Remove Token"}
+                title={multipleSelected ? "Remove Tokens" : "Remove Token"}
+                onClick={() => onTokensRemove()}
+                disabled={hasSelectedDefaultToken}
+              >
+                <RemoveTokenIcon />
+              </IconButton>
+            </Flex>
+          </Flex>
+        )}
+      </Box>
+    </SortableTiles>
   );
 }
 

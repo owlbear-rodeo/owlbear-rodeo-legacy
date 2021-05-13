@@ -1,9 +1,6 @@
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
@@ -11,7 +8,9 @@ import ResetMapIcon from "../../icons/ResetMapIcon";
 import MapTile from "./MapTile";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
-import Sortable from "../Sortable";
+
+import Sortable from "../drag/Sortable";
+import SortableTiles from "../drag/SortableTiles";
 
 import { useDatabase } from "../../contexts/DatabaseContext";
 
@@ -36,7 +35,6 @@ function MapTiles({
 }) {
   const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
-  const [dragId, setDragId] = useState();
 
   let hasMapState = false;
   for (let state of selectedMapStates) {
@@ -55,7 +53,8 @@ function MapTiles({
     (map) => map.type === "default"
   );
 
-  function mapToTile(map) {
+  function mapToTile(mapId) {
+    const map = maps.find((map) => map.id === mapId);
     const isSelected = selectedMaps.includes(map);
     return (
       <MapTile
@@ -76,122 +75,105 @@ function MapTiles({
 
   const multipleSelected = selectedMaps.length > 1;
 
-  function handleDragStart({ active }) {
-    setDragId(active.id);
-  }
-
-  function handleDragEnd({ active, over }) {
-    setDragId();
-    if (active && over && active.id !== over.id) {
-      const oldIndex = groups.indexOf(active.id);
-      const newIndex = groups.indexOf(over.id);
-      onMapsGroup(arrayMove(groups, oldIndex, newIndex));
-    }
-  }
-
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <SortableContext items={groups}>
-        <Box sx={{ position: "relative" }}>
-          <FilterBar
-            onFocus={() => onMapSelect()}
-            search={search}
-            onSearchChange={onSearchChange}
-            selectMode={selectMode}
-            onSelectModeChange={onSelectModeChange}
-            onAdd={onMapAdd}
-            addTitle="Add Map"
-          />
-          <SimpleBar
-            style={{
-              height: layout.screenSize === "large" ? "600px" : "400px",
+    <SortableTiles
+      groups={groups}
+      onGroupChange={onMapsGroup}
+      renderTile={mapToTile}
+    >
+      <Box sx={{ position: "relative" }}>
+        <FilterBar
+          onFocus={() => onMapSelect()}
+          search={search}
+          onSearchChange={onSearchChange}
+          selectMode={selectMode}
+          onSelectModeChange={onSelectModeChange}
+          onAdd={onMapAdd}
+          addTitle="Add Map"
+        />
+        <SimpleBar
+          style={{
+            height: layout.screenSize === "large" ? "600px" : "400px",
+          }}
+        >
+          <Grid
+            p={2}
+            pb={4}
+            pt={databaseStatus === "disabled" ? 4 : 2}
+            bg="muted"
+            sx={{
+              borderRadius: "4px",
+              minHeight: layout.screenSize === "large" ? "600px" : "400px",
+              overflow: "hidden",
             }}
+            gap={2}
+            columns={layout.gridTemplate}
+            onClick={() => onMapSelect()}
           >
-            <Grid
-              p={2}
-              pb={4}
-              pt={databaseStatus === "disabled" ? 4 : 2}
-              bg="muted"
-              sx={{
-                borderRadius: "4px",
-                minHeight: layout.screenSize === "large" ? "600px" : "400px",
-                overflow: "hidden",
-              }}
-              gap={2}
-              columns={layout.gridTemplate}
-              onClick={() => onMapSelect()}
-            >
-              {groups.map((mapId) => (
-                <Sortable id={mapId} key={mapId}>
-                  {mapToTile(maps.find((map) => map.id === mapId))}
-                </Sortable>
-              ))}
-            </Grid>
-          </SimpleBar>
-          {databaseStatus === "disabled" && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: "39px",
-                left: 0,
-                right: 0,
-                textAlign: "center",
-                borderRadius: "2px",
-              }}
-              bg="highlight"
-              p={1}
-            >
-              <Text as="p" variant="body2">
-                Map saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
-                for more information.
-              </Text>
-            </Box>
-          )}
-          {selectedMaps.length > 0 && (
-            <Flex
-              sx={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                justifyContent: "space-between",
-              }}
-              bg="overlay"
-            >
-              <Close
-                title="Clear Selection"
-                aria-label="Clear Selection"
-                onClick={() => onMapSelect()}
-              />
-              <Flex>
-                <IconButton
-                  aria-label={multipleSelected ? "Reset Maps" : "Reset Map"}
-                  title={multipleSelected ? "Reset Maps" : "Reset Map"}
-                  onClick={() => onMapsReset()}
-                  disabled={!hasMapState}
-                >
-                  <ResetMapIcon />
-                </IconButton>
-                <IconButton
-                  aria-label={multipleSelected ? "Remove Maps" : "Remove Map"}
-                  title={multipleSelected ? "Remove Maps" : "Remove Map"}
-                  onClick={() => onMapsRemove()}
-                  disabled={hasSelectedDefaultMap}
-                >
-                  <RemoveMapIcon />
-                </IconButton>
-              </Flex>
-            </Flex>
-          )}
-        </Box>
-        {createPortal(
-          <DragOverlay>
-            {dragId && mapToTile(maps.find((maps) => maps.id === dragId))}
-          </DragOverlay>,
-          document.body
+            {groups.map((mapId) => (
+              <Sortable id={mapId} key={mapId}>
+                {mapToTile(mapId)}
+              </Sortable>
+            ))}
+          </Grid>
+        </SimpleBar>
+        {databaseStatus === "disabled" && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "39px",
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              borderRadius: "2px",
+            }}
+            bg="highlight"
+            p={1}
+          >
+            <Text as="p" variant="body2">
+              Map saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
+              for more information.
+            </Text>
+          </Box>
         )}
-      </SortableContext>
-    </DndContext>
+        {selectedMaps.length > 0 && (
+          <Flex
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              justifyContent: "space-between",
+            }}
+            bg="overlay"
+          >
+            <Close
+              title="Clear Selection"
+              aria-label="Clear Selection"
+              onClick={() => onMapSelect()}
+            />
+            <Flex>
+              <IconButton
+                aria-label={multipleSelected ? "Reset Maps" : "Reset Map"}
+                title={multipleSelected ? "Reset Maps" : "Reset Map"}
+                onClick={() => onMapsReset()}
+                disabled={!hasMapState}
+              >
+                <ResetMapIcon />
+              </IconButton>
+              <IconButton
+                aria-label={multipleSelected ? "Remove Maps" : "Remove Map"}
+                title={multipleSelected ? "Remove Maps" : "Remove Map"}
+                onClick={() => onMapsRemove()}
+                disabled={hasSelectedDefaultMap}
+              >
+                <RemoveMapIcon />
+              </IconButton>
+            </Flex>
+          </Flex>
+        )}
+      </Box>
+    </SortableTiles>
   );
 }
 

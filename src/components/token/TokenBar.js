@@ -6,7 +6,7 @@ import { DragOverlay, DndContext } from "@dnd-kit/core";
 
 import ListToken from "./ListToken";
 import SelectTokensButton from "./SelectTokensButton";
-import Draggable from "../Draggable";
+import Draggable from "../drag/Draggable";
 
 import useSetting from "../../hooks/useSetting";
 
