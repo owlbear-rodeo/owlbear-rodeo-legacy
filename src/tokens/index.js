@@ -99,7 +99,6 @@ export function getDefaultTokens(userId) {
       height: 256,
       outline: "circle",
       owner: userId,
-      group: "default",
       created: tokenKeys.length - i,
       lastModified: Date.now(),
     };
