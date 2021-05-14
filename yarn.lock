@@ -1803,7 +1803,7 @@
   dependencies:
     tslib "^2.0.0"
 
-"@dnd-kit/core@^3.0.0", "@dnd-kit/core@^3.0.2":
+"@dnd-kit/core@3.0.2", "@dnd-kit/core@^3.0.0":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@dnd-kit/core/-/core-3.0.2.tgz#e46ae11ef667aa5c31fddab21cf36ffd80d3ce5b"
   integrity sha512-L+rGnDYBb4BfYKDylzIBeODRIlJ+YVvo2iL9pVXsh317Nq7c9irCvi3XK8JnWD5QBw/3WZ5FmbPmTE91EKwKeA==
@@ -11894,6 +11894,7 @@ simple-peer@feross/simple-peer#694/head:
   resolved "https://codeload.github.com/feross/simple-peer/tar.gz/0d08d07b83ff3b8c60401688d80642d24dfeffe2"
   dependencies:
     debug "^4.0.1"
+    err-code "^2.0.3"
     get-browser-rtc "^1.0.0"
     queue-microtask "^1.1.0"
     randombytes "^2.0.3"

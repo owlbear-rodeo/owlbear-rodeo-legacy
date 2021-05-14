@@ -7,6 +7,7 @@ import TokenHideIcon from "../../icons/TokenHideIcon";
 import TokenShowIcon from "../../icons/TokenShowIcon";
 
 import TokenTile from "./TokenTile";
+import TokenTileGroup from "./TokenTileGroup";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
 
@@ -40,25 +41,37 @@ function TokenTiles({
   );
   let allTokensVisible = selectedTokens.every((token) => !token.hideInSidebar);
 
-  function tokenToTile(tokenId) {
-    const token = tokens.find((token) => token.id === tokenId);
-    const isSelected = selectedTokens.includes(token);
-    return (
-      <TokenTile
-        key={token.id}
-        token={token}
-        isSelected={isSelected}
-        onTokenSelect={onTokenSelect}
-        onTokenEdit={onTokenEdit}
-        canEdit={
-          isSelected &&
-          token.type !== "default" &&
-          selectMode === "single" &&
-          selectedTokens.length === 1
-        }
-        badges={[`${token.defaultSize}x`]}
-      />
-    );
+  function groupToTokenTile(group) {
+    if (group.type === "item") {
+      const token = tokens.find((token) => token.id === group.id);
+      const isSelected = selectedTokens.includes(token);
+      return (
+        <TokenTile
+          key={token.id}
+          token={token}
+          isSelected={isSelected}
+          onTokenSelect={onTokenSelect}
+          onTokenEdit={onTokenEdit}
+          canEdit={
+            isSelected &&
+            token.type !== "default" &&
+            selectMode === "single" &&
+            selectedTokens.length === 1
+          }
+          badges={[`${token.defaultSize}x`]}
+        />
+      );
+    } else {
+      return (
+        <TokenTileGroup
+          key={group.id}
+          group={group}
+          tokens={group.items.map((item) =>
+            tokens.find((token) => token.id === item.id)
+          )}
+        />
+      );
+    }
   }
 
   const multipleSelected = selectedTokens.length > 1;
@@ -82,7 +95,7 @@ function TokenTiles({
     <SortableTiles
       groups={groups}
       onGroupChange={onTokensGroup}
-      renderTile={tokenToTile}
+      renderTile={groupToTokenTile}
     >
       <Box sx={{ position: "relative" }}>
         <FilterBar
@@ -112,9 +125,9 @@ function TokenTiles({
             columns={layout.gridTemplate}
             onClick={() => onTokenSelect()}
           >
-            {groups.map((tokenId) => (
-              <Sortable id={tokenId} key={tokenId}>
-                {tokenToTile(tokenId)}
+            {groups.map((group) => (
+              <Sortable id={group.id} key={group.id}>
+                {groupToTokenTile(group)}
               </Sortable>
             ))}
           </Grid>

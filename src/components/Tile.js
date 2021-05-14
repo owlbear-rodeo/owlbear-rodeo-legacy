@@ -1,10 +1,9 @@
 import React from "react";
-import { Flex, Image as UIImage, IconButton, Box, Text, Badge } from "theme-ui";
+import { Flex, IconButton, Box, Text, Badge, Grid } from "theme-ui";
 
 import EditTileIcon from "../icons/EditTileIcon";
 
 function Tile({
-  src,
   title,
   isSelected,
   onSelect,
@@ -13,6 +12,8 @@ function Tile({
   canEdit,
   badges,
   editTitle,
+  columns,
+  children,
 }) {
   return (
     <Flex
@@ -34,21 +35,21 @@ function Tile({
         onSelect();
       }}
       onDoubleClick={onDoubleClick}
+      aria-label={title}
     >
-      {src && (
-        <UIImage
-          sx={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
-          src={src}
-          alt={title}
-        />
-      )}
+      <Grid
+        columns={columns}
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          gridGap: 0,
+        }}
+      >
+        {children}
+      </Grid>
       <Flex
         sx={{
           position: "absolute",
@@ -116,7 +117,6 @@ function Tile({
 }
 
 Tile.defaultProps = {
-  src: "",
   title: "",
   isSelected: false,
   onSelect: () => {},
@@ -126,6 +126,7 @@ Tile.defaultProps = {
   canEdit: false,
   badges: [],
   editTitle: "Edit",
+  columns: "1fr",
 };
 
 export default Tile;

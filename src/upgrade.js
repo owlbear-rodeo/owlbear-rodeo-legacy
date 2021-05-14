@@ -639,23 +639,59 @@ export const versions = {
       tx.table("tokens").bulkAdd(tokens);
     });
   },
-  // v1.9.0 -
+  // v1.9.0 - Add new group table
   33(v) {
     v.stores({ groups: "id" }).upgrade(async (tx) => {
+      function groupItems(items) {
+        let groups = [];
+        let subGroups = {};
+        for (let item of items) {
+          if (!item.group) {
+            groups.push({ id: item.id, type: "item" });
+          } else if (item.group in subGroups) {
+            subGroups[item.group].items.push({ id: item.id, type: "item" });
+          } else {
+            subGroups[item.group] = {
+              id: uuid(),
+              type: "group",
+              name: item.group,
+              items: [{ id: item.id, type: "item" }],
+            };
+          }
+        }
+        groups.push(...Object.values(subGroups));
+        return groups;
+      }
+
       let maps = await Dexie.waitFor(tx.table("maps").toArray());
       maps = maps.sort((a, b) => b.created - a.created);
-      const mapIds = maps.map((map) => map.id);
-      tx.table("groups").add({ id: "maps", data: mapIds });
+      const mapGroupItems = groupItems(maps);
+      tx.table("groups").add({ id: "maps", items: mapGroupItems });
 
       let tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       tokens = tokens.sort((a, b) => b.created - a.created);
-      const tokenIds = tokens.map((token) => token.id);
-      tx.table("groups").add({ id: "tokens", data: tokenIds });
+      const tokenGroupItems = groupItems(tokens);
+      tx.table("groups").add({ id: "tokens", items: tokenGroupItems });
+    });
+  },
+  // v1.9.0 - Remove map and token group in respective tables
+  34(v) {
+    v.stores({}).upgrade((tx) => {
+      tx.table("maps")
+        .toCollection()
+        .modify((map) => {
+          delete map.group;
+        });
+      tx.table("tokens")
+        .toCollection()
+        .modify((token) => {
+          delete token.group;
+        });
     });
   },
 };
 
-export const latestVersion = 33;
+export const latestVersion = 34;
 
 /**
  * Load versions onto a database up to a specific version number

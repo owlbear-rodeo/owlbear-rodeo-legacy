@@ -29,6 +29,7 @@ function TokenBar({ onMapTokenStateCreate }) {
   function handleDragEnd({ active }) {
     setDragId(null);
     const token = tokensById[active.id];
+    console.log("Drag", active);
     if (token) {
       // TODO: Get drag position
       const tokenState = createTokenState(token, { x: 0, y: 0 }, userId);
@@ -36,8 +37,9 @@ function TokenBar({ onMapTokenStateCreate }) {
     }
   }
   const tokens = tokenGroups
-    .map((tokenId) => tokensById[tokenId])
-    .filter((token) => !token.hideInSidebar)
+    .map((group) => tokensById[group.id])
+    // TODO: Add group support
+    .filter((token) => token && !token.hideInSidebar)
     .map((token) => (
       <Draggable id={token.id} key={token.id}>
         <ListToken token={token} />

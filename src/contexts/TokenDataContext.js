@@ -33,7 +33,7 @@ export function TokenDataProvider({ children }) {
       }
       setTokens(storedTokens);
       const group = await database.table("groups").get("tokens");
-      const storedGroups = group.data;
+      const storedGroups = group.items;
       setTokenGroups(storedGroups);
       setTokensLoading(false);
     }
@@ -54,9 +54,9 @@ export function TokenDataProvider({ children }) {
     async (token) => {
       await database.table("tokens").add(token);
       const group = await database.table("groups").get("tokens");
-      await database
-        .table("groups")
-        .update("tokens", { data: [token.id, ...group.data] });
+      await database.table("groups").update("tokens", {
+        items: [{ id: token.id, type: "item" }, ...group.items],
+      });
     },
     [database]
   );
@@ -99,7 +99,7 @@ export function TokenDataProvider({ children }) {
     async (groups) => {
       // Update group state immediately to avoid animation delay
       setTokenGroups(groups);
-      await database.table("groups").update("tokens", { data: groups });
+      await database.table("groups").update("tokens", { items: groups });
     },
     [database]
   );
@@ -139,7 +139,7 @@ export function TokenDataProvider({ children }) {
         }
         if (change.table === "groups") {
           if (change.type === 2 && change.key === "tokens") {
-            setTokenGroups(change.obj.data);
+            setTokenGroups(change.obj.items);
           }
         }
       }

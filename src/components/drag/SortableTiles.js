@@ -30,8 +30,8 @@ function SortableTiles({ groups, onGroupChange, renderTile, children }) {
   function handleDragEnd({ active, over }) {
     setDragId();
     if (active && over && active.id !== over.id) {
-      const oldIndex = groups.indexOf(active.id);
-      const newIndex = groups.indexOf(over.id);
+      const oldIndex = groups.findIndex((group) => group.id === active.id);
+      const newIndex = groups.findIndex((group) => group.id === over.id);
       onGroupChange(arrayMove(groups, oldIndex, newIndex));
     }
   }
@@ -53,7 +53,7 @@ function SortableTiles({ groups, onGroupChange, renderTile, children }) {
           <DragOverlay dropAnimation={null}>
             {dragId && (
               <animated.div style={dragBounce}>
-                {renderTile(dragId)}
+                {renderTile(groups.find((group) => group.id === dragId))}
               </animated.div>
             )}
           </DragOverlay>,

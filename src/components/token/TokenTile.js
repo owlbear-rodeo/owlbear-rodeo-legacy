@@ -1,10 +1,7 @@
 import React from "react";
 
 import Tile from "../Tile";
-
-import { useDataURL } from "../../contexts/AssetsContext";
-
-import { tokenSources as defaultTokenSources } from "../../tokens";
+import TokenTileImage from "./TokenTileImage";
 
 function TokenTile({
   token,
@@ -14,16 +11,8 @@ function TokenTile({
   canEdit,
   badges,
 }) {
-  const tokenURL = useDataURL(
-    token,
-    defaultTokenSources,
-    undefined,
-    token.type === "file"
-  );
-
   return (
     <Tile
-      src={tokenURL}
       title={token.name}
       isSelected={isSelected}
       onSelect={() => onTokenSelect(token)}
@@ -31,7 +20,9 @@ function TokenTile({
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Token"
-    />
+    >
+      <TokenTileImage token={token} />
+    </Tile>
   );
 }
 

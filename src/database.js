@@ -21,8 +21,11 @@ function populate(db) {
     const tokens = getDefaultTokens(userId);
     db.table("tokens").bulkAdd(tokens);
     db.table("groups").bulkAdd([
-      { id: "maps", data: maps.map((map) => map.id) },
-      { id: "tokens", data: tokens.map((token) => token.id) },
+      { id: "maps", items: maps.map((map) => ({ id: map.id, type: "item" })) },
+      {
+        id: "tokens",
+        items: tokens.map((token) => ({ id: token.id, type: "item" })),
+      },
     ]);
   });
 }

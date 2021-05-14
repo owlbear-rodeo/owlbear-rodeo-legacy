@@ -47,7 +47,7 @@ export function MapDataProvider({ children }) {
       const storedStates = await database.table("states").toArray();
       setMapStates(storedStates);
       const group = await database.table("groups").get("maps");
-      const storedGroups = group.data;
+      const storedGroups = group.items;
       setMapGroups(storedGroups);
       setMapsLoading(false);
     }
@@ -82,9 +82,9 @@ export function MapDataProvider({ children }) {
       await database.table("maps").add(map);
       await database.table("states").add(state);
       const group = await database.table("groups").get("maps");
-      await database
-        .table("groups")
-        .update("maps", { data: [map.id, ...group.data] });
+      await database.table("groups").update("maps", {
+        items: [{ id: map.id, type: "item" }, ...group.items],
+      });
     },
     [database]
   );
@@ -146,7 +146,7 @@ export function MapDataProvider({ children }) {
     async (groups) => {
       // Update group state immediately to avoid animation delay
       setMapGroups(groups);
-      await database.table("groups").update("maps", { data: groups });
+      await database.table("groups").update("maps", { items: groups });
     },
     [database]
   );
@@ -207,7 +207,7 @@ export function MapDataProvider({ children }) {
         }
         if (change.table === "groups") {
           if (change.type === 2 && change.key === "maps") {
-            setMapGroups(change.obj.data);
+            setMapGroups(change.obj.items);
           }
         }
       }

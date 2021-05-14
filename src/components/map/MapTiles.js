@@ -6,6 +6,7 @@ import RemoveMapIcon from "../../icons/RemoveMapIcon";
 import ResetMapIcon from "../../icons/ResetMapIcon";
 
 import MapTile from "./MapTile";
+import MapTileGroup from "./MapTileGroup";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
 
@@ -53,24 +54,35 @@ function MapTiles({
     (map) => map.type === "default"
   );
 
-  function mapToTile(mapId) {
-    const map = maps.find((map) => map.id === mapId);
-    const isSelected = selectedMaps.includes(map);
-    return (
-      <MapTile
-        key={map.id}
-        map={map}
-        isSelected={isSelected}
-        onMapSelect={onMapSelect}
-        onMapEdit={onMapEdit}
-        onDone={onDone}
-        size={layout.tileSize}
-        canEdit={
-          isSelected && selectMode === "single" && selectedMaps.length === 1
-        }
-        badges={[`${map.grid.size.x}x${map.grid.size.y}`]}
-      />
-    );
+  function groupToMapTile(group) {
+    if (group.type === "item") {
+      const map = maps.find((map) => map.id === group.id);
+      const isSelected = selectedMaps.includes(map);
+      return (
+        <MapTile
+          key={map.id}
+          map={map}
+          isSelected={isSelected}
+          onMapSelect={onMapSelect}
+          onMapEdit={onMapEdit}
+          onDone={onDone}
+          canEdit={
+            isSelected && selectMode === "single" && selectedMaps.length === 1
+          }
+          badges={[`${map.grid.size.x}x${map.grid.size.y}`]}
+        />
+      );
+    } else {
+      return (
+        <MapTileGroup
+          key={group.id}
+          group={group}
+          maps={group.items.map((item) =>
+            maps.find((map) => map.id === item.id)
+          )}
+        />
+      );
+    }
   }
 
   const multipleSelected = selectedMaps.length > 1;
@@ -79,7 +91,7 @@ function MapTiles({
     <SortableTiles
       groups={groups}
       onGroupChange={onMapsGroup}
-      renderTile={mapToTile}
+      renderTile={groupToMapTile}
     >
       <Box sx={{ position: "relative" }}>
         <FilterBar
@@ -110,9 +122,9 @@ function MapTiles({
             columns={layout.gridTemplate}
             onClick={() => onMapSelect()}
           >
-            {groups.map((mapId) => (
-              <Sortable id={mapId} key={mapId}>
-                {mapToTile(mapId)}
+            {groups.map((group) => (
+              <Sortable id={group.id} key={group.id}>
+                {groupToMapTile(group)}
               </Sortable>
             ))}
           </Grid>
