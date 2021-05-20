@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, IconButton, Box, Text, Badge, Grid } from "theme-ui";
+import { Flex, IconButton, Box, Text, Badge } from "theme-ui";
 
 import EditTileIcon from "../icons/EditTileIcon";
 
@@ -12,7 +12,6 @@ function Tile({
   canEdit,
   badges,
   editTitle,
-  columns,
   children,
 }) {
   return (
@@ -37,19 +36,17 @@ function Tile({
       onDoubleClick={onDoubleClick}
       aria-label={title}
     >
-      <Grid
-        columns={columns}
+      <Box
         sx={{
           width: "100%",
           height: "100%",
           position: "absolute",
           top: 0,
           left: 0,
-          gridGap: 0,
         }}
       >
         {children}
-      </Grid>
+      </Box>
       <Flex
         sx={{
           position: "absolute",
@@ -89,7 +86,7 @@ function Tile({
       />
       <Box sx={{ position: "absolute", top: 0, left: 0 }}>
         {badges.map((badge, i) => (
-          <Badge m={2} key={i} bg="overlay">
+          <Badge m={2} key={i} bg="overlay" color="text">
             {badge}
           </Badge>
         ))}
