@@ -144,23 +144,26 @@ export function groupsFromIds(groupIds, groups) {
   return filteredGroups;
 }
 
-export function itemsFromGroups(
-  groups,
-  allItems,
-  includeGroupedItems = true,
-  itemKey = "id"
-) {
+function getGroupItems(group) {
+  if (group.type === "group") {
+    let groups = [];
+    for (let item of group.items) {
+      groups.push(...getGroupItems(item));
+    }
+    return groups;
+  } else {
+    return [group];
+  }
+}
+
+export function itemsFromGroups(groups, allItems, itemKey = "id") {
   const allItemsById = keyBy(allItems, itemKey);
   const groupedItems = [];
 
   for (let group of groups) {
-    if (group.type === "item") {
-      groupedItems.push(allItemsById[group.id]);
-    } else if (group.type === "group" && includeGroupedItems) {
-      for (let item of group.items) {
-        groupedItems.push(allItemsById[item.id]);
-      }
-    }
+    const groupItems = getGroupItems(group);
+    const items = groupItems.map((item) => allItemsById[item.id]);
+    groupedItems.push(...items);
   }
 
   return groupedItems;

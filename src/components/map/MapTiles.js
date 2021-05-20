@@ -46,7 +46,6 @@ function MapTiles({
     const selectedMapStates = itemsFromGroups(
       selectedGroups,
       mapStates,
-      true,
       "mapId"
     );
 
