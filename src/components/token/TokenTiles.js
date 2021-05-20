@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Flex, Box, Text, IconButton, Close, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
@@ -14,17 +14,17 @@ import FilterBar from "../FilterBar";
 import Sortable from "../drag/Sortable";
 import SortableTiles from "../drag/SortableTiles";
 
-import { useDatabase } from "../../contexts/DatabaseContext";
-
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+
+import { groupsFromIds, itemsFromGroups } from "../../helpers/select";
 
 function TokenTiles({
   tokens,
   groups,
+  selectedGroupIds,
+  onTileSelect,
   onTokenAdd,
   onTokenEdit,
-  onTokenSelect,
-  selectedTokens,
   onTokensRemove,
   selectMode,
   onSelectModeChange,
@@ -32,36 +32,45 @@ function TokenTiles({
   onSearchChange,
   onTokensGroup,
   onTokensHide,
+  databaseDisabled,
 }) {
-  const { databaseStatus } = useDatabase();
   const layout = useResponsiveLayout();
 
-  let hasSelectedDefaultToken = selectedTokens.some(
-    (token) => token.type === "default"
-  );
-  let allTokensVisible = selectedTokens.every((token) => !token.hideInSidebar);
+  const [hasSelectedDefaultToken, setHasSelectedDefaultToken] = useState(false);
+  const [allTokensVisible, setAllTokensVisisble] = useState(false);
+
+  useEffect(() => {
+    const selectedGroups = groupsFromIds(selectedGroupIds, groups);
+    const selectedTokens = itemsFromGroups(selectedGroups, tokens);
+
+    setHasSelectedDefaultToken(
+      selectedTokens.some((token) => token.type === "default")
+    );
+    setAllTokensVisisble(selectedTokens.every((token) => !token.hideInSidebar));
+  }, [selectedGroupIds, tokens, groups]);
 
   function groupToTokenTile(group) {
     if (group.type === "item") {
       const token = tokens.find((token) => token.id === group.id);
-      const isSelected = selectedTokens.includes(token);
+      const isSelected = selectedGroupIds.includes(group.id);
       return (
         <TokenTile
           key={token.id}
           token={token}
           isSelected={isSelected}
-          onTokenSelect={onTokenSelect}
+          onTokenSelect={onTileSelect}
           onTokenEdit={onTokenEdit}
           canEdit={
             isSelected &&
             token.type !== "default" &&
             selectMode === "single" &&
-            selectedTokens.length === 1
+            selectedGroupIds.length === 1
           }
           badges={[`${token.defaultSize}x`]}
         />
       );
     } else {
+      const isSelected = selectedGroupIds.includes(group.id);
       return (
         <TokenTileGroup
           key={group.id}
@@ -69,12 +78,14 @@ function TokenTiles({
           tokens={group.items.map((item) =>
             tokens.find((token) => token.id === item.id)
           )}
+          isSelected={isSelected}
+          onSelect={onTileSelect}
         />
       );
     }
   }
 
-  const multipleSelected = selectedTokens.length > 1;
+  const multipleSelected = selectedGroupIds.length > 1;
 
   let hideTitle = "";
   if (multipleSelected) {
@@ -99,7 +110,7 @@ function TokenTiles({
     >
       <Box sx={{ position: "relative" }}>
         <FilterBar
-          onFocus={() => onTokenSelect()}
+          onFocus={() => onTileSelect()}
           search={search}
           onSearchChange={onSearchChange}
           selectMode={selectMode}
@@ -115,7 +126,7 @@ function TokenTiles({
           <Grid
             p={2}
             pb={4}
-            pt={databaseStatus === "disabled" ? 4 : 2}
+            pt={databaseDisabled ? 4 : 2}
             bg="muted"
             sx={{
               borderRadius: "4px",
@@ -123,7 +134,7 @@ function TokenTiles({
             }}
             gap={2}
             columns={layout.gridTemplate}
-            onClick={() => onTokenSelect()}
+            onClick={() => onTileSelect()}
           >
             {groups.map((group) => (
               <Sortable id={group.id} key={group.id}>
@@ -132,7 +143,7 @@ function TokenTiles({
             ))}
           </Grid>
         </SimpleBar>
-        {databaseStatus === "disabled" && (
+        {databaseDisabled && (
           <Box
             sx={{
               position: "absolute",
@@ -151,7 +162,7 @@ function TokenTiles({
             </Text>
           </Box>
         )}
-        {selectedTokens.length > 0 && (
+        {selectedGroupIds.length > 0 && (
           <Flex
             sx={{
               position: "absolute",
@@ -165,7 +176,7 @@ function TokenTiles({
             <Close
               title="Clear Selection"
               aria-label="Clear Selection"
-              onClick={() => onTokenSelect()}
+              onClick={() => onTileSelect()}
             />
             <Flex>
               <IconButton

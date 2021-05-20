@@ -11,7 +11,11 @@ import ImageDrop from "../components/ImageDrop";
 import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { handleItemSelect } from "../helpers/select";
+import {
+  groupsFromIds,
+  handleItemSelect,
+  itemsFromGroups,
+} from "../helpers/select";
 import { createTokenFromFile } from "../helpers/token";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
@@ -20,6 +24,7 @@ import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import shortcuts from "../shortcuts";
 
@@ -35,7 +40,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     tokensLoading,
     tokenGroups,
     updateTokenGroups,
+    updateToken,
   } = useTokenData();
+  const { databaseStatus } = useDatabase();
   const { addAssets } = useAssets();
 
   /**
@@ -123,7 +130,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     const { token, assets } = await createTokenFromFile(file, userId);
     await addToken(token);
     await addAssets(assets);
-    setSelectedTokenIds([token.id]);
     setIsLoading(false);
   }
 
@@ -131,22 +137,28 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    * Token controls
    */
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTokenIds, setSelectedTokenIds] = useState([]);
-  const selectedTokens = tokens.filter((token) =>
-    selectedTokenIds.includes(token.id)
-  );
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
+
+  function getSelectedTokens() {
+    const groups = groupsFromIds(selectedGroupIds, tokenGroups);
+    return itemsFromGroups(groups, tokens);
+  }
 
   const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
   async function handleTokensRemove() {
     setIsLoading(true);
     setIsTokensRemoveModalOpen(false);
+    const selectedTokens = getSelectedTokens();
+    const selectedTokenIds = selectedTokens.map((token) => token.id);
     await removeTokens(selectedTokenIds);
-    setSelectedTokenIds([]);
+    setSelectedGroupIds([]);
     setIsLoading(false);
   }
 
   async function handleTokensHide(hideInSidebar) {
     setIsLoading(true);
+    const selectedTokens = getSelectedTokens();
+    const selectedTokenIds = selectedTokens.map((token) => token.id);
     await updateTokens(selectedTokenIds, { hideInSidebar });
     setIsLoading(false);
   }
@@ -154,12 +166,12 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
-  async function handleTokenSelect(token) {
+  async function handleTileSelect(item) {
     handleItemSelect(
-      token,
+      item,
       selectMode,
-      selectedTokenIds,
-      setSelectedTokenIds
+      selectedGroupIds,
+      setSelectedGroupIds
       // TODO: Rework group support
     );
   }
@@ -178,9 +190,10 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       setSelectMode("multiple");
     }
     if (shortcuts.delete(event)) {
+      const selectedTokens = getSelectedTokens();
       // Selected tokens and none are default
       if (
-        selectedTokenIds.length > 0 &&
+        selectedTokens.length > 0 &&
         !selectedTokens.some((token) => token.type === "default")
       ) {
         // Ensure all other modals are closed
@@ -239,17 +252,18 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           <TokenTiles
             tokens={tokens}
             groups={tokenGroups}
+            selectedGroupIds={selectedGroupIds}
             onTokenAdd={openImageDialog}
             onTokenEdit={() => setIsEditModalOpen(true)}
             onTokensRemove={() => setIsTokensRemoveModalOpen(true)}
-            selectedTokens={selectedTokens}
-            onTokenSelect={handleTokenSelect}
+            onTileSelect={handleTileSelect}
             selectMode={selectMode}
             onSelectModeChange={setSelectMode}
             search={search}
             onSearchChange={handleSearchChange}
             onTokensGroup={updateTokenGroups}
             onTokensHide={handleTokensHide}
+            databaseDisabled={databaseStatus === "disabled"}
           />
           <Button
             variant="primary"
@@ -265,16 +279,18 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
       <EditTokenModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        tokenId={selectedTokens.length === 1 && selectedTokens[0].id}
+        token={
+          selectedGroupIds.length === 1 &&
+          tokens.find((token) => token.id === selectedGroupIds[0])
+        }
+        onTokenUpdate={updateToken}
       />
       <ConfirmModal
         isOpen={isTokensRemoveModalOpen}
         onRequestClose={() => setIsTokensRemoveModalOpen(false)}
         onConfirm={handleTokensRemove}
         confirmText="Remove"
-        label={`Remove ${selectedTokenIds.length} Token${
-          selectedTokenIds.length > 1 ? "s" : ""
-        }`}
+        label="Remove Token(s)"
         description="This operation cannot be undone."
       />
       <ConfirmModal

@@ -7,7 +7,7 @@ function TokenTileGroup({
   group,
   tokens,
   isSelected,
-  onGroupSelect,
+  onSelect,
   onOpen,
   canOpen,
 }) {
@@ -15,8 +15,8 @@ function TokenTileGroup({
     <Tile
       title={group.name}
       isSelected={isSelected}
-      // onSelect={() => onGroupSelect(group)}
-      // onDoubleClick={() => canOpen && onOpen()}
+      onSelect={() => onSelect(group)}
+      onDoubleClick={() => canOpen && onOpen()}
       columns="1fr 1fr"
     >
       {tokens.slice(0, 4).map((token) => (

@@ -5,16 +5,19 @@ import Modal from "../components/Modal";
 import MapSettings from "../components/map/MapSettings";
 import MapEditor from "../components/map/MapEditor";
 
-import { useMapData } from "../contexts/MapDataContext";
-
 import { isEmpty } from "../helpers/shared";
 import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
-function EditMapModal({ isOpen, onDone, map, mapState }) {
-  const { updateMap, updateMapState } = useMapData();
-
+function EditMapModal({
+  isOpen,
+  onDone,
+  map,
+  mapState,
+  onUpdateMap,
+  onUpdateMapState,
+}) {
   function handleClose() {
     setMapSettingChanges({});
     setMapStateSettingChanges({});
@@ -79,8 +82,8 @@ function EditMapModal({ isOpen, onDone, map, mapState }) {
           }
         }
       }
-      await updateMap(map.id, mapSettingChanges);
-      await updateMapState(map.id, mapStateSettingChanges);
+      await onUpdateMap(map.id, mapSettingChanges);
+      await onUpdateMapState(map.id, mapStateSettingChanges);
 
       setMapSettingChanges({});
       setMapStateSettingChanges({});

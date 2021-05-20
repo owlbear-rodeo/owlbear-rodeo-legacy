@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Fuse from "fuse.js";
 
-import { groupBy } from "./shared";
+import { groupBy, keyBy } from "./shared";
 
 /**
  * Helpers for the SelectMapModal and SelectTokenModal
@@ -133,4 +133,35 @@ export function handleItemSelect(
     default:
       setSelectedIds([]);
   }
+}
+
+export function groupsFromIds(groupIds, groups) {
+  const groupsByIds = keyBy(groups, "id");
+  const filteredGroups = [];
+  for (let groupId of groupIds) {
+    filteredGroups.push(groupsByIds[groupId]);
+  }
+  return filteredGroups;
+}
+
+export function itemsFromGroups(
+  groups,
+  allItems,
+  includeGroupedItems = true,
+  itemKey = "id"
+) {
+  const allItemsById = keyBy(allItems, itemKey);
+  const groupedItems = [];
+
+  for (let group of groups) {
+    if (group.type === "item") {
+      groupedItems.push(allItemsById[group.id]);
+    } else if (group.type === "group" && includeGroupedItems) {
+      for (let item of group.items) {
+        groupedItems.push(allItemsById[item.id]);
+      }
+    }
+  }
+
+  return groupedItems;
 }

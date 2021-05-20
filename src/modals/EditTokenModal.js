@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -6,31 +6,11 @@ import TokenSettings from "../components/token/TokenSettings";
 import TokenPreview from "../components/token/TokenPreview";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { useTokenData } from "../contexts/TokenDataContext";
-
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
-function EditTokenModal({ isOpen, onDone, tokenId }) {
-  const { updateToken, getToken } = useTokenData();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState();
-  useEffect(() => {
-    async function loadToken() {
-      setIsLoading(true);
-      setToken(await getToken(tokenId));
-      setIsLoading(false);
-    }
-
-    if (isOpen && tokenId) {
-      loadToken();
-    } else {
-      setToken();
-    }
-  }, [isOpen, tokenId, getToken]);
-
+function EditTokenModal({ isOpen, onDone, token, onUpdateToken }) {
   function handleClose() {
     setTokenSettingChanges({});
     onDone();
@@ -55,7 +35,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
         verifiedChanges.defaultSize = verifiedChanges.defaultSize || 1;
       }
 
-      await updateToken(token.id, verifiedChanges);
+      await onUpdateToken(token.id, verifiedChanges);
       setTokenSettingChanges({});
     }
   }
@@ -84,7 +64,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
         <Label pt={2} pb={1}>
           Edit token
         </Label>
-        {isLoading || !token ? (
+        {!token ? (
           <Flex
             sx={{
               width: "100%",

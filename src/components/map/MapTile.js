@@ -6,8 +6,8 @@ import MapTileImage from "./MapTileImage";
 function MapTile({
   map,
   isSelected,
-  onMapSelect,
-  onMapEdit,
+  onSelect,
+  onEdit,
   onDone,
   canEdit,
   badges,
@@ -16,8 +16,8 @@ function MapTile({
     <Tile
       title={map.name}
       isSelected={isSelected}
-      onSelect={() => onMapSelect(map)}
-      onEdit={() => onMapEdit(map.id)}
+      onSelect={() => onSelect({ id: map.id })}
+      onEdit={() => onEdit(map.id)}
       onDoubleClick={() => canEdit && onDone()}
       canEdit={canEdit}
       badges={badges}

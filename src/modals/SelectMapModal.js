@@ -10,7 +10,11 @@ import MapTiles from "../components/map/MapTiles";
 import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { handleItemSelect } from "../helpers/select";
+import {
+  groupsFromIds,
+  handleItemSelect,
+  itemsFromGroups,
+} from "../helpers/select";
 import { createMapFromFile } from "../helpers/map";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
@@ -19,6 +23,7 @@ import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import shortcuts from "../shortcuts";
 
@@ -42,8 +47,12 @@ function SelectMapModal({
     resetMap,
     mapsLoading,
     getMapState,
+    getMap,
     updateMapGroups,
+    updateMap,
+    updateMapState,
   } = useMapData();
+  const { databaseStatus } = useDatabase();
   const { addAssets } = useAssets();
 
   /**
@@ -126,7 +135,6 @@ function SelectMapModal({
     const { map, assets } = await createMapFromFile(file, userId);
     await addMap(map);
     await addAssets(assets);
-    setSelectedMapIds([map.id]);
     setIsLoading(false);
   }
 
@@ -140,20 +148,21 @@ function SelectMapModal({
    * Map Controls
    */
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  // The map selected in the modal
-  const [selectedMapIds, setSelectedMapIds] = useState([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
 
-  const selectedMaps = maps.filter((map) => selectedMapIds.includes(map.id));
-  const selectedMapStates = mapStates.filter((state) =>
-    selectedMapIds.includes(state.mapId)
-  );
+  function getSelectedMaps() {
+    const groups = groupsFromIds(selectedGroupIds, mapGroups);
+    return itemsFromGroups(groups, maps);
+  }
 
   const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
   async function handleMapsRemove() {
     setIsLoading(true);
     setIsMapsRemoveModalOpen(false);
+    const selectedMaps = getSelectedMaps();
+    const selectedMapIds = selectedMaps.map((map) => map.id);
     await removeMaps(selectedMapIds);
-    setSelectedMapIds([]);
+    setSelectedGroupIds([]);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
@@ -165,6 +174,8 @@ function SelectMapModal({
   async function handleMapsReset() {
     setIsLoading(true);
     setIsMapsResetModalOpen(false);
+    const selectedMaps = getSelectedMaps();
+    const selectedMapIds = selectedMaps.map((map) => map.id);
     for (let id of selectedMapIds) {
       const newState = await resetMap(id);
       // Reset the state of the current map if needed
@@ -178,12 +189,12 @@ function SelectMapModal({
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
-  function handleMapSelect(map) {
+  function handleTileSelect(item) {
     handleItemSelect(
-      map,
+      item,
       selectMode,
-      selectedMapIds,
-      setSelectedMapIds
+      selectedGroupIds,
+      setSelectedGroupIds
       // TODO: Add new group support
     );
   }
@@ -200,10 +211,11 @@ function SelectMapModal({
     if (isLoading) {
       return;
     }
-    if (selectedMapIds.length === 1) {
+    const groups = groupsFromIds(selectedGroupIds, mapGroups);
+    if (groups.length === 1 && groups[0].type === "item") {
       setIsLoading(true);
-      const map = selectedMaps[0];
-      const mapState = await getMapState(map.id);
+      const map = await getMap(groups[0].id);
+      const mapState = await getMapState(groups[0].id);
       onMapChange(map, mapState);
       setIsLoading(false);
     } else {
@@ -226,9 +238,10 @@ function SelectMapModal({
       setSelectMode("multiple");
     }
     if (shortcuts.delete(event)) {
+      const selectedMaps = getSelectedMaps();
       // Selected maps and none are default
       if (
-        selectedMapIds.length > 0 &&
+        selectedMaps.length > 0 &&
         !selectedMaps.some((map) => map.type === "default")
       ) {
         // Ensure all other modals are closed
@@ -287,24 +300,25 @@ function SelectMapModal({
           </Label>
           <MapTiles
             maps={maps}
+            mapStates={mapStates}
             groups={mapGroups}
+            selectedGroupIds={selectedGroupIds}
             onMapAdd={openImageDialog}
             onMapEdit={() => setIsEditModalOpen(true)}
             onMapsReset={() => setIsMapsResetModalOpen(true)}
             onMapsRemove={() => setIsMapsRemoveModalOpen(true)}
-            selectedMaps={selectedMaps}
-            selectedMapStates={selectedMapStates}
-            onMapSelect={handleMapSelect}
+            onTileSelect={handleTileSelect}
             onDone={handleDone}
             selectMode={selectMode}
             onSelectModeChange={setSelectMode}
             search={search}
             onSearchChange={handleSearchChange}
             onMapsGroup={updateMapGroups}
+            databaseDisabled={databaseStatus === "disabled"}
           />
           <Button
             variant="primary"
-            disabled={isLoading || selectedMapIds.length > 1}
+            disabled={isLoading || selectedGroupIds.length > 1}
             onClick={handleDone}
             mt={2}
           >
@@ -316,16 +330,24 @@ function SelectMapModal({
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        map={selectedMaps.length === 1 && selectedMaps[0]}
-        mapState={selectedMapStates.length === 1 && selectedMapStates[0]}
+        map={
+          selectedGroupIds.length === 1 &&
+          maps.find((map) => map.id === selectedGroupIds[0])
+        }
+        mapState={
+          selectedGroupIds.length === 1 &&
+          mapStates.find((state) => state.mapId === selectedGroupIds[0])
+        }
+        onUpdateMap={updateMap}
+        onUpdateMapState={updateMapState}
       />
       <ConfirmModal
         isOpen={isMapsResetModalOpen}
         onRequestClose={() => setIsMapsResetModalOpen(false)}
         onConfirm={handleMapsReset}
         confirmText="Reset"
-        label={`Reset ${selectedMapIds.length} Map${
-          selectedMapIds.length > 1 ? "s" : ""
+        label={`Reset ${selectedGroupIds.length} Map${
+          selectedGroupIds.length > 1 ? "s" : ""
         }`}
         description="This will remove all fog, drawings and tokens from the selected maps."
       />
@@ -334,9 +356,7 @@ function SelectMapModal({
         onRequestClose={() => setIsMapsRemoveModalOpen(false)}
         onConfirm={handleMapsRemove}
         confirmText="Remove"
-        label={`Remove ${selectedMapIds.length} Map${
-          selectedMapIds.length > 1 ? "s" : ""
-        }`}
+        label="Remove Map(s)"
         description="This operation cannot be undone."
       />
       <ConfirmModal
