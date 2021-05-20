@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import shortid from "shortid";
-import { Group, Rect, Line } from "react-konva";
+import { Group, Line } from "react-konva";
 import useImage from "use-image";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
@@ -590,15 +590,9 @@ function MapFog({
     }
   }, [shapes, editable, active, toolSettings, shouldRenderGuides]);
 
-  const fogGroupRef = useRef();
-
   return (
     <Group>
-      <Group ref={fogGroupRef}>
-        {/* Render a blank shape so cache works with no fog shapes */}
-        <Rect width={1} height={1} />
-        {fogShapes.map(renderShape)}
-      </Group>
+      <Group>{fogShapes.map(renderShape)}</Group>
       {shouldRenderGuides && renderGuides()}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&
