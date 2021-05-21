@@ -43,11 +43,10 @@ function Sortable({ id, children }) {
     borderWidth: "4px",
     borderRadius: "4px",
     borderStyle: over?.id === `__group__${id}` ? "solid" : "none",
-    pointerEvents: "none",
   };
 
   return (
-    <Box style={{ position: "relative" }}>
+    <Box sx={{ position: "relative" }}>
       <Box
         ref={setDraggableNodeRef}
         style={dragStyle}
@@ -56,12 +55,23 @@ function Sortable({ id, children }) {
       >
         {children}
       </Box>
-      <Box ref={setDroppableNodeRef} style={sortDropStyle} bg="primary" />
       <Box
-        ref={setGroupNodeRef}
-        style={groupDropStyle}
-        sx={{ borderColor: "primary" }}
-      />
+        sx={{
+          width: "100%",
+          height: 0,
+          paddingTop: "100%",
+          pointerEvents: "none",
+          position: "absolute",
+          top: 0,
+        }}
+      >
+        <Box ref={setDroppableNodeRef} style={sortDropStyle} bg="primary" />
+        <Box
+          ref={setGroupNodeRef}
+          style={groupDropStyle}
+          sx={{ borderColor: "primary" }}
+        />
+      </Box>
     </Box>
   );
 }
