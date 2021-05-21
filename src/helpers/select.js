@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import Fuse from "fuse.js";
+import cloneDeep from "lodash.clonedeep";
 
 import { groupBy, keyBy } from "./shared";
 
@@ -174,7 +175,7 @@ export function groupsFromIds(groupIds, groups) {
  * @param {Group} group
  * @return {GroupItem[]}
  */
-function getGroupItems(group) {
+export function getGroupItems(group) {
   if (group.type === "group") {
     let groups = [];
     for (let item of group.items) {
@@ -229,4 +230,14 @@ export function combineGroups(a, b) {
       name: a.name,
     };
   }
+}
+
+export function moveGroups(groups, aIndex, bIndex) {
+  const aGroup = groups[aIndex];
+  const bGroup = groups[bIndex];
+  const newGroup = combineGroups(aGroup, bGroup);
+  const newGroups = cloneDeep(groups);
+  newGroups[aIndex] = newGroup;
+  newGroups.splice(bIndex, 1);
+  return newGroups;
 }

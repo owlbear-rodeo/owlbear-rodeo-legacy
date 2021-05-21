@@ -12,11 +12,17 @@ import {
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
 
-import { combineGroups } from "../../helpers/select";
+import { combineGroups, moveGroups } from "../../helpers/select";
 
 import SortableTile from "./SortableTile";
 
-function SortableTiles({ groups, onGroupChange, renderTile, renderTiles }) {
+function SortableTiles({
+  groups,
+  onGroupChange,
+  renderTile,
+  renderTiles,
+  onTileSelect,
+}) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
   });
@@ -46,10 +52,17 @@ function SortableTiles({ groups, onGroupChange, renderTile, renderTiles }) {
     }
 
     if (over.id.startsWith("__group__")) {
-      return;
-    }
-
-    if (active.id !== over.id) {
+      const overId = over.id.slice(9);
+      if (overId === active.id) {
+        return;
+      }
+      const activeGroupIndex = groups.findIndex(
+        (group) => group.id === active.id
+      );
+      const overGroupIndex = groups.findIndex((group) => group.id === overId);
+      onGroupChange(moveGroups(groups, overGroupIndex, activeGroupIndex));
+      onTileSelect();
+    } else if (active.id !== over.id) {
       const oldIndex = groups.findIndex((group) => group.id === active.id);
       const newIndex = groups.findIndex((group) => group.id === over.id);
       onGroupChange(arrayMove(groups, oldIndex, newIndex));

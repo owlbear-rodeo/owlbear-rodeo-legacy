@@ -205,6 +205,7 @@ function MapTiles({
       onGroupChange={onMapsGroup}
       renderTile={renderTile}
       renderTiles={renderTiles}
+      onTileSelect={onTileSelect}
     />
   );
 }

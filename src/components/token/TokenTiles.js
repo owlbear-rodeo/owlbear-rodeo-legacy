@@ -199,6 +199,7 @@ function TokenTiles({
       onGroupChange={onTokensGroup}
       renderTile={renderTile}
       renderTiles={renderTiles}
+      onTileSelect={onTileSelect}
     />
   );
 }
