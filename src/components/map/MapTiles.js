@@ -14,7 +14,11 @@ import SortableTiles from "../drag/SortableTiles";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
-import { groupsFromIds, itemsFromGroups } from "../../helpers/select";
+import {
+  groupsFromIds,
+  itemsFromGroups,
+  getGroupItems,
+} from "../../helpers/select";
 
 function MapTiles({
   maps,
@@ -90,13 +94,12 @@ function MapTiles({
       );
     } else {
       const isSelected = selectedGroupIds.includes(group.id);
+      const items = getGroupItems(group);
       return (
         <MapTileGroup
           key={group.id}
           group={group}
-          maps={group.items.map((item) =>
-            maps.find((map) => map.id === item.id)
-          )}
+          maps={items.map((item) => maps.find((map) => map.id === item.id))}
           isSelected={isSelected}
           onSelect={onTileSelect}
         />

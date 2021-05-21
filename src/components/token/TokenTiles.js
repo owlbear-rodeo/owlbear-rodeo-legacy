@@ -15,7 +15,11 @@ import SortableTiles from "../drag/SortableTiles";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
-import { groupsFromIds, itemsFromGroups } from "../../helpers/select";
+import {
+  groupsFromIds,
+  itemsFromGroups,
+  getGroupItems,
+} from "../../helpers/select";
 
 function TokenTiles({
   tokens,
@@ -70,11 +74,12 @@ function TokenTiles({
       );
     } else {
       const isSelected = selectedGroupIds.includes(group.id);
+      const items = getGroupItems(group);
       return (
         <TokenTileGroup
           key={group.id}
           group={group}
-          tokens={group.items.map((item) =>
+          tokens={items.map((item) =>
             tokens.find((token) => token.id === item.id)
           )}
           isSelected={isSelected}
