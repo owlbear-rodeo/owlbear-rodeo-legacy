@@ -3,14 +3,14 @@ import { Box } from "theme-ui";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 
-function Sortable({ id, children, showDropGutter }) {
+function Sortable({ id, children }) {
   const {
     attributes,
     listeners,
     isDragging,
-    transition,
     setDroppableNodeRef,
     setDraggableNodeRef,
+    over,
   } = useSortable({ id });
   const { setNodeRef: setGroupNodeRef } = useDroppable({
     id: `__group__${id}`,
@@ -20,7 +20,6 @@ function Sortable({ id, children, showDropGutter }) {
     cursor: "pointer",
     opacity: isDragging ? 0.25 : undefined,
     zIndex: isDragging ? 100 : undefined,
-    transition,
   };
 
   // Sort div left aligned
@@ -31,15 +30,20 @@ function Sortable({ id, children, showDropGutter }) {
     width: "2px",
     height: "100%",
     borderRadius: "2px",
+    visibility: over?.id === id ? "visible" : "hidden",
   };
 
   // Group div center aligned
   const groupDropStyle = {
     position: "absolute",
     top: 0,
-    left: "50%",
-    width: "1px",
+    left: 0,
+    width: "100%",
     height: "100%",
+    borderWidth: "4px",
+    borderRadius: "4px",
+    borderStyle: over?.id === `__group__${id}` ? "solid" : "none",
+    pointerEvents: "none",
   };
 
   return (
@@ -52,12 +56,12 @@ function Sortable({ id, children, showDropGutter }) {
       >
         {children}
       </Box>
+      <Box ref={setDroppableNodeRef} style={sortDropStyle} bg="primary" />
       <Box
-        ref={setDroppableNodeRef}
-        style={sortDropStyle}
-        bg={showDropGutter && "primary"}
+        ref={setGroupNodeRef}
+        style={groupDropStyle}
+        sx={{ borderColor: "primary" }}
       />
-      <Box ref={setGroupNodeRef} style={groupDropStyle} />
     </Box>
   );
 }

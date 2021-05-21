@@ -75,11 +75,7 @@ function SortableTiles({ groups, onGroupChange, renderTile, renderTiles }) {
       <SortableContext items={groups}>
         {renderTiles(
           groups.map((group) => (
-            <SortableTile
-              id={group.id}
-              key={group.id}
-              showDropGutter={overId === group.id}
-            >
+            <SortableTile id={group.id} key={group.id}>
               {dragId && overGroupId === group.id && group.id !== dragId
                 ? // If over a group render a preview of that group
                   renderTile(
