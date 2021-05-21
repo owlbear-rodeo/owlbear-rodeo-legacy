@@ -11,7 +11,6 @@ import TokenTileGroup from "./TokenTileGroup";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
 
-import Sortable from "../drag/Sortable";
 import SortableTiles from "../drag/SortableTiles";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
@@ -49,7 +48,7 @@ function TokenTiles({
     setAllTokensVisisble(selectedTokens.every((token) => !token.hideInSidebar));
   }, [selectedGroupIds, tokens, groups]);
 
-  function groupToTokenTile(group) {
+  function renderTile(group) {
     if (group.type === "item") {
       const token = tokens.find((token) => token.id === group.id);
       const isSelected = selectedGroupIds.includes(group.id);
@@ -102,12 +101,8 @@ function TokenTiles({
     }
   }
 
-  return (
-    <SortableTiles
-      groups={groups}
-      onGroupChange={onTokensGroup}
-      renderTile={groupToTokenTile}
-    >
+  function renderTiles(tiles) {
+    return (
       <Box sx={{ position: "relative" }}>
         <FilterBar
           onFocus={() => onTileSelect()}
@@ -136,11 +131,7 @@ function TokenTiles({
             columns={layout.gridTemplate}
             onClick={() => onTileSelect()}
           >
-            {groups.map((group) => (
-              <Sortable id={group.id} key={group.id}>
-                {groupToTokenTile(group)}
-              </Sortable>
-            ))}
+            {tiles}
           </Grid>
         </SimpleBar>
         {databaseDisabled && (
@@ -199,7 +190,16 @@ function TokenTiles({
           </Flex>
         )}
       </Box>
-    </SortableTiles>
+    );
+  }
+
+  return (
+    <SortableTiles
+      groups={groups}
+      onGroupChange={onTokensGroup}
+      renderTile={renderTile}
+      renderTiles={renderTiles}
+    />
   );
 }
 

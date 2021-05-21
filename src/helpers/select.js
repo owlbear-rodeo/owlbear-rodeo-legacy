@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
 import Fuse from "fuse.js";
 
 import { groupBy, keyBy } from "./shared";
@@ -135,6 +136,30 @@ export function handleItemSelect(
   }
 }
 
+/**
+ * @typedef GroupItem
+ * @property {string} id
+ * @property {"item"} type
+ */
+
+/**
+ * @typedef GroupContainer
+ * @property {string} id
+ * @property {"group"} type
+ * @property {GroupItem[]} items
+ * @property {string} name
+ */
+
+/**
+ * @typedef {GroupItem|GroupContainer} Group
+ */
+
+/**
+ * Transform an array of group ids to their groups
+ * @param {string[]} groupIds
+ * @param {Group[]} groups
+ * @return {Group[[]}
+ */
 export function groupsFromIds(groupIds, groups) {
   const groupsByIds = keyBy(groups, "id");
   const filteredGroups = [];
@@ -144,6 +169,11 @@ export function groupsFromIds(groupIds, groups) {
   return filteredGroups;
 }
 
+/**
+ * Get all items from a group including all sub groups
+ * @param {Group} group
+ * @return {GroupItem[]}
+ */
 function getGroupItems(group) {
   if (group.type === "group") {
     let groups = [];
@@ -156,6 +186,13 @@ function getGroupItems(group) {
   }
 }
 
+/**
+ * Transform an array of groups into their assosiated items
+ * @param {Group[]} groups
+ * @param {any[]} allItems
+ * @param {string} itemKey
+ * @returns {any[]}
+ */
 export function itemsFromGroups(groups, allItems, itemKey = "id") {
   const allItemsById = keyBy(allItems, itemKey);
   const groupedItems = [];
@@ -167,4 +204,29 @@ export function itemsFromGroups(groups, allItems, itemKey = "id") {
   }
 
   return groupedItems;
+}
+
+/**
+ * Combine two groups
+ * @param {Group} a
+ * @param {Group} b
+ * @returns {GroupContainer}
+ */
+export function combineGroups(a, b) {
+  if (a.type === "item") {
+    return {
+      id: uuid(),
+      type: "group",
+      items: [a, b],
+      name: "",
+    };
+  }
+  if (a.type === "group") {
+    return {
+      id: a.id,
+      type: "group",
+      items: [...a.items, b],
+      name: a.name,
+    };
+  }
 }

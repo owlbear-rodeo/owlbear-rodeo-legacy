@@ -10,7 +10,6 @@ import MapTileGroup from "./MapTileGroup";
 import Link from "../Link";
 import FilterBar from "../FilterBar";
 
-import Sortable from "../drag/Sortable";
 import SortableTiles from "../drag/SortableTiles";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
@@ -69,7 +68,7 @@ function MapTiles({
     setHasMapState(_hasMapState);
   }, [selectedGroupIds, maps, mapStates, groups]);
 
-  function groupToMapTile(group) {
+  function renderTile(group) {
     if (group.type === "item") {
       const map = maps.find((map) => map.id === group.id);
       const isSelected = selectedGroupIds.includes(group.id);
@@ -107,12 +106,8 @@ function MapTiles({
 
   const multipleSelected = selectedGroupIds.length > 1;
 
-  return (
-    <SortableTiles
-      groups={groups}
-      onGroupChange={onMapsGroup}
-      renderTile={groupToMapTile}
-    >
+  function renderTiles(tiles) {
+    return (
       <Box sx={{ position: "relative" }}>
         <FilterBar
           onFocus={() => onTileSelect()}
@@ -142,11 +137,7 @@ function MapTiles({
             columns={layout.gridTemplate}
             onClick={() => onTileSelect()}
           >
-            {groups.map((group) => (
-              <Sortable id={group.id} key={group.id}>
-                {groupToMapTile(group)}
-              </Sortable>
-            ))}
+            {tiles}
           </Grid>
         </SimpleBar>
         {databaseDisabled && (
@@ -205,7 +196,16 @@ function MapTiles({
           </Flex>
         )}
       </Box>
-    </SortableTiles>
+    );
+  }
+
+  return (
+    <SortableTiles
+      groups={groups}
+      onGroupChange={onMapsGroup}
+      renderTile={renderTile}
+      renderTiles={renderTiles}
+    />
   );
 }
 
