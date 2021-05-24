@@ -2,8 +2,9 @@ import React from "react";
 import { Box } from "theme-ui";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
+import { animated, useSpring } from "react-spring";
 
-function Sortable({ id, disableGrouping, children }) {
+function Sortable({ id, disableGrouping, hidden, children }) {
   const {
     attributes,
     listeners,
@@ -48,8 +49,10 @@ function Sortable({ id, disableGrouping, children }) {
       over?.id === `__group__${id}` && active.id !== id ? "solid" : "none",
   };
 
+  const { opacity } = useSpring({ opacity: hidden ? 0 : 1 });
+
   return (
-    <Box sx={{ position: "relative" }}>
+    <animated.div style={{ opacity, position: "relative" }}>
       <Box
         ref={setDraggableNodeRef}
         style={dragStyle}
@@ -75,7 +78,7 @@ function Sortable({ id, disableGrouping, children }) {
           sx={{ borderColor: "primary" }}
         />
       </Box>
-    </Box>
+    </animated.div>
   );
 }
 

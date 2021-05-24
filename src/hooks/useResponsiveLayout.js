@@ -27,9 +27,18 @@ function useResponsiveLayout() {
     ? "1fr 1fr 1fr"
     : "1fr 1fr";
 
+  const groupGridTemplate = isLargeScreen ? "1fr 1fr 1fr" : "1fr 1fr";
+
   const tileContainerHeight = isLargeScreen ? "600px" : "400px";
 
-  return { screenSize, modalSize, tileSize, gridTemplate, tileContainerHeight };
+  return {
+    screenSize,
+    modalSize,
+    tileSize,
+    gridTemplate,
+    tileContainerHeight,
+    groupGridTemplate,
+  };
 }
 
 export default useResponsiveLayout;

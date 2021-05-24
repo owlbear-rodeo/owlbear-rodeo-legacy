@@ -193,7 +193,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           <Label pt={2} pb={1}>
             Edit or import a token
           </Label>
-          <Box sx={{ position: "relative" }} bg="muted">
+          <Box sx={{ position: "relative" }}>
             <GroupProvider
               groups={tokenGroups}
               onGroupsChange={updateTokenGroups}

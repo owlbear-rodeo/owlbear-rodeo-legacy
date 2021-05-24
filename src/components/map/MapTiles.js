@@ -13,6 +13,7 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
   const {
     groups,
     selectedGroupIds,
+    openGroupId,
     openGroupItems,
     selectMode,
     onGroupOpen,
@@ -63,6 +64,7 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
       renderTile={renderTile}
       onTileSelect={onGroupSelect}
       disableGrouping={subgroup}
+      openGroupId={openGroupId}
     />
   );
 }

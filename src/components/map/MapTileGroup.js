@@ -16,9 +16,13 @@ function MapTileGroup({ group, maps, isSelected, onSelect, onDoubleClick }) {
       onSelect={() => onSelect(group.id)}
       onDoubleClick={onDoubleClick}
     >
-      <Grid columns={layout.gridTemplate} p={2} sx={{ gridGap: 2 }}>
+      <Grid columns={layout.groupGridTemplate} p={2} sx={{ gridGap: 2 }}>
         {maps.slice(0, 16).map((map) => (
-          <MapTileImage sx={{ borderRadius: "8px" }} map={map} key={map.id} />
+          <MapTileImage
+            sx={{ borderRadius: "8px" }}
+            map={map}
+            key={`${map.id}-group-tile`}
+          />
         ))}
       </Grid>
     </Tile>

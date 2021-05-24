@@ -13,6 +13,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
   const {
     groups,
     selectedGroupIds,
+    openGroupId,
     openGroupItems,
     selectMode,
     onGroupOpen,
@@ -68,6 +69,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
       renderTile={renderTile}
       onTileSelect={onGroupSelect}
       disableGrouping={subgroup}
+      openGroupId={openGroupId}
     />
   );
 }

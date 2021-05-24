@@ -252,7 +252,7 @@ function SelectMapModal({
           <Label pt={2} pb={1}>
             Select or import a map
           </Label>
-          <Box sx={{ position: "relative" }} bg="muted">
+          <Box sx={{ position: "relative" }}>
             <GroupProvider
               groups={mapGroups}
               onGroupsChange={updateMapGroups}

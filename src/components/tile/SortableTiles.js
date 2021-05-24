@@ -11,11 +11,8 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
-import { Grid } from "theme-ui";
 
 import { combineGroups, moveGroups } from "../../helpers/group";
-
-import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import SortableTile from "./SortableTile";
 
@@ -25,9 +22,8 @@ function SortableTiles({
   renderTile,
   onTileSelect,
   disableGrouping,
+  openGroupId,
 }) {
-  const layout = useResponsiveLayout();
-
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
   });
@@ -105,27 +101,16 @@ function SortableTiles({
       collisionDetection={closestCenter}
     >
       <SortableContext items={groups}>
-        <Grid
-          p={3}
-          pb={4}
-          sx={{
-            borderRadius: "4px",
-            overflow: "hidden",
-          }}
-          gap={2}
-          columns={layout.gridTemplate}
-          onClick={() => onTileSelect()}
-        >
-          {groups.map((group) => (
-            <SortableTile
-              id={group.id}
-              key={group.id}
-              disableGrouping={disableGrouping}
-            >
-              {renderSortableGroup(group)}
-            </SortableTile>
-          ))}
-        </Grid>
+        {groups.map((group) => (
+          <SortableTile
+            id={group.id}
+            key={group.id}
+            disableGrouping={disableGrouping}
+            hidden={group.id === openGroupId}
+          >
+            {renderSortableGroup(group)}
+          </SortableTile>
+        ))}
         {createPortal(
           <DragOverlay dropAnimation={null}>
             {dragId && (

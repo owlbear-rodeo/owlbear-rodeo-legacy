@@ -23,12 +23,12 @@ function TokenTileGroup({
       onDoubleClick={onDoubleClick}
       columns="1fr 1fr"
     >
-      <Grid columns={layout.gridTemplate} p={2} sx={{ gridGap: 2 }}>
+      <Grid columns={layout.groupGridTemplate} p={2} sx={{ gridGap: 2 }}>
         {tokens.slice(0, 16).map((token) => (
           <TokenTileImage
             sx={{ borderRadius: "8px" }}
             token={token}
-            key={token.id}
+            key={`${token.id}-group-tile`}
           />
         ))}
       </Grid>

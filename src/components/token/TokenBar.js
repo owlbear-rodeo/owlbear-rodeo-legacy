@@ -57,7 +57,7 @@ function TokenBar({ onMapTokenStateCreate }) {
           height: "100%",
           width: "80px",
           minWidth: "80px",
-          overflowY: "scroll",
+          overflowY: "hidden",
           overflowX: "hidden",
           display: fullScreen ? "none" : "block",
         }}
