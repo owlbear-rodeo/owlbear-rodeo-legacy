@@ -5,7 +5,7 @@ import TokenTileGroup from "./TokenTileGroup";
 
 import SortableTiles from "../tile/SortableTiles";
 
-import { getGroupItems } from "../../helpers/select";
+import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 

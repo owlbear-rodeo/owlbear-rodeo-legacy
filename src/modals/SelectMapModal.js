@@ -14,7 +14,7 @@ import MapTiles from "../components/map/MapTiles";
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 
-import { groupsFromIds, itemsFromGroups, findGroup } from "../helpers/select";
+import { groupsFromIds, itemsFromGroups, findGroup } from "../helpers/group";
 import { createMapFromFile } from "../helpers/map";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";

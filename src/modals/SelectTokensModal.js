@@ -14,7 +14,7 @@ import TokenTiles from "../components/token/TokenTiles";
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 
-import { groupsFromIds, itemsFromGroups } from "../helpers/select";
+import { groupsFromIds, itemsFromGroups } from "../helpers/group";
 import { createTokenFromFile } from "../helpers/token";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";

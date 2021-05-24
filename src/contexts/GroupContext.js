@@ -3,7 +3,7 @@ import cloneDeep from "lodash.clonedeep";
 
 import { useKeyboard, useBlur } from "./KeyboardContext";
 
-import { getGroupItems, groupsFromIds } from "../helpers/select";
+import { getGroupItems, groupsFromIds } from "../helpers/group";
 
 import shortcuts from "../shortcuts";
 

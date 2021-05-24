@@ -13,7 +13,7 @@ import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
 import { Grid } from "theme-ui";
 
-import { combineGroups, moveGroups } from "../../helpers/select";
+import { combineGroups, moveGroups } from "../../helpers/group";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
