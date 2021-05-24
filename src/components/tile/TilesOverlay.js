@@ -13,7 +13,7 @@ function TilesOverlay({ children }) {
 
   const openAnimation = useSpring({
     opacity: openGroupId ? 1 : 0,
-    transform: openGroupId ? "scale(1)" : "scale(0.95)",
+    transform: openGroupId ? "scale(1)" : "scale(0.99)",
     config: config.gentle,
   });
 

@@ -2,6 +2,8 @@ import React from "react";
 import Modal from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 
+import { useSpring, animated, config } from "react-spring";
+
 function StyledModal({
   isOpen,
   onRequestClose,
@@ -11,6 +13,12 @@ function StyledModal({
   ...props
 }) {
   const { theme } = useThemeUI();
+
+  const openAnimation = useSpring({
+    opacity: isOpen ? 1 : 0,
+    transform: isOpen ? "scale(1)" : "scale(0.99)",
+    config: config.default,
+  });
 
   return (
     <Modal
@@ -31,6 +39,11 @@ function StyledModal({
           ...style,
         },
       }}
+      contentElement={(props, content) => (
+        <animated.div {...props} style={{ ...props.style, ...openAnimation }}>
+          {content}
+        </animated.div>
+      )}
       {...props}
     >
       {children}
