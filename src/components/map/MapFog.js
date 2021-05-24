@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import shortid from "shortid";
 import { Group, Line } from "react-konva";
 import useImage from "use-image";
+import Color from "color";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
@@ -489,6 +490,17 @@ function MapFog({
     const holes =
       shape.data.holes &&
       shape.data.holes.map((hole) => hole.reduce(reducePoints, []));
+    const opacity = editable
+      ? !shape.visible
+        ? editOpacity / 2
+        : editOpacity
+      : 1;
+    // Control opacity only on fill as using opacity with stroke leads to performance issues
+    const fill = new Color(colors[shape.color] || shape.color).alpha(opacity);
+    const stroke =
+      editable && active
+        ? colors.lightGray
+        : colors[shape.color] || shape.color;
     return (
       <HoleyLine
         key={shape.id}
@@ -499,19 +511,12 @@ function MapFog({
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
         points={points}
-        stroke={
-          editable && active
-            ? colors.lightGray
-            : colors[shape.color] || shape.color
-        }
-        fill={colors[shape.color] || shape.color}
+        stroke={stroke}
+        fill={fill}
         closed
         lineCap="round"
         lineJoin="round"
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
-        opacity={
-          editable ? (!shape.visible ? editOpacity / 2 : editOpacity) : 1
-        }
         fillPatternImage={patternImage}
         fillPriority={editable && !shape.visible ? "pattern" : "color"}
         holes={holes}
