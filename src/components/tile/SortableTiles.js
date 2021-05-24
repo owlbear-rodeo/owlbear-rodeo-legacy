@@ -42,7 +42,7 @@ function SortableTiles({
     onTileSelect(active.id);
   }
 
-  function handleDragMove({ over }) {
+  function handleDragOver({ over }) {
     setOverId(over?.id);
   }
 
@@ -95,8 +95,8 @@ function SortableTiles({
   return (
     <DndContext
       onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
       sensors={sensors}
       collisionDetection={closestCenter}
     >
@@ -107,6 +107,7 @@ function SortableTiles({
             key={group.id}
             disableGrouping={disableGrouping}
             hidden={group.id === openGroupId}
+            type={group.type}
           >
             {renderSortableGroup(group)}
           </SortableTile>
