@@ -1,7 +1,7 @@
 import React from "react";
 import { Image } from "theme-ui";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 
 function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
   return (

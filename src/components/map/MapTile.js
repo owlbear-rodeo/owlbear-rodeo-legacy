@@ -1,6 +1,6 @@
 import React from "react";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 import MapTileImage from "./MapTileImage";
 
 function MapTile({
@@ -8,7 +8,7 @@ function MapTile({
   isSelected,
   onSelect,
   onEdit,
-  onDone,
+  onDoubleClick,
   canEdit,
   badges,
 }) {
@@ -16,9 +16,9 @@ function MapTile({
     <Tile
       title={map.name}
       isSelected={isSelected}
-      onSelect={() => onSelect({ id: map.id })}
+      onSelect={() => onSelect(map.id)}
       onEdit={() => onEdit(map.id)}
-      onDoubleClick={() => canEdit && onDone()}
+      onDoubleClick={() => canEdit && onDoubleClick()}
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Map"

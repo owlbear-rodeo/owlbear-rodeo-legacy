@@ -1,19 +1,23 @@
 import React from "react";
 import { Grid } from "theme-ui";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 import MapTileImage from "./MapTileImage";
 
-function MapTileGroup({ group, maps, isSelected, onSelect, onOpen, canOpen }) {
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+
+function MapTileGroup({ group, maps, isSelected, onSelect, onDoubleClick }) {
+  const layout = useResponsiveLayout();
+
   return (
     <Tile
       title={group.name}
       isSelected={isSelected}
-      onSelect={() => onSelect(group)}
-      onDoubleClick={() => canOpen && onOpen()}
+      onSelect={() => onSelect(group.id)}
+      onDoubleClick={onDoubleClick}
     >
-      <Grid columns="1fr 1fr" p={2} sx={{ gridGap: 2 }}>
-        {maps.slice(0, 4).map((map) => (
+      <Grid columns={layout.gridTemplate} p={2} sx={{ gridGap: 2 }}>
+        {maps.slice(0, 16).map((map) => (
           <MapTileImage sx={{ borderRadius: "8px" }} map={map} key={map.id} />
         ))}
       </Grid>

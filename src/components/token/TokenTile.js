@@ -1,12 +1,12 @@
 import React from "react";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 import TokenTileImage from "./TokenTileImage";
 
 function TokenTile({
   token,
   isSelected,
-  onTokenSelect,
+  onSelect,
   onTokenEdit,
   canEdit,
   badges,
@@ -15,7 +15,7 @@ function TokenTile({
     <Tile
       title={token.name}
       isSelected={isSelected}
-      onSelect={() => onTokenSelect(token)}
+      onSelect={() => onSelect(token.id)}
       onEdit={() => onTokenEdit(token.id)}
       canEdit={canEdit}
       badges={badges}

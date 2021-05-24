@@ -3,7 +3,7 @@ import { Box } from "theme-ui";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 
-function Sortable({ id, children }) {
+function Sortable({ id, disableGrouping, children }) {
   const {
     attributes,
     listeners,
@@ -11,9 +11,11 @@ function Sortable({ id, children }) {
     setDroppableNodeRef,
     setDraggableNodeRef,
     over,
+    active,
   } = useSortable({ id });
   const { setNodeRef: setGroupNodeRef } = useDroppable({
     id: `__group__${id}`,
+    disabled: disableGrouping,
   });
 
   const dragStyle = {
@@ -42,7 +44,8 @@ function Sortable({ id, children }) {
     height: "100%",
     borderWidth: "4px",
     borderRadius: "4px",
-    borderStyle: over?.id === `__group__${id}` ? "solid" : "none",
+    borderStyle:
+      over?.id === `__group__${id}` && active.id !== id ? "solid" : "none",
   };
 
   return (

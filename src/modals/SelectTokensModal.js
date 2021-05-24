@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Flex, Label, Button } from "theme-ui";
-
+import { Flex, Label, Button, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 
 import EditTokenModal from "./EditTokenModal";
@@ -8,23 +7,23 @@ import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import ImageDrop from "../components/ImageDrop";
-import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import {
-  groupsFromIds,
-  handleItemSelect,
-  itemsFromGroups,
-} from "../helpers/select";
+import TokenTiles from "../components/token/TokenTiles";
+
+import TilesOverlay from "../components/tile/TilesOverlay";
+import TilesContainer from "../components/tile/TilesContainer";
+
+import { groupsFromIds, itemsFromGroups } from "../helpers/select";
 import { createTokenFromFile } from "../helpers/token";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
-import { useDatabase } from "../contexts/DatabaseContext";
+import { GroupProvider } from "../contexts/GroupContext";
 
 import shortcuts from "../shortcuts";
 
@@ -36,24 +35,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     tokens,
     addToken,
     removeTokens,
-    updateTokens,
+    // updateTokens,
     tokensLoading,
     tokenGroups,
     updateTokenGroups,
     updateToken,
   } = useTokenData();
-  const { databaseStatus } = useDatabase();
   const { addAssets } = useAssets();
-
-  /**
-   * Search
-   */
-  const [search, setSearch] = useState("");
-  // const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
-
-  function handleSearchChange(event) {
-    setSearch(event.target.value);
-  }
 
   /**
    * Image Upload
@@ -66,12 +54,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     false
   );
   const largeImageWarningFiles = useRef();
-
-  function openImageDialog() {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  }
 
   async function handleImagesUpload(files) {
     if (navigator.storage) {
@@ -155,26 +137,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     setIsLoading(false);
   }
 
-  async function handleTokensHide(hideInSidebar) {
-    setIsLoading(true);
-    const selectedTokens = getSelectedTokens();
-    const selectedTokenIds = selectedTokens.map((token) => token.id);
-    await updateTokens(selectedTokenIds, { hideInSidebar });
-    setIsLoading(false);
-  }
-
-  // Either single, multiple or range
-  const [selectMode, setSelectMode] = useState("single");
-
-  async function handleTileSelect(item) {
-    handleItemSelect(
-      item,
-      selectMode,
-      selectedGroupIds,
-      setSelectedGroupIds
-      // TODO: Rework group support
-    );
-  }
+  // async function handleTokensHide(hideInSidebar) {
+  //   setIsLoading(true);
+  //   const selectedTokens = getSelectedTokens();
+  //   const selectedTokenIds = selectedTokens.map((token) => token.id);
+  //   await updateTokens(selectedTokenIds, { hideInSidebar });
+  //   setIsLoading(false);
+  // }
 
   /**
    * Shortcuts
@@ -182,12 +151,6 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   function handleKeyDown(event) {
     if (!isOpen) {
       return;
-    }
-    if (shortcuts.selectRange(event)) {
-      setSelectMode("range");
-    }
-    if (shortcuts.selectMultiple(event)) {
-      setSelectMode("multiple");
     }
     if (shortcuts.delete(event)) {
       const selectedTokens = getSelectedTokens();
@@ -203,26 +166,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     }
   }
 
-  function handleKeyUp(event) {
-    if (!isOpen) {
-      return;
-    }
-    if (shortcuts.selectRange(event) && selectMode === "range") {
-      setSelectMode("single");
-    }
-    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
-      setSelectMode("single");
-    }
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
-
-  // Set select mode to single when cmd+tabing
-  function handleBlur() {
-    setSelectMode("single");
-  }
-
-  useBlur(handleBlur);
+  useKeyboard(handleKeyDown);
 
   const layout = useResponsiveLayout();
 
@@ -249,22 +193,29 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           <Label pt={2} pb={1}>
             Edit or import a token
           </Label>
-          <TokenTiles
-            tokens={tokens}
-            groups={tokenGroups}
-            selectedGroupIds={selectedGroupIds}
-            onTokenAdd={openImageDialog}
-            onTokenEdit={() => setIsEditModalOpen(true)}
-            onTokensRemove={() => setIsTokensRemoveModalOpen(true)}
-            onTileSelect={handleTileSelect}
-            selectMode={selectMode}
-            onSelectModeChange={setSelectMode}
-            search={search}
-            onSearchChange={handleSearchChange}
-            onTokensGroup={updateTokenGroups}
-            onTokensHide={handleTokensHide}
-            databaseDisabled={databaseStatus === "disabled"}
-          />
+          <Box sx={{ position: "relative" }} bg="muted">
+            <GroupProvider
+              groups={tokenGroups}
+              onGroupsChange={updateTokenGroups}
+              onGroupsSelect={setSelectedGroupIds}
+              disabled={!isOpen}
+            >
+              <TilesContainer>
+                <TokenTiles
+                  tokens={tokens}
+                  onTokenEdit={() => setIsEditModalOpen(true)}
+                />
+              </TilesContainer>
+              <TilesOverlay>
+                <TokenTiles
+                  tokens={tokens}
+                  onTokenEdit={() => setIsEditModalOpen(true)}
+                  subgroup
+                />
+              </TilesOverlay>
+            </GroupProvider>
+          </Box>
+
           <Button
             variant="primary"
             disabled={isLoading}

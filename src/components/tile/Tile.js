@@ -1,7 +1,7 @@
 import React from "react";
 import { Flex, IconButton, Box, Text, Badge } from "theme-ui";
 
-import EditTileIcon from "../icons/EditTileIcon";
+import EditTileIcon from "../../icons/EditTileIcon";
 
 function Tile({
   title,

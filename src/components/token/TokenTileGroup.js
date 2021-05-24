@@ -1,29 +1,32 @@
 import React from "react";
 import { Grid } from "theme-ui";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 import TokenTileImage from "./TokenTileImage";
+
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 function TokenTileGroup({
   group,
   tokens,
   isSelected,
   onSelect,
-  onOpen,
-  canOpen,
+  onDoubleClick,
 }) {
+  const layout = useResponsiveLayout();
+
   return (
     <Tile
       title={group.name}
       isSelected={isSelected}
-      onSelect={() => onSelect(group)}
-      onDoubleClick={() => canOpen && onOpen()}
+      onSelect={() => onSelect(group.id)}
+      onDoubleClick={onDoubleClick}
       columns="1fr 1fr"
     >
-      <Grid columns="1fr 1fr" p={2} sx={{ gridGap: 2 }}>
-        {tokens.slice(0, 4).map((token) => (
+      <Grid columns={layout.gridTemplate} p={2} sx={{ gridGap: 2 }}>
+        {tokens.slice(0, 16).map((token) => (
           <TokenTileImage
-            sx={{ padding: 1, borderRadius: "8px" }}
+            sx={{ borderRadius: "8px" }}
             token={token}
             key={token.id}
           />

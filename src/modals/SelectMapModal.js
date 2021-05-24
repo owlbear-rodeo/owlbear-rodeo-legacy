@@ -1,29 +1,29 @@
 import React, { useRef, useState } from "react";
-import { Button, Flex, Label } from "theme-ui";
+import { Button, Flex, Label, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 
 import EditMapModal from "./EditMapModal";
 import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
-import MapTiles from "../components/map/MapTiles";
 import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import {
-  groupsFromIds,
-  handleItemSelect,
-  itemsFromGroups,
-} from "../helpers/select";
+import MapTiles from "../components/map/MapTiles";
+
+import TilesOverlay from "../components/tile/TilesOverlay";
+import TilesContainer from "../components/tile/TilesContainer";
+
+import { groupsFromIds, itemsFromGroups, findGroup } from "../helpers/select";
 import { createMapFromFile } from "../helpers/map";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
-import { useDatabase } from "../contexts/DatabaseContext";
+import { GroupProvider } from "../contexts/GroupContext";
 
 import shortcuts from "../shortcuts";
 
@@ -52,19 +52,7 @@ function SelectMapModal({
     updateMap,
     updateMapState,
   } = useMapData();
-  const { databaseStatus } = useDatabase();
   const { addAssets } = useAssets();
-
-  /**
-   * Search
-   */
-  const [search, setSearch] = useState("");
-  // TODO: Add back with new group support
-  // const [filteredMaps, filteredMapScores] = useSearch(ownedMaps, search);
-
-  function handleSearchChange(event) {
-    setSearch(event.target.value);
-  }
 
   /**
    * Image Upload
@@ -138,12 +126,6 @@ function SelectMapModal({
     setIsLoading(false);
   }
 
-  function openImageDialog() {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  }
-
   /**
    * Map Controls
    */
@@ -186,19 +168,6 @@ function SelectMapModal({
     setIsLoading(false);
   }
 
-  // Either single, multiple or range
-  const [selectMode, setSelectMode] = useState("single");
-
-  function handleTileSelect(item) {
-    handleItemSelect(
-      item,
-      selectMode,
-      selectedGroupIds,
-      setSelectedGroupIds
-      // TODO: Add new group support
-    );
-  }
-
   /**
    * Modal Controls
    */
@@ -207,21 +176,31 @@ function SelectMapModal({
     onDone();
   }
 
-  async function handleDone() {
+  async function handleMapSelect(mapId) {
     if (isLoading) {
       return;
     }
-    const groups = groupsFromIds(selectedGroupIds, mapGroups);
-    if (groups.length === 1 && groups[0].type === "item") {
-      setIsLoading(true);
-      const map = await getMap(groups[0].id);
-      const mapState = await getMapState(groups[0].id);
-      onMapChange(map, mapState);
-      setIsLoading(false);
+    setIsLoading(true);
+    const map = await getMap(mapId);
+    const mapState = await getMapState(mapId);
+    onMapChange(map, mapState);
+    setIsLoading(false);
+    onDone();
+  }
+
+  function handleSelectClick() {
+    if (isLoading) {
+      return;
+    }
+    if (selectedGroupIds.length === 1) {
+      const group = findGroup(mapGroups, selectedGroupIds[0]);
+      if (group && group.type === "item") {
+        handleMapSelect(group.id);
+      }
     } else {
       onMapChange(null, null);
+      onDone();
     }
-    onDone();
   }
 
   /**
@@ -230,12 +209,6 @@ function SelectMapModal({
   function handleKeyDown(event) {
     if (!isOpen) {
       return;
-    }
-    if (shortcuts.selectRange(event)) {
-      setSelectMode("range");
-    }
-    if (shortcuts.selectMultiple(event)) {
-      setSelectMode("multiple");
     }
     if (shortcuts.delete(event)) {
       const selectedMaps = getSelectedMaps();
@@ -252,26 +225,7 @@ function SelectMapModal({
     }
   }
 
-  function handleKeyUp(event) {
-    if (!isOpen) {
-      return;
-    }
-    if (shortcuts.selectRange(event) && selectMode === "range") {
-      setSelectMode("single");
-    }
-    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
-      setSelectMode("single");
-    }
-  }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
-
-  // Set select mode to single when cmd+tabing
-  function handleBlur() {
-    setSelectMode("single");
-  }
-
-  useBlur(handleBlur);
+  useKeyboard(handleKeyDown);
 
   const layout = useResponsiveLayout();
 
@@ -298,28 +252,34 @@ function SelectMapModal({
           <Label pt={2} pb={1}>
             Select or import a map
           </Label>
-          <MapTiles
-            maps={maps}
-            mapStates={mapStates}
-            groups={mapGroups}
-            selectedGroupIds={selectedGroupIds}
-            onMapAdd={openImageDialog}
-            onMapEdit={() => setIsEditModalOpen(true)}
-            onMapsReset={() => setIsMapsResetModalOpen(true)}
-            onMapsRemove={() => setIsMapsRemoveModalOpen(true)}
-            onTileSelect={handleTileSelect}
-            onDone={handleDone}
-            selectMode={selectMode}
-            onSelectModeChange={setSelectMode}
-            search={search}
-            onSearchChange={handleSearchChange}
-            onMapsGroup={updateMapGroups}
-            databaseDisabled={databaseStatus === "disabled"}
-          />
+          <Box sx={{ position: "relative" }} bg="muted">
+            <GroupProvider
+              groups={mapGroups}
+              onGroupsChange={updateMapGroups}
+              onGroupsSelect={setSelectedGroupIds}
+              disabled={!isOpen}
+            >
+              <TilesContainer>
+                <MapTiles
+                  maps={maps}
+                  onMapEdit={() => setIsEditModalOpen(true)}
+                  onMapSelect={handleMapSelect}
+                />
+              </TilesContainer>
+              <TilesOverlay>
+                <MapTiles
+                  maps={maps}
+                  onMapEdit={() => setIsEditModalOpen(true)}
+                  onMapSelect={handleMapSelect}
+                  subgroup
+                />
+              </TilesOverlay>
+            </GroupProvider>
+          </Box>
           <Button
             variant="primary"
             disabled={isLoading || selectedGroupIds.length > 1}
-            onClick={handleDone}
+            onClick={handleSelectClick}
             mt={2}
           >
             Select

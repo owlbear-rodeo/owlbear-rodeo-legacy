@@ -1,141 +1,7 @@
-import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
-import Fuse from "fuse.js";
 import cloneDeep from "lodash.clonedeep";
 
-import { groupBy, keyBy } from "./shared";
-
-/**
- * Helpers for the SelectMapModal and SelectTokenModal
- */
-
-// Helper for generating search results for items
-export function useSearch(items, search) {
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [filteredItemScores, setFilteredItemScores] = useState({});
-  const [fuse, setFuse] = useState();
-
-  // Update search index when items change
-  useEffect(() => {
-    setFuse(new Fuse(items, { keys: ["name", "group"], includeScore: true }));
-  }, [items]);
-
-  // Perform search when search changes
-  useEffect(() => {
-    if (search) {
-      const query = fuse.search(search);
-      setFilteredItems(query.map((result) => result.item));
-      setFilteredItemScores(
-        query.reduce(
-          (acc, value) => ({ ...acc, [value.item.id]: value.score }),
-          {}
-        )
-      );
-    }
-  }, [search, items, fuse]);
-
-  return [filteredItems, filteredItemScores];
-}
-
-// TODO: Rework group support
-// Helper for grouping items
-export function useGroup(items, filteredItems, useFiltered, filteredScores) {
-  const itemsByGroup = groupBy(useFiltered ? filteredItems : items, "group");
-  // Get the groups of the items sorting by the average score if we're filtering or the alphabetical order
-  // with "" at the start and "default" at the end if not
-  let itemGroups = Object.keys(itemsByGroup);
-  if (useFiltered) {
-    itemGroups.sort((a, b) => {
-      const aScore = itemsByGroup[a].reduce(
-        (acc, item) => (acc + filteredScores[item.id]) / 2
-      );
-      const bScore = itemsByGroup[b].reduce(
-        (acc, item) => (acc + filteredScores[item.id]) / 2
-      );
-      return aScore - bScore;
-    });
-  } else {
-    itemGroups.sort((a, b) => {
-      if (a === "" || b === "default") {
-        return -1;
-      }
-      if (b === "" || a === "default") {
-        return 1;
-      }
-      return a.localeCompare(b);
-    });
-  }
-  return [itemsByGroup, itemGroups];
-}
-
-// Helper for handling selecting items
-export function handleItemSelect(
-  item,
-  selectMode,
-  selectedIds,
-  setSelectedIds,
-  itemsByGroup,
-  itemGroups
-) {
-  if (!item) {
-    setSelectedIds([]);
-    return;
-  }
-  switch (selectMode) {
-    case "single":
-      setSelectedIds([item.id]);
-      break;
-    case "multiple":
-      setSelectedIds((prev) => {
-        if (prev.includes(item.id)) {
-          return prev.filter((id) => id !== item.id);
-        } else {
-          return [...prev, item.id];
-        }
-      });
-      break;
-    case "range":
-      /// TODO: Fix when new groups system is added
-      return;
-    // Create items array
-    // let items = itemGroups.reduce(
-    //   (acc, group) => [...acc, ...itemsByGroup[group]],
-    //   []
-    // );
-
-    // // Add all items inbetween the previous selected item and the current selected
-    // if (selectedIds.length > 0) {
-    //   const mapIndex = items.findIndex((m) => m.id === item.id);
-    //   const lastIndex = items.findIndex(
-    //     (m) => m.id === selectedIds[selectedIds.length - 1]
-    //   );
-    //   let idsToAdd = [];
-    //   let idsToRemove = [];
-    //   const direction = mapIndex > lastIndex ? 1 : -1;
-    //   for (
-    //     let i = lastIndex + direction;
-    //     direction < 0 ? i >= mapIndex : i <= mapIndex;
-    //     i += direction
-    //   ) {
-    //     const itemId = items[i].id;
-    //     if (selectedIds.includes(itemId)) {
-    //       idsToRemove.push(itemId);
-    //     } else {
-    //       idsToAdd.push(itemId);
-    //     }
-    //   }
-    //   setSelectedIds((prev) => {
-    //     let ids = [...prev, ...idsToAdd];
-    //     return ids.filter((id) => !idsToRemove.includes(id));
-    //   });
-    // } else {
-    //   setSelectedIds([item.id]);
-    // }
-    // break;
-    default:
-      setSelectedIds([]);
-  }
-}
+import { keyBy } from "./shared";
 
 /**
  * @typedef GroupItem
@@ -232,6 +98,13 @@ export function combineGroups(a, b) {
   }
 }
 
+/**
+ * Immutably move group at `bIndex` into `aIndex`
+ * @param {Group[]} groups
+ * @param {number} aIndex
+ * @param {number} bIndex
+ * @returns {Group[]}
+ */
 export function moveGroups(groups, aIndex, bIndex) {
   const aGroup = groups[aIndex];
   const bGroup = groups[bIndex];
@@ -240,4 +113,24 @@ export function moveGroups(groups, aIndex, bIndex) {
   newGroups[aIndex] = newGroup;
   newGroups.splice(bIndex, 1);
   return newGroups;
+}
+
+/**
+ * Recursively find a group within a group array
+ * @param {Group[]} groups
+ * @param {string} groupId
+ * @returns {Group}
+ */
+export function findGroup(groups, groupId) {
+  for (let group of groups) {
+    if (group.id === groupId) {
+      return group;
+    }
+    const items = getGroupItems(group);
+    for (let item of items) {
+      if (item.id === groupId) {
+        return item;
+      }
+    }
+  }
 }

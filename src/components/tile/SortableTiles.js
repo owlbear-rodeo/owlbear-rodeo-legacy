@@ -11,8 +11,11 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
+import { Grid } from "theme-ui";
 
 import { combineGroups, moveGroups } from "../../helpers/select";
+
+import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import SortableTile from "./SortableTile";
 
@@ -20,9 +23,11 @@ function SortableTiles({
   groups,
   onGroupChange,
   renderTile,
-  renderTiles,
   onTileSelect,
+  disableGrouping,
 }) {
+  const layout = useResponsiveLayout();
+
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
   });
@@ -38,6 +43,7 @@ function SortableTiles({
   function handleDragStart({ active, over }) {
     setDragId(active.id);
     setOverId(over?.id);
+    onTileSelect(active.id);
   }
 
   function handleDragMove({ over }) {
@@ -77,6 +83,19 @@ function SortableTiles({
   const overGroupId =
     overId && overId.startsWith("__group__") && overId.slice(9);
 
+  function renderSortableGroup(group) {
+    if (overGroupId === group.id && dragId && group.id !== dragId) {
+      // If dragging over a group render a preview of that group
+      return renderTile(
+        combineGroups(
+          group,
+          groups.find((group) => group.id === dragId)
+        )
+      );
+    }
+    return renderTile(group);
+  }
+
   return (
     <DndContext
       onDragStart={handleDragStart}
@@ -86,21 +105,27 @@ function SortableTiles({
       collisionDetection={closestCenter}
     >
       <SortableContext items={groups}>
-        {renderTiles(
-          groups.map((group) => (
-            <SortableTile id={group.id} key={group.id}>
-              {dragId && overGroupId === group.id && group.id !== dragId
-                ? // If over a group render a preview of that group
-                  renderTile(
-                    combineGroups(
-                      group,
-                      groups.find((group) => group.id === dragId)
-                    )
-                  )
-                : renderTile(group)}
+        <Grid
+          p={3}
+          pb={4}
+          sx={{
+            borderRadius: "4px",
+            overflow: "hidden",
+          }}
+          gap={2}
+          columns={layout.gridTemplate}
+          onClick={() => onTileSelect()}
+        >
+          {groups.map((group) => (
+            <SortableTile
+              id={group.id}
+              key={group.id}
+              disableGrouping={disableGrouping}
+            >
+              {renderSortableGroup(group)}
             </SortableTile>
-          ))
-        )}
+          ))}
+        </Grid>
         {createPortal(
           <DragOverlay dropAnimation={null}>
             {dragId && (
