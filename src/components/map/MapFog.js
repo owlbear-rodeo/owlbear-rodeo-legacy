@@ -496,7 +496,9 @@ function MapFog({
         : editOpacity
       : 1;
     // Control opacity only on fill as using opacity with stroke leads to performance issues
-    const fill = new Color(colors[shape.color] || shape.color).alpha(opacity);
+    const fill = new Color(colors[shape.color] || shape.color)
+      .alpha(opacity)
+      .string();
     const stroke =
       editable && active
         ? colors.lightGray
