@@ -5,7 +5,7 @@ import usePreventTouch from "../../hooks/usePreventTouch";
 
 import TokenImage from "./TokenImage";
 
-function ListToken({ token }) {
+function TokenBarToken({ token }) {
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS
   usePreventTouch(imageRef);
@@ -29,4 +29,4 @@ function ListToken({ token }) {
   );
 }
 
-export default ListToken;
+export default TokenBarToken;

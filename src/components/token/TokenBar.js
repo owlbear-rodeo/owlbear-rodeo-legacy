@@ -4,8 +4,10 @@ import { Box, Flex } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import { DragOverlay, DndContext } from "@dnd-kit/core";
 
-import ListToken from "./ListToken";
+import TokenBarToken from "./TokenBarToken";
+import TokenBarTokenGroup from "./TokenBarTokenGroup";
 import SelectTokensButton from "./SelectTokensButton";
+
 import Draggable from "../drag/Draggable";
 
 import useSetting from "../../hooks/useSetting";
@@ -36,15 +38,38 @@ function TokenBar({ onMapTokenStateCreate }) {
       onMapTokenStateCreate(tokenState);
     }
   }
-  const tokens = tokenGroups
-    .map((group) => tokensById[group.id])
-    // TODO: Add group support
-    .filter((token) => token && !token.hideInSidebar)
-    .map((token) => (
-      <Draggable id={token.id} key={token.id}>
-        <ListToken token={token} />
-      </Draggable>
-    ));
+
+  function renderTokens() {
+    let tokens = [];
+    for (let group of tokenGroups) {
+      if (group.type === "item") {
+        const token = tokensById[group.id];
+        if (token && !token.hideInSidebar) {
+          tokens.push(
+            <Draggable id={token.id} key={token.id}>
+              <TokenBarToken token={token} />
+            </Draggable>
+          );
+        }
+      } else {
+        const groupTokens = [];
+        for (let item of group.items) {
+          const token = tokensById[item.id];
+          if (token && !token.hideInSidebar) {
+            groupTokens.push(token);
+          }
+        }
+        tokens.push(
+          <TokenBarTokenGroup
+            group={group}
+            tokens={groupTokens}
+            key={group.id}
+          />
+        );
+      }
+    }
+    return tokens;
+  }
 
   return (
     <DndContext
@@ -69,7 +94,7 @@ function TokenBar({ onMapTokenStateCreate }) {
             padding: "0 16px",
           }}
         >
-          {tokens}
+          <Flex sx={{ flexDirection: "column" }}>{renderTokens()}</Flex>
         </SimpleBar>
         <Flex
           bg="muted"
@@ -83,7 +108,7 @@ function TokenBar({ onMapTokenStateCreate }) {
         </Flex>
         {createPortal(
           <DragOverlay>
-            {dragId && <ListToken token={tokensById[dragId]} />}
+            {dragId && <TokenBarToken token={tokensById[dragId]} />}
           </DragOverlay>,
           document.body
         )}
