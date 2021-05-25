@@ -4,6 +4,8 @@ import { decode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
+import { applyObservableChange } from "../helpers/dexie";
+
 const TokenDataContext = React.createContext();
 
 export function TokenDataProvider({ children }) {
@@ -139,7 +141,9 @@ export function TokenDataProvider({ children }) {
         }
         if (change.table === "groups") {
           if (change.type === 2 && change.key === "tokens") {
-            setTokenGroups(change.obj.items);
+            const group = applyObservableChange(change);
+            const groups = group.items.filter((item) => item !== null);
+            setTokenGroups(groups);
           }
         }
       }

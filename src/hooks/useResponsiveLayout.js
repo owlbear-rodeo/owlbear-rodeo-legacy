@@ -21,13 +21,9 @@ function useResponsiveLayout() {
     ? "medium"
     : "large";
 
-  const gridTemplate = isLargeScreen
-    ? "1fr 1fr 1fr 1fr"
-    : isMediumScreen
-    ? "1fr 1fr 1fr"
-    : "1fr 1fr";
+  const tileGridColumns = isLargeScreen ? 4 : isMediumScreen ? 3 : 2;
 
-  const groupGridTemplate = isLargeScreen ? "1fr 1fr 1fr" : "1fr 1fr";
+  const groupGridColumns = isLargeScreen ? 3 : 2;
 
   const tileContainerHeight = isLargeScreen ? "600px" : "400px";
 
@@ -35,9 +31,9 @@ function useResponsiveLayout() {
     screenSize,
     modalSize,
     tileSize,
-    gridTemplate,
+    tileGridColumns,
     tileContainerHeight,
-    groupGridTemplate,
+    groupGridColumns,
   };
 }
 

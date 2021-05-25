@@ -6,9 +6,7 @@ import SimpleBar from "simplebar-react";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-import useResponsiveLayout from "../../hooks/useResponsiveLayout";
-
-function TilesOverlay({ children }) {
+function TilesOverlay({ columns, children }) {
   const { openGroupId, onGroupClose, onGroupSelect } = useGroup();
 
   const openAnimation = useSpring({
@@ -22,8 +20,6 @@ function TilesOverlay({ children }) {
     const size = Math.min(width, height) - 16;
     setContinerSize(size);
   }
-
-  const layout = useResponsiveLayout();
 
   return (
     <>
@@ -92,7 +88,7 @@ function TilesOverlay({ children }) {
                   overflow: "hidden",
                 }}
                 gap={2}
-                columns={layout.groupGridTemplate}
+                columns={`repeat(${columns}, 1fr)`}
                 px={3}
               >
                 {children}

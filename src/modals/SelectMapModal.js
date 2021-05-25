@@ -259,19 +259,21 @@ function SelectMapModal({
               onGroupsSelect={setSelectedGroupIds}
               disabled={!isOpen}
             >
-              <TilesContainer>
+              <TilesContainer columns={layout.tileGridColumns}>
                 <MapTiles
                   maps={maps}
                   onMapEdit={() => setIsEditModalOpen(true)}
                   onMapSelect={handleMapSelect}
+                  columns={layout.tileGridColumns}
                 />
               </TilesContainer>
-              <TilesOverlay>
+              <TilesOverlay columns={layout.groupGridColumns}>
                 <MapTiles
                   maps={maps}
                   onMapEdit={() => setIsEditModalOpen(true)}
                   onMapSelect={handleMapSelect}
                   subgroup
+                  columns={layout.groupGridColumns}
                 />
               </TilesOverlay>
             </GroupProvider>

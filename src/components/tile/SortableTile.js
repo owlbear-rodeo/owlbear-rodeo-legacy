@@ -4,25 +4,23 @@ import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { animated, useSpring } from "react-spring";
 
-function SortableTile({ id, disableGrouping, hidden, children, type }) {
+function SortableTile({ id, disableGrouping, hidden, children, isDragging }) {
   const {
     attributes,
     listeners,
-    isDragging,
     setDroppableNodeRef,
     setDraggableNodeRef,
     over,
     active,
-  } = useSortable({ id, data: { type } });
+  } = useSortable({ id });
   const { setNodeRef: setGroupNodeRef } = useDroppable({
     id: `__group__${id}`,
-    disabled: disableGrouping || active?.data?.current?.type === "group",
+    disabled: disableGrouping,
   });
 
   const dragStyle = {
     cursor: "pointer",
     opacity: isDragging ? 0.25 : undefined,
-    zIndex: isDragging ? 100 : undefined,
   };
 
   // Sort div left aligned

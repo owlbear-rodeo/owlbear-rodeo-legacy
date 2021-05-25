@@ -22,7 +22,7 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
           minHeight: layout.screenSize === "large" ? "600px" : "400px",
         }}
         gap={2}
-        columns={layout.gridTemplate}
+        columns={`repeat${layout.tileGridColumns}, 1fr`}
       >
         {dice.map((dice) => (
           <DiceTile

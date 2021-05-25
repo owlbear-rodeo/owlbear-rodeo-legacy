@@ -4,6 +4,8 @@ import { decode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
+import { applyObservableChange } from "../helpers/dexie";
+
 const MapDataContext = React.createContext();
 
 const defaultMapState = {
@@ -207,7 +209,9 @@ export function MapDataProvider({ children }) {
         }
         if (change.table === "groups") {
           if (change.type === 2 && change.key === "maps") {
-            setMapGroups(change.obj.items);
+            const group = applyObservableChange(change);
+            const groups = group.items.filter((item) => item !== null);
+            setMapGroups(groups);
           }
         }
       }

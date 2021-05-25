@@ -5724,6 +5724,11 @@ entities@^2.0.0:
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
   integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
 
+err-code@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/err-code/-/err-code-2.0.3.tgz#23c2f3b756ffdfc608d30e27c9a941024807e7f9"
+  integrity sha512-2bmlRpNKBxT/CRmPOlyISQpNj+qSeYvcym/uT0Jx2bMOlKLtSy1ZmLuVxSEKKyor/N5yhvp/ZiG1oE3DEYMSFA==
+
 err-code@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/err-code/-/err-code-3.0.1.tgz#a444c7b992705f2b120ee320b09972eef331c920"
@@ -8620,6 +8625,11 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
+
+lodash.unset@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/lodash.unset/-/lodash.unset-4.5.2.tgz#370d1d3e85b72a7e1b0cdf2d272121306f23e4ed"
+  integrity sha1-Nw0dPoW3Kn4bDN8tJyEhMG8j5O0=
 
 "lodash@>=3.5 <5", lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.20, lodash@^4.17.5:
   version "4.17.20"

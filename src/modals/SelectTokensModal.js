@@ -200,17 +200,19 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
               onGroupsSelect={setSelectedGroupIds}
               disabled={!isOpen}
             >
-              <TilesContainer>
+              <TilesContainer columns={layout.tileGridColumns}>
                 <TokenTiles
                   tokens={tokens}
                   onTokenEdit={() => setIsEditModalOpen(true)}
+                  columns={layout.tileGridColumns}
                 />
               </TilesContainer>
-              <TilesOverlay>
+              <TilesOverlay columns={layout.groupGridColumns}>
                 <TokenTiles
                   tokens={tokens}
                   onTokenEdit={() => setIsEditModalOpen(true)}
                   subgroup
+                  columns={layout.groupGridColumns}
                 />
               </TilesOverlay>
             </GroupProvider>

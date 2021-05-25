@@ -9,7 +9,7 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function TokenTiles({ tokens, onTokenEdit, subgroup }) {
+function TokenTiles({ tokens, onTokenEdit, subgroup, columns }) {
   const {
     groups,
     selectedGroupIds,
@@ -65,11 +65,13 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
   return (
     <SortableTiles
       groups={subgroup ? openGroupItems : groups}
+      selectedGroupIds={selectedGroupIds}
       onGroupChange={onGroupsChange}
       renderTile={renderTile}
       onTileSelect={onGroupSelect}
       disableGrouping={subgroup}
       openGroupId={openGroupId}
+      columns={columns}
     />
   );
 }
