@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 
 import {
   InteractionEmitterContext,
@@ -47,7 +47,7 @@ import {
 /**
  * Provide a bridge for konva that forwards our contexts
  */
-function KonvaBridge({ stageRender, children }) {
+function KonvaBridge({ stageRender, children }: { stageRender: any, children: any}) {
   const mapStageRef = useMapStage();
   const auth = useAuth();
   const settings = useSettings();

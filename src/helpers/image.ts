@@ -6,13 +6,18 @@ const lightnessDetectionOffset = 0.1;
  * @param {HTMLImageElement} image
  * @returns {boolean} True is the image is light
  */
-export function getImageLightness(image) {
+export function getImageLightness(image: HTMLImageElement) {
   const width = image.width;
   const height = image.height;
   let canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   let context = canvas.getContext("2d");
+  if (!context) {
+    // TODO: handle if context is null
+    return;
+  }
+
   context.drawImage(image, 0, 0);
   const imageData = context.getImageData(0, 0, width, height);
 
@@ -44,13 +49,19 @@ export function getImageLightness(image) {
  * @property {number} height
  */
 
+type CanvasImage = {
+  blob: Blob | null,
+  width: number,
+  height: number
+}
+
 /**
  * @param {HTMLCanvasElement} canvas
  * @param {string} type
  * @param {number} quality
  * @returns {Promise<CanvasImage>}
  */
-export async function canvasToImage(canvas, type, quality) {
+export async function canvasToImage(canvas: HTMLCanvasElement, type: string, quality: number): Promise<CanvasImage> {
   return new Promise((resolve) => {
     canvas.toBlob(
       (blob) => {
@@ -69,7 +80,7 @@ export async function canvasToImage(canvas, type, quality) {
  * @param {number} quality if image is a jpeg or webp this is the quality setting
  * @returns {Promise<CanvasImage>}
  */
-export async function resizeImage(image, size, type, quality) {
+export async function resizeImage(image: HTMLImageElement, size: number, type: string, quality: number): Promise<CanvasImage> {
   const width = image.width;
   const height = image.height;
   const ratio = width / height;
@@ -82,8 +93,10 @@ export async function resizeImage(image, size, type, quality) {
     canvas.height = size;
   }
   let context = canvas.getContext("2d");
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
+  // TODO: Add error if context is empty
+  if (context) {
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  }
   return await canvasToImage(canvas, type, quality);
 }
 
@@ -96,6 +109,13 @@ export async function resizeImage(image, size, type, quality) {
  * @property {string} id
  */
 
+type ImageFile = {
+  file: Uint8Array | null, 
+  width: number, 
+  height: number, 
+  type: "file",
+  id: string
+}
 /**
  * Create a image file with resolution `size`x`size` with cover cropping
  * @param {HTMLImageElement} image the image to resize
@@ -104,7 +124,7 @@ export async function resizeImage(image, size, type, quality) {
  * @param {number} quality if image is a jpeg or webp this is the quality setting
  * @returns {Promise<ImageFile>}
  */
-export async function createThumbnail(image, type, size = 300, quality = 0.5) {
+export async function createThumbnail(image: HTMLImageElement, type: string, size = 300, quality = 0.5): Promise<ImageFile> {
   let canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -113,31 +133,35 @@ export async function createThumbnail(image, type, size = 300, quality = 0.5) {
   if (ratio > 1) {
     const center = image.width / 2;
     const halfHeight = image.height / 2;
-    context.drawImage(
-      image,
-      center - halfHeight,
-      0,
-      image.height,
-      image.height,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    if (context) {
+      context.drawImage(
+        image,
+        center - halfHeight,
+        0,
+        image.height,
+        image.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+    }
   } else {
     const center = image.height / 2;
     const halfWidth = image.width / 2;
-    context.drawImage(
-      image,
-      0,
-      center - halfWidth,
-      image.width,
-      image.width,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    if (context) {
+      context.drawImage(
+        image,
+        0,
+        center - halfWidth,
+        image.width,
+        image.width,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+    }
   }
 
   const thumbnailImage = await canvasToImage(canvas, type, quality);

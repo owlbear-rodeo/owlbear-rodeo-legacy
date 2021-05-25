@@ -1,7 +1,7 @@
-import { applyChange, revertChange, diff as deepDiff } from "deep-diff";
+import { applyChange, Diff, revertChange, diff as deepDiff }from "deep-diff";
 import get from "lodash.get";
 
-export function applyChanges(target, changes) {
+export function applyChanges<LHS>(target: LHS, changes: Diff<LHS, any>[]) {
   for (let change of changes) {
     if (change.path && (change.kind === "E" || change.kind === "A")) {
       // If editing an object or array ensure that the value exists
@@ -15,7 +15,7 @@ export function applyChanges(target, changes) {
   }
 }
 
-export function revertChanges(target, changes) {
+export function revertChanges<LHS>(target: LHS, changes: Diff<LHS, any>[]) {
   for (let change of changes) {
     revertChange(target, true, change);
   }

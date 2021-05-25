@@ -6,9 +6,9 @@ import Color from "color";
 import Vector2 from "./Vector2";
 
 // Holes should be wound in the opposite direction as the containing points array
-export function HoleyLine({ holes, ...props }) {
+export function HoleyLine({ holes, ...props }: { holes: any, props: []}) {
   // Converted from https://github.com/rfestag/konva/blob/master/src/shapes/Line.ts
-  function drawLine(points, context, shape) {
+  function drawLine(points: number[], context: any, shape: any) {
     const length = points.length;
     const tension = shape.tension();
     const closed = shape.closed();
@@ -76,7 +76,7 @@ export function HoleyLine({ holes, ...props }) {
   }
 
   // Draw points and holes
-  function sceneFunc(context, shape) {
+  function sceneFunc(context: any, shape: any) {
     const points = shape.points();
     const closed = shape.closed();
 
@@ -109,7 +109,7 @@ export function HoleyLine({ holes, ...props }) {
   return <Line sceneFunc={sceneFunc} {...props} />;
 }
 
-export function Tick({ x, y, scale, onClick, cross }) {
+export function Tick({ x, y, scale, onClick, cross }: { x: any, y: any, scale: any, onClick: any, cross: any}) {
   const [fill, setFill] = useState("white");
   function handleEnter() {
     setFill("hsl(260, 100%, 80%)");
@@ -144,13 +144,17 @@ export function Tick({ x, y, scale, onClick, cross }) {
   );
 }
 
-export function Trail({ position, size, duration, segments, color }) {
-  const trailRef = useRef();
-  const pointsRef = useRef([]);
+interface TrailPoint extends Vector2 {
+  lifetime: number
+}
+
+export function Trail({ position, size, duration, segments, color }: { position: Vector2, size: any, duration: number, segments: any, color: string }) {
+  const trailRef: React.MutableRefObject<Konva.Line | undefined> = useRef();
+  const pointsRef: React.MutableRefObject<TrailPoint[]> = useRef([]);
   const prevPositionRef = useRef(position);
   const positionRef = useRef(position);
-  const circleRef = useRef();
-  // Color of the end of the trial
+  const circleRef: React.MutableRefObject<Konva.Circle | undefined> = useRef();
+  // Color of the end of the trail
   const transparentColorRef = useRef(
     Color(color).lighten(0.5).alpha(0).string()
   );
@@ -178,7 +182,7 @@ export function Trail({ position, size, duration, segments, color }) {
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(animate);
-    function animate(time) {
+    function animate(time: any) {
       request = requestAnimationFrame(animate);
       const deltaTime = time - prevTime;
       prevTime = time;
@@ -199,13 +203,13 @@ export function Trail({ position, size, duration, segments, color }) {
       }
 
       // Update the circle position to keep it in sync with the trail
-      if (circleRef.current) {
+      if (circleRef && circleRef.current) {
         circleRef.current.x(positionRef.current.x);
         circleRef.current.y(positionRef.current.y);
       }
 
-      if (trailRef.current) {
-        trailRef.current.getLayer().draw();
+      if (trailRef && trailRef.current) {
+        trailRef.current.getLayer()?.draw();
       }
     }
 
@@ -215,14 +219,15 @@ export function Trail({ position, size, duration, segments, color }) {
   }, []);
 
   // Custom scene function for drawing a trail from a line
-  function sceneFunc(context) {
+  function sceneFunc(context: any) {
     // Resample points to ensure a smooth trail
     const resampledPoints = Vector2.resample(pointsRef.current, segments);
     if (resampledPoints.length === 0) {
       return;
     }
     // Draws a line offset in the direction perpendicular to its travel direction
-    const drawOffsetLine = (from, to, alpha) => {
+    // TODO: check alpha type
+    const drawOffsetLine = (from: Vector2, to: Vector2, alpha: number) => {
       const forward = Vector2.normalize(Vector2.subtract(from, to));
       // Rotate the forward vector 90 degrees based off of the direction
       const side = Vector2.rotate90(forward);
@@ -254,7 +259,7 @@ export function Trail({ position, size, duration, segments, color }) {
     // Create a radial gradient from the center of the trail to the tail
     const gradientCenter = resampledPoints[resampledPoints.length - 1];
     const gradientEnd = resampledPoints[0];
-    const gradientRadius = Vector2.length(
+    const gradientRadius = Vector2.setLength(
       Vector2.subtract(gradientCenter, gradientEnd)
     );
     let gradient = context.createRadialGradient(
@@ -297,15 +302,24 @@ Trail.defaultProps = {
  * @param {Konva.Node} node
  * @returns {Vector2}
  */
-export function getRelativePointerPosition(node) {
+export function getRelativePointerPosition(node: Konva.Node): { x: number, y: number } | undefined {
   let transform = node.getAbsoluteTransform().copy();
   transform.invert();
-  let position = node.getStage().getPointerPosition();
+  // TODO: handle possible null value
+  let position = node.getStage()?.getPointerPosition();
+  if (!position) {
+    // TODO: handle possible null value
+    return;
+  }
   return transform.point(position);
 }
 
-export function getRelativePointerPositionNormalized(node) {
+export function getRelativePointerPositionNormalized(node: Konva.Node): { x: number, y: number } | undefined {
   const relativePosition = getRelativePointerPosition(node);
+  if (!relativePosition) {
+    // TODO: handle possible null value
+    return;
+  }
   return {
     x: relativePosition.x / node.width(),
     y: relativePosition.y / node.height(),
@@ -317,8 +331,8 @@ export function getRelativePointerPositionNormalized(node) {
  * @param {number[]} points points in an x, y alternating array
  * @returns {Vector2[]} a `Vector2` array
  */
-export function convertPointArray(points) {
-  return points.reduce((acc, _, i, arr) => {
+export function convertPointArray(points: number[]) {
+  return points.reduce((acc: any[], _, i, arr) => {
     if (i % 2 === 0) {
       acc.push({ x: arr[i], y: arr[i + 1] });
     }

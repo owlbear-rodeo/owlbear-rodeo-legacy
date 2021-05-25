@@ -1,8 +1,7 @@
-import React from "react";
 import { ThemeProvider } from "theme-ui";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
-import theme from "./theme.js";
+import theme from "./theme";
 import Home from "./routes/Home";
 import Game from "./routes/Game";
 import About from "./routes/About";

@@ -4,7 +4,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math";
  * Find the number facing up on a mesh instance of a dice
  * @param {Object} instance The dice instance
  */
-export function getDiceInstanceRoll(instance) {
+export function getDiceInstanceRoll(instance: any) {
   let highestDot = -1;
   let highestLocator;
   for (let locator of instance.getChildTransformNodes()) {
@@ -25,7 +25,7 @@ export function getDiceInstanceRoll(instance) {
  * Find the number facing up on a dice object
  * @param {Object} dice The Dice object
  */
-export function getDiceRoll(dice) {
+export function getDiceRoll(dice: any) {
   let number = getDiceInstanceRoll(dice.instance);
   // If the dice is a d100 add the d10
   if (dice.type === "d100") {
@@ -42,8 +42,8 @@ export function getDiceRoll(dice) {
   return { type: dice.type, roll: number };
 }
 
-export function getDiceRollTotal(diceRolls) {
-  return diceRolls.reduce((accumulator, dice) => {
+export function getDiceRollTotal(diceRolls: []) {
+  return diceRolls.reduce((accumulator: number, dice: any) => {
     if (dice.roll === "unknown") {
       return accumulator;
     } else {

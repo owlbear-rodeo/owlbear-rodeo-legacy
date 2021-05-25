@@ -3,10 +3,22 @@ const MILLISECONDS_IN_MINUTE = 60000;
 const MILLISECONDS_IN_SECOND = 1000;
 
 /**
- * Returns a timers duration in milliseconds
- * @param {Object} t The object with an hour, minute and second property
+ * @typedef Time
+ * @property {number} hour
+ * @property {number} minute
+ * @property {number} second
  */
-export function getHMSDuration(t) {
+type Time = {
+  hour: number, 
+  minute: number, 
+  second: number
+}
+
+/**
+ * Returns a timers duration in milliseconds
+ * @param {Time} t The object with an hour, minute and second property
+ */
+export function getHMSDuration(t: Time) {
   if (!t) {
     return 0;
   }
@@ -21,7 +33,7 @@ export function getHMSDuration(t) {
  * Returns an object with an hour, minute and second property
  * @param {number} duration The duration in milliseconds
  */
-export function getDurationHMS(duration) {
+export function getDurationHMS(duration: number) {
   let workingDuration = duration;
   const hour = Math.floor(workingDuration / MILLISECONDS_IN_HOUR);
   workingDuration -= hour * MILLISECONDS_IN_HOUR;

@@ -2,7 +2,7 @@
  * @param {Blob} blob
  * @returns {Promise<Uint8Array>}
  */
-async function blobToBuffer(blob) {
+async function blobToBuffer(blob: Blob): Promise<Uint8Array> {
   if (blob.arrayBuffer) {
     const arrayBuffer = await blob.arrayBuffer();
     return new Uint8Array(arrayBuffer);
@@ -10,12 +10,12 @@ async function blobToBuffer(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      function onLoadEnd(event) {
+      function onLoadEnd(event: any) {
         reader.removeEventListener("loadend", onLoadEnd, false);
         if (event.error) {
           reject(event.error);
         } else {
-          resolve(Buffer.from(reader.result));
+          resolve(Buffer.from(reader.result as ArrayBuffer));
         }
       }
 

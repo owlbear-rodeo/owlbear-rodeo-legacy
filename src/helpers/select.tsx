@@ -8,10 +8,20 @@ import { groupBy } from "./shared";
  */
 
 // Helper for generating search results for items
-export function useSearch(items, search) {
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [filteredItemScores, setFilteredItemScores] = useState({});
-  const [fuse, setFuse] = useState();
+export function useSearch(items: [], search: string) {
+  // TODO: add types to search items -> don't like the never type
+  const [filteredItems, setFilteredItems]: [
+    filteredItems: any,
+    setFilteredItems: any
+  ] = useState([]);
+  const [filteredItemScores, setFilteredItemScores]: [
+    filteredItemScores: {},
+    setFilteredItemScores: React.Dispatch<React.SetStateAction<{}>>
+  ] = useState({});
+  const [fuse, setFuse]: [
+    fuse: Fuse<never> | undefined,
+    setFuse: React.Dispatch<Fuse<never> | undefined>
+  ] = useState();
 
   // Update search index when items change
   useEffect(() => {
@@ -21,14 +31,15 @@ export function useSearch(items, search) {
   // Perform search when search changes
   useEffect(() => {
     if (search) {
-      const query = fuse.search(search);
-      setFilteredItems(query.map((result) => result.item));
-      setFilteredItemScores(
-        query.reduce(
-          (acc, value) => ({ ...acc, [value.item.id]: value.score }),
-          {}
-        )
+      const query = fuse?.search(search);
+      setFilteredItems(query?.map((result: any) => result.item));
+      let reduceResult: {} | undefined = query?.reduce(
+        (acc: {}, value: any) => ({ ...acc, [value.item.id]: value.score }),
+        {}
       );
+      if (reduceResult) {
+        setFilteredItemScores(reduceResult);
+      }
     }
   }, [search, items, fuse]);
 
@@ -36,7 +47,12 @@ export function useSearch(items, search) {
 }
 
 // Helper for grouping items
-export function useGroup(items, filteredItems, useFiltered, filteredScores) {
+export function useGroup(
+  items: any[],
+  filteredItems: any[],
+  useFiltered: boolean,
+  filteredScores: any[]
+) {
   const itemsByGroup = groupBy(useFiltered ? filteredItems : items, "group");
   // Get the groups of the items sorting by the average score if we're filtering or the alphabetical order
   // with "" at the start and "default" at the end if not
@@ -44,10 +60,10 @@ export function useGroup(items, filteredItems, useFiltered, filteredScores) {
   if (useFiltered) {
     itemGroups.sort((a, b) => {
       const aScore = itemsByGroup[a].reduce(
-        (acc, item) => (acc + filteredScores[item.id]) / 2
+        (acc: any, item: any) => (acc + filteredScores[item.id]) / 2
       );
       const bScore = itemsByGroup[b].reduce(
-        (acc, item) => (acc + filteredScores[item.id]) / 2
+        (acc: any, item: any) => (acc + filteredScores[item.id]) / 2
       );
       return aScore - bScore;
     });
@@ -67,12 +83,12 @@ export function useGroup(items, filteredItems, useFiltered, filteredScores) {
 
 // Helper for handling selecting items
 export function handleItemSelect(
-  item,
-  selectMode,
-  selectedIds,
-  setSelectedIds,
-  itemsByGroup,
-  itemGroups
+  item: any,
+  selectMode: any,
+  selectedIds: number[],
+  setSelectedIds: any,
+  itemsByGroup: any,
+  itemGroups: any
 ) {
   if (!item) {
     setSelectedIds([]);
@@ -83,9 +99,9 @@ export function handleItemSelect(
       setSelectedIds([item.id]);
       break;
     case "multiple":
-      setSelectedIds((prev) => {
+      setSelectedIds((prev: any[]) => {
         if (prev.includes(item.id)) {
-          return prev.filter((id) => id !== item.id);
+          return prev.filter((id: number) => id !== item.id);
         } else {
           return [...prev, item.id];
         }
@@ -94,32 +110,32 @@ export function handleItemSelect(
     case "range":
       // Create items array
       let items = itemGroups.reduce(
-        (acc, group) => [...acc, ...itemsByGroup[group]],
+        (acc: [], group: any) => [...acc, ...itemsByGroup[group]],
         []
       );
 
       // Add all items inbetween the previous selected item and the current selected
       if (selectedIds.length > 0) {
-        const mapIndex = items.findIndex((m) => m.id === item.id);
+        const mapIndex = items.findIndex((m: any) => m.id === item.id);
         const lastIndex = items.findIndex(
-          (m) => m.id === selectedIds[selectedIds.length - 1]
+          (m: any) => m.id === selectedIds[selectedIds.length - 1]
         );
-        let idsToAdd = [];
-        let idsToRemove = [];
+        let idsToAdd: number[] = [];
+        let idsToRemove: number[] = [];
         const direction = mapIndex > lastIndex ? 1 : -1;
         for (
           let i = lastIndex + direction;
           direction < 0 ? i >= mapIndex : i <= mapIndex;
           i += direction
         ) {
-          const itemId = items[i].id;
+          const itemId: number = items[i].id;
           if (selectedIds.includes(itemId)) {
             idsToRemove.push(itemId);
           } else {
             idsToAdd.push(itemId);
           }
         }
-        setSelectedIds((prev) => {
+        setSelectedIds((prev: any[]) => {
           let ids = [...prev, ...idsToAdd];
           return ids.filter((id) => !idsToRemove.includes(id));
         });

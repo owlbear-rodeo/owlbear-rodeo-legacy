@@ -5,22 +5,22 @@ class Vector3 {
   /**
    * @type {number} x - X component of the vector
    */
-  x;
+  x: number;
   /**
    * @type {number} y - Y component of the vector
    */
-  y;
+  y: number;
   /**
    * @type {number} z - Z component of the vector
    */
-  z;
+  z: number;
 
   /**
    * @param {number} x
    * @param {number} y
    * @param {number} z
    */
-  constructor(x, y, z) {
+  constructor(x: number, y: number, z: number) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -31,7 +31,7 @@ class Vector3 {
    * @param {Vector3} cube
    * @returns {Vector3}
    */
-  static cubeRound(cube) {
+  static cubeRound(cube: Vector3): Vector3 {
     var rX = Math.round(cube.x);
     var rY = Math.round(cube.y);
     var rZ = Math.round(cube.z);

@@ -9,23 +9,26 @@ import blobToBuffer from "../helpers/blobToBuffer";
 const MAX_BUFFER_SIZE = 16000;
 
 class Connection extends SimplePeer {
-  constructor(props) {
+  currentChunks: any;
+  dataChannels: any;
+
+  constructor(props: any) {
     super(props);
-    this.currentChunks = {};
+    this.currentChunks = {} as Blob;
     this.dataChannels = {};
     this.on("data", this.handleData);
     this.on("datachannel", this.handleDataChannel);
   }
 
   // Intercept the data event with decoding and chunking support
-  handleData(packed) {
-    const unpacked = decode(packed);
+  handleData(packed: any) {
+    const unpacked: any = decode(packed);
     // If the special property __chunked is set and true
     // The data is a partial chunk of the a larger file
     // So wait until all chunks are collected and assembled
     // before emitting the dataComplete event
     if (unpacked.__chunked) {
-      let chunk = this.currentChunks[unpacked.id] || {
+      let chunk: any = this.currentChunks[unpacked.id] || {
         data: [],
         count: 0,
         total: unpacked.total,
@@ -57,7 +60,7 @@ class Connection extends SimplePeer {
 
   // Custom send function with encoding, chunking and data channel support
   // Uses `write` to send the data to allow for buffer / backpressure handling
-  sendObject(object, channel) {
+  sendObject(object: any, channel: any) {
     try {
       const packedData = encode(object);
       if (packedData.byteLength > MAX_BUFFER_SIZE) {
@@ -84,23 +87,25 @@ class Connection extends SimplePeer {
 
   // Override the create data channel function to store our own named reference to it
   // and to use our custom data handler
-  createDataChannel(channelName, channelConfig, opts) {
+  createDataChannel(channelName: string, channelConfig: any, opts: any) {
+    // TODO: resolve createDataChannel
+    // @ts-ignore
     const channel = super.createDataChannel(channelName, channelConfig, opts);
     this.handleDataChannel(channel);
     return channel;
   }
 
-  handleDataChannel(channel) {
+  handleDataChannel(channel: any) {
     const channelName = channel.channelName;
     this.dataChannels[channelName] = channel;
     channel.on("data", this.handleData.bind(this));
-    channel.on("error", (error) => {
+    channel.on("error", (error: any) => {
       this.emit("error", error);
     });
   }
 
   // Converted from https://github.com/peers/peerjs/
-  chunk(data) {
+  chunk(data: any) {
     const chunks = [];
     const size = data.byteLength;
     const total = Math.ceil(size / MAX_BUFFER_SIZE);

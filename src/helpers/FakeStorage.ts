@@ -2,17 +2,17 @@
  * A faked local or session storage used when the user has disabled storage
  */
 class FakeStorage {
-  data = {};
-  key(index) {
+  data: { [keyName: string ]: any} = {};
+  key(index: number) {
     return Object.keys(this.data)[index] || null;
   }
-  getItem(keyName) {
+  getItem(keyName: string ) {
     return this.data[keyName] || null;
   }
-  setItem(keyName, keyValue) {
+  setItem(keyName: string, keyValue: any) {
     this.data[keyName] = keyValue;
   }
-  removeItem(keyName) {
+  removeItem(keyName: string) {
     delete this.data[keyName];
   }
   clear() {

@@ -8,9 +8,9 @@ class Size extends Vector2 {
   /**
    * @param {number} width
    * @param {number} height
-   * @param {number=} radius Used to represent hexagon sizes
+   * @param {number} radius Used to represent hexagon sizes
    */
-  constructor(width, height, radius) {
+  constructor(width: number, height: number, radius?: number) {
     super(width, height);
     this._radius = radius;
   }
@@ -18,35 +18,35 @@ class Size extends Vector2 {
   /**
    * @returns {number}
    */
-  get width() {
+  get width(): number {
     return this.x;
   }
 
   /**
    * @param {number} width
    */
-  set width(width) {
+  set width(width: number) {
     this.x = width;
   }
 
   /**
    * @returns {number}
    */
-  get height() {
+  get height(): number {
     return this.y;
   }
 
   /**
    * @param {number} height
    */
-  set height(height) {
+  set height(height: number) {
     this.y = height;
   }
 
   /**
    * @returns {number}
    */
-  get radius() {
+  get radius(): number {
     if (this._radius) {
       return this._radius;
     } else {
@@ -57,7 +57,7 @@ class Size extends Vector2 {
   /**
    * @param {number} radius
    */
-  set radius(radius) {
+  set radius(radius: number) {
     this._radius = radius;
   }
 }

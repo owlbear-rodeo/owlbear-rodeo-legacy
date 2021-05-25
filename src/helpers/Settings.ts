@@ -8,7 +8,7 @@ class Settings {
   currentVersion;
   storage;
 
-  constructor(name) {
+  constructor(name: string) {
     this.name = name;
     // Try and use local storage if it is available, if not mock it with an in memory storage
     try {
@@ -22,30 +22,30 @@ class Settings {
     this.currentVersion = this.get("__version");
   }
 
-  version(versionNumber, upgradeFunction) {
+  version(versionNumber: number, upgradeFunction: Function) {
     if (versionNumber > this.currentVersion) {
       this.currentVersion = versionNumber;
       this.setAll(upgradeFunction(this.getAll()));
     }
   }
 
-  getAll() {
+  getAll(): any {
     return JSON.parse(this.storage.getItem(this.name));
   }
 
-  get(key) {
+  get(key: string) {
     const settings = this.getAll();
     return settings && settings[key];
   }
 
-  setAll(newSettings) {
+  setAll(newSettings: any) {
     this.storage.setItem(
       this.name,
       JSON.stringify({ ...newSettings, __version: this.currentVersion })
     );
   }
 
-  set(key, value) {
+  set(key: string, value: string) {
     let settings = this.getAll();
     settings[key] = value;
     this.setAll(settings);

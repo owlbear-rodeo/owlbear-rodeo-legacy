@@ -1,4 +1,4 @@
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
@@ -6,6 +6,7 @@ import Connection from "./Connection";
 
 import { omit } from "../helpers/shared";
 import { logError } from "../helpers/logging";
+import { SimplePeerData } from "simple-peer";
 
 /**
  * @typedef {object} SessionPeer
@@ -14,6 +15,12 @@ import { logError } from "../helpers/logging";
  * @property {boolean} initiator - Is this peer the initiator of the connection
  * @property {boolean} ready - Ready for data to be sent
  */
+type SessionPeer = {
+  id: string;
+  connection: Connection;
+  initiator: boolean;
+  ready: boolean;
+};
 
 /**
  * @callback peerReply
@@ -21,6 +28,8 @@ import { logError } from "../helpers/logging";
  * @param {object} data - The data to send
  * @param {string} channel - The channel to send to
  */
+
+type peerReply = (id: string, data: SimplePeerData, channel: string) => void;
 
 /**
  * Session Status Event - Status of the session has changed
@@ -50,24 +59,24 @@ class Session extends EventEmitter {
    *
    * @type {io.Socket}
    */
-  socket;
+  socket: Socket = io();
 
   /**
    * A mapping of socket ids to session peers
    *
    * @type {Object.<string, SessionPeer>}
    */
-  peers;
+  peers: Record<string, SessionPeer>;
 
   get id() {
     return this.socket && this.socket.id;
   }
 
-  _iceServers;
+  _iceServers: string[] = [];
 
   // Store party id and password for reconnect
-  _gameId;
-  _password;
+  _gameId: string = "";
+  _password: string = "";
 
   constructor() {
     super();
@@ -81,6 +90,9 @@ class Session extends EventEmitter {
    */
   async connect() {
     try {
+      if (!process.env.REACT_APP_ICE_SERVERS_URL) {
+        return;
+      }
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
@@ -88,6 +100,9 @@ class Session extends EventEmitter {
       const data = await response.json();
       this._iceServers = data.iceServers;
 
+      if (!process.env.REACT_APP_BROKER_URL) {
+        return;
+      }
       this.socket = io(process.env.REACT_APP_BROKER_URL, {
         withCredentials: true,
         parser: msgParser,
@@ -122,7 +137,7 @@ class Session extends EventEmitter {
    * @param {object} data
    * @param {string} channel
    */
-  sendTo(sessionId, eventId, data, channel) {
+  sendTo(sessionId: string, eventId: string, data: SimplePeerData, channel: string) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -151,7 +166,11 @@ class Session extends EventEmitter {
    * @param {MediaStreamTrack} track
    * @param {MediaStream} stream
    */
-  startStreamTo(sessionId, track, stream) {
+  startStreamTo(
+    sessionId: string,
+    track: MediaStreamTrack,
+    stream: MediaStream
+  ) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -174,7 +193,7 @@ class Session extends EventEmitter {
    * @param {MediaStreamTrack} track
    * @param {MediaStream} stream
    */
-  endStreamTo(sessionId, track, stream) {
+  endStreamTo(sessionId: string, track: MediaStreamTrack, stream: MediaStream) {
     if (sessionId in this.peers) {
       this.peers[sessionId].connection.removeTrack(track, stream);
     }
@@ -186,7 +205,7 @@ class Session extends EventEmitter {
    * @param {string} gameId - the id of the party to join
    * @param {string} password - the password of the party
    */
-  async joinGame(gameId, password) {
+  async joinGame(gameId: string, password: string) {
     if (typeof gameId !== "string" || typeof password !== "string") {
       console.error(
         "Unable to join game: invalid game ID or password",
@@ -198,7 +217,12 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit("join_game", gameId, password, process.env.REACT_APP_VERSION);
+    this.socket.emit(
+      "join_game",
+      gameId,
+      password,
+      process.env.REACT_APP_VERSION
+    );
     this.emit("status", "joining");
   }
 
@@ -208,7 +232,7 @@ class Session extends EventEmitter {
    * @param {boolean} initiator
    * @returns {boolean} True if peer was added successfully
    */
-  _addPeer(id, initiator) {
+  _addPeer(id: string, initiator: boolean) {
     try {
       const connection = new Connection({
         initiator,
@@ -221,15 +245,15 @@ class Session extends EventEmitter {
 
       const peer = { id, connection, initiator, ready: false };
 
-      function sendPeer(id, data, channel) {
+      const sendPeer = (id: string, data: SimplePeerData, channel: any) => {
         peer.connection.sendObject({ id, data }, channel);
-      }
+      };
 
-      function handleSignal(signal) {
+      const handleSignal = (signal: any) => {
         this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
-      }
+      };
 
-      function handleConnect() {
+      const handleConnect = () => {
         if (peer.id in this.peers) {
           this.peers[peer.id].ready = true;
         }
@@ -241,10 +265,14 @@ class Session extends EventEmitter {
          * @property {SessionPeer} peer
          * @property {peerReply} reply
          */
-        this.emit("peerConnect", { peer, reply: sendPeer });
-      }
+        const peerConnectEvent: { peer: SessionPeer; reply: peerReply } = {
+          peer,
+          reply: sendPeer,
+        };
+        this.emit("peerConnect", peerConnectEvent);
+      };
 
-      function handleDataComplete(data) {
+      const handleDataComplete = (data: any) => {
         /**
          * Peer Data Event - Data received by a peer
          *
@@ -255,15 +283,30 @@ class Session extends EventEmitter {
          * @property {object} data
          * @property {peerReply} reply
          */
-        this.emit("peerData", {
+        let peerDataEvent: {
+          peer: SessionPeer;
+          id: string;
+          data: any;
+          reply: peerReply;
+        } = {
           peer,
           id: data.id,
           data: data.data,
           reply: sendPeer,
-        });
-      }
+        };
+        console.log(`Data: ${JSON.stringify(data)}`)
+        this.emit("peerData", peerDataEvent);
+      };
 
-      function handleDataProgress({ id, count, total }) {
+      const handleDataProgress = ({
+        id,
+        count,
+        total,
+      }: {
+        id: string;
+        count: number;
+        total: number;
+      }) => {
         this.emit("peerDataProgress", {
           peer,
           id,
@@ -271,9 +314,9 @@ class Session extends EventEmitter {
           total,
           reply: sendPeer,
         });
-      }
+      };
 
-      function handleTrack(track, stream) {
+      const handleTrack = (track: MediaStreamTrack, stream: MediaStream) => {
         /**
          * Peer Track Added Event - A `MediaStreamTrack` was added by a peer
          *
@@ -283,7 +326,12 @@ class Session extends EventEmitter {
          * @property {MediaStreamTrack} track
          * @property {MediaStream} stream
          */
-        this.emit("peerTrackAdded", { peer, track, stream });
+        let peerTrackAddedEvent: {
+          peer: SessionPeer;
+          track: MediaStreamTrack;
+          stream: MediaStream;
+        } = { peer, track, stream };
+        this.emit("peerTrackAdded", peerTrackAddedEvent);
         track.addEventListener("mute", () => {
           /**
            * Peer Track Removed Event - A `MediaStreamTrack` was removed by a peer
@@ -294,11 +342,16 @@ class Session extends EventEmitter {
            * @property {MediaStreamTrack} track
            * @property {MediaStream} stream
            */
-          this.emit("peerTrackRemoved", { peer, track, stream });
+          let peerTrackRemovedEvent: {
+            peer: SessionPeer;
+            track: MediaStreamTrack;
+            stream: MediaStream;
+          } = { peer, track, stream };
+          this.emit("peerTrackRemoved", peerTrackRemovedEvent);
         });
-      }
+      };
 
-      function handleClose() {
+      const handleClose = () => {
         /**
          * Peer Disconnect Event - A peer has disconnected
          *
@@ -306,14 +359,15 @@ class Session extends EventEmitter {
          * @type {object}
          * @property {SessionPeer} peer
          */
-        this.emit("peerDisconnect", { peer });
+        let peerDisconnectEvent: { peer: SessionPeer } = { peer };
+        this.emit("peerDisconnect", peerDisconnectEvent);
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
         }
-      }
+      };
 
-      function handleError(error) {
+      const handleError = (error: Error) => {
         /**
          * Peer Error Event - An error occured with a peer connection
          *
@@ -322,12 +376,16 @@ class Session extends EventEmitter {
          * @property {SessionPeer} peer
          * @property {Error} error
          */
-        this.emit("peerError", { peer, error });
+        let peerErrorEvent: { peer: SessionPeer; error: Error } = {
+          peer,
+          error,
+        };
+        this.emit("peerError", peerErrorEvent);
         if (peer.id in this.peers) {
           peer.connection.destroy();
           this.peers = omit(this.peers, [peer.id]);
         }
-      }
+      };
 
       peer.connection.on("signal", handleSignal.bind(this));
       peer.connection.on("connect", handleConnect.bind(this));
@@ -363,7 +421,7 @@ class Session extends EventEmitter {
     this.emit("gameExpired");
   }
 
-  _handlePlayerJoined(id) {
+  _handlePlayerJoined(id: string) {
     /**
      * Player Joined Event - A player has joined the game
      *
@@ -373,7 +431,7 @@ class Session extends EventEmitter {
     this.emit("playerJoined", id);
   }
 
-  _handlePlayerLeft(id) {
+  _handlePlayerLeft(id: string) {
     /**
      * Player Left Event - A player has left the game
      *
@@ -387,7 +445,7 @@ class Session extends EventEmitter {
     }
   }
 
-  _handleSignal(data) {
+  _handleSignal(data: any) {
     const { from, signal } = data;
     if (!(from in this.peers)) {
       if (!this._addPeer(from, false)) {

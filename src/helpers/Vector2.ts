@@ -5,6 +5,14 @@ import {
   floorTo as floorToNumber,
 } from "./shared";
 
+export type BoundingBox = {
+  min: Vector2, 
+  max: Vector2, 
+  width: number, 
+  height: number, 
+  center: Vector2
+}
+
 /**
  * Vector class with x, y and static helper methods
  */
@@ -12,17 +20,17 @@ class Vector2 {
   /**
    * @type {number} x - X component of the vector
    */
-  x;
+  x: number;
   /**
    * @type {number} y - Y component of the vector
    */
-  y;
+  y: number;
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  constructor(x, y) {
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
@@ -31,7 +39,7 @@ class Vector2 {
    * @param {Vector2} p
    * @returns {number} Length squared of `p`
    */
-  static lengthSquared(p) {
+  static lengthSquared(p: Vector2): number {
     return p.x * p.x + p.y * p.y;
   }
 
@@ -39,7 +47,7 @@ class Vector2 {
    * @param {Vector2} p
    * @returns {number} Length of `p`
    */
-  static length(p) {
+  static setLength(p: Vector2): number {
     return Math.sqrt(this.lengthSquared(p));
   }
 
@@ -47,8 +55,8 @@ class Vector2 {
    * @param {Vector2} p
    * @returns {Vector2} `p` normalized, if length of `p` is 0 `{x: 0, y: 0}` is returned
    */
-  static normalize(p) {
-    const l = this.length(p);
+  static normalize(p: Vector2): Vector2 {
+    const l = this.setLength(p);
     if (l === 0) {
       return { x: 0, y: 0 };
     }
@@ -60,7 +68,7 @@ class Vector2 {
    * @param {Vector2} b
    * @returns {number}  Dot product between `a` and `b`
    */
-  static dot(a, b) {
+  static dot(a: Vector2, b: Vector2): number {
     return a.x * b.x + a.y * b.y;
   }
 
@@ -69,7 +77,7 @@ class Vector2 {
    * @param {(Vector2 | number)} b
    * @returns {Vector2} a - b
    */
-  static subtract(a, b) {
+  static subtract(a: Vector2, b: Vector2 | number): Vector2 {
     if (typeof b === "number") {
       return { x: a.x - b, y: a.y - b };
     } else {
@@ -82,7 +90,7 @@ class Vector2 {
    * @param {(Vector2 | number)} b
    * @returns {Vector2} a + b
    */
-  static add(a, b) {
+  static add(a: Vector2, b: Vector2 | number): Vector2 {
     if (typeof b === "number") {
       return { x: a.x + b, y: a.y + b };
     } else {
@@ -95,7 +103,7 @@ class Vector2 {
    * @param {(Vector2 | number)} b
    * @returns {Vector2} a * b
    */
-  static multiply(a, b) {
+  static multiply(a: Vector2, b: Vector2 | number): Vector2 {
     if (typeof b === "number") {
       return { x: a.x * b, y: a.y * b };
     } else {
@@ -108,7 +116,7 @@ class Vector2 {
    * @param {(Vector2 | number)} b
    * @returns {Vector2} a / b
    */
-  static divide(a, b) {
+  static divide(a: Vector2, b: Vector2 | number): Vector2 {
     if (typeof b === "number") {
       return { x: a.x / b, y: a.y / b };
     } else {
@@ -123,7 +131,7 @@ class Vector2 {
    * @param {number} angle Angle of rotation in degrees
    * @returns {Vector2} Rotated point
    */
-  static rotate(point, origin, angle) {
+  static rotate(point: Vector2, origin: Vector2, angle: number): Vector2 {
     const cos = Math.cos(toRadians(angle));
     const sin = Math.sin(toRadians(angle));
     const dif = this.subtract(point, origin);
@@ -139,7 +147,7 @@ class Vector2 {
    * @param {number} angle Angle of rotation in degrees
    * @returns {Vector2} Rotated direction
    */
-  static rotateDirection(direction, angle) {
+  static rotateDirection(direction: Vector2, angle: number): Vector2 {
     return this.rotate(direction, { x: 0, y: 0 }, angle);
   }
 
@@ -149,7 +157,7 @@ class Vector2 {
    * @param {(Vector2 | number)} [minimum] Value to compare
    * @returns {(Vector2 | number)}
    */
-  static min(a, minimum) {
+  static min(a: Vector2, minimum?: Vector2 | number): Vector2 | number {
     if (minimum === undefined) {
       return a.x < a.y ? a.x : a.y;
     } else if (typeof minimum === "number") {
@@ -164,7 +172,7 @@ class Vector2 {
    * @param {(Vector2 | number)} [maximum] Value to compare
    * @returns {(Vector2 | number)}
    */
-  static max(a, maximum) {
+  static max(a: Vector2, maximum?: Vector2 | number): Vector2 | number {
     if (maximum === undefined) {
       return a.x > a.y ? a.x : a.y;
     } else if (typeof maximum === "number") {
@@ -180,7 +188,7 @@ class Vector2 {
    * @param {Vector2} to
    * @returns {Vector2}
    */
-  static roundTo(p, to) {
+  static roundTo(p: Vector2, to: Vector2): Vector2 {
     return {
       x: roundToNumber(p.x, to.x),
       y: roundToNumber(p.y, to.y),
@@ -193,7 +201,7 @@ class Vector2 {
    * @param {Vector2} to
    * @returns {Vector2}
    */
-  static floorTo(p, to) {
+  static floorTo(p: Vector2, to: Vector2): Vector2 {
     return {
       x: floorToNumber(p.x, to.x),
       y: floorToNumber(p.y, to.y),
@@ -204,7 +212,7 @@ class Vector2 {
    * @param {Vector2} a
    * @returns {Vector2} The component wise sign of `a`
    */
-  static sign(a) {
+  static sign(a: Vector2): Vector2 {
     return { x: Math.sign(a.x), y: Math.sign(a.y) };
   }
 
@@ -212,7 +220,7 @@ class Vector2 {
    * @param {Vector2} a
    * @returns {Vector2} The component wise absolute of `a`
    */
-  static abs(a) {
+  static abs(a: Vector2): Vector2 {
     return { x: Math.abs(a.x), y: Math.abs(a.y) };
   }
 
@@ -221,7 +229,7 @@ class Vector2 {
    * @param {(Vector2 | number)} b
    * @returns {Vector2} `a` to the power of `b`
    */
-  static pow(a, b) {
+  static pow(a: Vector2, b: Vector2 | number): Vector2 {
     if (typeof b === "number") {
       return { x: Math.pow(a.x, b), y: Math.pow(a.y, b) };
     } else {
@@ -233,7 +241,7 @@ class Vector2 {
    * @param {Vector2} a
    * @returns {number} The dot product between `a` and `a`
    */
-  static dot2(a) {
+  static dot2(a: Vector2): number {
     return this.dot(a, a);
   }
 
@@ -244,7 +252,7 @@ class Vector2 {
    * @param {number} max
    * @returns {Vector2}
    */
-  static clamp(a, min, max) {
+  static clamp(a: Vector2, min: number, max: number): Vector2 {
     return {
       x: Math.min(Math.max(a.x, min), max),
       y: Math.min(Math.max(a.y, min), max),
@@ -259,11 +267,11 @@ class Vector2 {
    * @param {Vector2} b End of the line
    * @returns {Object} The distance to and the closest point on the line segment
    */
-  static distanceToLine(p, a, b) {
+  static distanceToLine(p: Vector2, a: Vector2, b: Vector2): Object {
     const pa = this.subtract(p, a);
     const ba = this.subtract(b, a);
     const h = Math.min(Math.max(this.dot(pa, ba) / this.dot(ba, ba), 0), 1);
-    const distance = this.length(this.subtract(pa, this.multiply(ba, h)));
+    const distance = this.setLength(this.subtract(pa, this.multiply(ba, h)));
     const point = this.add(a, this.multiply(ba, h));
     return { distance, point };
   }
@@ -278,7 +286,7 @@ class Vector2 {
    * @param {Vector2} C End of the curve
    * @returns {Object} The distance to and the closest point on the curve
    */
-  static distanceToQuadraticBezier(pos, A, B, C) {
+  static distanceToQuadraticBezier(pos: Vector2, A: Vector2, B: Vector2, C: Vector2): Object {
     let distance = 0;
     let point = { x: pos.x, y: pos.y };
 
@@ -358,7 +366,7 @@ class Vector2 {
    * @param {Vector2[]} points
    * @returns {BoundingBox}
    */
-  static getBoundingBox(points) {
+  static getBoundingBox(points: Vector2[]): BoundingBox {
     let minX = Number.MAX_VALUE;
     let maxX = Number.MIN_VALUE;
     let minY = Number.MAX_VALUE;
@@ -389,7 +397,7 @@ class Vector2 {
    * @param {Vector2[]} points
    * @returns {boolean}
    */
-  static pointInPolygon(p, points) {
+  static pointInPolygon(p: Vector2, points: Vector2[]): boolean {
     const bounds = this.getBoundingBox(points);
     if (
       p.x < bounds.min.x ||
@@ -422,8 +430,9 @@ class Vector2 {
    * @param {Vector2} a
    * @param {Vector2} b
    * @param {number} threshold
+   * @returns {boolean}
    */
-  static compare(a, b, threshold) {
+  static compare(a: Vector2, b: Vector2, threshold: number): boolean {
     return this.lengthSquared(this.subtract(a, b)) < threshold * threshold;
   }
 
@@ -431,9 +440,10 @@ class Vector2 {
    * Returns the distance between two vectors
    * @param {Vector2} a
    * @param {Vector2} b
+   * @returns {number}
    */
-  static distance(a, b) {
-    return this.length(this.subtract(a, b));
+  static distance(a: Vector2, b: Vector2): number {
+    return this.setLength(this.subtract(a, b));
   }
 
   /**
@@ -443,15 +453,16 @@ class Vector2 {
    * @param {number} alpha
    * @returns {Vector2}
    */
-  static lerp(a, b, alpha) {
+  static lerp(a: Vector2, b: Vector2, alpha: number): Vector2 {
     return { x: lerpNumber(a.x, b.x, alpha), y: lerpNumber(a.y, b.y, alpha) };
   }
 
   /**
    * Returns total length of a an array of points treated as a path
    * @param {Vector2[]} points the array of points in the path
+   * @returns {number}
    */
-  static pathLength(points) {
+  static pathLength(points: Vector2[]): number {
     let l = 0;
     for (let i = 1; i < points.length; i++) {
       l += this.distance(points[i - 1], points[i]);
@@ -464,8 +475,9 @@ class Vector2 {
    * based off of http://depts.washington.edu/acelab/proj/dollar/index.html
    * @param {Vector2[]} points the points to resample
    * @param {number} n the number of new points
+   * @returns {Vector2[]}
    */
-  static resample(points, n) {
+  static resample(points: Vector2[], n: number): Vector2[] {
     if (points.length === 0 || n <= 0) {
       return [];
     }
@@ -501,7 +513,7 @@ class Vector2 {
    * @param {("counterClockwise"|"clockwise")=} direction Direction to rotate the vector
    * @returns {Vector2}
    */
-  static rotate90(p, direction = "clockwise") {
+  static rotate90(p: Vector2, direction: "counterClockwise" | "clockwise" = "clockwise"): Vector2 {
     if (direction === "clockwise") {
       return { x: p.y, y: -p.x };
     } else {

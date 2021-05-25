@@ -1,17 +1,17 @@
 import shortid from "shortid";
 
-export function addPolygonDifferenceToShapes(shape, difference, shapes) {
+export function addPolygonDifferenceToShapes(shape: any, difference: any, shapes: any) {
   for (let i = 0; i < difference.length; i++) {
     let newId = shortid.generate();
     // Holes detected
     let holes = [];
     if (difference[i].length > 1) {
       for (let j = 1; j < difference[i].length; j++) {
-        holes.push(difference[i][j].map(([x, y]) => ({ x, y })));
+        holes.push(difference[i][j].map(([x, y]: [ x: number, y: number ]) => ({ x, y })));
       }
     }
 
-    const points = difference[i][0].map(([x, y]) => ({ x, y }));
+    const points = difference[i][0].map(([x, y]: [ x: number, y: number ]) => ({ x, y }));
 
     shapes[newId] = {
       ...shape,
@@ -24,11 +24,11 @@ export function addPolygonDifferenceToShapes(shape, difference, shapes) {
   }
 }
 
-export function addPolygonIntersectionToShapes(shape, intersection, shapes) {
+export function addPolygonIntersectionToShapes(shape: any, intersection: any, shapes: any) {
   for (let i = 0; i < intersection.length; i++) {
     let newId = shortid.generate();
 
-    const points = intersection[i][0].map(([x, y]) => ({ x, y }));
+    const points = intersection[i][0].map(([x, y]: [ x: number, y: number ]) => ({ x, y }));
 
     shapes[newId] = {
       ...shape,

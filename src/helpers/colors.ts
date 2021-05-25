@@ -1,5 +1,20 @@
+export type Colors = {
+  blue: string;
+  orange: string;
+  red: string;
+  yellow: string;
+  purple: string;
+  green: string;
+  pink: string;
+  teal: string;
+  black: string;
+  darkGray: string;
+  lightGray: string;
+  white: string;
+}
+
 // Colors used for the game for theme general UI colors look at theme.js
-const colors = {
+const colors: Colors = {
   blue: "rgb(26, 106, 255)",
   orange: "rgb(255, 116, 51)",
   red: "rgb(255, 77, 77)",

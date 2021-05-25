@@ -1,4 +1,4 @@
-const monsters = [
+const monsters: string[] = [
   "Aboleth",
   "Acolyte",
   "Black Dragon",
@@ -295,6 +295,6 @@ const monsters = [
 
 export default monsters;
 
-export function getRandomMonster() {
+export function getRandomMonster(): string {
   return monsters[Math.floor(Math.random() * monsters.length)];
 }
