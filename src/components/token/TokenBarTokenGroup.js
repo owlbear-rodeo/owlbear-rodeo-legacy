@@ -51,6 +51,7 @@ function TokenBarTokenGroup({ group, tokens }) {
           sx={{
             userSelect: "none",
             touchAction: "none",
+            pointerEvents: "none",
           }}
         />
       ));
