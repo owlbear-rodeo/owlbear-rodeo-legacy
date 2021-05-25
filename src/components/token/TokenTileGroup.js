@@ -21,7 +21,6 @@ function TokenTileGroup({
       isSelected={isSelected}
       onSelect={() => onSelect(group.id)}
       onDoubleClick={onDoubleClick}
-      columns="1fr 1fr"
     >
       <Grid
         columns={`repeat(${layout.groupGridColumns}, 1fr)`}
