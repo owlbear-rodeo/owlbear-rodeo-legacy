@@ -5,7 +5,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 
 import { tokenSources as defaultTokenSources } from "../../tokens";
 
-const TokenImage = React.forwardRef(({ token, ...props }) => {
+const TokenImage = React.forwardRef(({ token, ...props }, ref) => {
   const tokenURL = useDataURL(
     token,
     defaultTokenSources,
@@ -13,7 +13,7 @@ const TokenImage = React.forwardRef(({ token, ...props }) => {
     token.type === "file"
   );
 
-  return <Image src={tokenURL} {...props} />;
+  return <Image src={tokenURL} ref={ref} {...props} />;
 });
 
 export default TokenImage;
