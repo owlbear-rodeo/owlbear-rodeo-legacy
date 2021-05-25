@@ -1,7 +1,7 @@
 import React from "react";
 
 import Tile from "../tile/Tile";
-import MapTileImage from "./MapTileImage";
+import MapImage from "./MapImage";
 
 function MapTile({
   map,
@@ -23,7 +23,7 @@ function MapTile({
       badges={badges}
       editTitle="Edit Map"
     >
-      <MapTileImage map={map} />
+      <MapImage map={map} />
     </Tile>
   );
 }

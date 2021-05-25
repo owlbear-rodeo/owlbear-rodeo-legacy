@@ -2,7 +2,7 @@ import React from "react";
 import { Grid } from "theme-ui";
 
 import Tile from "../tile/Tile";
-import TokenTileImage from "./TokenTileImage";
+import TokenImage from "./TokenImage";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -29,7 +29,7 @@ function TokenTileGroup({
         sx={{ gridGap: 2 }}
       >
         {tokens.slice(0, 9).map((token) => (
-          <TokenTileImage
+          <TokenImage
             sx={{ borderRadius: "8px" }}
             token={token}
             key={`${token.id}-group-tile`}

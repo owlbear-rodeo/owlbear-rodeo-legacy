@@ -1,7 +1,7 @@
 import React from "react";
 
 import Tile from "../tile/Tile";
-import TokenTileImage from "./TokenTileImage";
+import TokenImage from "./TokenImage";
 
 function TokenTile({
   token,
@@ -21,7 +21,7 @@ function TokenTile({
       badges={badges}
       editTitle="Edit Token"
     >
-      <TokenTileImage token={token} />
+      <TokenImage token={token} />
     </Tile>
   );
 }

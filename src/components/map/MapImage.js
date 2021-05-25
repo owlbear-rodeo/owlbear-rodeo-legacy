@@ -4,7 +4,7 @@ import { Image } from "theme-ui";
 import { useDataURL } from "../../contexts/AssetsContext";
 import { mapSources as defaultMapSources } from "../../maps";
 
-function MapTileImage({ map, sx }) {
+const MapTileImage = React.forwardRef(({ map, ...props }) => {
   const mapURL = useDataURL(
     map,
     defaultMapSources,
@@ -12,7 +12,7 @@ function MapTileImage({ map, sx }) {
     map.type === "file"
   );
 
-  return <Image sx={sx} src={mapURL}></Image>;
-}
+  return <Image src={mapURL} {...props} />;
+});
 
 export default MapTileImage;

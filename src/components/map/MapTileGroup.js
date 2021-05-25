@@ -2,7 +2,7 @@ import React from "react";
 import { Grid } from "theme-ui";
 
 import Tile from "../tile/Tile";
-import MapTileImage from "./MapTileImage";
+import MapImage from "./MapImage";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -22,7 +22,7 @@ function MapTileGroup({ group, maps, isSelected, onSelect, onDoubleClick }) {
         sx={{ gridGap: 2 }}
       >
         {maps.slice(0, 9).map((map) => (
-          <MapTileImage
+          <MapImage
             sx={{ borderRadius: "8px" }}
             map={map}
             key={`${map.id}-group-tile`}

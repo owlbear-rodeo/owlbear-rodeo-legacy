@@ -5,7 +5,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 
 import { tokenSources as defaultTokenSources } from "../../tokens";
 
-function TokenTileImage({ token, sx }) {
+const TokenImage = React.forwardRef(({ token, ...props }) => {
   const tokenURL = useDataURL(
     token,
     defaultTokenSources,
@@ -13,7 +13,7 @@ function TokenTileImage({ token, sx }) {
     token.type === "file"
   );
 
-  return <Image sx={sx} src={tokenURL}></Image>;
-}
+  return <Image src={tokenURL} {...props} />;
+});
 
-export default TokenTileImage;
+export default TokenImage;

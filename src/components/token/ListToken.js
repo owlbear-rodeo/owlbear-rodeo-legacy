@@ -1,28 +1,19 @@
 import React, { useRef } from "react";
-import { Box, Image } from "theme-ui";
+import { Box } from "theme-ui";
 
 import usePreventTouch from "../../hooks/usePreventTouch";
 
-import { useDataURL } from "../../contexts/AssetsContext";
-
-import { tokenSources, unknownSource } from "../../tokens";
+import TokenImage from "./TokenImage";
 
 function ListToken({ token }) {
-  const tokenURL = useDataURL(
-    token,
-    tokenSources,
-    unknownSource,
-    token.type === "file"
-  );
-
   const imageRef = useRef();
   // Stop touch to prevent 3d touch gesutre on iOS
   usePreventTouch(imageRef);
 
   return (
     <Box py={1} sx={{ width: "48px", height: "56px" }}>
-      <Image
-        src={tokenURL}
+      <TokenImage
+        token={token}
         ref={imageRef}
         sx={{
           userSelect: "none",
