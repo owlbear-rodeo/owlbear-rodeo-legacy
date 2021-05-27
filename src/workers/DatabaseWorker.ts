@@ -8,16 +8,19 @@ import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
 import blobToBuffer from "../helpers/blobToBuffer";
+import { ExportProgress } from "@mitchemmc/dexie-export-import/dist/export";
+
+type ProgressCallback = (progress: ExportProgress) => boolean;
 
 // Worker to load large amounts of database data on a separate thread
 let service = {
   /**
    * Load either a whole table or individual item from the DB
    * @param {string} table Table to load from
-   * @param {string=} key Optional database key to load, if undefined whole table will be loaded
+   * @param {string} key Optional database key to load, if undefined whole table will be loaded
    * @param {bool} excludeFiles Optional exclude files from loaded data when using whole table loading
    */
-  async loadData(table, key, excludeFiles = true) {
+  async loadData(table: string, key: string, excludeFiles: boolean = true) {
     try {
       let db = getDatabase({});
       if (key) {
@@ -26,7 +29,7 @@ let service = {
         return data;
       } else {
         // Load entire table
-        let items = [];
+        let items: any[] = [];
         // Use a cursor instead of toArray to prevent IPC max size error
         await db.table(table).each((item) => {
           if (excludeFiles) {
@@ -41,7 +44,9 @@ let service = {
         const packed = encode(items);
         return Comlink.transfer(packed, [packed.buffer]);
       }
-    } catch {}
+    } catch {
+      // TODO: throw error in empty catch?
+    }
   },
 
   /**
@@ -50,7 +55,7 @@ let service = {
    * @param {string} table
    * @param {boolean} wait Whether to wait for the put to finish
    */
-  async putData(data, table, wait = true) {
+  async putData(data: Uint8Array, table: string, wait: boolean = true) {
     try {
       let db = getDatabase({});
       const decoded = decode(data);
@@ -67,14 +72,14 @@ let service = {
 
   /**
    * Export current database
-   * @param {function} progressCallback
+   * @param {ProgressCallback} progressCallback
    * @param {string[]} maps An array of map ids to export
    * @param {string[]} tokens An array of token ids to export
    */
-  async exportData(progressCallback, maps, tokens) {
+  async exportData(progressCallback: ProgressCallback, maps: string[], tokens: string[]) {
     let db = getDatabase({});
 
-    const filter = (table, value) => {
+    const filter = (table: string, value: any) => {
       if (table === "maps") {
         return maps.includes(value.id);
       }
@@ -103,9 +108,9 @@ let service = {
    * Import into current database
    * @param {Blob} data
    * @param {string} databaseName The name of the database to import into
-   * @param {function} progressCallback
+   * @param {ProgressCallback} progressCallback
    */
-  async importData(data, databaseName, progressCallback) {
+  async importData(data: Blob, databaseName: string, progressCallback: ProgressCallback) {
     const importMeta = await peakImportFile(data);
     if (!importMeta.data) {
       throw new Error("Uanble to parse file");

@@ -67,7 +67,7 @@ export const tokenSources = {
   undead,
 };
 
-function getDefaultTokenSize(key) {
+function getDefaultTokenSize(key: string) {
   switch (key) {
     case "dragon":
     case "elemental":
