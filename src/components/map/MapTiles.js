@@ -66,7 +66,6 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup, columns }) {
       onTileSelect={onGroupSelect}
       disableGrouping={subgroup}
       openGroupId={openGroupId}
-      columns={columns}
     />
   );
 }

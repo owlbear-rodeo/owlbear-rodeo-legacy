@@ -9,11 +9,11 @@ import {
   useSensors,
   closestCenter,
 } from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
 import { Badge } from "theme-ui";
 
-import { moveGroups } from "../../helpers/group";
+import { moveGroupsInto, moveGroups } from "../../helpers/group";
 import { keyBy } from "../../helpers/shared";
 import Vector2 from "../../helpers/Vector2";
 
@@ -27,7 +27,6 @@ function SortableTiles({
   onTileSelect,
   disableGrouping,
   openGroupId,
-  columns,
 }) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
@@ -60,29 +59,28 @@ function SortableTiles({
       return;
     }
 
+    let selectedIndices = selectedGroupIds.map((groupId) =>
+      groups.findIndex((group) => group.id === groupId)
+    );
+    // Maintain current group sorting
+    selectedIndices = selectedIndices.sort((a, b) => a - b);
+
     if (over.id.startsWith("__group__")) {
       const overId = over.id.slice(9);
       if (overId === active.id) {
         return;
       }
 
-      let newGroups = groups;
       const overGroupIndex = groups.findIndex((group) => group.id === overId);
-      const selectedGroupIndices = selectedGroupIds.map((groupId) =>
-        groups.findIndex((group) => group.id === groupId)
-      );
-      onGroupChange(
-        moveGroups(newGroups, overGroupIndex, selectedGroupIndices)
-      );
+      onGroupChange(moveGroupsInto(groups, overGroupIndex, selectedIndices));
       onTileSelect();
-    } else if (active.id !== over.id) {
-      let newGroups = groups;
-      for (let groupId of selectedGroupIds) {
-        const oldIndex = newGroups.findIndex((group) => group.id === groupId);
-        const newIndex = newGroups.findIndex((group) => group.id === over.id);
-        newGroups = arrayMove(newGroups, oldIndex, newIndex);
+    } else {
+      if (active.id === over.id) {
+        return;
       }
-      onGroupChange(newGroups);
+
+      const overGroupIndex = groups.findIndex((group) => group.id === over.id);
+      onGroupChange(moveGroups(groups, overGroupIndex, selectedIndices));
     }
   }
 
@@ -98,7 +96,7 @@ function SortableTiles({
   function renderSortableGroup(group, selectedGroups) {
     if (overGroupId === group.id && dragId && group.id !== dragId) {
       // If dragging over a group render a preview of that group
-      const previewGroup = moveGroups(
+      const previewGroup = moveGroupsInto(
         [group, ...selectedGroups],
         0,
         selectedGroups.map((_, i) => i + 1)

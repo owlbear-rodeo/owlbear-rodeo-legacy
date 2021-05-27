@@ -99,32 +99,59 @@ export function combineGroups(a, b) {
 }
 
 /**
- * Immutably move group at indices `from` into index `to`
+ * Immutably move group at indices `indices` into group at index `into`
  * @param {Group[]} groups
- * @param {number} to
- * @param {number[]} from
+ * @param {number} into
+ * @param {number[]} indices
  * @returns {Group[]}
  */
-export function moveGroups(groups, to, from) {
+export function moveGroupsInto(groups, into, indices) {
   const newGroups = cloneDeep(groups);
 
-  const toGroup = newGroups[to];
+  const intoGroup = newGroups[into];
   let fromGroups = [];
-  for (let i of from) {
+  for (let i of indices) {
     fromGroups.push(newGroups[i]);
   }
 
-  let combined = toGroup;
+  let combined = intoGroup;
   for (let fromGroup of fromGroups) {
     combined = combineGroups(combined, fromGroup);
   }
 
   // Replace and remove old groups
-  newGroups[to] = combined;
+  newGroups[into] = combined;
   for (let fromGroup of fromGroups) {
     const i = newGroups.findIndex((group) => group.id === fromGroup.id);
     newGroups.splice(i, 1);
   }
+
+  return newGroups;
+}
+
+/**
+ * Immutably move group at indices `indices` to index `to`
+ * @param {Group[]} groups
+ * @param {number} into
+ * @param {number[]} indices
+ * @returns {Group[]}
+ */
+export function moveGroups(groups, to, indices) {
+  const newGroups = cloneDeep(groups);
+
+  let fromGroups = [];
+  for (let i of indices) {
+    fromGroups.push(newGroups[i]);
+  }
+
+  // Remove old groups
+  for (let fromGroup of fromGroups) {
+    const i = newGroups.findIndex((group) => group.id === fromGroup.id);
+    newGroups.splice(i, 1);
+  }
+
+  // Add back at new index
+  newGroups.splice(to, 0, ...fromGroups);
 
   return newGroups;
 }

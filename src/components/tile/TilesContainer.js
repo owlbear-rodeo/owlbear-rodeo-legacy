@@ -6,7 +6,7 @@ import { useGroup } from "../../contexts/GroupContext";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
-function TilesContainer({ columns, children }) {
+function TilesContainer({ children }) {
   const { onGroupSelect } = useGroup();
 
   const layout = useResponsiveLayout();
@@ -31,7 +31,7 @@ function TilesContainer({ columns, children }) {
           overflow: "hidden",
         }}
         gap={2}
-        columns={`repeat(${columns}, 1fr)`}
+        columns={`repeat(${layout.tileGridColumns}, 1fr)`}
       >
         {children}
       </Grid>

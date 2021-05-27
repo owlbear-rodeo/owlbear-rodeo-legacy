@@ -9,7 +9,7 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function TokenTiles({ tokens, onTokenEdit, subgroup, columns }) {
+function TokenTiles({ tokens, onTokenEdit, subgroup }) {
   const {
     groups,
     selectedGroupIds,
@@ -71,7 +71,6 @@ function TokenTiles({ tokens, onTokenEdit, subgroup, columns }) {
       onTileSelect={onGroupSelect}
       disableGrouping={subgroup}
       openGroupId={openGroupId}
-      columns={columns}
     />
   );
 }
