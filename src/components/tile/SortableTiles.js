@@ -11,9 +11,11 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
+import { Badge } from "theme-ui";
 
 import { moveGroups } from "../../helpers/group";
 import { keyBy } from "../../helpers/shared";
+import Vector2 from "../../helpers/Vector2";
 
 import SortableTile from "./SortableTile";
 
@@ -87,6 +89,7 @@ function SortableTiles({
   const dragBounce = useSpring({
     transform: !!dragId ? "scale(0.9)" : "scale(1)",
     config: config.wobbly,
+    position: "relative",
   });
 
   const overGroupId =
@@ -109,33 +112,46 @@ function SortableTiles({
     let selectedIndices = selectedGroupIds.map((groupId) =>
       groups.findIndex((group) => group.id === groupId)
     );
-    let activeIndex = groups.findIndex((group) => group.id === dragId);
+    const activeIndex = groups.findIndex((group) => group.id === dragId);
+    // Sort so the draging tile is the first element
+    selectedIndices = selectedIndices.sort((a, b) =>
+      a === activeIndex ? -1 : b === activeIndex ? 1 : 0
+    );
 
-    const coords = selectedIndices.map((index) => ({
-      x: index % columns,
-      y: Math.floor(index / columns),
-    }));
-    const activeCoord = {
-      x: activeIndex % columns,
-      y: Math.floor(activeIndex / columns),
-    };
+    selectedIndices = selectedIndices.slice(0, 5);
 
-    const relativeCoords = coords.map(({ x, y }) => ({
-      x: x - activeCoord.x,
-      y: y - activeCoord.y,
-    }));
+    let coords = selectedIndices.map(
+      (_, index) => new Vector2(5 * index, 5 * index)
+    );
 
-    return selectedGroupIds.map((groupId, index) => (
-      <DragOverlay dropAnimation={null} key={groupId}>
+    // Reverse so the first element is rendered on top
+    selectedIndices = selectedIndices.reverse();
+    coords = coords.reverse();
+
+    const selectedGroups = selectedIndices.map((index) => groups[index]);
+
+    return selectedGroups.map((group, index) => (
+      <DragOverlay dropAnimation={null} key={group.id}>
         <div
           style={{
-            transform: `translate(${relativeCoords[index].x * 100}%, ${
-              relativeCoords[index].y * 100
-            }%)`,
+            transform: `translate(${coords[index].x}%, ${coords[index].y}%)`,
           }}
         >
           <animated.div style={dragBounce}>
-            {renderTile(groups.find((group) => group.id === groupId))}
+            {renderTile(group)}
+            {index === selectedIndices.length - 1 &&
+              selectedGroupIds.length > 1 && (
+                <Badge
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    transform: "translate(25%, -25%)",
+                  }}
+                >
+                  {selectedGroupIds.length}
+                </Badge>
+              )}
           </animated.div>
         </div>
       </DragOverlay>
