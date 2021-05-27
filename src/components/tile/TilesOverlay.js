@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Close, Grid } from "theme-ui";
+import { Box, Close, Grid, useThemeUI } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
 import ReactResizeDetector from "react-resize-detector";
 import SimpleBar from "simplebar-react";
@@ -10,6 +10,8 @@ import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 function TilesOverlay({ children }) {
   const { openGroupId, onGroupClose, onGroupSelect } = useGroup();
+
+  const { theme } = useThemeUI();
 
   const layout = useResponsiveLayout();
 
@@ -63,28 +65,21 @@ function TilesOverlay({ children }) {
               borderColor: "border",
               cursor: "default",
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-end",
               justifyContent: "center",
               position: "relative",
             }}
             bg="background"
             onClick={(e) => e.stopPropagation()}
           >
-            <Box
-              sx={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-                top: 0,
-              }}
-              bg="muted"
-              onClick={() => onGroupSelect()}
-            />
             <SimpleBar
               style={{
                 width: containerSize - 16,
                 height: containerSize - 48,
+                marginBottom: "8px",
+                backgroundColor: theme.colors.muted,
               }}
+              onClick={() => onGroupSelect()}
             >
               <Grid
                 sx={{
@@ -93,7 +88,7 @@ function TilesOverlay({ children }) {
                 }}
                 gap={2}
                 columns={`repeat(${layout.groupGridColumns}, 1fr)`}
-                px={3}
+                p={3}
               >
                 {children}
               </Grid>
