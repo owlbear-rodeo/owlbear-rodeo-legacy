@@ -1,5 +1,5 @@
 import set from "lodash.set";
-import unset from "lodash.unset";
+import omit from "lodash.omit";
 import cloneDeep from "lodash.clonedeep";
 
 export function applyObservableChange(change) {
@@ -10,7 +10,7 @@ export function applyObservableChange(change) {
   const changes = Object.entries(change.mods).reverse();
   for (let [key, value] of changes) {
     if (value === null) {
-      unset(obj, key);
+      obj = omit(obj, [key]);
     } else {
       obj = set(obj, key, value);
     }
