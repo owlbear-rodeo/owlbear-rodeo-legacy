@@ -9,15 +9,11 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function MapTiles({ maps, onMapEdit, onMapSelect, subgroup, columns }) {
+function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
   const {
-    groups,
     selectedGroupIds,
-    openGroupId,
-    openGroupItems,
     selectMode,
     onGroupOpen,
-    onGroupsChange,
     onGroupSelect,
   } = useGroup();
 
@@ -57,17 +53,7 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup, columns }) {
     }
   }
 
-  return (
-    <SortableTiles
-      groups={subgroup ? openGroupItems : groups}
-      selectedGroupIds={selectedGroupIds}
-      onGroupChange={onGroupsChange}
-      renderTile={renderTile}
-      onTileSelect={onGroupSelect}
-      disableGrouping={subgroup}
-      openGroupId={openGroupId}
-    />
-  );
+  return <SortableTiles renderTile={renderTile} subgroup={subgroup} />;
 }
 
 export default MapTiles;

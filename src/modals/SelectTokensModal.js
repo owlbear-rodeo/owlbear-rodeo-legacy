@@ -24,6 +24,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
+import { TileDragProvider } from "../contexts/TileDragContext";
 
 import shortcuts from "../shortcuts";
 
@@ -200,19 +201,23 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
               onGroupsSelect={setSelectedGroupIds}
               disabled={!isOpen}
             >
-              <TilesContainer>
-                <TokenTiles
-                  tokens={tokens}
-                  onTokenEdit={() => setIsEditModalOpen(true)}
-                />
-              </TilesContainer>
-              <TilesOverlay>
-                <TokenTiles
-                  tokens={tokens}
-                  onTokenEdit={() => setIsEditModalOpen(true)}
-                  subgroup
-                />
-              </TilesOverlay>
+              <TileDragProvider>
+                <TilesContainer>
+                  <TokenTiles
+                    tokens={tokens}
+                    onTokenEdit={() => setIsEditModalOpen(true)}
+                  />
+                </TilesContainer>
+              </TileDragProvider>
+              <TileDragProvider>
+                <TilesOverlay>
+                  <TokenTiles
+                    tokens={tokens}
+                    onTokenEdit={() => setIsEditModalOpen(true)}
+                    subgroup
+                  />
+                </TilesOverlay>
+              </TileDragProvider>
             </GroupProvider>
           </Box>
 

@@ -157,6 +157,39 @@ export function moveGroups(groups, to, indices) {
 }
 
 /**
+ * Move items from a sub group to the start of the base group
+ * @param {Group[]} groups
+ * @param {string} fromId The id of the group to move from
+ * @param {number[]} indices The indices of the items in the group
+ */
+export function ungroup(groups, fromId, indices) {
+  const newGroups = cloneDeep(groups);
+
+  let fromIndex = newGroups.findIndex((group) => group.id === fromId);
+
+  let items = [];
+  for (let i of indices) {
+    items.push(newGroups[fromIndex].items[i]);
+  }
+
+  // Remove items from previous group
+  for (let item of items) {
+    const i = newGroups[fromIndex].items.findIndex((el) => el.id === item.id);
+    newGroups[fromIndex].items.splice(i, 1);
+  }
+
+  // If we have no more items in the group delete it
+  if (newGroups[fromIndex].items.length === 0) {
+    newGroups.splice(fromIndex, 1);
+  }
+
+  // Add to base group
+  newGroups.splice(0, 0, ...items);
+
+  return newGroups;
+}
+
+/**
  * Recursively find a group within a group array
  * @param {Group[]} groups
  * @param {string} groupId

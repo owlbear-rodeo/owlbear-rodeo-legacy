@@ -1,88 +1,43 @@
-import React, { useState } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
-import {
-  DndContext,
-  DragOverlay,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-} from "@dnd-kit/core";
+import { DragOverlay } from "@dnd-kit/core";
 import { SortableContext } from "@dnd-kit/sortable";
 import { animated, useSpring, config } from "react-spring";
 import { Badge } from "theme-ui";
 
-import { moveGroupsInto, moveGroups } from "../../helpers/group";
+import { moveGroupsInto } from "../../helpers/group";
 import { keyBy } from "../../helpers/shared";
 import Vector2 from "../../helpers/Vector2";
 
 import SortableTile from "./SortableTile";
 
-function SortableTiles({
-  groups,
-  selectedGroupIds,
-  onGroupChange,
-  renderTile,
-  onTileSelect,
-  disableGrouping,
-  openGroupId,
-}) {
-  const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: { delay: 250, tolerance: 5 },
-  });
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: { delay: 250, tolerance: 5 },
-  });
+import {
+  useTileDrag,
+  BASE_SORTABLE_ID,
+  GROUP_SORTABLE_ID,
+  GROUP_ID_PREFIX,
+} from "../../contexts/TileDragContext";
+import { useGroup } from "../../contexts/GroupContext";
 
-  const sensors = useSensors(mouseSensor, touchSensor);
+function SortableTiles({ renderTile, subgroup }) {
+  const { dragId, overId } = useTileDrag();
+  const {
+    groups: allGroups,
+    selectedGroupIds: allSelectedIds,
+    openGroupId,
+    openGroupItems,
+  } = useGroup();
 
-  const [dragId, setDragId] = useState();
-  const [overId, setOverId] = useState();
+  const sortableId = subgroup ? GROUP_SORTABLE_ID : BASE_SORTABLE_ID;
 
-  function handleDragStart({ active, over }) {
-    setDragId(active.id);
-    setOverId(over?.id);
-    if (!selectedGroupIds.includes(active.id)) {
-      onTileSelect(active.id);
-    }
+  const groups = subgroup ? openGroupItems : allGroups;
+  // Only populate selected groups if needed
+  let selectedGroupIds = [];
+  if ((subgroup && openGroupId) || (!subgroup && !openGroupId)) {
+    selectedGroupIds = allSelectedIds;
   }
-
-  function handleDragOver({ over }) {
-    setOverId(over?.id);
-  }
-
-  function handleDragEnd({ active, over }) {
-    setDragId();
-    setOverId();
-    if (!active || !over) {
-      return;
-    }
-
-    let selectedIndices = selectedGroupIds.map((groupId) =>
-      groups.findIndex((group) => group.id === groupId)
-    );
-    // Maintain current group sorting
-    selectedIndices = selectedIndices.sort((a, b) => a - b);
-
-    if (over.id.startsWith("__group__")) {
-      const overId = over.id.slice(9);
-      if (overId === active.id) {
-        return;
-      }
-
-      const overGroupIndex = groups.findIndex((group) => group.id === overId);
-      onGroupChange(moveGroupsInto(groups, overGroupIndex, selectedIndices));
-      onTileSelect();
-    } else {
-      if (active.id === over.id) {
-        return;
-      }
-
-      const overGroupIndex = groups.findIndex((group) => group.id === over.id);
-      onGroupChange(moveGroups(groups, overGroupIndex, selectedIndices));
-    }
-  }
+  const disableSorting = openGroupId && !subgroup;
+  const disableGrouping = subgroup || disableSorting;
 
   const dragBounce = useSpring({
     transform: !!dragId ? "scale(0.9)" : "scale(1)",
@@ -91,7 +46,7 @@ function SortableTiles({
   });
 
   const overGroupId =
-    overId && overId.startsWith("__group__") && overId.slice(9);
+    overId && overId.startsWith(GROUP_ID_PREFIX) && overId.slice(9);
 
   function renderSortableGroup(group, selectedGroups) {
     if (overGroupId === group.id && dragId && group.id !== dragId) {
@@ -179,6 +134,7 @@ function SortableTiles({
           id={group.id}
           key={group.id}
           disableGrouping={disableTileGrouping}
+          disableSorting={disableSorting}
           hidden={group.id === openGroupId}
           isDragging={isDragging}
         >
@@ -189,18 +145,10 @@ function SortableTiles({
   }
 
   return (
-    <DndContext
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      sensors={sensors}
-      collisionDetection={closestCenter}
-    >
-      <SortableContext items={groups}>
-        {renderTiles()}
-        {createPortal(dragId && renderDragOverlays(), document.body)}
-      </SortableContext>
-    </DndContext>
+    <SortableContext items={groups} id={sortableId}>
+      {renderTiles()}
+      {createPortal(dragId && renderDragOverlays(), document.body)}
+    </SortableContext>
   );
 }
 

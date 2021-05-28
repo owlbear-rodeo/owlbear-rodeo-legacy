@@ -4,7 +4,16 @@ import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { animated, useSpring } from "react-spring";
 
-function SortableTile({ id, disableGrouping, hidden, children, isDragging }) {
+import { GROUP_ID_PREFIX } from "../../contexts/TileDragContext";
+
+function SortableTile({
+  id,
+  disableGrouping,
+  disableSorting,
+  hidden,
+  children,
+  isDragging,
+}) {
   const {
     attributes,
     listeners,
@@ -12,9 +21,10 @@ function SortableTile({ id, disableGrouping, hidden, children, isDragging }) {
     setDraggableNodeRef,
     over,
     active,
-  } = useSortable({ id });
+  } = useSortable({ id, disabled: disableSorting });
+
   const { setNodeRef: setGroupNodeRef } = useDroppable({
-    id: `__group__${id}`,
+    id: `${GROUP_ID_PREFIX}${id}`,
     disabled: disableGrouping,
   });
 
@@ -44,7 +54,9 @@ function SortableTile({ id, disableGrouping, hidden, children, isDragging }) {
     borderWidth: "4px",
     borderRadius: "4px",
     borderStyle:
-      over?.id === `__group__${id}` && active.id !== id ? "solid" : "none",
+      over?.id === `${GROUP_ID_PREFIX}${id}` && active.id !== id
+        ? "solid"
+        : "none",
   };
 
   const { opacity } = useSpring({ opacity: hidden ? 0 : 1 });

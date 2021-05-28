@@ -40,10 +40,13 @@ export function GroupProvider({
     setOpenGroupId();
   }
 
-  function handleGroupsChange(newGroups) {
-    if (openGroupId) {
-      // If a group is open then update that group with the new items
-      const groupIndex = groups.findIndex((group) => group.id === openGroupId);
+  /**
+   * @param {string|undefined} groupId The group to apply changes to, leave undefined to replace the full group object
+   */
+  function handleGroupsChange(newGroups, groupId) {
+    if (groupId) {
+      // If a group is specidifed then update that group with the new items
+      const groupIndex = groups.findIndex((group) => group.id === groupId);
       let updatedGroups = cloneDeep(groups);
       const group = updatedGroups[groupIndex];
       updatedGroups[groupIndex] = { ...group, items: newGroups };

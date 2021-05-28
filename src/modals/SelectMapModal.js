@@ -24,6 +24,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
+import { TileDragProvider } from "../contexts/TileDragContext";
 
 import shortcuts from "../shortcuts";
 
@@ -259,21 +260,25 @@ function SelectMapModal({
               onGroupsSelect={setSelectedGroupIds}
               disabled={!isOpen}
             >
-              <TilesContainer>
-                <MapTiles
-                  maps={maps}
-                  onMapEdit={() => setIsEditModalOpen(true)}
-                  onMapSelect={handleMapSelect}
-                />
-              </TilesContainer>
-              <TilesOverlay>
-                <MapTiles
-                  maps={maps}
-                  onMapEdit={() => setIsEditModalOpen(true)}
-                  onMapSelect={handleMapSelect}
-                  subgroup
-                />
-              </TilesOverlay>
+              <TileDragProvider>
+                <TilesContainer>
+                  <MapTiles
+                    maps={maps}
+                    onMapEdit={() => setIsEditModalOpen(true)}
+                    onMapSelect={handleMapSelect}
+                  />
+                </TilesContainer>
+              </TileDragProvider>
+              <TileDragProvider>
+                <TilesOverlay>
+                  <MapTiles
+                    maps={maps}
+                    onMapEdit={() => setIsEditModalOpen(true)}
+                    onMapSelect={handleMapSelect}
+                    subgroup
+                  />
+                </TilesOverlay>
+              </TileDragProvider>
             </GroupProvider>
           </Box>
           <Button

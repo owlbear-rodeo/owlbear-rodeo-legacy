@@ -11,13 +11,9 @@ import { useGroup } from "../../contexts/GroupContext";
 
 function TokenTiles({ tokens, onTokenEdit, subgroup }) {
   const {
-    groups,
     selectedGroupIds,
-    openGroupId,
-    openGroupItems,
     selectMode,
     onGroupOpen,
-    onGroupsChange,
     onGroupSelect,
   } = useGroup();
 
@@ -62,17 +58,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
     }
   }
 
-  return (
-    <SortableTiles
-      groups={subgroup ? openGroupItems : groups}
-      selectedGroupIds={selectedGroupIds}
-      onGroupChange={onGroupsChange}
-      renderTile={renderTile}
-      onTileSelect={onGroupSelect}
-      disableGrouping={subgroup}
-      openGroupId={openGroupId}
-    />
-  );
+  return <SortableTiles renderTile={renderTile} subgroup={subgroup} />;
 }
 
 export default TokenTiles;

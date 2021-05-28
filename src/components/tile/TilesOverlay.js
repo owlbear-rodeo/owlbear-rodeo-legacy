@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Box, Close, Grid, useThemeUI } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
 import ReactResizeDetector from "react-resize-detector";
 import SimpleBar from "simplebar-react";
 
 import { useGroup } from "../../contexts/GroupContext";
+import { UNGROUP_ID_PREFIX } from "../../contexts/TileDragContext";
+
+import Droppable from "../drag/Droppable";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -27,8 +31,55 @@ function TilesOverlay({ children }) {
     setContinerSize(size);
   }
 
+  function renderUngroupBoxes() {
+    return createPortal(
+      <div>
+        <Droppable
+          id={`${UNGROUP_ID_PREFIX}-1`}
+          style={{
+            width: "100vw",
+            height: `calc(50vh - ${containerSize / 2}px)`,
+            position: "absolute",
+            top: 0,
+          }}
+        />
+        <Droppable
+          id={`${UNGROUP_ID_PREFIX}-2`}
+          style={{
+            width: "100vw",
+            height: `calc(50vh - ${containerSize / 2}px)`,
+            position: "absolute",
+            bottom: 0,
+          }}
+        />
+        <Droppable
+          id={`${UNGROUP_ID_PREFIX}-3`}
+          style={{
+            width: `calc(50vw - ${containerSize / 2}px)`,
+            height: "100vh",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <Droppable
+          id={`${UNGROUP_ID_PREFIX}-4`}
+          style={{
+            width: `calc(50vw - ${containerSize / 2}px)`,
+            height: "100vh",
+            position: "absolute",
+            top: 0,
+            right: 0,
+          }}
+        />
+      </div>,
+      document.body
+    );
+  }
+
   return (
     <>
+      {openGroupId && renderUngroupBoxes()}
       {openGroupId && (
         <Box
           sx={{
