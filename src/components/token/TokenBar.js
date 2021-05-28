@@ -16,7 +16,10 @@ import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 
-import { createTokenState } from "../../helpers/token";
+import {
+  createTokenState,
+  clientPositionToMapPosition,
+} from "../../helpers/token";
 
 function TokenBar({ onMapTokenStateCreate }) {
   const { userId } = useAuth();
@@ -41,38 +44,15 @@ function TokenBar({ onMapTokenStateCreate }) {
     const mapStage = mapStageRef.current;
     const dragOverlay = dragOverlayRef.current;
     if (mapStage && dragOverlay) {
-      const mapImage = mapStage.findOne("#mapImage");
-      const map = document.querySelector(".map");
-      const mapRect = map.getBoundingClientRect();
       const dragRect = dragOverlay.getBoundingClientRect();
-
       const dragPosition = {
         x: dragRect.left + dragRect.width / 2,
         y: dragRect.top + dragRect.height / 2,
       };
-
-      // Check map bounds
-      if (dragPosition.x < mapRect.left || dragPosition.x > mapRect.right) {
-        return;
-      }
-
-      // Convert relative to map rect
-      const mapPosition = {
-        x: dragPosition.x - mapRect.left,
-        y: dragPosition.y - mapRect.top,
-      };
-
-      // Convert relative to map image
-      const transform = mapImage.getAbsoluteTransform().copy().invert();
-      const relativePosition = transform.point(mapPosition);
-      const normalizedPosition = {
-        x: relativePosition.x / mapImage.width(),
-        y: relativePosition.y / mapImage.height(),
-      };
-
+      const mapPosition = clientPositionToMapPosition(mapStage, dragPosition);
       const token = tokensById[active.id];
-      if (token) {
-        const tokenState = createTokenState(token, normalizedPosition, userId);
+      if (token && mapPosition) {
+        const tokenState = createTokenState(token, mapPosition, userId);
         onMapTokenStateCreate(tokenState);
       }
     }
@@ -143,7 +123,7 @@ function TokenBar({ onMapTokenStateCreate }) {
             alignItems: "center",
           }}
         >
-          <SelectTokensButton />
+          <SelectTokensButton onMapTokenStateCreate={onMapTokenStateCreate} />
         </Flex>
         {createPortal(
           <DragOverlay

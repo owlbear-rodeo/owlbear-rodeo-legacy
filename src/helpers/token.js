@@ -111,3 +111,37 @@ export async function createTokenFromFile(file, userId) {
     image.src = url;
   });
 }
+
+export function clientPositionToMapPosition(
+  mapStage,
+  clientPosition,
+  checkMapBounds = true
+) {
+  const mapImage = mapStage.findOne("#mapImage");
+  const map = document.querySelector(".map");
+  const mapRect = map.getBoundingClientRect();
+
+  // Check map bounds
+  if (
+    checkMapBounds &&
+    (clientPosition.x < mapRect.left || clientPosition.x > mapRect.right)
+  ) {
+    return;
+  }
+
+  // Convert relative to map rect
+  const mapPosition = {
+    x: clientPosition.x - mapRect.left,
+    y: clientPosition.y - mapRect.top,
+  };
+
+  // Convert relative to map image
+  const transform = mapImage.getAbsoluteTransform().copy().invert();
+  const relativePosition = transform.point(mapPosition);
+  const normalizedPosition = {
+    x: relativePosition.x / mapImage.width(),
+    y: relativePosition.y / mapImage.height(),
+  };
+
+  return normalizedPosition;
+}

@@ -19,8 +19,9 @@ export const BASE_SORTABLE_ID = "__base__";
 export const GROUP_SORTABLE_ID = "__group__";
 export const GROUP_ID_PREFIX = "__group__";
 export const UNGROUP_ID_PREFIX = "__ungroup__";
+export const ADD_TO_MAP_ID_PREFIX = "__add__";
 
-export function TileDragProvider({ children }) {
+export function TileDragProvider({ onDragAdd, children }) {
   const {
     groups: allGroups,
     openGroupId,
@@ -46,6 +47,7 @@ export function TileDragProvider({ children }) {
 
   const [dragId, setDragId] = useState();
   const [overId, setOverId] = useState();
+  const [dragCursor, setDragCursor] = useState("pointer");
 
   function handleDragStart({ active, over }) {
     setDragId(active.id);
@@ -57,11 +59,21 @@ export function TileDragProvider({ children }) {
 
   function handleDragOver({ over }) {
     setOverId(over?.id);
+    if (over) {
+      if (over.id.startsWith(UNGROUP_ID_PREFIX)) {
+        setDragCursor("alias");
+      } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
+        setDragCursor("copy");
+      } else {
+        setDragCursor("pointer");
+      }
+    }
   }
 
   function handleDragEnd({ active, over }) {
     setDragId();
     setOverId();
+    setDragCursor("pointer");
     if (!active || !over || active.id === over.id) {
       return;
     }
@@ -94,6 +106,8 @@ export function TileDragProvider({ children }) {
       }
       onGroupsChange(newGroups);
       onGroupSelect();
+    } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
+      onDragAdd && onDragAdd(selectedGroupIds, over.rect);
     } else {
       // Hanlde tile move
       const overGroupIndex = groups.findIndex((group) => group.id === over.id);
@@ -105,6 +119,7 @@ export function TileDragProvider({ children }) {
   }
 
   function customCollisionDetection(rects, rect) {
+    // Handle group rects
     if (groupOpen) {
       const ungroupRects = rects.filter(([id]) =>
         id.startsWith(UNGROUP_ID_PREFIX)
@@ -115,12 +130,21 @@ export function TileDragProvider({ children }) {
       }
     }
 
+    // Handle add to map rects
+    const addRects = rects.filter(([id]) =>
+      id.startsWith(ADD_TO_MAP_ID_PREFIX)
+    );
+    const intersectingAddRect = rectIntersection(addRects, rect);
+    if (intersectingAddRect) {
+      return intersectingAddRect;
+    }
+
     const otherRects = rects.filter(([id]) => id !== UNGROUP_ID_PREFIX);
 
     return closestCenter(otherRects, rect);
   }
 
-  const value = { dragId, overId };
+  const value = { dragId, overId, dragCursor };
 
   return (
     <DndContext

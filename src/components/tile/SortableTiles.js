@@ -20,7 +20,7 @@ import {
 import { useGroup } from "../../contexts/GroupContext";
 
 function SortableTiles({ renderTile, subgroup }) {
-  const { dragId, overId } = useTileDrag();
+  const { dragId, overId, dragCursor } = useTileDrag();
   const {
     groups: allGroups,
     selectedGroupIds: allSelectedIds,
@@ -88,6 +88,7 @@ function SortableTiles({ renderTile, subgroup }) {
         <div
           style={{
             transform: `translate(${coords[index].x}%, ${coords[index].y}%)`,
+            cursor: dragCursor,
           }}
         >
           <animated.div style={dragBounce}>
@@ -137,6 +138,7 @@ function SortableTiles({ renderTile, subgroup }) {
           disableSorting={disableSorting}
           hidden={group.id === openGroupId}
           isDragging={isDragging}
+          cursor={dragCursor}
         >
           {renderSortableGroup(group, selectedGroups)}
         </SortableTile>

@@ -5,7 +5,7 @@ import SelectTokensIcon from "../../icons/SelectTokensIcon";
 
 import SelectTokensModal from "../../modals/SelectTokensModal";
 
-function SelectTokensButton() {
+function SelectTokensButton({ onMapTokenStateCreate }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   function openModal() {
     setIsModalOpen(true);
@@ -30,6 +30,7 @@ function SelectTokensButton() {
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         onDone={handleDone}
+        onMapTokenStateCreate={onMapTokenStateCreate}
       />
     </>
   );

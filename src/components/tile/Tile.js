@@ -24,7 +24,6 @@ function Tile({
         borderRadius: "4px",
         justifyContent: "center",
         alignItems: "center",
-        cursor: "pointer",
         overflow: "hidden",
         userSelect: "none",
       }}

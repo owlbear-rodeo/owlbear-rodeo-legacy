@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
 import { Box, Close, Grid, useThemeUI } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
 import ReactResizeDetector from "react-resize-detector";
 import SimpleBar from "simplebar-react";
 
 import { useGroup } from "../../contexts/GroupContext";
-import { UNGROUP_ID_PREFIX } from "../../contexts/TileDragContext";
 
-import Droppable from "../drag/Droppable";
+import TilesUngroupDroppable from "./TilesUngroupDroppable";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -25,73 +23,47 @@ function TilesOverlay({ children }) {
     config: config.gentle,
   });
 
-  const [containerSize, setContinerSize] = useState(0);
-  function handleResize(width, height) {
+  const [containerSize, setContinerSize] = useState({ width: 0, height: 0 });
+  function handleContainerResize(width, height) {
     const size = Math.min(width, height) - 16;
-    setContinerSize(size);
+    setContinerSize({ width: size, height: size });
   }
 
-  function renderUngroupBoxes() {
-    return createPortal(
-      <div>
-        <Droppable
-          id={`${UNGROUP_ID_PREFIX}-1`}
-          style={{
-            width: "100vw",
-            height: `calc(50vh - ${containerSize / 2}px)`,
-            position: "absolute",
-            top: 0,
-          }}
-        />
-        <Droppable
-          id={`${UNGROUP_ID_PREFIX}-2`}
-          style={{
-            width: "100vw",
-            height: `calc(50vh - ${containerSize / 2}px)`,
-            position: "absolute",
-            bottom: 0,
-          }}
-        />
-        <Droppable
-          id={`${UNGROUP_ID_PREFIX}-3`}
-          style={{
-            width: `calc(50vw - ${containerSize / 2}px)`,
-            height: "100vh",
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
-        />
-        <Droppable
-          id={`${UNGROUP_ID_PREFIX}-4`}
-          style={{
-            width: `calc(50vw - ${containerSize / 2}px)`,
-            height: "100vh",
-            position: "absolute",
-            top: 0,
-            right: 0,
-          }}
-        />
-      </div>,
-      document.body
-    );
+  const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
+  function handleOverlayResize(width, height) {
+    setOverlaySize({ width, height });
   }
 
   return (
     <>
-      {openGroupId && renderUngroupBoxes()}
       {openGroupId && (
-        <Box
-          sx={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            top: 0,
-          }}
-          bg="overlay"
+        <TilesUngroupDroppable
+          innerContainerSize={containerSize}
+          outerContainerSize={overlaySize}
         />
       )}
-      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+      {openGroupId && (
+        <ReactResizeDetector
+          handleWidth
+          handleHeight
+          onResize={handleOverlayResize}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              top: 0,
+            }}
+            bg="overlay"
+          />
+        </ReactResizeDetector>
+      )}
+      <ReactResizeDetector
+        handleWidth
+        handleHeight
+        onResize={handleContainerResize}
+      >
         <animated.div
           style={{
             ...openAnimation,
@@ -109,8 +81,8 @@ function TilesOverlay({ children }) {
         >
           <Box
             sx={{
-              width: containerSize,
-              height: containerSize,
+              width: containerSize.width,
+              height: containerSize.height,
               borderRadius: "8px",
               border: "1px solid",
               borderColor: "border",
@@ -125,8 +97,8 @@ function TilesOverlay({ children }) {
           >
             <SimpleBar
               style={{
-                width: containerSize - 16,
-                height: containerSize - 48,
+                width: containerSize.width - 16,
+                height: containerSize.height - 48,
                 marginBottom: "8px",
                 backgroundColor: theme.colors.muted,
               }}

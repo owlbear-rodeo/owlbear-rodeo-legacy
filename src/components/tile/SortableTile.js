@@ -13,6 +13,7 @@ function SortableTile({
   hidden,
   children,
   isDragging,
+  cursor,
 }) {
   const {
     attributes,
@@ -29,7 +30,7 @@ function SortableTile({
   });
 
   const dragStyle = {
-    cursor: "pointer",
+    cursor,
     opacity: isDragging ? 0.25 : undefined,
   };
 
@@ -91,5 +92,9 @@ function SortableTile({
     </animated.div>
   );
 }
+
+SortableTile.defaultProps = {
+  cursor: "pointer",
+};
 
 export default SortableTile;

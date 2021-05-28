@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Button, Flex, Label, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
+import ReactResizeDetector from "react-resize-detector";
 
 import EditMapModal from "./EditMapModal";
 import ConfirmModal from "./ConfirmModal";
@@ -13,6 +14,7 @@ import MapTiles from "../components/map/MapTiles";
 
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
+import TilesAddDroppable from "../components/tile/TilesAddDroppable";
 
 import { groupsFromIds, itemsFromGroups, findGroup } from "../helpers/group";
 import { createMapFromFile } from "../helpers/map";
@@ -230,6 +232,11 @@ function SelectMapModal({
 
   const layout = useResponsiveLayout();
 
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  function handleModalResize(width, height) {
+    setModalSize({ width, height });
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -245,51 +252,59 @@ function SelectMapModal({
           multiple
           ref={fileInputRef}
         />
-        <Flex
-          sx={{
-            flexDirection: "column",
-          }}
+        <ReactResizeDetector
+          handleWidth
+          handleHeight
+          onResize={handleModalResize}
         >
-          <Label pt={2} pb={1}>
-            Select or import a map
-          </Label>
-          <Box sx={{ position: "relative" }}>
-            <GroupProvider
-              groups={mapGroups}
-              onGroupsChange={updateMapGroups}
-              onGroupsSelect={setSelectedGroupIds}
-              disabled={!isOpen}
-            >
-              <TileDragProvider>
-                <TilesContainer>
-                  <MapTiles
-                    maps={maps}
-                    onMapEdit={() => setIsEditModalOpen(true)}
-                    onMapSelect={handleMapSelect}
-                  />
-                </TilesContainer>
-              </TileDragProvider>
-              <TileDragProvider>
-                <TilesOverlay>
-                  <MapTiles
-                    maps={maps}
-                    onMapEdit={() => setIsEditModalOpen(true)}
-                    onMapSelect={handleMapSelect}
-                    subgroup
-                  />
-                </TilesOverlay>
-              </TileDragProvider>
-            </GroupProvider>
-          </Box>
-          <Button
-            variant="primary"
-            disabled={isLoading || selectedGroupIds.length > 1}
-            onClick={handleSelectClick}
-            mt={2}
+          <Flex
+            sx={{
+              flexDirection: "column",
+            }}
           >
-            Select
-          </Button>
-        </Flex>
+            <Label pt={2} pb={1}>
+              Select or import a map
+            </Label>
+            <Box sx={{ position: "relative" }}>
+              <GroupProvider
+                groups={mapGroups}
+                onGroupsChange={updateMapGroups}
+                onGroupsSelect={setSelectedGroupIds}
+                disabled={!isOpen}
+              >
+                <TileDragProvider onDragAdd={handleSelectClick}>
+                  <TilesAddDroppable containerSize={modalSize} />
+                  <TilesContainer>
+                    <MapTiles
+                      maps={maps}
+                      onMapEdit={() => setIsEditModalOpen(true)}
+                      onMapSelect={handleMapSelect}
+                    />
+                  </TilesContainer>
+                </TileDragProvider>
+                <TileDragProvider onDragAdd={handleSelectClick}>
+                  <TilesAddDroppable containerSize={modalSize} />
+                  <TilesOverlay>
+                    <MapTiles
+                      maps={maps}
+                      onMapEdit={() => setIsEditModalOpen(true)}
+                      onMapSelect={handleMapSelect}
+                      subgroup
+                    />
+                  </TilesOverlay>
+                </TileDragProvider>
+              </GroupProvider>
+            </Box>
+            <Button
+              variant="primary"
+              disabled={isLoading || selectedGroupIds.length > 1}
+              onClick={handleSelectClick}
+              mt={2}
+            >
+              Select
+            </Button>
+          </Flex>
+        </ReactResizeDetector>
       </ImageDrop>
       {(isLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
