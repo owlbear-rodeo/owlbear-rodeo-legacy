@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Box, Flex } from "theme-ui";
 import SimpleBar from "simplebar-react";
@@ -14,6 +14,7 @@ import useSetting from "../../hooks/useSetting";
 
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useMapStage } from "../../contexts/MapStageContext";
 
 import { createTokenState } from "../../helpers/token";
 
@@ -24,18 +25,56 @@ function TokenBar({ onMapTokenStateCreate }) {
 
   const [dragId, setDragId] = useState();
 
+  const mapStageRef = useMapStage();
+  // Use a ref to the drag overlay to get it's position on dragEnd
+  // TODO: use active.rect when dnd-kit bug is fixed
+  // https://github.com/clauderic/dnd-kit/issues/238
+  const dragOverlayRef = useRef();
+
   function handleDragStart({ active }) {
     setDragId(active.id);
   }
 
   function handleDragEnd({ active }) {
     setDragId(null);
-    const token = tokensById[active.id];
-    console.log("Drag", active);
-    if (token) {
-      // TODO: Get drag position
-      const tokenState = createTokenState(token, { x: 0, y: 0 }, userId);
-      onMapTokenStateCreate(tokenState);
+
+    const mapStage = mapStageRef.current;
+    const dragOverlay = dragOverlayRef.current;
+    if (mapStage && dragOverlay) {
+      const mapImage = mapStage.findOne("#mapImage");
+      const map = document.querySelector(".map");
+      const mapRect = map.getBoundingClientRect();
+      const dragRect = dragOverlay.getBoundingClientRect();
+
+      const dragPosition = {
+        x: dragRect.left + dragRect.width / 2,
+        y: dragRect.top + dragRect.height / 2,
+      };
+
+      // Check map bounds
+      if (dragPosition.x < mapRect.left || dragPosition.x > mapRect.right) {
+        return;
+      }
+
+      // Convert relative to map rect
+      const mapPosition = {
+        x: dragPosition.x - mapRect.left,
+        y: dragPosition.y - mapRect.top,
+      };
+
+      // Convert relative to map image
+      const transform = mapImage.getAbsoluteTransform().copy().invert();
+      const relativePosition = transform.point(mapPosition);
+      const normalizedPosition = {
+        x: relativePosition.x / mapImage.width(),
+        y: relativePosition.y / mapImage.height(),
+      };
+
+      const token = tokensById[active.id];
+      if (token) {
+        const tokenState = createTokenState(token, normalizedPosition, userId);
+        onMapTokenStateCreate(tokenState);
+      }
     }
   }
 
@@ -107,8 +146,19 @@ function TokenBar({ onMapTokenStateCreate }) {
           <SelectTokensButton />
         </Flex>
         {createPortal(
-          <DragOverlay>
-            {dragId && <TokenBarToken token={tokensById[dragId]} />}
+          <DragOverlay
+            // Ensure a drop animation plays to allow us to get the position of the drag overlay in drag end
+            dropAnimation={{
+              dragSourceOpacity: 0,
+              duration: 1,
+              easing: "ease",
+            }}
+          >
+            {dragId && (
+              <div ref={dragOverlayRef}>
+                <TokenBarToken token={tokensById[dragId]} />
+              </div>
+            )}
           </DragOverlay>,
           document.body
         )}
