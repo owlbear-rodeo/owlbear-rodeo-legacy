@@ -1,15 +1,21 @@
+import { ModelJSON, WeightsManifestConfig } from "@tensorflow/tfjs-core/dist/io/types";
 import blobToBuffer from "../helpers/blobToBuffer";
 
 class Model {
-  constructor(config, weightsMapping) {
+  config: ModelJSON;
+  weightsMapping: { [path: string]: string };
+  constructor(config: ModelJSON, weightsMapping: { [path: string]: string }) {
     this.config = config;
     this.weightsMapping = weightsMapping;
   }
 
   async load() {
     // Load weights from the manifest then fetch them into an ArrayBuffer
-    let buffers = [];
-    const manifest = this.config.weightsManifest[0];
+    let buffers: ArrayBuffer[] = [];
+    if (this.config === undefined) {
+      return;
+    }
+    const manifest = this.config?.weightsManifest[0];
     for (let path of manifest.paths) {
       const url = this.weightsMapping[path];
       const response = await fetch(url);
