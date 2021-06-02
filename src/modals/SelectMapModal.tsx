@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -30,6 +30,15 @@ import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 import shortcuts from "../shortcuts";
+import { MapState } from "../components/map/Map";
+
+type SelectMapProps = {
+  isOpen: boolean,
+  onDone: any,
+  onMapChange: any,
+  onMapReset: any,
+  currentMap: any
+}
 
 const defaultMapProps = {
   showGrid: false,
@@ -56,7 +65,7 @@ function SelectMapModal({
   onMapReset,
   // The map currently being view in the map screen
   currentMap,
-}) {
+}: SelectMapProps ) {
   const { addToast } = useToasts();
 
   const { userId } = useAuth();
@@ -79,7 +88,7 @@ function SelectMapModal({
   const [search, setSearch] = useState("");
   const [filteredMaps, filteredMapScores] = useSearch(ownedMaps, search);
 
-  function handleSearchChange(event) {
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value);
   }
 
@@ -88,7 +97,7 @@ function SelectMapModal({
    */
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
-  async function handleMapsGroup(group) {
+  async function handleMapsGroup(group: any) {
     setIsLoading(true);
     setIsGroupModalOpen(false);
     await updateMaps(selectedMapIds, { group });
@@ -106,15 +115,15 @@ function SelectMapModal({
    * Image Upload
    */
 
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<any>();
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
     false
   );
-  const largeImageWarningFiles = useRef();
+  const largeImageWarningFiles = useRef<any>();
 
-  async function handleImagesUpload(files) {
+  async function handleImagesUpload(files: any) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
@@ -166,7 +175,7 @@ function SelectMapModal({
     clearFileInput();
   }
 
-  async function handleImageUpload(file) {
+  async function handleImageUpload(file: any) {
     if (!file) {
       return Promise.reject();
     }
@@ -222,9 +231,9 @@ function SelectMapModal({
         }
 
         // Create resolutions
-        const resolutions = {};
+        const resolutions: any = {};
         for (let resolution of mapResolutions) {
-          const resolutionPixelSize = Vector2.multiply(
+          const resolutionPixelSize: Vector2 = Vector2.multiply(
             gridSize,
             resolution.size
           );
@@ -234,7 +243,7 @@ function SelectMapModal({
           ) {
             const resized = await resizeImage(
               image,
-              Vector2.max(resolutionPixelSize),
+              Vector2.max(resolutionPixelSize, undefined) as number,
               file.type,
               resolution.quality
             );
@@ -284,7 +293,7 @@ function SelectMapModal({
         });
         setIsLoading(false);
         URL.revokeObjectURL(url);
-        resolve();
+        resolve(undefined);
       };
       image.onerror = reject;
       image.src = url;
@@ -293,7 +302,7 @@ function SelectMapModal({
 
   function openImageDialog() {
     if (fileInputRef.current) {
-      fileInputRef.current.click();
+      fileInputRef.current?.click();
     }
   }
 
@@ -302,16 +311,16 @@ function SelectMapModal({
    */
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // The map selected in the modal
-  const [selectedMapIds, setSelectedMapIds] = useState([]);
+  const [selectedMapIds, setSelectedMapIds] = useState<string[]>([]);
 
-  const selectedMaps = ownedMaps.filter((map) =>
+  const selectedMaps = ownedMaps.filter((map: any) =>
     selectedMapIds.includes(map.id)
   );
-  const selectedMapStates = mapStates.filter((state) =>
+  const selectedMapStates = mapStates.filter((state: MapState) =>
     selectedMapIds.includes(state.mapId)
   );
 
-  async function handleMapAdd(map) {
+  async function handleMapAdd(map: any) {
     await addMap(map);
     setSelectedMapIds([map.id]);
   }
@@ -346,7 +355,7 @@ function SelectMapModal({
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
-  function handleMapSelect(map) {
+  function handleMapSelect(map: any) {
     handleItemSelect(
       map,
       selectMode,
@@ -392,7 +401,7 @@ function SelectMapModal({
   /**
    * Shortcuts
    */
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent): KeyboardEvent | void {
     if (!isOpen) {
       return;
     }
@@ -406,7 +415,7 @@ function SelectMapModal({
       // Selected maps and none are default
       if (
         selectedMapIds.length > 0 &&
-        !selectedMaps.some((map) => map.type === "default")
+        !selectedMaps.some((map: any) => map.type === "default")
       ) {
         // Ensure all other modals are closed
         setIsGroupModalOpen(false);
@@ -417,7 +426,7 @@ function SelectMapModal({
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: KeyboardEvent) {
     if (!isOpen) {
       return;
     }
@@ -444,7 +453,7 @@ function SelectMapModal({
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      style={{ content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" } }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
         <input
@@ -500,15 +509,15 @@ function SelectMapModal({
         isOpen={isGroupModalOpen}
         onChange={handleMapsGroup}
         groups={mapGroups.filter(
-          (group) => group !== "" && group !== "default"
+          (group: any) => group !== "" && group !== "default"
         )}
         onRequestClose={() => setIsGroupModalOpen(false)}
         // Select the default group by testing whether all selected maps are the same
         defaultGroup={
           selectedMaps.length > 0 &&
           selectedMaps
-            .map((map) => map.group)
-            .reduce((prev, curr) => (prev === curr ? curr : undefined))
+            .map((map: any) => map.group)
+            .reduce((prev: any, curr: any) => (prev === curr ? curr : undefined))
         }
       />
       <ConfirmModal

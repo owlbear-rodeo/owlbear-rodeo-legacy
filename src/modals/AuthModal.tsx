@@ -1,27 +1,27 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, ChangeEvent, FormEvent } from "react";
 import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import { useAuth } from "../contexts/AuthContext";
 
 import Modal from "../components/Modal";
 
-function AuthModal({ isOpen, onSubmit }) {
+function AuthModal({ isOpen, onSubmit }:  { isOpen: boolean, onSubmit: (newPassword: string) => void}) {
   const { password, setPassword } = useAuth();
-  const [tmpPassword, setTempPassword] = useState(password);
+  const [tmpPassword, setTempPassword] = useState<string>(password);
 
-  function handleChange(event) {
-    setTempPassword(event.target.value);
+  function handleChange(event: ChangeEvent<HTMLInputElement>): void {
+    setTempPassword(event.target?.value);
   }
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLElement>): void {
     event.preventDefault();
     setPassword(tmpPassword);
     onSubmit(tmpPassword);
   }
 
-  const inputRef = useRef();
-  function focusInput() {
-    inputRef.current && inputRef.current.focus();
+  const inputRef = useRef<any>();
+  function focusInput(): void {
+    inputRef.current && inputRef.current?.focus();
   }
 
   return (

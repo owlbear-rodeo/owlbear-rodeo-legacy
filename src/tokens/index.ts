@@ -32,6 +32,7 @@ import undead from "./Undead.png";
 import warlock from "./Warlock.png";
 import wizard from "./Wizard.png";
 import unknown from "./Unknown.png";
+import { ImageFile } from "../helpers/image";
 
 export const tokenSources = {
   barbarian,
@@ -80,7 +81,40 @@ function getDefaultTokenSize(key: string) {
   }
 }
 
-export const tokens = Object.keys(tokenSources).map((key) => ({
+type TokenCategory = "character" | "vehicle" | "prop"
+
+export type Token = {
+  id: string,
+  name: string,
+  defaultSize: number, 
+  category: TokenCategory, 
+  hideInSidebar: boolean, 
+  width: number,
+  height: number, 
+  owner: string,
+  type: string,
+  group: string | undefined,
+  created: number,
+  lastModified: number,
+  lastUsed: number,
+}
+
+export interface DefaultToken extends Omit<Token, "id" | "owner" | "created" | "lastModified" | "lastUsed"> {
+  id?: string,
+  owner?: string,
+  created?: number,
+  lastModified?: number,
+  lastUsed?: number,
+  key: string,
+  type: "default",
+  group: "default",
+}
+export interface FileToken extends Token {
+  file: Uint8Array,
+  thumbnail: ImageFile,
+  type: "file",
+}
+export const tokens: DefaultToken[] = Object.keys(tokenSources).map((key) => ({
   key,
   name: Case.capital(key),
   type: "default",
@@ -89,6 +123,7 @@ export const tokens = Object.keys(tokenSources).map((key) => ({
   hideInSidebar: false,
   width: 256,
   height: 256,
+  group: "default",
 }));
 
 export const unknownSource = unknown;

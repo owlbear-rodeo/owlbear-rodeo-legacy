@@ -1,23 +1,23 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, FormEvent, ChangeEvent } from "react";
 import { Box, Label, Input, Button, Flex } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
 import Modal from "../components/Modal";
 
-function JoinModal({ isOpen, onRequestClose }) {
+function JoinModal({ isOpen, onRequestClose }: any) {
   let history = useHistory();
   const [gameId, setGameId] = useState("");
 
-  function handleChange(event) {
-    setGameId(event.target.value);
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    setGameId(event.target?.value);
   }
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLDivElement>) {
     event.preventDefault();
     history.push(`/game/${gameId}`);
   }
 
-  const inputRef = useRef();
+  const inputRef = useRef<any>();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }
@@ -27,6 +27,7 @@ function JoinModal({ isOpen, onRequestClose }) {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       onAfterOpen={focusInput}
+       
     >
       <Flex
         sx={{

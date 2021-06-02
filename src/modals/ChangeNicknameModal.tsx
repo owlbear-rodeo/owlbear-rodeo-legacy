@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -9,10 +9,16 @@ function ChangeNicknameModal({
   onChangeSubmit,
   nickname,
   onChange,
+}: {
+  isOpen: boolean,
+  onRequestClose: () => void,
+  onChangeSubmit: any,
+  nickname: string,
+  onChange: any,
 }) {
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement | null>(null);
   function focusInput() {
-    inputRef.current && inputRef.current.focus();
+    inputRef.current && inputRef.current?.focus();
   }
 
   return (

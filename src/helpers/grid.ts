@@ -38,10 +38,10 @@ type GridMeasurement ={
  * @property {GridMeasurement} measurement
  */
 export type Grid = {
-  inset: GridInset,
+  inset?: GridInset,
   size: Vector2,
   type: ("square"|"hexVertical"|"hexHorizontal"),
-  measurement: GridMeasurement
+  measurement?: GridMeasurement
 }
 
 /**
@@ -51,7 +51,7 @@ export type Grid = {
  * @param {number} baseHeight Height of the grid in pixels before inset
  * @returns {Size}
  */
-export function getGridPixelSize(grid: Grid, baseWidth: number, baseHeight: number): Size {
+export function getGridPixelSize(grid: Required<Grid>, baseWidth: number, baseHeight: number): Size {
   const width = (grid.inset.bottomRight.x - grid.inset.topLeft.x) * baseWidth;
   const height = (grid.inset.bottomRight.y - grid.inset.topLeft.y) * baseHeight;
   return new Size(width, height);
@@ -225,7 +225,7 @@ export function getGridDefaultInset(grid: Grid, mapWidth: number, mapHeight: num
  * @param {number} mapHeight Height of the map in pixels before inset
  * @returns {GridInset}
  */
-export function getGridUpdatedInset(grid: Grid, mapWidth: number, mapHeight: number): GridInset {
+export function getGridUpdatedInset(grid: Required<Grid>, mapWidth: number, mapHeight: number): GridInset {
   let inset = grid.inset;
   // Take current inset width and use it to calculate the new height
   if (grid.size.x > 0 && grid.size.x > 0) {
@@ -295,7 +295,7 @@ export function hexOffsetToCube(offset: Vector2, type: ("hexVertical"|"hexHorizo
  * @param {Vector2} b
  * @param {Size} cellSize
  */
-export function gridDistance(grid: Grid, a: Vector2, b: Vector2, cellSize: Size) {
+export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellSize: Size) {
   // Get grid coordinates
   const aCoord = getNearestCellCoordinates(grid, a.x, a.y, cellSize);
   const bCoord = getNearestCellCoordinates(grid, b.x, b.y, cellSize);

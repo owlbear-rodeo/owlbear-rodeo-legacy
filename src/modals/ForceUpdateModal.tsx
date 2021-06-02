@@ -1,14 +1,13 @@
-import React from "react";
 import { Box, Label, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function ForceUpdateModal({ isOpen }) {
+function ForceUpdateModal({ isOpen }: { isOpen: boolean }) {
   return (
     <Modal
       isOpen={isOpen}
       allowClose={false}
-      style={{ maxWidth: "450px" }}
+      style={{ content: { maxWidth: "450px" } }}
     >
       <Box>
         <Label py={2}>New Update Available</Label>

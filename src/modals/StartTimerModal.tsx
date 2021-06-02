@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { ChangeEvent, useRef } from "react";
 import { Box, Label, Input, Button, Flex, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -7,14 +7,22 @@ import { getHMSDuration, getDurationHMS } from "../helpers/timer";
 
 import useSetting from "../hooks/useSetting";
 
+type StartTimerProps = {
+  isOpen: boolean,
+  onRequestClose: () => void,
+  onTimerStart: any,
+  onTimerStop: any,
+  timer: any,
+}
+
 function StartTimerModal({
   isOpen,
   onRequestClose,
   onTimerStart,
   onTimerStop,
   timer,
-}) {
-  const inputRef = useRef();
+}: StartTimerProps) {
+  const inputRef = useRef<any>();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }
@@ -23,7 +31,7 @@ function StartTimerModal({
   const [minute, setMinute] = useSetting("timer.minute");
   const [second, setSecond] = useSetting("timer.second");
 
-  function handleSubmit(event) {
+  function handleSubmit(event: ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
     if (timer) {
       onTimerStop();
@@ -44,7 +52,7 @@ function StartTimerModal({
     paddingLeft: 0,
   };
 
-  function parseValue(value, max) {
+  function parseValue(value: string, max: number) {
     const num = parseInt(value);
     if (isNaN(num)) {
       return 0;

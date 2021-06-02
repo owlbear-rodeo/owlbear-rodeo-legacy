@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -12,8 +12,15 @@ import { isEmpty } from "../helpers/shared";
 import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
+import { MapState } from "../components/map/Map";
 
-function EditMapModal({ isOpen, onDone, mapId }) {
+type EditMapProps = {
+  isOpen: boolean,
+  onDone: any,
+  mapId: string
+}
+
+function EditMapModal({ isOpen, onDone, mapId }: EditMapProps) {
   const {
     updateMap,
     updateMapState,
@@ -23,8 +30,8 @@ function EditMapModal({ isOpen, onDone, mapId }) {
   } = useMapData();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [map, setMap] = useState();
-  const [mapState, setMapState] = useState();
+  const [map, setMap] = useState<any>();
+  const [mapState, setMapState] = useState<MapState>();
   // Load full map when modal is opened
   useEffect(() => {
     async function loadMap() {
@@ -43,8 +50,8 @@ function EditMapModal({ isOpen, onDone, mapId }) {
     if (isOpen && mapId) {
       loadMap();
     } else {
-      setMap();
-      setMapState();
+      setMap(undefined);
+      setMapState(undefined);
     }
   }, [isOpen, mapId, getMapFromDB, getMapStateFromDB, getMap]);
 
@@ -64,19 +71,19 @@ function EditMapModal({ isOpen, onDone, mapId }) {
    */
   // Local cache of map setting changes
   // Applied when done is clicked or map selection is changed
-  const [mapSettingChanges, setMapSettingChanges] = useState({});
-  const [mapStateSettingChanges, setMapStateSettingChanges] = useState({});
+  const [mapSettingChanges, setMapSettingChanges] = useState<any>({});
+  const [mapStateSettingChanges, setMapStateSettingChanges] = useState<any>({});
 
-  function handleMapSettingsChange(key, value) {
-    setMapSettingChanges((prevChanges) => ({
+  function handleMapSettingsChange(key: string, value: string) {
+    setMapSettingChanges((prevChanges: any) => ({
       ...prevChanges,
       [key]: value,
       lastModified: Date.now(),
     }));
   }
 
-  function handleMapStateSettingsChange(key, value) {
-    setMapStateSettingChanges((prevChanges) => ({
+  function handleMapStateSettingsChange(key: string, value: string) {
+    setMapStateSettingChanges((prevChanges: any) => ({
       ...prevChanges,
       [key]: value,
     }));
@@ -137,7 +144,7 @@ function EditMapModal({ isOpen, onDone, mapId }) {
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      style={{ content: {maxWidth: layout.modalSize, width: "calc(100% - 16px)"} }}
     >
       <Flex
         sx={{

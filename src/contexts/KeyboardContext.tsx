@@ -3,10 +3,10 @@ import { EventEmitter } from "events";
 
 const KeyboardContext = React.createContext({ keyEmitter: new EventEmitter() });
 
-export function KeyboardProvider({ children }) {
+export function KeyboardProvider({ children }: { children: any}) {
   const [keyEmitter] = useState(new EventEmitter());
   useEffect(() => {
-    function handleKeyDown(event) {
+    function handleKeyDown(event: Event) {
       // Ignore text input
       if (
         event.target instanceof HTMLInputElement ||
@@ -17,7 +17,7 @@ export function KeyboardProvider({ children }) {
       keyEmitter.emit("keyDown", event);
     }
 
-    function handleKeyUp(event) {
+    function handleKeyUp(event: Event) {
       // Ignore text input
       if (
         event.target instanceof HTMLInputElement ||
@@ -49,7 +49,7 @@ export function KeyboardProvider({ children }) {
  * @param {KeyboardEvent} onKeyDown
  * @param {KeyboardEvent} onKeyUp
  */
-export function useKeyboard(onKeyDown, onKeyUp) {
+export function useKeyboard(onKeyDown: (...args: any[]) => void, onKeyUp: (...args: any[]) => void) {
   const context = useContext(KeyboardContext);
   if (context === undefined) {
     throw new Error("useKeyboard must be used within a KeyboardProvider");
@@ -78,7 +78,7 @@ export function useKeyboard(onKeyDown, onKeyUp) {
  * Handler to handle a blur event. Useful when using a shortcut that uses the Alt or Cmd
  * @param {FocusEvent} onBlur
  */
-export function useBlur(onBlur) {
+export function useBlur(onBlur: EventListenerOrEventListenerObject) {
   useEffect(() => {
     if (onBlur) {
       window.addEventListener("blur", onBlur);

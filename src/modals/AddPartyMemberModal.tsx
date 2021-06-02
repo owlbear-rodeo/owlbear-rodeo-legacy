@@ -1,9 +1,16 @@
-import React from "react";
 import { Box, Label, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function AddPartyMemberModal({ isOpen, onRequestClose, gameId }) {
+function AddPartyMemberModal({
+  isOpen,
+  onRequestClose,
+  gameId,
+}: {
+  isOpen: boolean;
+  onRequestClose: any;
+  gameId: string;
+}) {
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
       <Box>

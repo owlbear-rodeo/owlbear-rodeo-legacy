@@ -1,10 +1,19 @@
-import React, { useState } from "react";
-import { Box, Slider as ThemeSlider } from "theme-ui";
+import { useState } from "react";
+import { Box, Slider as ThemeSlider, SliderProps } from "theme-ui";
 
-function Slider({ min, max, value, ml, mr, labelFunc, ...rest }) {
+type SliderModalProps = SliderProps & {
+  min: number,
+  max: number,
+  value: number,
+  ml: any,
+  mr: any,
+  labelFunc: any
+}
+
+function Slider({ min, max, value, ml, mr, labelFunc, ...rest }: SliderModalProps ) {
   const percentValue = ((value - min) * 100) / (max - min);
 
-  const [labelVisible, setLabelVisible] = useState(false);
+  const [labelVisible, setLabelVisible] = useState<boolean>(false);
 
   return (
     <Box sx={{ position: "relative" }} ml={ml} mr={mr}>
@@ -63,7 +72,7 @@ Slider.defaultProps = {
   value: 0,
   ml: 0,
   mr: 0,
-  labelFunc: (value) => value,
+  labelFunc: (value: any) => value,
 };
 
 export default Slider;

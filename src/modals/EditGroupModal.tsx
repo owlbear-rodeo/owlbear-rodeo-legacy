@@ -1,8 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 import Select from "../components/Select";
+
+type EditGroupProps = {
+  isOpen: boolean,
+  onRequestClose: () => void,
+  onChange: any,
+  groups: string[],
+  defaultGroup: string | undefined | false,
+}
 
 function EditGroupModal({
   isOpen,
@@ -10,15 +18,15 @@ function EditGroupModal({
   onChange,
   groups,
   defaultGroup,
-}) {
-  const [value, setValue] = useState();
-  const [options, setOptions] = useState([]);
+}: EditGroupProps) {
+  const [value, setValue] = useState<{ value: string; label: string; } | undefined>();
+  const [options, setOptions] = useState<{ value: string; label: string; }[]>([]);
 
   useEffect(() => {
     if (defaultGroup) {
       setValue({ value: defaultGroup, label: defaultGroup });
     } else {
-      setValue();
+      setValue(undefined);
     }
   }, [defaultGroup]);
 
@@ -26,7 +34,7 @@ function EditGroupModal({
     setOptions(groups.map((group) => ({ value: group, label: group })));
   }, [groups]);
 
-  function handleCreate(group) {
+  function handleCreate(group: string) {
     const newOption = { value: group, label: group };
     setValue(newOption);
     setOptions((prev) => [...prev, newOption]);
@@ -40,7 +48,7 @@ function EditGroupModal({
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ overflow: "visible" }}
+      style={{ content: { overflow: "visible" } }}
     >
       <Box onSubmit={handleChange} sx={{ width: "300px" }}>
         <Label py={2}>Select or add a group</Label>

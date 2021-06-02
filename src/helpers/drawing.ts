@@ -70,7 +70,7 @@ type ShapeType = "line" | "rectangle" | "circle" | "triangle"
  * @typedef {("fill"|"stroke")} PathType
  */
 
-// type PathType = "fill" | "stroke"
+type PathType = "fill" | "stroke"
 
 /**
  * @typedef Path
@@ -83,15 +83,15 @@ type ShapeType = "line" | "rectangle" | "circle" | "triangle"
  * @property {"path"} type
  */
 
-// type Path = {
-//   blend: boolean, 
-//   color: string, 
-//   data: PointsData,
-//   id: string, 
-//   pathType: PathType, 
-//   strokeWidth: number, 
-//   type: "path"
-// }
+export type Path = {
+  blend: boolean, 
+  color: string, 
+  data: PointsData,
+  id: string, 
+  pathType: PathType, 
+  strokeWidth: number, 
+  type: "path"
+}
 
 /**
  * @typedef Shape
@@ -104,15 +104,15 @@ type ShapeType = "line" | "rectangle" | "circle" | "triangle"
  * @property {"shape"} type
  */
 
-// type Shape = {
-//   blend: boolean, 
-//   color: string, 
-//   data: ShapeData, 
-//   id: string, 
-//   shapeType: ShapeType, 
-//   strokeWidth: number, 
-//   type: "shape"
-// }
+export type Shape = {
+  blend: boolean, 
+  color: string, 
+  data: ShapeData, 
+  id: string, 
+  shapeType: ShapeType, 
+  strokeWidth: number, 
+  type: "shape"
+}
 
 /**
  * @typedef Fog
@@ -124,7 +124,7 @@ type ShapeType = "line" | "rectangle" | "circle" | "triangle"
  * @property {boolean} visible
  */
 
-type Fog = {
+export type Fog = {
   color: string, 
   data: FogData, 
   id: string, 

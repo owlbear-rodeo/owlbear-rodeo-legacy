@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 import shortid from "shortid";
 import Case from "case";
@@ -24,8 +24,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 import shortcuts from "../shortcuts";
+import { FileToken, Token } from "../tokens";
 
-function SelectTokensModal({ isOpen, onRequestClose }) {
+function SelectTokensModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: any }) {
   const { addToast } = useToasts();
 
   const { userId } = useAuth();
@@ -43,7 +44,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   const [search, setSearch] = useState("");
   const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
 
-  function handleSearchChange(event) {
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value);
   }
 
@@ -52,7 +53,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    */
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
-  async function handleTokensGroup(group) {
+  async function handleTokensGroup(group: string) {
     setIsLoading(true);
     setIsGroupModalOpen(false);
     await updateTokens(selectedTokenIds, { group });
@@ -70,13 +71,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
    * Image Upload
    */
 
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<any>();
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
     false
   );
-  const largeImageWarningFiles = useRef();
+  const largeImageWarningFiles = useRef<File[]>();
 
   function openImageDialog() {
     if (fileInputRef.current) {
@@ -84,10 +85,15 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     }
   }
 
-  async function handleImagesUpload(files) {
+  async function handleImagesUpload(files: FileList | null) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
+    }
+
+    // TODO: handle null files
+    if (files === null) {
+      return;
     }
 
     let tokenFiles = [];
@@ -129,6 +135,9 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   async function handleLargeImageWarningConfirm() {
     setShowLargeImageWarning(false);
     const files = largeImageWarningFiles.current;
+    if (!files) {
+      return;
+    }
     for (let file of files) {
       await handleImageUpload(file);
     }
@@ -136,7 +145,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     clearFileInput();
   }
 
-  async function handleImageUpload(file) {
+  async function handleImageUpload(file: File) {
     let name = "Unknown Token";
     if (file.name) {
       // Remove file extension
@@ -180,7 +189,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           height: image.height,
         });
         setIsLoading(false);
-        resolve();
+        resolve(undefined);
       };
       image.onerror = reject;
       image.src = url;
@@ -190,13 +199,13 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   /**
    * Token controls
    */
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTokenIds, setSelectedTokenIds] = useState([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [selectedTokenIds, setSelectedTokenIds] = useState<string[]>([]);
   const selectedTokens = ownedTokens.filter((token) =>
     selectedTokenIds.includes(token.id)
   );
 
-  function handleTokenAdd(token) {
+  function handleTokenAdd(token: FileToken) {
     addToken(token);
     setSelectedTokenIds([token.id]);
   }
@@ -210,7 +219,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     setIsLoading(false);
   }
 
-  async function handleTokensHide(hideInSidebar) {
+  async function handleTokensHide(hideInSidebar: boolean) {
     setIsLoading(true);
     await updateTokens(selectedTokenIds, { hideInSidebar });
     setIsLoading(false);
@@ -219,7 +228,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
-  async function handleTokenSelect(token) {
+  async function handleTokenSelect(token: Token) {
     handleItemSelect(
       token,
       selectMode,
@@ -233,7 +242,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
   /**
    * Shortcuts
    */
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (!isOpen) {
       return;
     }
@@ -257,7 +266,7 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: KeyboardEvent) {
     if (!isOpen) {
       return;
     }
@@ -280,11 +289,19 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
 
   const layout = useResponsiveLayout();
 
+  let tokenId;
+  if (selectedTokens.length === 1 && selectedTokens[0].id) {
+    tokenId = selectedTokens[0].id
+  } else {
+    // TODO: handle tokenId not found
+    tokenId = ""
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      style={{ content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" } }}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
         <input
@@ -328,17 +345,19 @@ function SelectTokensModal({ isOpen, onRequestClose }) {
           </Button>
         </Flex>
       </ImageDrop>
+      <>
       {(isLoading || tokensLoading) && <LoadingOverlay bg="overlay" />}
+      </>
       <EditTokenModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        tokenId={selectedTokens.length === 1 && selectedTokens[0].id}
+        tokenId={tokenId}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}
         onChange={handleTokensGroup}
         groups={tokenGroups.filter(
-          (group) => group !== "" && group !== "default"
+          (group: string) => group !== "" && group !== "default"
         )}
         onRequestClose={() => setIsGroupModalOpen(false)}
         // Select the default group by testing whether all selected tokens are the same

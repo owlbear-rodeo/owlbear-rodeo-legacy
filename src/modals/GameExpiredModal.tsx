@@ -1,14 +1,13 @@
-import React from "react";
 import { Box, Label, Flex, Button, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function GameExpiredModal({ isOpen, onRequestClose }) {
+function GameExpiredModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void }) {
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "450px" }}
+      style={{ content: { maxWidth: "450px" } }}
     >
       <Box>
         <Label py={2}>Game Timed Out</Label>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Flex, Label } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -11,12 +11,19 @@ import { useTokenData } from "../contexts/TokenDataContext";
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
+import { Token } from "../tokens";
 
-function EditTokenModal({ isOpen, onDone, tokenId }) {
+type EditModalProps =  {
+  isOpen: boolean,
+  onDone: () => void,
+  tokenId: string,
+};
+
+function EditTokenModal({ isOpen, onDone, tokenId }: EditModalProps) {
   const { updateToken, getTokenFromDB } = useTokenData();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState();
+  const [token, setToken] = useState<Token>();
   useEffect(() => {
     async function loadToken() {
       setIsLoading(true);
@@ -27,7 +34,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
     if (isOpen && tokenId) {
       loadToken();
     } else {
-      setToken();
+      setToken(undefined);
     }
   }, [isOpen, tokenId, getTokenFromDB]);
 
@@ -41,10 +48,13 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
     onDone();
   }
 
-  const [tokenSettingChanges, setTokenSettingChanges] = useState({});
+  const [tokenSettingChanges, setTokenSettingChanges] = useState<any>({});
 
-  function handleTokenSettingsChange(key, value) {
-    setTokenSettingChanges((prevChanges) => ({ ...prevChanges, [key]: value }));
+  function handleTokenSettingsChange(key: any, value: any) {
+    setTokenSettingChanges((prevChanges: any) => ({
+      ...prevChanges,
+      [key]: value,
+    }));
   }
 
   async function applyTokenChanges() {
@@ -72,8 +82,7 @@ function EditTokenModal({ isOpen, onDone, tokenId }) {
       isOpen={isOpen}
       onRequestClose={handleClose}
       style={{
-        maxWidth: layout.modalSize,
-        width: "calc(100% - 16px)",
+        content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" },
       }}
     >
       <Flex

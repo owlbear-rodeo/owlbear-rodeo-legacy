@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Box, Label, Flex, Button, Text, Checkbox, Divider } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
@@ -6,6 +6,15 @@ import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import { getDatabase } from "../database";
+import { Props } from "react-modal";
+
+type SelectDataProps = Props & {
+  onConfirm: any,
+  confirmText: string,
+  label: string,
+  databaseName: string,
+  filter: any,
+}
 
 function SelectDataModal({
   isOpen,
@@ -15,10 +24,10 @@ function SelectDataModal({
   label,
   databaseName,
   filter,
-}) {
-  const [maps, setMaps] = useState({});
-  const [tokensByMap, setTokensByMap] = useState({});
-  const [tokens, setTokens] = useState({});
+}: SelectDataProps) {
+  const [maps, setMaps] = useState<any>({});
+  const [tokensByMap, setTokensByMap] = useState<any>({});
+  const [tokens, setTokens] = useState<any>({});
 
   const [isLoading, setIsLoading] = useState(false);
   const hasMaps = Object.values(maps).length > 0;
@@ -29,9 +38,9 @@ function SelectDataModal({
       if (isOpen && databaseName) {
         setIsLoading(true);
         const db = getDatabase({ addons: [] }, databaseName);
-        let loadedMaps = {};
-        let loadedTokensByMap = {};
-        let loadedTokens = {};
+        let loadedMaps: any = [];
+        let loadedTokensByMap: any = {};
+        let loadedTokens: any = [];
         await db
           .table("maps")
           .filter((map) => filter("maps", map, map.id))
@@ -44,7 +53,7 @@ function SelectDataModal({
           .each((state) => {
             loadedTokensByMap[state.mapId] = new Set(
               Object.values(state.tokens).map(
-                (tokenState) => tokenState.tokenId
+                (tokenState: any) => tokenState.tokenId
               )
             );
           });
@@ -73,9 +82,9 @@ function SelectDataModal({
   }, [isOpen, databaseName, filter]);
 
   // An object mapping a tokenId to how many checked maps it is currently used in
-  const [tokenUsedCount, setTokenUsedCount] = useState({});
+  const [tokenUsedCount, setTokenUsedCount] = useState<any>({});
   useEffect(() => {
-    let tokensUsed = {};
+    let tokensUsed: any = {};
     for (let mapId in maps) {
       if (maps[mapId].checked && mapId in tokensByMap) {
         for (let tokenId of tokensByMap[mapId]) {
@@ -89,7 +98,7 @@ function SelectDataModal({
     }
     setTokenUsedCount(tokensUsed);
     // Update tokens to ensure used tokens are checked
-    setTokens((prevTokens) => {
+    setTokens((prevTokens: any) => {
       let newTokens = { ...prevTokens };
       for (let id in newTokens) {
         if (id in tokensUsed) {
@@ -101,13 +110,13 @@ function SelectDataModal({
   }, [maps, tokensByMap]);
 
   function handleConfirm() {
-    let checkedMaps = Object.values(maps).filter((map) => map.checked);
-    let checkedTokens = Object.values(tokens).filter((token) => token.checked);
+    let checkedMaps = Object.values(maps).filter((map: any) => map.checked);
+    let checkedTokens = Object.values(tokens).filter((token: any) => token.checked);
     onConfirm(checkedMaps, checkedTokens);
   }
 
-  function handleSelectMapsChanged(event) {
-    setMaps((prevMaps) => {
+  function handleSelectMapsChanged(event: ChangeEvent<HTMLInputElement>) {
+    setMaps((prevMaps: any) => {
       let newMaps = { ...prevMaps };
       for (let id in newMaps) {
         newMaps[id].checked = event.target.checked;
@@ -116,7 +125,7 @@ function SelectDataModal({
     });
     // If all token select is unchecked then ensure all tokens are unchecked
     if (!event.target.checked && !tokensSelectChecked) {
-      setTokens((prevTokens) => {
+      setTokens((prevTokens: any) => {
         let newTokens = { ...prevTokens };
         for (let id in newTokens) {
           newTokens[id].checked = false;
@@ -126,14 +135,14 @@ function SelectDataModal({
     }
   }
 
-  function handleMapChange(event, map) {
-    setMaps((prevMaps) => ({
+  function handleMapChange(event: ChangeEvent<HTMLInputElement>, map: any) {
+    setMaps((prevMaps: any) => ({
       ...prevMaps,
       [map.id]: { ...map, checked: event.target.checked },
     }));
     // If all token select is unchecked then ensure tokens assosiated to this map are unchecked
     if (!event.target.checked && !tokensSelectChecked) {
-      setTokens((prevTokens) => {
+      setTokens((prevTokens: any) => {
         let newTokens = { ...prevTokens };
         for (let id in newTokens) {
           if (tokensByMap[map.id].has(id) && tokenUsedCount[id] === 1) {
@@ -145,8 +154,8 @@ function SelectDataModal({
     }
   }
 
-  function handleSelectTokensChange(event) {
-    setTokens((prevTokens) => {
+  function handleSelectTokensChange(event: ChangeEvent<HTMLInputElement>) {
+    setTokens((prevTokens: any) => {
       let newTokens = { ...prevTokens };
       for (let id in newTokens) {
         if (!(id in tokenUsedCount)) {
@@ -157,8 +166,8 @@ function SelectDataModal({
     });
   }
 
-  function handleTokenChange(event, token) {
-    setTokens((prevTokens) => ({
+  function handleTokenChange(event: ChangeEvent<HTMLInputElement>, token: any) {
+    setTokens((prevTokens: any) => ({
       ...prevTokens,
       [token.id]: { ...token, checked: event.target.checked },
     }));
@@ -167,14 +176,14 @@ function SelectDataModal({
   // Some tokens are checked not by maps or all tokens are checked by maps
   const tokensSelectChecked =
     Object.values(tokens).some(
-      (token) => !(token.id in tokenUsedCount) && token.checked
-    ) || Object.values(tokens).every((token) => token.id in tokenUsedCount);
+      (token: any) => !(token.id in tokenUsedCount) && token.checked
+    ) || Object.values(tokens).every((token: any) => token.id in tokenUsedCount);
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "450px", width: "100%" }}
+      style={{ content: {maxWidth: "450px", width: "100%"} }}
     >
       <Box
         sx={{
@@ -205,13 +214,13 @@ function SelectDataModal({
                 <Flex>
                   <Label>
                     <Checkbox
-                      checked={Object.values(maps).some((map) => map.checked)}
+                      checked={Object.values(maps).some((map: any) => map.checked)}
                       onChange={handleSelectMapsChanged}
                     />
                     Maps
                   </Label>
                 </Flex>
-                {Object.values(maps).map((map) => (
+                {Object.values(maps).map((map: any) => (
                   <Label
                     key={map.id}
                     my={1}
@@ -237,7 +246,7 @@ function SelectDataModal({
                   />
                   Tokens
                 </Label>
-                {Object.values(tokens).map((token) => (
+                {Object.values(tokens).map((token: any) => (
                   <Box pl={4} my={1} key={token.id}>
                     <Label sx={{ fontFamily: "body2" }}>
                       <Checkbox
@@ -265,8 +274,8 @@ function SelectDataModal({
           </Button>
           <Button
             disabled={
-              !Object.values(maps).some((map) => map.checked) &&
-              !Object.values(tokens).some((token) => token.checked)
+              !Object.values(maps).some((map: any) => map.checked) &&
+              !Object.values(tokens).some((token: any) => token.checked)
             }
             sx={{ flexGrow: 1 }}
             m={1}

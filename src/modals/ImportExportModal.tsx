@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Box, Label, Text, Button, Flex } from "theme-ui";
 import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
@@ -16,24 +16,25 @@ import { useDatabase } from "../contexts/DatabaseContext";
 import SelectDataModal from "./SelectDataModal";
 
 import { getDatabase } from "../database";
+import { Map, MapState, TokenState } from "../components/map/Map";
 
 const importDBName = "OwlbearRodeoImportDB";
 
-function ImportExportModal({ isOpen, onRequestClose }) {
+function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void}) {
   const { worker } = useDatabase();
   const { userId } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+  const [error, setError] = useState<Error>();
 
   const backgroundTaskRunningRef = useRef(false);
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<any>();
 
   const [showImportSelector, setShowImportSelector] = useState(false);
   const [showExportSelector, setShowExportSelector] = useState(false);
 
   const { addToast } = useToasts();
-  function addSuccessToast(message, maps, tokens) {
+  function addSuccessToast(message: string, maps: any, tokens: TokenState[]) {
     const mapText = `${maps.length} map${maps.length > 1 ? "s" : ""}`;
     const tokenText = `${tokens.length} token${tokens.length > 1 ? "s" : ""}`;
     if (maps.length > 0 && tokens.length > 0) {
@@ -53,11 +54,11 @@ function ImportExportModal({ isOpen, onRequestClose }) {
 
   const loadingProgressRef = useRef(0);
 
-  function handleDBProgress({ completedRows, totalRows }) {
+  function handleDBProgress({ completedRows, totalRows }: { completedRows: number, totalRows: number }) {
     loadingProgressRef.current = completedRows / totalRows;
   }
 
-  async function handleImportDatabase(file) {
+  async function handleImportDatabase(file: File) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     try {
@@ -94,7 +95,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
   }
 
   useEffect(() => {
-    function handleBeforeUnload(event) {
+    function handleBeforeUnload(event: any) {
       if (backgroundTaskRunningRef.current) {
         event.returnValue =
           "Database is still processing, are you sure you want to leave?";
@@ -121,7 +122,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setShowImportSelector(false);
   }
 
-  async function handleImportSelectorConfirm(checkedMaps, checkedTokens) {
+  async function handleImportSelectorConfirm(checkedMaps: any, checkedTokens: TokenState[]) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     setShowImportSelector(false);
@@ -131,11 +132,11 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     const db = getDatabase({});
     try {
       // Keep track of a mapping of old token ids to new ones to apply them to the map states
-      let newTokenIds = {};
+      let newTokenIds: {[id: string]: string} = {};
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
-        let newTokens = [];
+        const tokensToAdd: TokenState[] = await importDB.table("tokens").bulkGet(tokenIds);
+        let newTokens: TokenState[] = [];
         for (let token of tokensToAdd) {
           const newId = shortid.generate();
           newTokenIds[token.id] = newId;
@@ -146,12 +147,12 @@ function ImportExportModal({ isOpen, onRequestClose }) {
       }
 
       if (checkedMaps.length > 0) {
-        const mapIds = checkedMaps.map((map) => map.id);
+        const mapIds = checkedMaps.map((map: any) => map.id);
         const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
         let newMaps = [];
         let newStates = [];
         for (let map of mapsToAdd) {
-          let state = await importDB.table("states").get(map.id);
+          let state: MapState = await importDB.table("states").get(map.id);
           // Apply new token ids to imported state
           for (let tokenState of Object.values(state.tokens)) {
             if (tokenState.tokenId in newTokenIds) {
@@ -179,7 +180,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     backgroundTaskRunningRef.current = false;
   }
 
-  function exportSelectorFilter(table, value) {
+  function exportSelectorFilter(table: any, value: Map | TokenState) {
     // Only show owned maps and tokens
     if (table === "maps" || table === "tokens") {
       if (value.owner === userId) {
@@ -197,7 +198,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setShowExportSelector(false);
   }
 
-  async function handleExportSelectorConfirm(checkedMaps, checkedTokens) {
+  async function handleExportSelectorConfirm(checkedMaps: Map[], checkedTokens: TokenState[]) {
     setShowExportSelector(false);
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
@@ -238,7 +239,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             Select import or export then select the data you wish to use
           </Text>
           <input
-            onChange={(event) => handleImportDatabase(event.target.files[0])}
+            onChange={(event) => event.target.files && handleImportDatabase(event.target.files[0])}
             type="file"
             accept=".owlbear"
             style={{ display: "none" }}
@@ -272,7 +273,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             </Box>
           </Box>
         )}
-        <ErrorBanner error={error} onRequestClose={() => setError()} />
+        <ErrorBanner error={error} onRequestClose={() => setError(undefined)} />
         <SelectDataModal
           isOpen={showImportSelector}
           onRequestClose={handleImportSelectorClose}

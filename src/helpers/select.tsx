@@ -8,7 +8,7 @@ import { groupBy } from "./shared";
  */
 
 // Helper for generating search results for items
-export function useSearch(items: [], search: string) {
+export function useSearch(items: any[], search: string) {
   // TODO: add types to search items -> don't like the never type
   const [filteredItems, setFilteredItems]: [
     filteredItems: any,
@@ -18,10 +18,7 @@ export function useSearch(items: [], search: string) {
     filteredItemScores: {},
     setFilteredItemScores: React.Dispatch<React.SetStateAction<{}>>
   ] = useState({});
-  const [fuse, setFuse]: [
-    fuse: Fuse<never> | undefined,
-    setFuse: React.Dispatch<Fuse<never> | undefined>
-  ] = useState();
+  const [fuse, setFuse] = useState<any>();
 
   // Update search index when items change
   useEffect(() => {
@@ -85,7 +82,7 @@ export function useGroup(
 export function handleItemSelect(
   item: any,
   selectMode: any,
-  selectedIds: number[],
+  selectedIds: string[],
   setSelectedIds: any,
   itemsByGroup: any,
   itemGroups: any
@@ -120,15 +117,15 @@ export function handleItemSelect(
         const lastIndex = items.findIndex(
           (m: any) => m.id === selectedIds[selectedIds.length - 1]
         );
-        let idsToAdd: number[] = [];
-        let idsToRemove: number[] = [];
+        let idsToAdd: string[] = [];
+        let idsToRemove: string[] = [];
         const direction = mapIndex > lastIndex ? 1 : -1;
         for (
           let i = lastIndex + direction;
           direction < 0 ? i >= mapIndex : i <= mapIndex;
           i += direction
         ) {
-          const itemId: number = items[i].id;
+          const itemId: string = items[i].id;
           if (selectedIds.includes(itemId)) {
             idsToRemove.push(itemId);
           } else {

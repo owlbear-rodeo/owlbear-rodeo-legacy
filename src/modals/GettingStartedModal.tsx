@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Label, Text } from "theme-ui";
 import raw from "raw.macro";
 
@@ -8,12 +7,12 @@ import Link from "../components/Link";
 
 const gettingStarted = raw("../docs/howTo/gettingStarted.md");
 
-function GettingStartedModal({ isOpen, onRequestClose }) {
+function GettingStartedModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void } ) {
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "450px" }}
+      style={{ content: { maxWidth: "450px" } }}
     >
       <Box>
         <Label py={2}>Getting Started</Label>

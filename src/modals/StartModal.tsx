@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { ChangeEvent, useRef } from "react";
 import { Box, Label, Input, Button, Flex, Checkbox } from "theme-ui";
 import { useHistory } from "react-router-dom";
 import shortid from "shortid";
@@ -9,20 +9,20 @@ import useSetting from "../hooks/useSetting";
 
 import Modal from "../components/Modal";
 
-function StartModal({ isOpen, onRequestClose }) {
+function StartModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void}) {
   let history = useHistory();
   const { password, setPassword } = useAuth();
 
-  function handlePasswordChange(event) {
+  function handlePasswordChange(event: ChangeEvent<HTMLInputElement>) {
     setPassword(event.target.value);
   }
 
   const [usePassword, setUsePassword] = useSetting("game.usePassword");
-  function handleUsePasswordChange(event) {
+  function handleUsePasswordChange(event: ChangeEvent<HTMLInputElement>) {
     setUsePassword(event.target.checked);
   }
 
-  function handleSubmit(event) {
+  function handleSubmit(event: ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
     if (!usePassword) {
       setPassword("");
@@ -30,7 +30,7 @@ function StartModal({ isOpen, onRequestClose }) {
     history.push(`/game/${shortid.generate()}`);
   }
 
-  const inputRef = useRef();
+  const inputRef = useRef<any>();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }

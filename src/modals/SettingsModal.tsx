@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Label,
   Flex,
@@ -21,8 +21,9 @@ import useSetting from "../hooks/useSetting";
 
 import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";
+import { MapState } from "../components/map/Map";
 
-function SettingsModal({ isOpen, onRequestClose }) {
+function SettingsModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void }) {
   const { database, databaseStatus } = useDatabase();
   const { userId } = useAuth();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,7 +33,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
   );
   const [showFogGuides, setShowFogGuides] = useSetting("fog.showGuides");
   const [fogEditOpacity, setFogEditOpacity] = useSetting("fog.editOpacity");
-  const [storageEstimate, setStorageEstimate] = useState();
+  const [storageEstimate, setStorageEstimate] = useState<StorageEstimate>();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,7 +59,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
   async function handleEraseAllData() {
     setIsLoading(true);
     localStorage.clear();
-    await database.delete();
+    await database?.delete();
     window.location.reload();
   }
 
@@ -66,6 +67,11 @@ function SettingsModal({ isOpen, onRequestClose }) {
     setIsLoading(true);
     // Clear saved settings
     localStorage.clear();
+
+    //TODO: handle id database is undefined
+    if (!database) {
+      return;
+    }
     // Clear map cache
     await database.table("maps").where("owner").notEqual(userId).delete();
     // Find all other peoples tokens who aren't benig used in a map state and delete them
@@ -74,7 +80,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
       .where("owner")
       .notEqual(userId)
       .toArray();
-    const states = await database.table("states").toArray();
+    const states: MapState[] = await database?.table("states").toArray();
     for (let token of tokens) {
       let inUse = false;
       for (let state of states) {
@@ -126,7 +132,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               sx={{ width: "initial" }}
               value={fogEditOpacity}
               onChange={(e) => setFogEditOpacity(parseFloat(e.target.value))}
-              labelFunc={(value) => `${Math.round(value * 100)}%`}
+              labelFunc={(value: number) => `${Math.round(value * 100)}%`}
             />
           </Label>
           <Label py={2}>
@@ -139,7 +145,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               sx={{ width: "initial" }}
               value={labelSize}
               onChange={(e) => setLabelSize(parseFloat(e.target.value))}
-              labelFunc={(value) => `${value}x`}
+              labelFunc={(value: number) => `${value}x`}
             />
           </Label>
           <Label py={2}>
@@ -154,7 +160,7 @@ function SettingsModal({ isOpen, onRequestClose }) {
               onChange={(e) =>
                 setGridSnappingSensitivity(parseFloat(e.target.value))
               }
-              labelFunc={(value) => `${value * 2}`}
+              labelFunc={(value: number) => `${value * 2}`}
             />
           </Label>
           <Divider bg="text" />
@@ -185,13 +191,13 @@ function SettingsModal({ isOpen, onRequestClose }) {
               Import / Export Data
             </Button>
           </Flex>
-          {storageEstimate && (
+          {storageEstimate !&& (
             <Flex sx={{ justifyContent: "center" }}>
               <Text variant="caption">
-                Storage Used: {prettyBytes(storageEstimate.usage)} of{" "}
-                {prettyBytes(storageEstimate.quota)} (
+                Storage Used: {prettyBytes(storageEstimate.usage as number)} of{" "}
+                {prettyBytes(storageEstimate.quota as number)} (
                 {Math.round(
-                  (storageEstimate.usage / Math.max(storageEstimate.quota, 1)) *
+                  (storageEstimate.usage as number / Math.max(storageEstimate.quota as number, 1)) *
                     100
                 )}
                 %)

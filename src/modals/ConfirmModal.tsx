@@ -1,7 +1,15 @@
-import React from "react";
 import { Box, Label, Flex, Button, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
+
+type ConfirmModalProps = {
+  isOpen:  boolean,
+  onRequestClose: () => void,
+  onConfirm: () => void,
+  confirmText: string,
+  label: string,
+  description: string,
+}
 
 function ConfirmModal({
   isOpen,
@@ -10,12 +18,12 @@ function ConfirmModal({
   confirmText,
   label,
   description,
-}) {
+}: ConfirmModalProps ) {
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: "300px" }}
+      style={{ content: { maxWidth: "300px" } }}
     >
       <Box>
         <Label py={2}>{label}</Label>

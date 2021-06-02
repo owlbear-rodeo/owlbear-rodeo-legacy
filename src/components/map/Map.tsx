@@ -24,6 +24,78 @@ import {
   EditShapeAction,
   RemoveShapeAction,
 } from "../../actions";
+import { Fog, Path, Shape } from "../../helpers/drawing";
+import Session from "../../network/Session";
+import { Grid } from "../../helpers/grid";
+import { ImageFile } from "../../helpers/image";
+
+type Resolutions = Record<string, ImageFile>
+
+export type Map = {
+  id: string,
+  name: string,
+  owner: string,
+  file: Uint8Array,
+  quality: string,
+  resolutions: Resolutions,
+  grid: Grid,
+  group: string,
+  width: number,
+  height: number,
+  type: string,
+  lastUsed: number,
+  lastModified: number,
+  created: number,
+  showGrid: boolean,
+  snapToGrid: boolean,
+  thumbnail: ImageFile,
+}
+
+export type Note = {
+  id: string,
+  color: string,
+  lastModified: number,
+  lastModifiedBy: string,
+  locked: boolean,
+  size: number,
+  text: string,
+  textOnly: boolean,
+  visible: boolean,
+  x: number,
+  y: number,
+}
+
+export type TokenState = {
+  id: string,
+  tokenId: string,
+  owner: string,
+  size: number,
+  label: string,
+  status: string[],
+  x: number,
+  y: number,
+  lastModifiedBy: string,
+  lastModified: number,
+  rotation: number,
+  locked: boolean,
+  visible: boolean
+}
+
+interface PathId extends Path {
+  id: string
+}
+
+interface ShapeId extends Shape {
+  id: string
+}
+export type MapState = {
+  tokens: Record<string, TokenState>,
+  drawShapes: PathId | ShapeId, 
+  fogShapes: Fog[],
+  editFlags: string[], 
+  notes: Note[], 
+  mapId: string,
+}
 
 function Map({
   map,
@@ -47,14 +119,36 @@ function Map({
   allowNoteEditing,
   disabledTokens,
   session,
+}: {
+  map: any
+  mapState: MapState
+  mapActions: any,
+  onMapTokenStateChange: any,
+  onMapTokenStateRemove: any,
+  onMapChange: any, 
+  onMapReset: any,
+  onMapDraw: any,
+  onMapDrawUndo: any,
+  onMapDrawRedo: any,
+  onFogDraw: any,
+  onFogDrawUndo: any,
+  onFogDrawRedo: any,
+  onMapNoteChange: any,
+  onMapNoteRemove: any,
+  allowMapDrawing: boolean,
+  allowFogDrawing: boolean,
+  allowMapChange: boolean,
+  allowNoteEditing: boolean,
+  disabledTokens: any,
+  session: Session
 }) {
   const { tokensById } = useTokenData();
 
   const [selectedToolId, setSelectedToolId] = useState("move");
-  const { settings, setSettings } = useSettings();
+  const { settings, setSettings }: { settings: any, setSettings: any} = useSettings();
 
-  function handleToolSettingChange(tool, change) {
-    setSettings((prevSettings) => ({
+  function handleToolSettingChange(tool: any, change: any) {
+    setSettings((prevSettings: any) => ({
       ...prevSettings,
       [tool]: {
         ...prevSettings[tool],
@@ -66,7 +160,7 @@ function Map({
   const drawShapes = Object.values(mapState?.drawShapes || {});
   const fogShapes = Object.values(mapState?.fogShapes || {});
 
-  function handleToolAction(action) {
+  function handleToolAction(action: string) {
     if (action === "eraseAll") {
       onMapDraw(new RemoveShapeAction(drawShapes.map((s) => s.id)));
     }
@@ -84,27 +178,27 @@ function Map({
     }
   }
 
-  function handleMapShapeAdd(shape) {
+  function handleMapShapeAdd(shape: Shape) {
     onMapDraw(new AddShapeAction([shape]));
   }
 
-  function handleMapShapesRemove(shapeIds) {
+  function handleMapShapesRemove(shapeIds: string[]) {
     onMapDraw(new RemoveShapeAction(shapeIds));
   }
 
-  function handleFogShapesAdd(shapes) {
+  function handleFogShapesAdd(shapes: Shape[]) {
     onFogDraw(new AddShapeAction(shapes));
   }
 
-  function handleFogShapesCut(shapes) {
+  function handleFogShapesCut(shapes: Shape[]) {
     onFogDraw(new CutShapeAction(shapes));
   }
 
-  function handleFogShapesRemove(shapeIds) {
+  function handleFogShapesRemove(shapeIds: string[]) {
     onFogDraw(new RemoveShapeAction(shapeIds));
   }
 
-  function handleFogShapesEdit(shapes) {
+  function handleFogShapesEdit(shapes: Shape[]) {
     onFogDraw(new EditShapeAction(shapes));
   }
 
@@ -127,7 +221,7 @@ function Map({
     disabledControls.push("note");
   }
 
-  const disabledSettings = { fog: [], drawing: [] };
+  const disabledSettings: { fog: any[], drawing: any[]} = { fog: [], drawing: [] };
   if (drawShapes.length === 0) {
     disabledSettings.drawing.push("erase");
   }
@@ -166,10 +260,10 @@ function Map({
     />
   );
 
-  const [isTokenMenuOpen, setIsTokenMenuOpen] = useState(false);
-  const [tokenMenuOptions, setTokenMenuOptions] = useState({});
-  const [tokenDraggingOptions, setTokenDraggingOptions] = useState();
-  function handleTokenMenuOpen(tokenStateId, tokenImage) {
+  const [isTokenMenuOpen, setIsTokenMenuOpen]: [ isTokenMenuOpen: boolean, setIsTokenMenuOpen: React.Dispatch<React.SetStateAction<boolean>>] = useState<boolean>(false);
+  const [tokenMenuOptions, setTokenMenuOptions]: [ tokenMenuOptions: any, setTokenMenuOptions: any ] = useState({});
+  const [tokenDraggingOptions, setTokenDraggingOptions]: [ tokenDraggingOptions: any, setTokenDragginOptions: any ] = useState();
+  function handleTokenMenuOpen(tokenStateId: string, tokenImage: any) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
   }
@@ -200,7 +294,7 @@ function Map({
 
   const tokenDragOverlay = tokenDraggingOptions && (
     <TokenDragOverlay
-      onTokenStateRemove={(state) => {
+      onTokenStateRemove={(state: any) => {
         onMapTokenStateRemove(state);
         setTokenDraggingOptions(null);
       }}
@@ -243,7 +337,6 @@ function Map({
     <MapMeasure
       map={map}
       active={selectedToolId === "measure"}
-      selectedToolSettings={settings[selectedToolId]}
     />
   );
 
@@ -254,15 +347,15 @@ function Map({
     />
   );
 
-  const [isNoteMenuOpen, setIsNoteMenuOpen] = useState(false);
-  const [noteMenuOptions, setNoteMenuOptions] = useState({});
-  const [noteDraggingOptions, setNoteDraggingOptions] = useState();
-  function handleNoteMenuOpen(noteId, noteNode) {
+  const [isNoteMenuOpen, setIsNoteMenuOpen] = useState<boolean>(false);
+  const [noteMenuOptions, setNoteMenuOptions] = useState<any>({});
+  const [noteDraggingOptions, setNoteDraggingOptions]= useState<any>();
+  function handleNoteMenuOpen(noteId: string, noteNode: any) {
     setNoteMenuOptions({ noteId, noteNode });
     setIsNoteMenuOpen(true);
   }
 
-  function sortNotes(a, b, noteDraggingOptions) {
+  function sortNotes(a: any, b: any, noteDraggingOptions: any) {
     if (
       noteDraggingOptions &&
       noteDraggingOptions.dragging &&
@@ -287,7 +380,6 @@ function Map({
     <MapNotes
       map={map}
       active={selectedToolId === "note"}
-      selectedToolSettings={settings[selectedToolId]}
       onNoteAdd={onMapNoteChange}
       onNoteChange={onMapNoteChange}
       notes={
@@ -302,7 +394,7 @@ function Map({
         allowNoteEditing &&
         (selectedToolId === "note" || selectedToolId === "move")
       }
-      onNoteDragStart={(e, noteId) =>
+      onNoteDragStart={(e: any, noteId: any) =>
         setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
       }
       onNoteDragEnd={() =>
@@ -328,7 +420,7 @@ function Map({
       dragging={!!(noteDraggingOptions && noteDraggingOptions.dragging)}
       noteGroup={noteDraggingOptions && noteDraggingOptions.noteGroup}
       noteId={noteDraggingOptions && noteDraggingOptions.noteId}
-      onNoteRemove={(noteId) => {
+      onNoteRemove={(noteId: any) => {
         onMapNoteRemove(noteId);
         setNoteDraggingOptions(null);
       }}

@@ -109,7 +109,7 @@ export async function resizeImage(image: HTMLImageElement, size: number, type: s
  * @property {string} id
  */
 
-type ImageFile = {
+export type ImageFile = {
   file: Uint8Array | null, 
   width: number, 
   height: number, 

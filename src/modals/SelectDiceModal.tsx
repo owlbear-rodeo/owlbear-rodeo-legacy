@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Flex, Label, Button } from "theme-ui";
 
 import Modal from "../components/Modal";
@@ -7,8 +7,16 @@ import DiceTiles from "../components/dice/DiceTiles";
 import { dice } from "../dice";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
+import Dice from "../dice/Dice";
 
-function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }) {
+type SelectDiceProps = {
+  isOpen: boolean,
+  onRequestClose: () => void,
+  onDone: any,
+  defaultDice: Dice
+}
+
+function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }: SelectDiceProps) {
   const [selectedDice, setSelectedDice] = useState(defaultDice);
   const layout = useResponsiveLayout();
 
@@ -16,7 +24,7 @@ function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }) {
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      style={{ content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" } }}
     >
       <Flex
         sx={{

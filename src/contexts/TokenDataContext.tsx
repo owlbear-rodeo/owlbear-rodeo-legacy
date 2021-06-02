@@ -10,13 +10,29 @@ import { decode } from "@msgpack/msgpack";
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
-import { tokens as defaultTokens } from "../tokens";
+import { DefaultToken, FileToken, Token, tokens as defaultTokens } from "../tokens";
 
-const TokenDataContext = React.createContext();
+type TokenDataContext = {
+  tokens: Token[];
+  ownedTokens: Token[];
+  addToken: (token: Token) => Promise<void>;
+  removeToken: (id: string) => Promise<void>;
+  removeTokens: (ids: string[]) => Promise<void>;
+  updateToken: (id: string, update: Partial<Token>) => Promise<void>;
+  updateTokens: (ids: string[], update: Partial<Token>) => Promise<void>;
+  putToken: (token: Token) => Promise<void>;
+  getToken: (tokenId: string) => Token | undefined
+  tokensById: { [key: string]: Token; };
+  tokensLoading: boolean;
+  getTokenFromDB: (tokenId: string) => Promise<Token>;
+  loadTokens: (tokenIds: string[]) => Promise<void>;
+}
+
+const TokenDataContext = React.createContext<TokenDataContext | undefined>(undefined);
 
 const cachedTokenMax = 100;
 
-export function TokenDataProvider({ children }) {
+export function TokenDataProvider({ children }: { children: any }) {
   const { database, databaseStatus, worker } = useDatabase();
   const { userId } = useAuth();
 
@@ -24,7 +40,7 @@ export function TokenDataProvider({ children }) {
    * Contains all tokens without any file data,
    * to ensure file data is present call loadTokens
    */
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState<Token[]>([]);
   const [tokensLoading, setTokensLoading] = useState(true);
 
   useEffect(() => {
@@ -32,13 +48,12 @@ export function TokenDataProvider({ children }) {
       return;
     }
     function getDefaultTokens() {
-      const defaultTokensWithIds = [];
+      const defaultTokensWithIds: Required<DefaultToken[]> = [];
       for (let defaultToken of defaultTokens) {
         defaultTokensWithIds.push({
           ...defaultToken,
           id: `__default-${defaultToken.name}`,
           owner: userId,
-          group: "default",
         });
       }
       return defaultTokensWithIds;
@@ -46,19 +61,19 @@ export function TokenDataProvider({ children }) {
 
     // Loads tokens without the file data to save memory
     async function loadTokens() {
-      let storedTokens = [];
+      let storedTokens: any = [];
       // Try to load tokens with worker, fallback to database if failed
-      const packedTokens = await worker.loadData("tokens");
+      const packedTokens: ArrayLike<number> | BufferSource = await worker.loadData("tokens");
       if (packedTokens) {
         storedTokens = decode(packedTokens);
       } else {
         console.warn("Unable to load tokens with worker, loading may be slow");
-        await database.table("tokens").each((token) => {
-          const { file, resolutions, ...rest } = token;
+        await database?.table("tokens").each((token: FileToken) => {
+          const { file, ...rest } = token;
           storedTokens.push(rest);
         });
       }
-      const sortedTokens = storedTokens.sort((a, b) => b.created - a.created);
+      const sortedTokens = storedTokens.sort((a: any, b: any) => b.created - a.created);
       const defaultTokensWithIds = getDefaultTokens();
       const allTokens = [...sortedTokens, ...defaultTokensWithIds];
       setTokens(allTokens);
@@ -79,7 +94,7 @@ export function TokenDataProvider({ children }) {
 
   const getTokenFromDB = useCallback(
     async (tokenId) => {
-      let token = await database.table("tokens").get(tokenId);
+      let token = await database?.table("tokens").get(tokenId);
       return token;
     },
     [database]
@@ -90,23 +105,23 @@ export function TokenDataProvider({ children }) {
    * Sorted by when they we're last used
    */
   const updateCache = useCallback(async () => {
-    const cachedTokens = await database
-      .table("tokens")
-      .where("owner")
-      .notEqual(userId)
-      .sortBy("lastUsed");
-    if (cachedTokens.length > cachedTokenMax) {
-      const cacheDeleteCount = cachedTokens.length - cachedTokenMax;
+    const cachedTokens: Token[] | undefined = await database?.table("tokens").where("owner").notEqual(userId).sortBy("lastUsed");
+    // TODO: handle undefined cachedTokens
+    if (!cachedTokens) {
+      return;
+    }
+    if (cachedTokens?.length > cachedTokenMax) {
+      const cacheDeleteCount = cachedTokens.length - cachedTokenMax
       const idsToDelete = cachedTokens
         .slice(0, cacheDeleteCount)
         .map((token) => token.id);
-      database.table("tokens").where("id").anyOf(idsToDelete).delete();
+      database?.table("tokens").where("id").anyOf(idsToDelete).delete();
     }
   }, [database, userId]);
 
   const addToken = useCallback(
     async (token) => {
-      await database.table("tokens").add(token);
+      await database?.table("tokens").add(token);
       if (token.owner !== userId) {
         await updateCache();
       }
@@ -115,23 +130,23 @@ export function TokenDataProvider({ children }) {
   );
 
   const removeToken = useCallback(
-    async (id) => {
-      await database.table("tokens").delete(id);
+    async (id: string) => {
+      await database?.table("tokens").delete(id);
     },
     [database]
   );
 
   const removeTokens = useCallback(
-    async (ids) => {
-      await database.table("tokens").bulkDelete(ids);
+    async (ids: string[]) => {
+      await database?.table("tokens").bulkDelete(ids);
     },
     [database]
   );
 
   const updateToken = useCallback(
-    async (id, update) => {
+    async (id: string, update: any) => {
       const change = { lastModified: Date.now(), ...update };
-      await database.table("tokens").update(id, change);
+      await database?.table("tokens").update(id, change);
     },
     [database]
   );
@@ -140,7 +155,7 @@ export function TokenDataProvider({ children }) {
     async (ids, update) => {
       const change = { lastModified: Date.now(), ...update };
       await Promise.all(
-        ids.map((id) => database.table("tokens").update(id, change))
+        ids.map((id: string) => database?.table("tokens").update(id, change))
       );
     },
     [database]
@@ -148,7 +163,7 @@ export function TokenDataProvider({ children }) {
 
   const putToken = useCallback(
     async (token) => {
-      await database.table("tokens").put(token);
+      await database?.table("tokens").put(token);
       if (token.owner !== userId) {
         await updateCache();
       }
@@ -157,13 +172,17 @@ export function TokenDataProvider({ children }) {
   );
 
   const loadTokens = useCallback(
-    async (tokenIds) => {
-      const loadedTokens = await database.table("tokens").bulkGet(tokenIds);
-      const loadedTokensById = loadedTokens.reduce((obj, token) => {
+    async (tokenIds: string[]) => {
+      const loadedTokens: FileToken[] | undefined = await database?.table("tokens").bulkGet(tokenIds);
+      const loadedTokensById = loadedTokens?.reduce((obj: { [key: string]: FileToken }, token: FileToken) => {
         obj[token.id] = token;
         return obj;
       }, {});
-      setTokens((prevTokens) => {
+      if (!loadedTokensById) {
+        // TODO: whatever
+        return; 
+      }
+      setTokens((prevTokens: Token[]) => {
         return prevTokens.map((prevToken) => {
           if (prevToken.id in loadedTokensById) {
             return loadedTokensById[prevToken.id];
@@ -176,22 +195,13 @@ export function TokenDataProvider({ children }) {
     [database]
   );
 
-  const unloadTokens = useCallback(async () => {
-    setTokens((prevTokens) => {
-      return prevTokens.map((prevToken) => {
-        const { file, ...rest } = prevToken;
-        return rest;
-      });
-    });
-  }, []);
-
   // Create DB observable to sync creating and deleting
   useEffect(() => {
     if (!database || databaseStatus === "loading") {
       return;
     }
 
-    function handleTokenChanges(changes) {
+    function handleTokenChanges(changes: any) {
       for (let change of changes) {
         if (change.table === "tokens") {
           if (change.type === 1) {
@@ -230,12 +240,12 @@ export function TokenDataProvider({ children }) {
 
   const ownedTokens = tokens.filter((token) => token.owner === userId);
 
-  const tokensById = tokens.reduce((obj, token) => {
+  const tokensById: { [key: string]: Token; } = tokens.reduce((obj: { [key: string]: Token }, token) => {
     obj[token.id] = token;
     return obj;
   }, {});
 
-  const value = {
+  const value: TokenDataContext = {
     tokens,
     ownedTokens,
     addToken,
@@ -249,7 +259,6 @@ export function TokenDataProvider({ children }) {
     tokensLoading,
     getTokenFromDB,
     loadTokens,
-    unloadTokens,
   };
 
   return (
@@ -259,7 +268,7 @@ export function TokenDataProvider({ children }) {
   );
 }
 
-export function useTokenData() {
+export function useTokenData(): TokenDataContext {
   const context = useContext(TokenDataContext);
   if (context === undefined) {
     throw new Error("useTokenData must be used within a TokenDataProvider");

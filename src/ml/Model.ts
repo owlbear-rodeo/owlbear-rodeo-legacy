@@ -1,4 +1,4 @@
-import { ModelJSON, WeightsManifestConfig } from "@tensorflow/tfjs-core/dist/io/types";
+import { ModelJSON } from "@tensorflow/tfjs-core/dist/io/types";
 import blobToBuffer from "../helpers/blobToBuffer";
 
 class Model {

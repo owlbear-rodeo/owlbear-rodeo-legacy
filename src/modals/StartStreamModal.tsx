@@ -1,7 +1,18 @@
-import React from "react";
 import { Box, Text, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
+
+type StartStreamProps = {
+  isOpen: boolean,
+  onRequestClose: () => void,
+  isSupported: boolean,
+  unavailableMessage: string,
+  stream: MediaStream,
+  noAudioTrack: boolean,
+  noAudioMessage: string,
+  onStreamStart: any,
+  onStreamEnd: any,
+}
 
 function StartStreamModal({
   isOpen,
@@ -13,7 +24,7 @@ function StartStreamModal({
   noAudioMessage,
   onStreamStart,
   onStreamEnd,
-}) {
+}: StartStreamProps) {
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
       <Box>
