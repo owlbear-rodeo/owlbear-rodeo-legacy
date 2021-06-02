@@ -1,10 +1,9 @@
-import React from "react";
 import { Flex } from "theme-ui";
 
 import Banner from "./Banner";
-import OfflineIcon from "../../icons/OfflineIcon";
+import ReconnectingIcon from "../../icons/ReconnectingIcon";
 
-function OfflineBanner({ isOpen }) {
+function ReconnectBanner({ isOpen }: { isOpen: boolean }) {
   return (
     <Banner
       isOpen={isOpen}
@@ -21,13 +20,13 @@ function OfflineBanner({ isOpen }) {
           justifyContent: "center",
         }}
         bg="overlay"
-        title="Unable to connect to game, refresh to reconnect."
-        aria-label="Unable to connect to game, refresh to reconnect."
+        title="Disconnected. Attempting to reconnect..."
+        aria-label="Disconnected. Attempting to reconnect..."
       >
-        <OfflineIcon />
+        <ReconnectingIcon />
       </Flex>
     </Banner>
   );
 }
 
-export default OfflineBanner;
+export default ReconnectBanner;
