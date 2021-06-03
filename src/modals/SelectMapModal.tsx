@@ -30,7 +30,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 import shortcuts from "../shortcuts";
-import { MapState } from "../components/map/Map";
+import { Map, MapState } from "../components/map/Map";
 
 type SelectMapProps = {
   isOpen: boolean,
@@ -175,7 +175,7 @@ function SelectMapModal({
     clearFileInput();
   }
 
-  async function handleImageUpload(file: any) {
+  async function handleImageUpload(file: File) {
     if (!file) {
       return Promise.reject();
     }
@@ -313,7 +313,7 @@ function SelectMapModal({
   // The map selected in the modal
   const [selectedMapIds, setSelectedMapIds] = useState<string[]>([]);
 
-  const selectedMaps = ownedMaps.filter((map: any) =>
+  const selectedMaps: Map[] = ownedMaps.filter((map: Map) =>
     selectedMapIds.includes(map.id)
   );
   const selectedMapStates = mapStates.filter((state: MapState) =>
@@ -499,11 +499,15 @@ function SelectMapModal({
           </Button>
         </Flex>
       </ImageDrop>
+      <>
       {(isLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
+      </>
       <EditMapModal
         isOpen={isEditModalOpen}
         onDone={() => setIsEditModalOpen(false)}
-        mapId={selectedMaps.length === 1 && selectedMaps[0].id}
+        // TODO: check with Mitch what to do here if length > 1
+        //selectedMaps.length === 1 && 
+        mapId={selectedMaps[0].id}
       />
       <EditGroupModal
         isOpen={isGroupModalOpen}

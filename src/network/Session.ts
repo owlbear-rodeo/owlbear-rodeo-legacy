@@ -15,7 +15,7 @@ import { SimplePeerData } from "simple-peer";
  * @property {boolean} initiator - Is this peer the initiator of the connection
  * @property {boolean} ready - Ready for data to be sent
  */
-type SessionPeer = {
+export type SessionPeer = {
   id: string;
   connection: Connection;
   initiator: boolean;
@@ -137,7 +137,7 @@ class Session extends EventEmitter {
    * @param {object} data
    * @param {string} channel
    */
-  sendTo(sessionId: string, eventId: string, data: SimplePeerData, channel: string) {
+  sendTo(sessionId: string, eventId: string, data: SimplePeerData, channel?: string) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;

@@ -43,7 +43,7 @@ function EditMapModal({ isOpen, onDone, mapId }: EditMapProps) {
       }
       const mapState = await getMapStateFromDB(mapId);
       setMap(loadingMap);
-      setMapState(mapState);
+      setMapState(mapState as MapState);
       setIsLoading(false);
     }
 

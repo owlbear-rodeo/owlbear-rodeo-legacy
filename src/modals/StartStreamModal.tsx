@@ -6,10 +6,10 @@ type StartStreamProps = {
   isOpen: boolean,
   onRequestClose: () => void,
   isSupported: boolean,
-  unavailableMessage: string,
+  unavailableMessage: JSX.Element,
   stream: MediaStream,
   noAudioTrack: boolean,
-  noAudioMessage: string,
+  noAudioMessage: JSX.Element,
   onStreamStart: any,
   onStreamEnd: any,
 }

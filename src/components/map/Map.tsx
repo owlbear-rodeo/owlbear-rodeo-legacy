@@ -29,15 +29,14 @@ import Session from "../../network/Session";
 import { Grid } from "../../helpers/grid";
 import { ImageFile } from "../../helpers/image";
 
-type Resolutions = Record<string, ImageFile>
-
+export type Resolutions = Record<string, ImageFile>
 export type Map = {
   id: string,
   name: string,
   owner: string,
-  file: Uint8Array,
-  quality: string,
-  resolutions: Resolutions,
+  file?: Uint8Array,
+  quality?: string,
+  resolutions?: Resolutions,
   grid: Grid,
   group: string,
   width: number,
@@ -48,7 +47,7 @@ export type Map = {
   created: number,
   showGrid: boolean,
   snapToGrid: boolean,
-  thumbnail: ImageFile,
+  thumbnail?: ImageFile,
 }
 
 export type Note = {
@@ -92,7 +91,7 @@ export type MapState = {
   tokens: Record<string, TokenState>,
   drawShapes: PathId | ShapeId, 
   fogShapes: Fog[],
-  editFlags: string[], 
+  editFlags: ["drawing", "tokens", "notes", "fog"], 
   notes: Note[], 
   mapId: string,
 }

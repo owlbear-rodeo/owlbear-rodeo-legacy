@@ -23,7 +23,7 @@ import useSetting from "../../hooks/useSetting";
 function DiceTrayOverlay({
   isOpen,
   shareDice,
-  onShareDiceChage,
+  onShareDiceChange,
   diceRolls,
   onDiceRollsChange,
 }) {
@@ -345,7 +345,7 @@ function DiceTrayOverlay({
         onDiceTraySizeChange={setDiceTraySize}
         diceTraySize={diceTraySize}
         shareDice={shareDice}
-        onShareDiceChange={onShareDiceChage}
+        onShareDiceChange={onShareDiceChange}
         loading={isLoading}
       />
       {isLoading && (

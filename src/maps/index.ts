@@ -1,4 +1,5 @@
 import Case from "case";
+import { Map } from "../components/map/Map";
 
 import blankImage from "./Blank Grid 22x22.jpg";
 import grassImage from "./Grass Grid 22x22.jpg";
@@ -18,7 +19,7 @@ export const mapSources = {
   wood: woodImage,
 };
 
-export const maps = Object.keys(mapSources).map((key) => ({
+export const maps: Array<Omit<Map, "lastModified" | "created" | "showGrid" | "snapToGrid" | "id" | "owner" | "group" |"file" | "quality" | "resolutions" | "lastUsed" |"thumbnail">> = Object.keys(mapSources).map((key) => ({
   key,
   name: Case.capital(key),
   grid: {
