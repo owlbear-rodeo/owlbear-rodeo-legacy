@@ -21,6 +21,7 @@ function TokenBarToken({ token }) {
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          pointerEvents: "none",
         }}
         alt={token.name}
         title={token.name}

@@ -2,7 +2,13 @@ import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Box, Flex } from "theme-ui";
 import SimpleBar from "simplebar-react";
-import { DragOverlay, DndContext } from "@dnd-kit/core";
+import {
+  DragOverlay,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 
 import TokenBarToken from "./TokenBarToken";
 import TokenBarTokenGroup from "./TokenBarTokenGroup";
@@ -20,6 +26,8 @@ import {
   createTokenState,
   clientPositionToMapPosition,
 } from "../../helpers/token";
+import { findGroup } from "../../helpers/group";
+import Vector2 from "../../helpers/Vector2";
 
 function TokenBar({ onMapTokensStateCreate }) {
   const { userId } = useAuth();
@@ -33,6 +41,11 @@ function TokenBar({ onMapTokensStateCreate }) {
   // TODO: use active.rect when dnd-kit bug is fixed
   // https://github.com/clauderic/dnd-kit/issues/238
   const dragOverlayRef = useRef();
+
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  });
+  const sensors = useSensors(pointerSensor);
 
   function handleDragStart({ active }) {
     setDragId(active.id);
@@ -50,44 +63,67 @@ function TokenBar({ onMapTokensStateCreate }) {
         y: dragRect.top + dragRect.height / 2,
       };
       const mapPosition = clientPositionToMapPosition(mapStage, dragPosition);
-      const token = tokensById[active.id];
-      if (token && mapPosition) {
-        const tokenState = createTokenState(token, mapPosition, userId);
-        onMapTokensStateCreate([tokenState]);
+      const group = findGroup(tokenGroups, active.id);
+      if (group && mapPosition) {
+        if (group.type === "item") {
+          const token = tokensById[group.id];
+          const tokenState = createTokenState(token, mapPosition, userId);
+          onMapTokensStateCreate([tokenState]);
+        } else {
+          let tokenStates = [];
+          let offset = new Vector2(0, 0);
+          for (let item of group.items) {
+            const token = tokensById[item.id];
+            if (token) {
+              tokenStates.push(
+                createTokenState(
+                  token,
+                  Vector2.add(mapPosition, offset),
+                  userId
+                )
+              );
+              offset = Vector2.add(offset, 0.01);
+            }
+          }
+          if (tokenStates.length > 0) {
+            onMapTokensStateCreate(tokenStates);
+          }
+        }
       }
     }
   }
 
-  function renderTokens() {
-    let tokens = [];
-    for (let group of tokenGroups) {
-      if (group.type === "item") {
-        const token = tokensById[group.id];
-        if (token && !token.hideInSidebar) {
-          tokens.push(
+  function renderToken(group, draggable = true) {
+    if (group.type === "item") {
+      const token = tokensById[group.id];
+      if (token && !token.hideInSidebar) {
+        if (draggable) {
+          return (
             <Draggable id={token.id} key={token.id}>
               <TokenBarToken token={token} />
             </Draggable>
           );
+        } else {
+          return <TokenBarToken token={token} key={token.id} />;
         }
-      } else {
-        const groupTokens = [];
-        for (let item of group.items) {
-          const token = tokensById[item.id];
-          if (token && !token.hideInSidebar) {
-            groupTokens.push(token);
-          }
-        }
-        tokens.push(
-          <TokenBarTokenGroup
-            group={group}
-            tokens={groupTokens}
-            key={group.id}
-          />
-        );
       }
+    } else {
+      const groupTokens = [];
+      for (let item of group.items) {
+        const token = tokensById[item.id];
+        if (token && !token.hideInSidebar) {
+          groupTokens.push(token);
+        }
+      }
+      return (
+        <TokenBarTokenGroup
+          group={group}
+          tokens={groupTokens}
+          key={group.id}
+          draggable={draggable}
+        />
+      );
     }
-    return tokens;
   }
 
   return (
@@ -95,6 +131,7 @@ function TokenBar({ onMapTokensStateCreate }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       autoScroll={false}
+      sensors={sensors}
     >
       <Box
         sx={{
@@ -113,7 +150,9 @@ function TokenBar({ onMapTokensStateCreate }) {
             padding: "0 16px",
           }}
         >
-          <Flex sx={{ flexDirection: "column" }}>{renderTokens()}</Flex>
+          <Flex sx={{ flexDirection: "column" }}>
+            {tokenGroups.map((group) => renderToken(group))}
+          </Flex>
         </SimpleBar>
         <Flex
           bg="muted"
@@ -136,7 +175,7 @@ function TokenBar({ onMapTokensStateCreate }) {
           >
             {dragId && (
               <div ref={dragOverlayRef}>
-                <TokenBarToken token={tokensById[dragId]} />
+                {renderToken(findGroup(tokenGroups, dragId), false)}
               </div>
             )}
           </DragOverlay>,
