@@ -124,7 +124,10 @@ export function clientPositionToMapPosition(
   // Check map bounds
   if (
     checkMapBounds &&
-    (clientPosition.x < mapRect.left || clientPosition.x > mapRect.right)
+    (clientPosition.x < mapRect.left ||
+      clientPosition.x > mapRect.right ||
+      clientPosition.y < mapRect.top ||
+      clientPosition.y > mapRect.bottom)
   ) {
     return;
   }
