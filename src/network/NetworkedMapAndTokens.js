@@ -88,20 +88,18 @@ function NetworkedMapAndTokens({ session }) {
     setAssetManifest({ mapId: map.id, assets }, true, true);
   }
 
-  function addAssetIfNeeded(asset) {
+  function addAssetsIfNeeded(assets) {
     setAssetManifest((prevManifest) => {
       if (prevManifest?.assets) {
-        const id = asset.id;
-        const exists = id in prevManifest.assets;
-        if (!exists) {
-          return {
-            ...prevManifest,
-            assets: {
-              ...prevManifest.assets,
-              [id]: asset,
-            },
-          };
+        let newManifset = { ...prevManifest };
+        for (let asset of assets) {
+          const id = asset.id;
+          const exists = id in prevManifest.assets;
+          if (!exists) {
+            newManifset[id] = asset;
+          }
         }
+        return newManifset;
       }
       return prevManifest;
     });
@@ -337,20 +335,28 @@ function NetworkedMapAndTokens({ session }) {
    * Token state
    */
 
-  async function handleMapTokenStateCreate(tokenState) {
+  async function handleMapTokensStateCreate(tokenStates) {
     if (!currentMap || !currentMapState) {
       return;
     }
-    if (tokenState.file) {
-      addAssetIfNeeded({ id: tokenState.file, owner: tokenState.owner });
+
+    let assets = [];
+    for (let tokenState of tokenStates) {
+      if (tokenState.type === "file") {
+        assets.push({ id: tokenState.file, owner: tokenState.owner });
+      }
     }
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
-      tokens: {
-        ...prevMapState.tokens,
-        [tokenState.id]: tokenState,
-      },
-    }));
+    if (assets.length > 0) {
+      addAssetsIfNeeded(assets);
+    }
+
+    setCurrentMapState((prevMapState) => {
+      let newMapTokens = { ...prevMapState.tokens };
+      for (let tokenState of tokenStates) {
+        newMapTokens[tokenState.id] = tokenState;
+      }
+      return { ...prevMapState, tokens: newMapTokens };
+    });
   }
 
   function handleMapTokenStateChange(change) {
@@ -475,7 +481,7 @@ function NetworkedMapAndTokens({ session }) {
         disabledTokens={disabledMapTokens}
         session={session}
       />
-      <TokenBar onMapTokenStateCreate={handleMapTokenStateCreate} />
+      <TokenBar onMapTokensStateCreate={handleMapTokensStateCreate} />
     </>
   );
 }

@@ -40,7 +40,7 @@ import { useMapStage } from "../contexts/MapStageContext";
 
 import shortcuts from "../shortcuts";
 
-function SelectTokensModal({ isOpen, onRequestClose, onMapTokenStateCreate }) {
+function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   const { addToast } = useToasts();
 
   const { userId } = useAuth();
@@ -175,11 +175,11 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokenStateCreate }) {
       return;
     }
 
+    let newTokenStates = [];
+
     for (let id of groupIds) {
       if (id in tokensById) {
-        onMapTokenStateCreate(
-          createTokenState(tokensById[id], position, userId)
-        );
+        newTokenStates.push(createTokenState(tokensById[id], position, userId));
         position = Vector2.add(position, 0.01);
       } else {
         // Check if a group is selected
@@ -191,7 +191,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokenStateCreate }) {
           const items = getGroupItems(group);
           for (let item of items) {
             if (item.id in tokensById) {
-              onMapTokenStateCreate(
+              newTokenStates.push(
                 createTokenState(tokensById[item.id], position, userId)
               );
               position = Vector2.add(position, 0.01);
@@ -199,6 +199,10 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokenStateCreate }) {
           }
         }
       }
+    }
+
+    if (newTokenStates.length > 0) {
+      onMapTokensStateCreate(newTokenStates);
     }
   }
 

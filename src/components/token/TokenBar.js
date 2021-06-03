@@ -21,7 +21,7 @@ import {
   clientPositionToMapPosition,
 } from "../../helpers/token";
 
-function TokenBar({ onMapTokenStateCreate }) {
+function TokenBar({ onMapTokensStateCreate }) {
   const { userId } = useAuth();
   const { tokensById, tokenGroups } = useTokenData();
   const [fullScreen] = useSetting("map.fullScreen");
@@ -53,7 +53,7 @@ function TokenBar({ onMapTokenStateCreate }) {
       const token = tokensById[active.id];
       if (token && mapPosition) {
         const tokenState = createTokenState(token, mapPosition, userId);
-        onMapTokenStateCreate(tokenState);
+        onMapTokensStateCreate([tokenState]);
       }
     }
   }
@@ -123,7 +123,7 @@ function TokenBar({ onMapTokenStateCreate }) {
             alignItems: "center",
           }}
         >
-          <SelectTokensButton onMapTokenStateCreate={onMapTokenStateCreate} />
+          <SelectTokensButton onMapTokensStateCreate={onMapTokensStateCreate} />
         </Flex>
         {createPortal(
           <DragOverlay
