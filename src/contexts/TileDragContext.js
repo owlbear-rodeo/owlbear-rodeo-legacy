@@ -47,7 +47,7 @@ export function TileDragProvider({ onDragAdd, children }) {
 
   const [dragId, setDragId] = useState();
   const [overId, setOverId] = useState();
-  const [dragCursor, setDragCursor] = useState("pointer");
+  const [dragCursor, setDragCursor] = useState("grab");
 
   function handleDragStart({ active, over }) {
     setDragId(active.id);
@@ -63,9 +63,9 @@ export function TileDragProvider({ onDragAdd, children }) {
       if (over.id.startsWith(UNGROUP_ID_PREFIX)) {
         setDragCursor("alias");
       } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
-        setDragCursor("copy");
+        setDragCursor(onDragAdd ? "copy" : "no-drop");
       } else {
-        setDragCursor("pointer");
+        setDragCursor("grabbing");
       }
     }
   }
@@ -73,7 +73,7 @@ export function TileDragProvider({ onDragAdd, children }) {
   function handleDragEnd({ active, over }) {
     setDragId();
     setOverId();
-    setDragCursor("pointer");
+    setDragCursor("grab");
     if (!active || !over || active.id === over.id) {
       return;
     }

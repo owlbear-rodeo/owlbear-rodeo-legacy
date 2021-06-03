@@ -8,7 +8,7 @@ function Draggable({ id, children, data }) {
   });
 
   const style = {
-    cursor: "pointer",
+    cursor: isDragging ? "grabbing" : "grab",
     touchAction: "none",
     opacity: isDragging ? 0.5 : undefined,
   };

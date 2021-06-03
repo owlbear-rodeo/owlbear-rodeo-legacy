@@ -191,6 +191,18 @@ function SelectMapModal({
     onDone();
   }
 
+  const [canAddDraggedMap, setCanAddDraggedMap] = useState(false);
+  function handleGroupsSelect(groupIds) {
+    setSelectedGroupIds(groupIds);
+    if (groupIds.length === 1) {
+      // Only allow adding a map from dragging if there is a single group item selected
+      const group = findGroup(mapGroups, groupIds[0]);
+      setCanAddDraggedMap(group && group.type === "item");
+    } else {
+      setCanAddDraggedMap(false);
+    }
+  }
+
   function handleSelectClick() {
     if (isLoading) {
       return;
@@ -269,10 +281,12 @@ function SelectMapModal({
               <GroupProvider
                 groups={mapGroups}
                 onGroupsChange={updateMapGroups}
-                onGroupsSelect={setSelectedGroupIds}
+                onGroupsSelect={handleGroupsSelect}
                 disabled={!isOpen}
               >
-                <TileDragProvider onDragAdd={handleSelectClick}>
+                <TileDragProvider
+                  onDragAdd={canAddDraggedMap && handleSelectClick}
+                >
                   <TilesAddDroppable containerSize={modalSize} />
                   <TilesContainer>
                     <MapTiles
@@ -282,7 +296,9 @@ function SelectMapModal({
                     />
                   </TilesContainer>
                 </TileDragProvider>
-                <TileDragProvider onDragAdd={handleSelectClick}>
+                <TileDragProvider
+                  onDragAdd={canAddDraggedMap && handleSelectClick}
+                >
                   <TilesAddDroppable containerSize={modalSize} />
                   <TilesOverlay>
                     <MapTiles
