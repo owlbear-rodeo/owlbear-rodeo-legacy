@@ -85,6 +85,7 @@ export function TileDragProvider({ onDragAdd, children }) {
     selectedIndices = selectedIndices.sort((a, b) => a - b);
 
     if (over.id.startsWith(GROUP_ID_PREFIX)) {
+      onGroupSelect();
       // Handle tile group
       const overId = over.id.slice(9);
       if (overId === active.id) {
@@ -96,8 +97,8 @@ export function TileDragProvider({ onDragAdd, children }) {
         moveGroupsInto(groups, overGroupIndex, selectedIndices),
         openGroupId
       );
-      onGroupSelect();
     } else if (over.id.startsWith(UNGROUP_ID_PREFIX)) {
+      onGroupSelect();
       // Handle tile ungroup
       const newGroups = ungroup(allGroups, openGroupId, selectedIndices);
       // Close group if it was removed
@@ -105,7 +106,6 @@ export function TileDragProvider({ onDragAdd, children }) {
         onGroupClose();
       }
       onGroupsChange(newGroups);
-      onGroupSelect();
     } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
       onDragAdd && onDragAdd(selectedGroupIds, over.rect);
     } else {

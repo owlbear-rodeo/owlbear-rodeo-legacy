@@ -103,6 +103,10 @@ function EditMapModal({
 
   const layout = useResponsiveLayout();
 
+  if (!map) {
+    return null;
+  }
+
   return (
     <Modal
       isOpen={isOpen}

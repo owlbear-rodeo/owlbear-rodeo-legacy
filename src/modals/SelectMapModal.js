@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, Flex, Label, Box } from "theme-ui";
+import { Flex, Label, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 import ReactResizeDetector from "react-resize-detector";
 
@@ -11,24 +11,23 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import MapTiles from "../components/map/MapTiles";
+import MapEditBar from "../components/map/MapEditBar";
+import SelectMapSelectButton from "../components/map/SelectMapSelectButton";
 
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 import TilesAddDroppable from "../components/tile/TilesAddDroppable";
 
-import { groupsFromIds, itemsFromGroups, findGroup } from "../helpers/group";
+import { findGroup } from "../helpers/group";
 import { createMapFromFile } from "../helpers/map";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
-
-import shortcuts from "../shortcuts";
 
 function SelectMapModal({
   isOpen,
@@ -46,8 +45,6 @@ function SelectMapModal({
     mapStates,
     mapGroups,
     addMap,
-    removeMaps,
-    resetMap,
     mapsLoading,
     getMapState,
     getMap,
@@ -130,48 +127,6 @@ function SelectMapModal({
   }
 
   /**
-   * Map Controls
-   */
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
-
-  function getSelectedMaps() {
-    const groups = groupsFromIds(selectedGroupIds, mapGroups);
-    return itemsFromGroups(groups, maps);
-  }
-
-  const [isMapsRemoveModalOpen, setIsMapsRemoveModalOpen] = useState(false);
-  async function handleMapsRemove() {
-    setIsLoading(true);
-    setIsMapsRemoveModalOpen(false);
-    const selectedMaps = getSelectedMaps();
-    const selectedMapIds = selectedMaps.map((map) => map.id);
-    await removeMaps(selectedMapIds);
-    setSelectedGroupIds([]);
-    // Removed the map from the map screen if needed
-    if (currentMap && selectedMapIds.includes(currentMap.id)) {
-      onMapChange(null, null);
-    }
-    setIsLoading(false);
-  }
-
-  const [isMapsResetModalOpen, setIsMapsResetModalOpen] = useState(false);
-  async function handleMapsReset() {
-    setIsLoading(true);
-    setIsMapsResetModalOpen(false);
-    const selectedMaps = getSelectedMaps();
-    const selectedMapIds = selectedMaps.map((map) => map.id);
-    for (let id of selectedMapIds) {
-      const newState = await resetMap(id);
-      // Reset the state of the current map if needed
-      if (currentMap && currentMap.id === id) {
-        onMapReset(newState);
-      }
-    }
-    setIsLoading(false);
-  }
-
-  /**
    * Modal Controls
    */
 
@@ -179,68 +134,43 @@ function SelectMapModal({
     onDone();
   }
 
+  /**
+   * Map Controls
+   */
   async function handleMapSelect(mapId) {
     if (isLoading) {
       return;
     }
-    setIsLoading(true);
-    const map = await getMap(mapId);
-    const mapState = await getMapState(mapId);
-    onMapChange(map, mapState);
-    setIsLoading(false);
+    if (mapId) {
+      setIsLoading(true);
+      const map = await getMap(mapId);
+      const mapState = await getMapState(mapId);
+      onMapChange(map, mapState);
+      setIsLoading(false);
+    } else {
+      onMapChange(null, null);
+    }
     onDone();
   }
 
+  const [editingMapId, setEditingMapId] = useState();
+
   const [canAddDraggedMap, setCanAddDraggedMap] = useState(false);
   function handleGroupsSelect(groupIds) {
-    setSelectedGroupIds(groupIds);
-    if (groupIds.length === 1) {
+    if (!canAddDraggedMap && groupIds.length === 1) {
       // Only allow adding a map from dragging if there is a single group item selected
       const group = findGroup(mapGroups, groupIds[0]);
       setCanAddDraggedMap(group && group.type === "item");
-    } else {
+    } else if (canAddDraggedMap) {
       setCanAddDraggedMap(false);
     }
   }
 
-  function handleSelectClick() {
-    if (isLoading) {
-      return;
-    }
-    if (selectedGroupIds.length === 1) {
-      const group = findGroup(mapGroups, selectedGroupIds[0]);
-      if (group && group.type === "item") {
-        handleMapSelect(group.id);
-      }
-    } else {
-      onMapChange(null, null);
-      onDone();
+  function handleDragAdd(groupIds) {
+    if (groupIds.length === 1) {
+      handleMapSelect(groupIds[0]);
     }
   }
-
-  /**
-   * Shortcuts
-   */
-  function handleKeyDown(event) {
-    if (!isOpen) {
-      return;
-    }
-    if (shortcuts.delete(event)) {
-      const selectedMaps = getSelectedMaps();
-      // Selected maps and none are default
-      if (
-        selectedMaps.length > 0 &&
-        !selectedMaps.some((map) => map.type === "default")
-      ) {
-        // Ensure all other modals are closed
-        setIsEditModalOpen(false);
-        setIsMapsResetModalOpen(false);
-        setIsMapsRemoveModalOpen(true);
-      }
-    }
-  }
-
-  useKeyboard(handleKeyDown);
 
   const layout = useResponsiveLayout();
 
@@ -269,91 +199,69 @@ function SelectMapModal({
           handleHeight
           onResize={handleModalResize}
         >
-          <Flex
-            sx={{
-              flexDirection: "column",
-            }}
+          <GroupProvider
+            groups={mapGroups}
+            onGroupsChange={updateMapGroups}
+            onGroupsSelect={handleGroupsSelect}
+            disabled={!isOpen}
           >
-            <Label pt={2} pb={1}>
-              Select or import a map
-            </Label>
-            <Box sx={{ position: "relative" }}>
-              <GroupProvider
-                groups={mapGroups}
-                onGroupsChange={updateMapGroups}
-                onGroupsSelect={handleGroupsSelect}
-                disabled={!isOpen}
-              >
-                <TileDragProvider
-                  onDragAdd={canAddDraggedMap && handleSelectClick}
-                >
+            <Flex
+              sx={{
+                flexDirection: "column",
+              }}
+            >
+              <Label pt={2} pb={1}>
+                Select or import a map
+              </Label>
+              <Box sx={{ position: "relative" }}>
+                <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
                   <TilesAddDroppable containerSize={modalSize} />
                   <TilesContainer>
                     <MapTiles
                       maps={maps}
-                      onMapEdit={() => setIsEditModalOpen(true)}
+                      onMapEdit={setEditingMapId}
                       onMapSelect={handleMapSelect}
                     />
                   </TilesContainer>
                 </TileDragProvider>
-                <TileDragProvider
-                  onDragAdd={canAddDraggedMap && handleSelectClick}
-                >
+                <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
                   <TilesAddDroppable containerSize={modalSize} />
                   <TilesOverlay>
                     <MapTiles
                       maps={maps}
-                      onMapEdit={() => setIsEditModalOpen(true)}
+                      onMapEdit={setEditingMapId}
                       onMapSelect={handleMapSelect}
                       subgroup
                     />
                   </TilesOverlay>
                 </TileDragProvider>
-              </GroupProvider>
-            </Box>
-            <Button
-              variant="primary"
-              disabled={isLoading || selectedGroupIds.length > 1}
-              onClick={handleSelectClick}
-              mt={2}
-            >
-              Select
-            </Button>
-          </Flex>
+                <MapEditBar
+                  currentMap={currentMap}
+                  disabled={isLoading || editingMapId}
+                  onMapChange={onMapChange}
+                  onMapReset={onMapReset}
+                  onLoad={setIsLoading}
+                />
+              </Box>
+              <SelectMapSelectButton
+                onMapSelect={handleMapSelect}
+                disabled={isLoading}
+              />
+            </Flex>
+          </GroupProvider>
         </ReactResizeDetector>
       </ImageDrop>
       {(isLoading || mapsLoading) && <LoadingOverlay bg="overlay" />}
       <EditMapModal
-        isOpen={isEditModalOpen}
-        onDone={() => setIsEditModalOpen(false)}
-        map={
-          selectedGroupIds.length === 1 &&
-          maps.find((map) => map.id === selectedGroupIds[0])
-        }
+        isOpen={!!editingMapId}
+        onDone={() => setEditingMapId()}
+        map={editingMapId && maps.find((map) => map.id === editingMapId)}
         mapState={
-          selectedGroupIds.length === 1 &&
-          mapStates.find((state) => state.mapId === selectedGroupIds[0])
+          editingMapId &&
+          mapStates.find((state) => state.mapId === editingMapId)
         }
         onUpdateMap={updateMap}
         onUpdateMapState={updateMapState}
-      />
-      <ConfirmModal
-        isOpen={isMapsResetModalOpen}
-        onRequestClose={() => setIsMapsResetModalOpen(false)}
-        onConfirm={handleMapsReset}
-        confirmText="Reset"
-        label={`Reset ${selectedGroupIds.length} Map${
-          selectedGroupIds.length > 1 ? "s" : ""
-        }`}
-        description="This will remove all fog, drawings and tokens from the selected maps."
-      />
-      <ConfirmModal
-        isOpen={isMapsRemoveModalOpen}
-        onRequestClose={() => setIsMapsRemoveModalOpen(false)}
-        onConfirm={handleMapsRemove}
-        confirmText="Remove"
-        label="Remove Map(s)"
-        description="This operation cannot be undone."
       />
       <ConfirmModal
         isOpen={isLargeImageWarningModalOpen}
