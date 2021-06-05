@@ -490,11 +490,7 @@ function MapFog({
     const holes =
       shape.data.holes &&
       shape.data.holes.map((hole) => hole.reduce(reducePoints, []));
-    const opacity = editable
-      ? !shape.visible
-        ? editOpacity / 2
-        : editOpacity
-      : 1;
+    const opacity = editable ? editOpacity : 1;
     // Control opacity only on fill as using opacity with stroke leads to performance issues
     const fill = new Color(colors[shape.color] || shape.color)
       .alpha(opacity)
