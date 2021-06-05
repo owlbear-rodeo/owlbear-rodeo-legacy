@@ -4,6 +4,8 @@ import { encode } from "@msgpack/msgpack";
 
 import { useDatabase } from "./DatabaseContext";
 
+import useDebounce from "../hooks/useDebounce";
+
 import { omit } from "../helpers/shared";
 
 /**
@@ -125,19 +127,26 @@ export const AssetURLsUpdaterContext = React.createContext();
 export function AssetURLsProvider({ children }) {
   const [assetURLs, setAssetURLs] = useState({});
 
+  // Clean up asset URLs every minute
+  const debouncedAssetURLs = useDebounce(assetURLs, 60 * 1000);
+
   // Revoke url when no more references
   useEffect(() => {
-    let urlsToCleanup = [];
-    for (let url of Object.values(assetURLs)) {
-      if (url.references <= 0) {
-        URL.revokeObjectURL(url.url);
-        urlsToCleanup.push(url.id);
+    setAssetURLs((prevURLs) => {
+      let urlsToCleanup = [];
+      for (let url of Object.values(prevURLs)) {
+        if (url.references <= 0) {
+          URL.revokeObjectURL(url.url);
+          urlsToCleanup.push(url.id);
+        }
       }
-    }
-    if (urlsToCleanup.length > 0) {
-      setAssetURLs((prevURLs) => omit(prevURLs, urlsToCleanup));
-    }
-  }, [assetURLs]);
+      if (urlsToCleanup.length > 0) {
+        return omit(prevURLs, urlsToCleanup);
+      } else {
+        return prevURLs;
+      }
+    });
+  }, [debouncedAssetURLs]);
 
   return (
     <AssetURLsStateContext.Provider value={assetURLs}>
