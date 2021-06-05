@@ -128,15 +128,6 @@ export function MapDataProvider({ children }) {
     [database]
   );
 
-  const updateMaps = useCallback(
-    async (ids, update) => {
-      await Promise.all(
-        ids.map((id) => database.table("maps").update(id, update))
-      );
-    },
-    [database]
-  );
-
   const updateMapState = useCallback(
     async (id, update) => {
       await database.table("states").update(id, update);
@@ -232,7 +223,6 @@ export function MapDataProvider({ children }) {
     removeMaps,
     resetMap,
     updateMap,
-    updateMaps,
     updateMapState,
     getMap,
     mapsLoading,
