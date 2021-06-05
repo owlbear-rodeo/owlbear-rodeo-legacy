@@ -208,3 +208,16 @@ export function findGroup(groups, groupId) {
     }
   }
 }
+
+/**
+ * Transform and item array to a record of item ids to item names
+ * @param {any[]} items
+ * @param {string=} itemKey
+ */
+export function getItemNames(items, itemKey = "id") {
+  let names = {};
+  for (let item of items) {
+    names[item[itemKey]] = item.name;
+  }
+  return names;
+}

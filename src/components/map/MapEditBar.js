@@ -20,18 +20,10 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
 
   const { maps, mapStates, removeMaps, resetMap } = useMapData();
 
-  const {
-    groups: allGroups,
-    selectedGroupIds,
-    onGroupSelect,
-    openGroupId,
-    openGroupItems,
-  } = useGroup();
-
-  const groups = openGroupId ? openGroupItems : allGroups;
+  const { activeGroups, selectedGroupIds, onGroupSelect } = useGroup();
 
   useEffect(() => {
-    const selectedGroups = groupsFromIds(selectedGroupIds, groups);
+    const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
     const selectedMaps = itemsFromGroups(selectedGroups, maps);
     const selectedMapStates = itemsFromGroups(
       selectedGroups,
@@ -57,10 +49,10 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
     }
 
     setHasMapState(_hasMapState);
-  }, [selectedGroupIds, maps, mapStates, groups]);
+  }, [selectedGroupIds, maps, mapStates, activeGroups]);
 
   function getSelectedMaps() {
-    const selectedGroups = groupsFromIds(selectedGroupIds, groups);
+    const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
     return itemsFromGroups(selectedGroups, maps);
   }
 

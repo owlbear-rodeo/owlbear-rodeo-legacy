@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Flex, Label, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 import ReactResizeDetector from "react-resize-detector";
@@ -17,8 +17,9 @@ import SelectMapSelectButton from "../components/map/SelectMapSelectButton";
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 import TilesAddDroppable from "../components/tile/TilesAddDroppable";
+import TileActionBar from "../components/tile/TileActionBar";
 
-import { findGroup } from "../helpers/group";
+import { findGroup, getItemNames } from "../helpers/group";
 import { createMapFromFile } from "../helpers/map";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
@@ -53,6 +54,12 @@ function SelectMapModal({
     updateMapState,
   } = useMapData();
   const { addAssets } = useAssets();
+
+  // Get map names for group filtering
+  const [mapNames, setMapNames] = useState(getItemNames(maps));
+  useEffect(() => {
+    setMapNames(getItemNames(maps));
+  }, [maps]);
 
   /**
    * Image Upload
@@ -99,6 +106,12 @@ function SelectMapModal({
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
+    }
+  }
+
+  function openImageDialog() {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   }
 
@@ -201,6 +214,7 @@ function SelectMapModal({
         >
           <GroupProvider
             groups={mapGroups}
+            itemNames={mapNames}
             onGroupsChange={updateMapGroups}
             onGroupsSelect={handleGroupsSelect}
             disabled={!isOpen}
@@ -213,6 +227,7 @@ function SelectMapModal({
               <Label pt={2} pb={1}>
                 Select or import a map
               </Label>
+              <TileActionBar onAdd={openImageDialog} addTitle="Import Map(s)" />
               <Box sx={{ position: "relative" }}>
                 <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
                   <TilesAddDroppable containerSize={modalSize} />

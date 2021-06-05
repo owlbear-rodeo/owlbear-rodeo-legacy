@@ -23,18 +23,15 @@ export const ADD_TO_MAP_ID_PREFIX = "__add__";
 
 export function TileDragProvider({ onDragAdd, children }) {
   const {
-    groups: allGroups,
+    groups,
+    activeGroups,
     openGroupId,
-    openGroupItems,
     selectedGroupIds,
     onGroupsChange,
     onGroupSelect,
     onGroupClose,
+    filter,
   } = useGroup();
-
-  const groupOpen = !!openGroupId;
-
-  const groups = groupOpen ? openGroupItems : allGroups;
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
@@ -83,7 +80,7 @@ export function TileDragProvider({ onDragAdd, children }) {
     }
 
     let selectedIndices = selectedGroupIds.map((groupId) =>
-      groups.findIndex((group) => group.id === groupId)
+      activeGroups.findIndex((group) => group.id === groupId)
     );
     // Maintain current group sorting
     selectedIndices = selectedIndices.sort((a, b) => a - b);
@@ -96,15 +93,17 @@ export function TileDragProvider({ onDragAdd, children }) {
         return;
       }
 
-      const overGroupIndex = groups.findIndex((group) => group.id === overId);
+      const overGroupIndex = activeGroups.findIndex(
+        (group) => group.id === overId
+      );
       onGroupsChange(
-        moveGroupsInto(groups, overGroupIndex, selectedIndices),
+        moveGroupsInto(activeGroups, overGroupIndex, selectedIndices),
         openGroupId
       );
     } else if (over.id.startsWith(UNGROUP_ID_PREFIX)) {
       onGroupSelect();
       // Handle tile ungroup
-      const newGroups = ungroup(allGroups, openGroupId, selectedIndices);
+      const newGroups = ungroup(groups, openGroupId, selectedIndices);
       // Close group if it was removed
       if (!newGroups.find((group) => group.id === openGroupId)) {
         onGroupClose();
@@ -112,11 +111,13 @@ export function TileDragProvider({ onDragAdd, children }) {
       onGroupsChange(newGroups);
     } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
       onDragAdd && onDragAdd(selectedGroupIds, over.rect);
-    } else {
-      // Hanlde tile move
-      const overGroupIndex = groups.findIndex((group) => group.id === over.id);
+    } else if (!filter) {
+      // Hanlde tile move only if we have no filter
+      const overGroupIndex = activeGroups.findIndex(
+        (group) => group.id === over.id
+      );
       onGroupsChange(
-        moveGroups(groups, overGroupIndex, selectedIndices),
+        moveGroups(activeGroups, overGroupIndex, selectedIndices),
         openGroupId
       );
     }
@@ -124,7 +125,7 @@ export function TileDragProvider({ onDragAdd, children }) {
 
   function customCollisionDetection(rects, rect) {
     // Handle group rects
-    if (groupOpen) {
+    if (openGroupId) {
       const ungroupRects = rects.filter(([id]) =>
         id.startsWith(UNGROUP_ID_PREFIX)
       );

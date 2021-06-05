@@ -22,22 +22,29 @@ import { useGroup } from "../../contexts/GroupContext";
 function SortableTiles({ renderTile, subgroup }) {
   const { dragId, overId, dragCursor } = useTileDrag();
   const {
-    groups: allGroups,
+    groups,
     selectedGroupIds: allSelectedIds,
+    filter,
     openGroupId,
     openGroupItems,
+    filteredGroupItems,
   } = useGroup();
+
+  const activeGroups = subgroup
+    ? openGroupItems
+    : filter
+    ? filteredGroupItems
+    : groups;
 
   const sortableId = subgroup ? GROUP_SORTABLE_ID : BASE_SORTABLE_ID;
 
-  const groups = subgroup ? openGroupItems : allGroups;
   // Only populate selected groups if needed
   let selectedGroupIds = [];
   if ((subgroup && openGroupId) || (!subgroup && !openGroupId)) {
     selectedGroupIds = allSelectedIds;
   }
-  const disableSorting = openGroupId && !subgroup;
-  const disableGrouping = subgroup || disableSorting;
+  const disableSorting = (openGroupId && !subgroup) || filter;
+  const disableGrouping = subgroup || disableSorting || filter;
 
   const dragBounce = useSpring({
     transform: !!dragId ? "scale(0.9)" : "scale(1)",
@@ -63,9 +70,9 @@ function SortableTiles({ renderTile, subgroup }) {
 
   function renderDragOverlays() {
     let selectedIndices = selectedGroupIds.map((groupId) =>
-      groups.findIndex((group) => group.id === groupId)
+      activeGroups.findIndex((group) => group.id === groupId)
     );
-    const activeIndex = groups.findIndex((group) => group.id === dragId);
+    const activeIndex = activeGroups.findIndex((group) => group.id === dragId);
     // Sort so the draging tile is the first element
     selectedIndices = selectedIndices.sort((a, b) =>
       a === activeIndex ? -1 : b === activeIndex ? 1 : 0
@@ -81,7 +88,7 @@ function SortableTiles({ renderTile, subgroup }) {
     selectedIndices = selectedIndices.reverse();
     coords = coords.reverse();
 
-    const selectedGroups = selectedIndices.map((index) => groups[index]);
+    const selectedGroups = selectedIndices.map((index) => activeGroups[index]);
 
     return selectedGroups.map((group, index) => (
       <DragOverlay dropAnimation={null} key={group.id}>
@@ -113,7 +120,7 @@ function SortableTiles({ renderTile, subgroup }) {
   }
 
   function renderTiles() {
-    const groupsByIds = keyBy(groups, "id");
+    const groupsByIds = keyBy(activeGroups, "id");
     const selectedGroupIdsSet = new Set(selectedGroupIds);
     let selectedGroups = [];
     let hasSelectedContainerGroup = false;
@@ -126,7 +133,7 @@ function SortableTiles({ renderTile, subgroup }) {
         }
       }
     }
-    return groups.map((group) => {
+    return activeGroups.map((group) => {
       const isDragging = dragId && selectedGroupIdsSet.has(group.id);
       const disableTileGrouping =
         disableGrouping || isDragging || hasSelectedContainerGroup;
@@ -147,7 +154,7 @@ function SortableTiles({ renderTile, subgroup }) {
   }
 
   return (
-    <SortableContext items={groups} id={sortableId}>
+    <SortableContext items={activeGroups} id={sortableId}>
       {renderTiles()}
       {createPortal(dragId && renderDragOverlays(), document.body)}
     </SortableContext>

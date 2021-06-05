@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Flex, Label, Button, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 import ReactResizeDetector from "react-resize-detector";
@@ -16,8 +16,9 @@ import TokenEditBar from "../components/token/TokenEditBar";
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 import TilesAddDroppable from "../components/tile/TilesAddDroppable";
+import TileActionBar from "../components/tile/TileActionBar";
 
-import { getGroupItems } from "../helpers/group";
+import { getGroupItems, getItemNames } from "../helpers/group";
 import {
   createTokenFromFile,
   createTokenState,
@@ -48,6 +49,12 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
     tokensById,
   } = useTokenData();
   const { addAssets } = useAssets();
+
+  // Get token names for group filtering
+  const [tokenNames, setTokenNames] = useState(getItemNames(tokens));
+  useEffect(() => {
+    setTokenNames(getItemNames(tokens));
+  }, [tokens]);
 
   /**
    * Image Upload
@@ -94,6 +101,12 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
+    }
+  }
+
+  function openImageDialog() {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   }
 
@@ -202,6 +215,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
         >
           <GroupProvider
             groups={tokenGroups}
+            itemNames={tokenNames}
             onGroupsChange={updateTokenGroups}
             disabled={!isOpen}
           >
@@ -213,6 +227,10 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
               <Label pt={2} pb={1}>
                 Edit or import a token
               </Label>
+              <TileActionBar
+                onAdd={openImageDialog}
+                addTitle="Import Token(s)"
+              />
               <Box sx={{ position: "relative" }}>
                 <TileDragProvider onDragAdd={handleTokensAddToMap}>
                   <TilesAddDroppable containerSize={modalSize} />

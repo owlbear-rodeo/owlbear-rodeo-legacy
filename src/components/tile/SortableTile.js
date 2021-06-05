@@ -22,7 +22,7 @@ function SortableTile({
     setDraggableNodeRef,
     over,
     active,
-  } = useSortable({ id, disabled: disableSorting });
+  } = useSortable({ id });
 
   const { setNodeRef: setGroupNodeRef } = useDroppable({
     id: `${GROUP_ID_PREFIX}${id}`,
@@ -42,7 +42,7 @@ function SortableTile({
     width: "2px",
     height: "100%",
     borderRadius: "2px",
-    visibility: over?.id === id ? "visible" : "hidden",
+    visibility: over?.id === id && !disableSorting ? "visible" : "hidden",
   };
 
   // Group div center aligned

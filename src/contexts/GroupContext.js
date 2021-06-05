@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import cloneDeep from "lodash.clonedeep";
+import Fuse from "fuse.js";
 
 import { useKeyboard, useBlur } from "./KeyboardContext";
 
@@ -11,17 +12,18 @@ const GroupContext = React.createContext();
 
 export function GroupProvider({
   groups,
+  itemNames,
   onGroupsChange,
   onGroupsSelect,
   disabled,
   children,
 }) {
   const [selectedGroupIds, setSelectedGroupIds] = useState([]);
-  const [openGroupId, setOpenGroupId] = useState();
-  const [openGroupItems, setOpenGroupItems] = useState([]);
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
+  const [openGroupId, setOpenGroupId] = useState();
+  const [openGroupItems, setOpenGroupItems] = useState([]);
   useEffect(() => {
     if (openGroupId) {
       setOpenGroupItems(getGroupItems(groupsFromIds([openGroupId], groups)[0]));
@@ -117,16 +119,58 @@ export function GroupProvider({
 
   useBlur(handleBlur);
 
+  /**
+   * Search
+   */
+  const [filter, setFilter] = useState();
+  const [filteredGroupItems, setFilteredGroupItems] = useState([]);
+  const [fuse, setFuse] = useState();
+  // Update search index when items change
+  useEffect(() => {
+    let items = [];
+    for (let group of groups) {
+      const itemsToAdd = getGroupItems(group);
+      const namedItems = itemsToAdd.map((item) => ({
+        ...item,
+        name: itemNames[item.id],
+      }));
+      items.push(...namedItems);
+    }
+    setFuse(new Fuse(items, { keys: ["name"] }));
+  }, [groups, itemNames]);
+
+  // Perform search when search changes
+  useEffect(() => {
+    if (filter) {
+      const query = fuse.search(filter);
+      setFilteredGroupItems(query.map((result) => result.item));
+      setOpenGroupId();
+    } else {
+      setFilteredGroupItems([]);
+    }
+  }, [filter, fuse]);
+
+  const activeGroups = openGroupId
+    ? openGroupItems
+    : filter
+    ? filteredGroupItems
+    : groups;
+
   const value = {
     groups,
+    activeGroups,
     openGroupId,
     openGroupItems,
+    filter,
+    filteredGroupItems,
     selectedGroupIds,
     selectMode,
+    onSelectModeChange: setSelectMode,
     onGroupOpen: handleGroupOpen,
     onGroupClose: handleGroupClose,
     onGroupsChange: handleGroupsChange,
     onGroupSelect: handleGroupSelect,
+    onFilterChange: setFilter,
   };
 
   return (
@@ -136,6 +180,7 @@ export function GroupProvider({
 
 GroupProvider.defaultProps = {
   groups: [],
+  itemNames: {},
   onGroupsChange: () => {},
   onGroupsSelect: () => {},
   disabled: false,

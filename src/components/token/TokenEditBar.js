@@ -18,31 +18,23 @@ import shortcuts from "../../shortcuts";
 function TokenEditBar({ disabled, onLoad }) {
   const { tokens, removeTokens, updateTokensHidden } = useTokenData();
 
-  const {
-    groups: allGroups,
-    selectedGroupIds,
-    onGroupSelect,
-    openGroupId,
-    openGroupItems,
-  } = useGroup();
-
-  const groups = openGroupId ? openGroupItems : allGroups;
+  const { activeGroups, selectedGroupIds, onGroupSelect } = useGroup();
 
   const [hasSelectedDefaultToken, setHasSelectedDefaultToken] = useState(false);
   const [allTokensVisible, setAllTokensVisisble] = useState(false);
 
   useEffect(() => {
-    const selectedGroups = groupsFromIds(selectedGroupIds, groups);
+    const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
     const selectedTokens = itemsFromGroups(selectedGroups, tokens);
 
     setHasSelectedDefaultToken(
       selectedTokens.some((token) => token.type === "default")
     );
     setAllTokensVisisble(selectedTokens.every((token) => !token.hideInSidebar));
-  }, [selectedGroupIds, tokens, groups]);
+  }, [selectedGroupIds, tokens, activeGroups]);
 
   function getSelectedTokens() {
-    const selectedGroups = groupsFromIds(selectedGroupIds, groups);
+    const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
     return itemsFromGroups(selectedGroups, tokens);
   }
 

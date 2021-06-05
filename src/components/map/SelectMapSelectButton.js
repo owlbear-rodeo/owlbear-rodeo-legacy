@@ -6,18 +6,11 @@ import { useGroup } from "../../contexts/GroupContext";
 import { findGroup } from "../../helpers/group";
 
 function SelectMapSelectButton({ onMapSelect, disabled }) {
-  const {
-    groups: allGroups,
-    selectedGroupIds,
-    openGroupId,
-    openGroupItems,
-  } = useGroup();
-
-  const groups = openGroupId ? openGroupItems : allGroups;
+  const { activeGroups, selectedGroupIds } = useGroup();
 
   function handleSelectClick() {
     if (selectedGroupIds.length === 1) {
-      const group = findGroup(groups, selectedGroupIds[0]);
+      const group = findGroup(activeGroups, selectedGroupIds[0]);
       if (group && group.type === "item") {
         onMapSelect(group.id);
       }
