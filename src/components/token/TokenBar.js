@@ -74,7 +74,7 @@ function TokenBar({ onMapTokensStateCreate }) {
           let offset = new Vector2(0, 0);
           for (let item of group.items) {
             const token = tokensById[item.id];
-            if (token) {
+            if (token && !token.hideInSidebar) {
               tokenStates.push(
                 createTokenState(
                   token,
@@ -115,14 +115,16 @@ function TokenBar({ onMapTokensStateCreate }) {
           groupTokens.push(token);
         }
       }
-      return (
-        <TokenBarTokenGroup
-          group={group}
-          tokens={groupTokens}
-          key={group.id}
-          draggable={draggable}
-        />
-      );
+      if (groupTokens.length > 0) {
+        return (
+          <TokenBarTokenGroup
+            group={group}
+            tokens={groupTokens}
+            key={group.id}
+            draggable={draggable}
+          />
+        );
+      }
     }
   }
 
