@@ -2,6 +2,7 @@ import React from "react";
 
 import TokenTile from "./TokenTile";
 import TokenTileGroup from "./TokenTileGroup";
+import TokenHiddenBadge from "./TokenHiddenBadge";
 
 import SortableTiles from "../tile/SortableTiles";
 
@@ -35,7 +36,10 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
           onSelect={onGroupSelect}
           onTokenEdit={onTokenEdit}
           canEdit={canEdit}
-          badges={[`${token.defaultSize}x`]}
+          badges={[
+            `${token.defaultSize}x`,
+            <TokenHiddenBadge hidden={token.hideInSidebar} />,
+          ]}
         />
       );
     } else {

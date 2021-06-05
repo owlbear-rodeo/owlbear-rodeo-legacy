@@ -83,13 +83,25 @@ function Tile({
           borderRadius: "4px",
         }}
       />
-      <Box sx={{ position: "absolute", top: 0, left: 0 }}>
+      <Flex
+        sx={{
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+        }}
+      >
         {badges.map((badge, i) => (
-          <Badge m={2} key={i} bg="overlay" color="text">
+          <Badge
+            m="2px"
+            key={i}
+            bg="overlay"
+            color="text"
+            sx={{ width: "fit-content" }}
+          >
             {badge}
           </Badge>
         ))}
-      </Box>
+      </Flex>
       {canEdit && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <IconButton

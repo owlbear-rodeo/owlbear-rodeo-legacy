@@ -81,17 +81,24 @@ export function TokenDataProvider({ children }) {
 
   const updateToken = useCallback(
     async (id, update) => {
-      const change = { lastModified: Date.now(), ...update };
-      await database.table("tokens").update(id, change);
+      await database.table("tokens").update(id, update);
     },
     [database]
   );
 
-  const updateTokens = useCallback(
-    async (ids, update) => {
-      const change = { lastModified: Date.now(), ...update };
+  const updateTokensHidden = useCallback(
+    async (ids, hideInSidebar) => {
+      // Update immediately to avoid UI delay
+      setTokens((prevTokens) => {
+        let newTokens = [...prevTokens];
+        for (let id of ids) {
+          const tokenIndex = newTokens.findIndex((token) => token.id === id);
+          newTokens[tokenIndex].hideInSidebar = hideInSidebar;
+        }
+        return newTokens;
+      });
       await Promise.all(
-        ids.map((id) => database.table("tokens").update(id, change))
+        ids.map((id) => database.table("tokens").update(id, { hideInSidebar }))
       );
     },
     [database]
@@ -167,11 +174,11 @@ export function TokenDataProvider({ children }) {
     tokenGroups,
     removeTokens,
     updateToken,
-    updateTokens,
     tokensById,
     tokensLoading,
     getToken,
     updateTokenGroups,
+    updateTokensHidden,
   };
 
   return (

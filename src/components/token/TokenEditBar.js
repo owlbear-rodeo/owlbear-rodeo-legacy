@@ -16,7 +16,7 @@ import { useKeyboard } from "../../contexts/KeyboardContext";
 import shortcuts from "../../shortcuts";
 
 function TokenEditBar({ disabled, onLoad }) {
-  const { tokens, removeTokens, updateTokens } = useTokenData();
+  const { tokens, removeTokens, updateTokensHidden } = useTokenData();
 
   const {
     groups: allGroups,
@@ -58,11 +58,9 @@ function TokenEditBar({ disabled, onLoad }) {
   }
 
   async function handleTokensHide(hideInSidebar) {
-    onLoad(true);
     const selectedTokens = getSelectedTokens();
     const selectedTokenIds = selectedTokens.map((token) => token.id);
-    await updateTokens(selectedTokenIds, { hideInSidebar });
-    onLoad(false);
+    updateTokensHidden(selectedTokenIds, hideInSidebar);
   }
 
   /**
