@@ -134,6 +134,13 @@ export function GroupProvider({
   );
 }
 
+GroupProvider.defaultProps = {
+  groups: [],
+  onGroupsChange: () => {},
+  onGroupsSelect: () => {},
+  disabled: false,
+};
+
 export function useGroup() {
   const context = useContext(GroupContext);
   if (context === undefined) {
