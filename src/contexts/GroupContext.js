@@ -22,6 +22,9 @@ export function GroupProvider({
   // Either single, multiple or range
   const [selectMode, setSelectMode] = useState("single");
 
+  /**
+   * Group Open
+   */
   const [openGroupId, setOpenGroupId] = useState();
   const [openGroupItems, setOpenGroupItems] = useState([]);
   useEffect(() => {
@@ -41,6 +44,47 @@ export function GroupProvider({
     setSelectedGroupIds([]);
     setOpenGroupId();
   }
+
+  /**
+   * Search
+   */
+  const [filter, setFilter] = useState();
+  const [filteredGroupItems, setFilteredGroupItems] = useState([]);
+  const [fuse, setFuse] = useState();
+  // Update search index when items change
+  useEffect(() => {
+    let items = [];
+    for (let group of groups) {
+      const itemsToAdd = getGroupItems(group);
+      const namedItems = itemsToAdd.map((item) => ({
+        ...item,
+        name: itemNames[item.id],
+      }));
+      items.push(...namedItems);
+    }
+    setFuse(new Fuse(items, { keys: ["name"] }));
+  }, [groups, itemNames]);
+
+  // Perform search when search changes
+  useEffect(() => {
+    if (filter) {
+      const query = fuse.search(filter);
+      setFilteredGroupItems(query.map((result) => result.item));
+      setOpenGroupId();
+    } else {
+      setFilteredGroupItems([]);
+    }
+  }, [filter, fuse]);
+
+  /**
+   * Handlers
+   */
+
+  const activeGroups = openGroupId
+    ? openGroupItems
+    : filter
+    ? filteredGroupItems
+    : groups;
 
   /**
    * @param {string|undefined} groupId The group to apply changes to, leave undefined to replace the full group object
@@ -73,8 +117,35 @@ export function GroupProvider({
           }
           break;
         case "range":
-          /// TODO: Fix when new groups system is added
-          return;
+          if (selectedGroupIds.length > 0) {
+            const currentIndex = activeGroups.findIndex(
+              (g) => g.id === groupId
+            );
+            const lastIndex = activeGroups.findIndex(
+              (g) => g.id === selectedGroupIds[selectedGroupIds.length - 1]
+            );
+            let idsToAdd = [];
+            let idsToRemove = [];
+            const direction = currentIndex > lastIndex ? 1 : -1;
+            for (
+              let i = lastIndex + direction;
+              direction < 0 ? i >= currentIndex : i <= currentIndex;
+              i += direction
+            ) {
+              const id = activeGroups[i].id;
+              if (selectedGroupIds.includes(id)) {
+                idsToRemove.push(id);
+              } else {
+                idsToAdd.push(id);
+              }
+            }
+            groupIds = [...selectedGroupIds, ...idsToAdd].filter(
+              (id) => !idsToRemove.includes(id)
+            );
+          } else {
+            groupIds = [groupId];
+          }
+          break;
         default:
           groupIds = [];
       }
@@ -118,43 +189,6 @@ export function GroupProvider({
   }
 
   useBlur(handleBlur);
-
-  /**
-   * Search
-   */
-  const [filter, setFilter] = useState();
-  const [filteredGroupItems, setFilteredGroupItems] = useState([]);
-  const [fuse, setFuse] = useState();
-  // Update search index when items change
-  useEffect(() => {
-    let items = [];
-    for (let group of groups) {
-      const itemsToAdd = getGroupItems(group);
-      const namedItems = itemsToAdd.map((item) => ({
-        ...item,
-        name: itemNames[item.id],
-      }));
-      items.push(...namedItems);
-    }
-    setFuse(new Fuse(items, { keys: ["name"] }));
-  }, [groups, itemNames]);
-
-  // Perform search when search changes
-  useEffect(() => {
-    if (filter) {
-      const query = fuse.search(filter);
-      setFilteredGroupItems(query.map((result) => result.item));
-      setOpenGroupId();
-    } else {
-      setFilteredGroupItems([]);
-    }
-  }, [filter, fuse]);
-
-  const activeGroups = openGroupId
-    ? openGroupItems
-    : filter
-    ? filteredGroupItems
-    : groups;
 
   const value = {
     groups,
