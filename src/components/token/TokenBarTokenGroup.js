@@ -74,7 +74,7 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
           alt={group.name}
           title={group.name}
           bg="muted"
-          sx={{ borderRadius: "8px", gridGap: "4px" }}
+          sx={{ borderRadius: "8px", gridGap: "4px", minHeight: "48px" }}
           p="2px"
           {...listeners}
           {...attributes}
