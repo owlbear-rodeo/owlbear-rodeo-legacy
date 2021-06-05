@@ -176,8 +176,7 @@ function MapFog({
           }
           const simplified = simplifyPoints(
             [...prevPoints, brushPosition],
-            gridCellNormalizedSize,
-            stageScale / 4
+            1 / 1000 / stageScale
           );
           return {
             ...prevShape,

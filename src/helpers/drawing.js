@@ -192,18 +192,13 @@ export function getUpdatedShapeData(
   }
 }
 
-const defaultSimplifySize = 1 / 100;
 /**
  * Simplify points to a grid size
  * @param {Vector2[]} points
- * @param {Vector2} gridCellSize
- * @param {number} scale
+ * @param {number} tolerance
  */
-export function simplifyPoints(points, gridCellSize, scale) {
-  return simplify(
-    points,
-    (Vector2.min(gridCellSize) * defaultSimplifySize) / scale
-  );
+export function simplifyPoints(points, tolerance) {
+  return simplify(points, tolerance);
 }
 
 /**
