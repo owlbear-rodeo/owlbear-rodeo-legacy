@@ -116,7 +116,6 @@ function TokenEditBar({ disabled, onLoad }) {
         <IconButton
           aria-label={hideTitle}
           title={hideTitle}
-          disabled={hasSelectedDefaultToken}
           onClick={() => handleTokensHide(allTokensVisible)}
         >
           {allTokensVisible ? <TokenShowIcon /> : <TokenHideIcon />}
