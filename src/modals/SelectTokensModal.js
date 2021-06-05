@@ -11,16 +11,13 @@ import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 import TokenTiles from "../components/token/TokenTiles";
+import TokenEditBar from "../components/token/TokenEditBar";
 
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
 import TilesAddDroppable from "../components/tile/TilesAddDroppable";
 
-import {
-  groupsFromIds,
-  itemsFromGroups,
-  getGroupItems,
-} from "../helpers/group";
+import { getGroupItems } from "../helpers/group";
 import {
   createTokenFromFile,
   createTokenState,
@@ -32,13 +29,10 @@ import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useTokenData } from "../contexts/TokenDataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard } from "../contexts/KeyboardContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
 import { useMapStage } from "../contexts/MapStageContext";
-
-import shortcuts from "../shortcuts";
 
 function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   const { addToast } = useToasts();
@@ -47,8 +41,6 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   const {
     tokens,
     addToken,
-    removeTokens,
-    // updateTokens,
     tokensLoading,
     tokenGroups,
     updateTokenGroups,
@@ -132,32 +124,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   /**
    * Token controls
    */
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
-
-  function getSelectedTokens() {
-    const groups = groupsFromIds(selectedGroupIds, tokenGroups);
-    return itemsFromGroups(groups, tokens);
-  }
-
-  const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
-  async function handleTokensRemove() {
-    setIsLoading(true);
-    setIsTokensRemoveModalOpen(false);
-    const selectedTokens = getSelectedTokens();
-    const selectedTokenIds = selectedTokens.map((token) => token.id);
-    await removeTokens(selectedTokenIds);
-    setSelectedGroupIds([]);
-    setIsLoading(false);
-  }
-
-  // async function handleTokensHide(hideInSidebar) {
-  //   setIsLoading(true);
-  //   const selectedTokens = getSelectedTokens();
-  //   const selectedTokenIds = selectedTokens.map((token) => token.id);
-  //   await updateTokens(selectedTokenIds, { hideInSidebar });
-  //   setIsLoading(false);
-  // }
+  const [editingTokenId, setEditingTokenId] = useState();
 
   const mapStageRef = useMapStage();
   function handleTokensAddToMap(groupIds, rect) {
@@ -206,29 +173,6 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
     }
   }
 
-  /**
-   * Shortcuts
-   */
-  function handleKeyDown(event) {
-    if (!isOpen) {
-      return;
-    }
-    if (shortcuts.delete(event)) {
-      const selectedTokens = getSelectedTokens();
-      // Selected tokens and none are default
-      if (
-        selectedTokens.length > 0 &&
-        !selectedTokens.some((token) => token.type === "default")
-      ) {
-        // Ensure all other modals are closed
-        setIsEditModalOpen(false);
-        setIsTokensRemoveModalOpen(true);
-      }
-    }
-  }
-
-  useKeyboard(handleKeyDown);
-
   const layout = useResponsiveLayout();
 
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
@@ -256,27 +200,26 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
           handleHeight
           onResize={handleModalResize}
         >
-          <Flex
-            sx={{
-              flexDirection: "column",
-            }}
+          <GroupProvider
+            groups={tokenGroups}
+            onGroupsChange={updateTokenGroups}
+            disabled={!isOpen}
           >
-            <Label pt={2} pb={1}>
-              Edit or import a token
-            </Label>
-            <Box sx={{ position: "relative" }}>
-              <GroupProvider
-                groups={tokenGroups}
-                onGroupsChange={updateTokenGroups}
-                onGroupsSelect={setSelectedGroupIds}
-                disabled={!isOpen}
-              >
+            <Flex
+              sx={{
+                flexDirection: "column",
+              }}
+            >
+              <Label pt={2} pb={1}>
+                Edit or import a token
+              </Label>
+              <Box sx={{ position: "relative" }}>
                 <TileDragProvider onDragAdd={handleTokensAddToMap}>
                   <TilesAddDroppable containerSize={modalSize} />
                   <TilesContainer>
                     <TokenTiles
                       tokens={tokens}
-                      onTokenEdit={() => setIsEditModalOpen(true)}
+                      onTokenEdit={setEditingTokenId}
                     />
                   </TilesContainer>
                 </TileDragProvider>
@@ -285,42 +228,36 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                   <TilesOverlay>
                     <TokenTiles
                       tokens={tokens}
-                      onTokenEdit={() => setIsEditModalOpen(true)}
+                      onTokenEdit={setEditingTokenId}
                       subgroup
                     />
                   </TilesOverlay>
                 </TileDragProvider>
-              </GroupProvider>
-            </Box>
-
-            <Button
-              variant="primary"
-              disabled={isLoading}
-              onClick={onRequestClose}
-              mt={2}
-            >
-              Done
-            </Button>
-          </Flex>
+                <TokenEditBar
+                  onLoad={setIsLoading}
+                  disabled={isLoading || !isOpen}
+                />
+              </Box>
+              <Button
+                variant="primary"
+                disabled={isLoading}
+                onClick={onRequestClose}
+                mt={2}
+              >
+                Done
+              </Button>
+            </Flex>
+          </GroupProvider>
         </ReactResizeDetector>
       </ImageDrop>
       {(isLoading || tokensLoading) && <LoadingOverlay bg="overlay" />}
       <EditTokenModal
-        isOpen={isEditModalOpen}
-        onDone={() => setIsEditModalOpen(false)}
+        isOpen={!!editingTokenId}
+        onDone={() => setEditingTokenId()}
         token={
-          selectedGroupIds.length === 1 &&
-          tokens.find((token) => token.id === selectedGroupIds[0])
+          editingTokenId && tokens.find((token) => token.id === editingTokenId)
         }
-        onTokenUpdate={updateToken}
-      />
-      <ConfirmModal
-        isOpen={isTokensRemoveModalOpen}
-        onRequestClose={() => setIsTokensRemoveModalOpen(false)}
-        onConfirm={handleTokensRemove}
-        confirmText="Remove"
-        label="Remove Token(s)"
-        description="This operation cannot be undone."
+        onUpdateToken={updateToken}
       />
       <ConfirmModal
         isOpen={isLargeImageWarningModalOpen}
