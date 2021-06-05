@@ -221,3 +221,18 @@ export function getItemNames(items, itemKey = "id") {
   }
   return names;
 }
+
+/**
+ * Immutably rename a group
+ * @param {Group[]} groups
+ * @param {string} groupId
+ * @param {string} newName
+ */
+export function renameGroup(groups, groupId, newName) {
+  let newGroups = cloneDeep(groups);
+  const groupIndex = newGroups.findIndex((group) => group.id === groupId);
+  if (groupIndex >= 0) {
+    newGroups[groupIndex].name = newName;
+  }
+  return newGroups;
+}

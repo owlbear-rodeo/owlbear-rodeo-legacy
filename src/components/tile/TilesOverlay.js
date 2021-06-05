@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Close, Grid, useThemeUI } from "theme-ui";
+import { Box, Close, Grid, useThemeUI, IconButton, Text, Flex } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
 import ReactResizeDetector from "react-resize-detector";
 import SimpleBar from "simplebar-react";
@@ -10,8 +10,20 @@ import TilesUngroupDroppable from "./TilesUngroupDroppable";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
+import ChangeNicknameIcon from "../../icons/ChangeNicknameIcon";
+
+import GroupNameModal from "../../modals/GroupNameModal";
+
+import { renameGroup } from "../../helpers/group";
+
 function TilesOverlay({ children }) {
-  const { openGroupId, onGroupClose, onGroupSelect } = useGroup();
+  const {
+    groups,
+    openGroupId,
+    onGroupClose,
+    onGroupSelect,
+    onGroupsChange,
+  } = useGroup();
 
   const { theme } = useThemeUI();
 
@@ -33,6 +45,14 @@ function TilesOverlay({ children }) {
   function handleOverlayResize(width, height) {
     setOverlaySize({ width, height });
   }
+
+  const [isGroupNameModalOpen, setIsGroupNameModalOpen] = useState(false);
+  function handleGroupNameChange(name) {
+    onGroupsChange(renameGroup(groups, openGroupId, name));
+    setIsGroupNameModalOpen(false);
+  }
+
+  const group = groups.find((group) => group.id === openGroupId);
 
   return (
     <>
@@ -88,13 +108,32 @@ function TilesOverlay({ children }) {
               borderColor: "border",
               cursor: "default",
               display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
+              justifyContent: "flex-start",
+              alignItems: "center",
               position: "relative",
+              flexDirection: "column",
             }}
             bg="background"
             onClick={(e) => e.stopPropagation()}
           >
+            <Flex my={1} sx={{ position: "relative" }}>
+              <Text as="p" my="2px">
+                {group?.name}
+              </Text>
+              <IconButton
+                sx={{
+                  width: "24px",
+                  height: "24px",
+                  position: group?.name ? "absolute" : "relative",
+                  left: group?.name ? "100%" : 0,
+                }}
+                title="Edit Group"
+                aria-label="Edit Group"
+                onClick={() => setIsGroupNameModalOpen(true)}
+              >
+                <ChangeNicknameIcon />
+              </IconButton>
+            </Flex>
             <SimpleBar
               style={{
                 width: containerSize.width - 16,
@@ -123,6 +162,12 @@ function TilesOverlay({ children }) {
           </Box>
         </animated.div>
       </ReactResizeDetector>
+      <GroupNameModal
+        isOpen={isGroupNameModalOpen}
+        name={group?.name}
+        onSubmit={handleGroupNameChange}
+        onRequestClose={() => setIsGroupNameModalOpen(false)}
+      />
     </>
   );
 }
