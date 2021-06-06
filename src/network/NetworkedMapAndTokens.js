@@ -91,15 +91,15 @@ function NetworkedMapAndTokens({ session }) {
   function addAssetsIfNeeded(assets) {
     setAssetManifest((prevManifest) => {
       if (prevManifest?.assets) {
-        let newManifset = { ...prevManifest };
+        let newAssets = { ...prevManifest.assets };
         for (let asset of assets) {
           const id = asset.id;
-          const exists = id in prevManifest.assets;
+          const exists = id in newAssets;
           if (!exists) {
-            newManifset[id] = asset;
+            newAssets[id] = asset;
           }
         }
-        return newManifset;
+        return { ...prevManifest, assets: newAssets };
       }
       return prevManifest;
     });
