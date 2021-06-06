@@ -68,7 +68,7 @@ function ImageDrop({ onDrop, dropText, children }) {
   }
 
   return (
-    <Box onDragEnter={handleImageDragEnter}>
+    <Box onDragEnter={handleImageDragEnter} sx={{ height: "100%" }}>
       {children}
       {dragging && (
         <Flex

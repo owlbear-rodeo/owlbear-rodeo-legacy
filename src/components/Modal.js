@@ -44,6 +44,18 @@ function StyledModal({
           {content}
         </animated.div>
       )}
+      overlayElement={(props, content) => (
+        <div
+          onDragEnter={(e) => {
+            // Prevent drag event from triggering with a modal open
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          {...props}
+        >
+          {content}
+        </div>
+      )}
       {...props}
     >
       {children}

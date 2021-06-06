@@ -7,8 +7,9 @@ import EditTokenModal from "./EditTokenModal";
 import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
-import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
+
+import ImageDrop from "../components/file/ImageDrop";
 
 import TokenTiles from "../components/token/TokenTiles";
 import TokenEditBar from "../components/token/TokenEditBar";
@@ -199,7 +200,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
       onRequestClose={onRequestClose}
       style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
-      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
+      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to import">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
           type="file"

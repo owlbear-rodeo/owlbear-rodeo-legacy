@@ -7,8 +7,9 @@ import EditMapModal from "./EditMapModal";
 import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
-import ImageDrop from "../components/ImageDrop";
 import LoadingOverlay from "../components/LoadingOverlay";
+
+import ImageDrop from "../components/file/ImageDrop";
 
 import MapTiles from "../components/map/MapTiles";
 import MapEditBar from "../components/map/MapEditBar";
@@ -198,7 +199,7 @@ function SelectMapModal({
       onRequestClose={handleClose}
       style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
     >
-      <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to upload">
+      <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to import">
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
           type="file"
