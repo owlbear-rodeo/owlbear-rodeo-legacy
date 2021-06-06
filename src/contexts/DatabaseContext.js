@@ -58,18 +58,18 @@ export function DatabaseProvider({ children }) {
 
     function handleDatabaseError(event) {
       event.preventDefault();
-      if (event.reason?.message.startsWith("QuotaExceededError")) {
+      if (event?.reason?.message?.startsWith("QuotaExceededError")) {
         setDatabaseError({
-          name: event.reason.name,
+          name: event?.reason?.name,
           message: "Storage Quota Exceeded Please Clear Space and Try Again.",
         });
       } else {
         setDatabaseError({
-          name: event.reason.name,
+          name: event?.reason?.name,
           message: "Something went wrong, please refresh your browser.",
         });
       }
-      console.error(event.reason);
+      console.error(event?.reason);
     }
     window.addEventListener("unhandledrejection", handleDatabaseError);
 
