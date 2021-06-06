@@ -21,7 +21,7 @@ function TokenSettings({ token, onSettingsChange }) {
           name="name"
           value={(token && token.name) || ""}
           onChange={(e) => onSettingsChange("name", e.target.value)}
-          disabled={tokenEmpty || token.type === "default"}
+          disabled={tokenEmpty}
           my={1}
         />
       </Box>
@@ -33,7 +33,7 @@ function TokenSettings({ token, onSettingsChange }) {
             !tokenEmpty &&
             categorySettings.find((s) => s.value === token.defaultCategory)
           }
-          isDisabled={tokenEmpty || token.type === "default"}
+          isDisabled={tokenEmpty}
           onChange={(option) =>
             onSettingsChange("defaultCategory", option.value)
           }
@@ -41,7 +41,7 @@ function TokenSettings({ token, onSettingsChange }) {
         />
       </Box>
       <Flex>
-        <Box my={2} sx={{ flexGrow: 1 }}>
+        <Box mt={2} sx={{ flexGrow: 1 }}>
           <Label htmlFor="tokenSize">Default Size</Label>
           <Input
             type="number"
@@ -50,12 +50,22 @@ function TokenSettings({ token, onSettingsChange }) {
             onChange={(e) =>
               onSettingsChange("defaultSize", parseFloat(e.target.value))
             }
-            disabled={tokenEmpty || token.type === "default"}
+            disabled={tokenEmpty}
             min={1}
             my={1}
           />
         </Box>
       </Flex>
+      <Box my={2} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="label">Default Label</Label>
+        <Input
+          name="label"
+          value={(token && token.defaultLabel) || ""}
+          onChange={(e) => onSettingsChange("defaultLabel", e.target.value)}
+          disabled={tokenEmpty}
+          my={1}
+        />
+      </Box>
     </Flex>
   );
 }

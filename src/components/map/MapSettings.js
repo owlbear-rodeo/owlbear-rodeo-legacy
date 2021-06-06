@@ -149,7 +149,7 @@ function MapSettings({
             name="gridX"
             value={`${(map && map.grid.size.x) || 0}`}
             onChange={handleGridSizeXChange}
-            disabled={mapEmpty || map.type === "default"}
+            disabled={mapEmpty}
             min={1}
             my={1}
           />
@@ -161,7 +161,7 @@ function MapSettings({
             name="gridY"
             value={`${(map && map.grid.size.y) || 0}`}
             onChange={handleGridSizeYChange}
-            disabled={mapEmpty || map.type === "default"}
+            disabled={mapEmpty}
             min={1}
             my={1}
           />
@@ -173,7 +173,7 @@ function MapSettings({
           name="name"
           value={(map && map.name) || ""}
           onChange={(e) => onSettingsChange("name", e.target.value)}
-          disabled={mapEmpty || map.type === "default"}
+          disabled={mapEmpty}
           my={1}
         />
       </Box>
@@ -188,7 +188,7 @@ function MapSettings({
               <Box mb={1} sx={{ width: "50%" }}>
                 <Label mb={1}>Grid Type</Label>
                 <Select
-                  isDisabled={mapEmpty || map.type === "default"}
+                  isDisabled={mapEmpty}
                   options={gridTypeSettings}
                   value={
                     !mapEmpty &&
@@ -202,7 +202,7 @@ function MapSettings({
                 <Label>
                   <Checkbox
                     checked={!mapEmpty && map.showGrid}
-                    disabled={mapEmpty || map.type === "default"}
+                    disabled={mapEmpty}
                     onChange={(e) =>
                       onSettingsChange("showGrid", e.target.checked)
                     }
@@ -212,7 +212,7 @@ function MapSettings({
                 <Label>
                   <Checkbox
                     checked={!mapEmpty && map.snapToGrid}
-                    disabled={mapEmpty || map.type === "default"}
+                    disabled={mapEmpty}
                     onChange={(e) =>
                       onSettingsChange("snapToGrid", e.target.checked)
                     }
@@ -225,7 +225,7 @@ function MapSettings({
               <Box my={2} sx={{ width: "50%" }}>
                 <Label mb={1}>Grid Measurement</Label>
                 <Select
-                  isDisabled={mapEmpty || map.type === "default"}
+                  isDisabled={mapEmpty}
                   options={
                     map && map.grid.type === "square"
                       ? gridSquareMeasurementTypeSettings
@@ -247,7 +247,7 @@ function MapSettings({
                   name="gridMeasurementScale"
                   value={`${map && map.grid.measurement.scale}`}
                   onChange={handleGridMeasurementScaleChange}
-                  disabled={mapEmpty || map.type === "default"}
+                  disabled={mapEmpty}
                   min={1}
                   my={1}
                   autoComplete="off"

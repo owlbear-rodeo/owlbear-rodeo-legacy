@@ -23,10 +23,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
       const token = tokens.find((token) => token.id === group.id);
       const isSelected = selectedGroupIds.includes(group.id);
       const canEdit =
-        isSelected &&
-        token.type !== "default" &&
-        selectMode === "single" &&
-        selectedGroupIds.length === 1;
+        isSelected && selectMode === "single" && selectedGroupIds.length === 1;
 
       return (
         <TokenTile
