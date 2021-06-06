@@ -203,7 +203,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
         <input
           onChange={(event) => handleImagesUpload(event.target.files)}
           type="file"
-          accept="image/*"
+          accept="image/jpeg, image/gif, image/png, image/webp"
           style={{ display: "none" }}
           ref={fileInputRef}
           multiple

@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { Box, Flex, Text } from "theme-ui";
+import { useToasts } from "react-toast-notifications";
+
+const supportFileTypes = ["image/jpeg", "image/gif", "image/png", "image/webp"];
 
 function ImageDrop({ onDrop, dropText, children }) {
+  const { addToast } = useToasts();
+
   const [dragging, setDragging] = useState(false);
   function handleImageDragEnter(event) {
     event.preventDefault();
@@ -35,15 +40,27 @@ function ImageDrop({ onDrop, dropText, children }) {
         if (response.ok) {
           const file = await response.blob();
           file.name = name;
-          imageFiles.push(file);
+          if (supportFileTypes.includes(file.type)) {
+            imageFiles.push(file);
+          } else {
+            addToast(`Unsupported file type for ${file.name}`);
+          }
         }
-      } catch {}
+      } catch (e) {
+        if (e.message === "Failed to fetch") {
+          addToast("Unable to import image: failed to fetch");
+        } else {
+          addToast("Unable to import image");
+        }
+      }
     }
 
     const files = event.dataTransfer.files;
     for (let file of files) {
-      if (file.type.startsWith("image")) {
+      if (supportFileTypes.includes(file.type)) {
         imageFiles.push(file);
+      } else {
+        addToast(`Unsupported file type for ${file.name}`);
       }
     }
     onDrop(imageFiles);
@@ -75,7 +92,7 @@ function ImageDrop({ onDrop, dropText, children }) {
           onDrop={handleImageDrop}
         >
           <Text sx={{ pointerEvents: "none" }}>
-            {dropText || "Drop image to upload"}
+            {dropText || "Drop image to import"}
           </Text>
         </Flex>
       )}
