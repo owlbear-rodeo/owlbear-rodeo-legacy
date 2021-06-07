@@ -8,7 +8,6 @@ import OfflineBanner from "../components/banner/OfflineBanner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
 import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
-import GlobalImageDrop from "../components/file/GlobalImageDrop";
 
 import AuthModal from "../modals/AuthModal";
 import GameExpiredModal from "../modals/GameExpiredModal";
@@ -115,18 +114,16 @@ function Game() {
               <PlayerProvider session={session}>
                 <PartyProvider session={session}>
                   <MapStageProvider value={mapStageRef}>
-                    <GlobalImageDrop>
-                      <Flex
-                        sx={{
-                          justifyContent: "space-between",
-                          flexGrow: 1,
-                          height: "100%",
-                        }}
-                      >
-                        <NetworkedParty session={session} gameId={gameId} />
-                        <NetworkedMapAndTokens session={session} />
-                      </Flex>
-                    </GlobalImageDrop>
+                    <Flex
+                      sx={{
+                        justifyContent: "space-between",
+                        flexGrow: 1,
+                        height: "100%",
+                      }}
+                    >
+                      <NetworkedParty session={session} gameId={gameId} />
+                      <NetworkedMapAndTokens session={session} />
+                    </Flex>
                     <Banner
                       isOpen={!!peerError}
                       onRequestClose={() => setPeerError(null)}

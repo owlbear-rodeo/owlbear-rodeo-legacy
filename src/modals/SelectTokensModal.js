@@ -9,7 +9,7 @@ import ConfirmModal from "./ConfirmModal";
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import ImageDrop from "../components/file/ImageDrop";
+import ImageDrop from "../components/image/ImageDrop";
 
 import TokenTiles from "../components/token/TokenTiles";
 import TokenEditBar from "../components/token/TokenEditBar";

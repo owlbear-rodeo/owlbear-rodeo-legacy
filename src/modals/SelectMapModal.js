@@ -9,7 +9,7 @@ import ConfirmModal from "./ConfirmModal";
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import ImageDrop from "../components/file/ImageDrop";
+import ImageDrop from "../components/image/ImageDrop";
 
 import MapTiles from "../components/map/MapTiles";
 import MapEditBar from "../components/map/MapEditBar";

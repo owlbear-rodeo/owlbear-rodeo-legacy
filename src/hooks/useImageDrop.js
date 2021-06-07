@@ -1,26 +1,34 @@
-import React, { useState } from "react";
-import { Box, Flex, Text } from "theme-ui";
+import { useState } from "react";
 import { useToasts } from "react-toast-notifications";
 
-const supportFileTypes = ["image/jpeg", "image/gif", "image/png", "image/webp"];
+import Vector2 from "../helpers/Vector2";
 
-function ImageDrop({ onDrop, dropText, children }) {
+function useImageDrop(
+  onImageDrop,
+  supportFileTypes = ["image/jpeg", "image/gif", "image/png", "image/webp"]
+) {
   const { addToast } = useToasts();
 
   const [dragging, setDragging] = useState(false);
-  function handleImageDragEnter(event) {
+  function onDragEnter(event) {
     event.preventDefault();
     event.stopPropagation();
     setDragging(true);
   }
 
-  function handleImageDragLeave(event) {
+  function onDragLeave(event) {
     event.preventDefault();
     event.stopPropagation();
     setDragging(false);
   }
 
-  async function handleImageDrop(event) {
+  function onDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  async function onDrop(event) {
     event.preventDefault();
     event.stopPropagation();
     let imageFiles = [];
@@ -63,41 +71,15 @@ function ImageDrop({ onDrop, dropText, children }) {
         addToast(`Unsupported file type for ${file.name}`);
       }
     }
-    onDrop(imageFiles);
+    const dropPosition = new Vector2(event.clientX, event.clientY);
+    onImageDrop(imageFiles, dropPosition);
     setDragging(false);
   }
 
-  return (
-    <Box onDragEnter={handleImageDragEnter} sx={{ height: "100%" }}>
-      {children}
-      {dragging && (
-        <Flex
-          bg="overlay"
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            left: 0,
-            bottom: 0,
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "copy",
-          }}
-          onDragLeave={handleImageDragLeave}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.dataTransfer.dropEffect = "copy";
-          }}
-          onDrop={handleImageDrop}
-        >
-          <Text sx={{ pointerEvents: "none" }}>
-            {dropText || "Drop image to import"}
-          </Text>
-        </Flex>
-      )}
-    </Box>
-  );
+  const containerListeners = { onDragEnter };
+  const overlayListeners = { onDragLeave, onDragOver, onDrop };
+
+  return { dragging, containerListeners, overlayListeners };
 }
 
-export default ImageDrop;
+export default useImageDrop;

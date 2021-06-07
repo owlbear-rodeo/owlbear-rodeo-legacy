@@ -20,6 +20,8 @@ import Session from "./Session";
 import Map from "../components/map/Map";
 import TokenBar from "../components/token/TokenBar";
 
+import GlobalImageDrop from "../components/image/GlobalImageDrop";
+
 const defaultMapActions = {
   mapDrawActions: [],
   mapDrawActionIndex: -1,
@@ -457,7 +459,7 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   return (
-    <>
+    <GlobalImageDrop>
       <Map
         map={currentMap}
         mapState={currentMapState}
@@ -482,7 +484,7 @@ function NetworkedMapAndTokens({ session }) {
         session={session}
       />
       <TokenBar onMapTokensStateCreate={handleMapTokensStateCreate} />
-    </>
+    </GlobalImageDrop>
   );
 }
 
