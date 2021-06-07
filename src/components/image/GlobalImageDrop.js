@@ -166,6 +166,7 @@ function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
             bottom: 0,
             cursor: "copy",
             flexDirection: "column",
+            zIndex: 100,
           }}
           {...overlayListeners}
         >
