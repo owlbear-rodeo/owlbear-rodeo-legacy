@@ -459,7 +459,10 @@ function NetworkedMapAndTokens({ session }) {
   }
 
   return (
-    <GlobalImageDrop>
+    <GlobalImageDrop
+      onMapChange={handleMapChange}
+      onMapTokensStateCreate={handleMapTokensStateCreate}
+    >
       <Map
         map={currentMap}
         mapState={currentMapState}

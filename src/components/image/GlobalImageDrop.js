@@ -8,21 +8,29 @@ import ConfirmModal from "../../modals/ConfirmModal";
 
 import { createMapFromFile } from "../../helpers/map";
 import { createTokenFromFile } from "../../helpers/token";
+import {
+  createTokenState,
+  clientPositionToMapPosition,
+} from "../../helpers/token";
+import Vector2 from "../../helpers/Vector2";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useMapData } from "../../contexts/MapDataContext";
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAssets } from "../../contexts/AssetsContext";
+import { useMapStage } from "../../contexts/MapStageContext";
 
 import useImageDrop from "../../hooks/useImageDrop";
 
-function GlobalImageDrop({ children, onMapTokensStateCreate }) {
+function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
   const { addToast } = useToasts();
 
   const { userId } = useAuth();
-  const { addMap } = useMapData();
+  const { addMap, getMapState } = useMapData();
   const { addToken } = useTokenData();
   const { addAssets } = useAssets();
+
+  const mapStageRef = useMapStage();
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
     false
@@ -80,24 +88,57 @@ function GlobalImageDrop({ children, onMapTokensStateCreate }) {
 
   async function handleMaps() {
     setIsLoading(true);
+    let maps = [];
     for (let file of droppedImagesRef.current) {
       const { map, assets } = await createMapFromFile(file, userId);
       await addMap(map);
       await addAssets(assets);
+      maps.push(map);
     }
+
+    // Change map if only 1 dropped
+    if (maps.length === 1) {
+      const mapState = await getMapState(maps[0].id);
+      onMapChange(maps[0], mapState);
+    }
+
     setIsLoading(false);
     droppedImagesRef.current = undefined;
   }
 
   async function handleTokens() {
     setIsLoading(true);
+    // Keep track of tokens so we can add them to the map
+    let tokens = [];
     for (let file of droppedImagesRef.current) {
       const { token, assets } = await createTokenFromFile(file, userId);
       await addToken(token);
       await addAssets(assets);
+      tokens.push(token);
     }
     setIsLoading(false);
     droppedImagesRef.current = undefined;
+
+    const dropPosition = dropPositionRef.current;
+    const mapStage = mapStageRef.current;
+    if (mapStage && dropPosition) {
+      const mapPosition = clientPositionToMapPosition(mapStage, dropPosition);
+      if (mapPosition) {
+        let tokenStates = [];
+        let offset = new Vector2(0, 0);
+        for (let token of tokens) {
+          if (token) {
+            tokenStates.push(
+              createTokenState(token, Vector2.add(mapPosition, offset), userId)
+            );
+            offset = Vector2.add(offset, 0.01);
+          }
+        }
+        if (tokenStates.length > 0) {
+          onMapTokensStateCreate(tokenStates);
+        }
+      }
+    }
   }
 
   function handleMapsOver() {
@@ -131,31 +172,39 @@ function GlobalImageDrop({ children, onMapTokensStateCreate }) {
           <Flex
             bg="overlay"
             sx={{
-              width: "100%",
-              height: "20%",
+              height: "10%",
               justifyContent: "center",
               alignItems: "center",
-              opacity: droppingType === "maps" ? 1 : 0.5,
+              color: droppingType === "maps" ? "primary" : "text",
+              opacity: droppingType === "maps" ? 1 : 0.8,
+              margin: "4px 16px",
+              border: "1px dashed",
+              width: "calc(100% - 32px)",
+              borderRadius: "12px",
             }}
             onDragEnter={handleMapsOver}
           >
-            <Text sx={{ pointerEvents: "none" }}>
-              {"Drop image to import as a map"}
+            <Text sx={{ pointerEvents: "none", userSelect: "none" }}>
+              Drop as map
             </Text>
           </Flex>
           <Flex
             bg="overlay"
             sx={{
-              width: "100%",
-              height: "80%",
+              flexGrow: 1,
               justifyContent: "center",
               alignItems: "center",
-              opacity: droppingType === "tokens" ? 1 : 0.5,
+              color: droppingType === "tokens" ? "primary" : "text",
+              opacity: droppingType === "tokens" ? 1 : 0.8,
+              margin: "4px 16px",
+              border: "1px dashed",
+              width: "calc(100% - 32px)",
+              borderRadius: "12px",
             }}
             onDragEnter={handleTokensOver}
           >
-            <Text sx={{ pointerEvents: "none" }}>
-              {"Drop image to import as a token"}
+            <Text sx={{ pointerEvents: "none", userSelect: "none" }}>
+              Drop as token
             </Text>
           </Flex>
         </Flex>

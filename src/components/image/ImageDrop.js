@@ -25,7 +25,7 @@ function ImageDrop({ onDrop, dropText, children }) {
           }}
           {...overlayListeners}
         >
-          <Text sx={{ pointerEvents: "none" }}>
+          <Text sx={{ pointerEvents: "none", color: "primary" }}>
             {dropText || "Drop image to import"}
           </Text>
         </Flex>
