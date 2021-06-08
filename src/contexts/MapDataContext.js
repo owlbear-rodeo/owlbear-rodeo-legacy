@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
 import { applyObservableChange } from "../helpers/dexie";
+import { removeGroupsItems } from "../helpers/group";
 
 const MapDataContext = React.createContext();
 
@@ -105,6 +106,11 @@ export function MapDataProvider({ children }) {
           }
         }
       }
+
+      const group = await database.table("groups").get("maps");
+      let items = removeGroupsItems(group.items, ids);
+      await database.table("groups").update("maps", { items });
+
       await database.table("maps").bulkDelete(ids);
       await database.table("states").bulkDelete(ids);
       await database.table("assets").bulkDelete(assetIds);

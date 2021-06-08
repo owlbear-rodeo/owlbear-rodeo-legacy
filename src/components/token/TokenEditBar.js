@@ -44,8 +44,8 @@ function TokenEditBar({ disabled, onLoad }) {
     setIsTokensRemoveModalOpen(false);
     const selectedTokens = getSelectedTokens();
     const selectedTokenIds = selectedTokens.map((token) => token.id);
-    await removeTokens(selectedTokenIds);
     onGroupSelect();
+    await removeTokens(selectedTokenIds);
     onLoad(false);
   }
 

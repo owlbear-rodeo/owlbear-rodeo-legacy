@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
 
 import { applyObservableChange } from "../helpers/dexie";
+import { removeGroupsItems } from "../helpers/group";
 
 const TokenDataContext = React.createContext();
 
@@ -73,6 +74,11 @@ export function TokenDataProvider({ children }) {
           assetIds.push(token.thumbnail);
         }
       }
+
+      const group = await database.table("groups").get("tokens");
+      let items = removeGroupsItems(group.items, ids);
+      await database.table("groups").update("tokens", { items });
+
       await database.table("tokens").bulkDelete(ids);
       await database.table("assets").bulkDelete(assetIds);
     },

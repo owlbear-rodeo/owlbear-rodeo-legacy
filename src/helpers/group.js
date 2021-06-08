@@ -236,3 +236,31 @@ export function renameGroup(groups, groupId, newName) {
   }
   return newGroups;
 }
+
+/**
+ * Remove items from groups including sub groups
+ * @param {Group[]} groups
+ * @param {string[]} itemIds
+ */
+export function removeGroupsItems(groups, itemIds) {
+  let newGroups = cloneDeep(groups);
+
+  for (let i = newGroups.length - 1; i >= 0; i--) {
+    const group = newGroups[i];
+    if (group.type === "item") {
+      if (itemIds.includes(group.id)) {
+        newGroups.splice(i, 1);
+      }
+    } else {
+      const items = group.items;
+      for (let j = items.length - 1; j >= 0; j--) {
+        const item = items[j];
+        if (itemIds.includes(item.id)) {
+          newGroups[i].items.splice(j, 1);
+        }
+      }
+    }
+  }
+
+  return newGroups;
+}

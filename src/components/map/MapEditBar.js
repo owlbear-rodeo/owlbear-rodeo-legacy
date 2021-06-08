@@ -62,8 +62,8 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
     setIsMapsRemoveModalOpen(false);
     const selectedMaps = getSelectedMaps();
     const selectedMapIds = selectedMaps.map((map) => map.id);
-    await removeMaps(selectedMapIds);
     onGroupSelect();
+    await removeMaps(selectedMapIds);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
       onMapChange(null, null);
