@@ -54,7 +54,7 @@ function TokenSettings({ token, onSettingsChange }) {
           my={1}
         />
       </Box>
-      <Box my={2} sx={{ flexGrow: 1 }}>
+      <Box my={2} mb={3} sx={{ flexGrow: 1 }}>
         <Label htmlFor="label">Default Label</Label>
         <Input
           name="label"
