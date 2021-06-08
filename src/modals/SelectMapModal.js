@@ -170,11 +170,11 @@ function SelectMapModal({
 
   const [canAddDraggedMap, setCanAddDraggedMap] = useState(false);
   function handleGroupsSelect(groupIds) {
-    if (!canAddDraggedMap && groupIds.length === 1) {
+    if (groupIds.length === 1) {
       // Only allow adding a map from dragging if there is a single group item selected
       const group = findGroup(mapGroups, groupIds[0]);
       setCanAddDraggedMap(group && group.type === "item");
-    } else if (canAddDraggedMap) {
+    } else {
       setCanAddDraggedMap(false);
     }
   }
