@@ -141,11 +141,9 @@ export function TileDragProvider({ onDragAdd, children }) {
   }
 
   function customCollisionDetection(rects, rect) {
-    // Calculate rect bottom taking into account any scroll offset
-    const rectBottom = rect.top + rect.bottom - rect.offsetTop;
     const rectCenter = {
       x: rect.left + rect.width / 2,
-      y: rectBottom - rect.height / 2,
+      y: rect.top + rect.height / 2,
     };
 
     // Find whether out rect center is outside our add to map rect
