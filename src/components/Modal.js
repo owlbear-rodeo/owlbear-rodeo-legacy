@@ -34,7 +34,10 @@ function StyledModal({
         },
         content: {
           backgroundColor: theme.colors.background,
-          inset: "initial",
+          top: "initial",
+          left: "initial",
+          bottom: "initial",
+          right: "initial",
           maxHeight: "100%",
           ...style,
         },
