@@ -26,7 +26,7 @@ function TokenSettings({ token, onSettingsChange }) {
         />
       </Box>
       <Box mt={2}>
-        <Label mb={1}>Default Category</Label>
+        <Label>Default Category</Label>
         <Select
           options={categorySettings}
           value={
@@ -40,22 +40,20 @@ function TokenSettings({ token, onSettingsChange }) {
           isSearchable={false}
         />
       </Box>
-      <Flex>
-        <Box mt={2} sx={{ flexGrow: 1 }}>
-          <Label htmlFor="tokenSize">Default Size</Label>
-          <Input
-            type="number"
-            name="tokenSize"
-            value={`${(token && token.defaultSize) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("defaultSize", parseFloat(e.target.value))
-            }
-            disabled={tokenEmpty}
-            min={1}
-            my={1}
-          />
-        </Box>
-      </Flex>
+      <Box mt={2} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="tokenSize">Default Size</Label>
+        <Input
+          type="number"
+          name="tokenSize"
+          value={`${(token && token.defaultSize) || 0}`}
+          onChange={(e) =>
+            onSettingsChange("defaultSize", parseFloat(e.target.value))
+          }
+          disabled={tokenEmpty}
+          min={1}
+          my={1}
+        />
+      </Box>
       <Box my={2} sx={{ flexGrow: 1 }}>
         <Label htmlFor="label">Default Label</Label>
         <Input

@@ -185,8 +185,8 @@ function MapSettings({
             sx={{ flexDirection: "column" }}
           >
             <Flex sx={{ alignItems: "flex-end" }}>
-              <Box mb={1} sx={{ width: "50%" }}>
-                <Label mb={1}>Grid Type</Label>
+              <Box sx={{ width: "50%" }}>
+                <Label>Grid Type</Label>
                 <Select
                   isDisabled={mapEmpty}
                   options={gridTypeSettings}
@@ -198,7 +198,7 @@ function MapSettings({
                   isSearchable={false}
                 />
               </Box>
-              <Flex sx={{ width: "50%", flexDirection: "column" }} ml={2}>
+              <Flex sx={{ flexGrow: 1, flexDirection: "column" }} ml={2}>
                 <Label>
                   <Checkbox
                     checked={!mapEmpty && map.showGrid}
@@ -223,7 +223,7 @@ function MapSettings({
             </Flex>
             <Flex sx={{ alignItems: "flex-end" }}>
               <Box my={2} sx={{ width: "50%" }}>
-                <Label mb={1}>Grid Measurement</Label>
+                <Label>Grid Measurement</Label>
                 <Select
                   isDisabled={mapEmpty}
                   options={
@@ -241,7 +241,7 @@ function MapSettings({
                   isSearchable={false}
                 />
               </Box>
-              <Box mb={1} mx={2} sx={{ flexGrow: 1 }}>
+              <Box m={2} mr={0} sx={{ flexGrow: 1 }}>
                 <Label htmlFor="gridMeasurementScale">Grid Scale</Label>
                 <Input
                   name="gridMeasurementScale"
@@ -258,7 +258,7 @@ function MapSettings({
           {!mapEmpty && map.type !== "default" && (
             <Flex my={2} sx={{ alignItems: "center" }}>
               <Box mb={1} sx={{ width: "50%" }}>
-                <Label mb={1}>Quality</Label>
+                <Label>Quality</Label>
                 <Select
                   options={qualitySettings}
                   value={

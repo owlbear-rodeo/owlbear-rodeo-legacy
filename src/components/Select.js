@@ -53,6 +53,10 @@ function Select({ creatable, ...props }) {
           color: theme.colors.text,
           opacity: state.isDisabled ? 0.5 : 1,
         }),
+        container: (provided) => ({
+          ...provided,
+          margin: "4px 0",
+        }),
       }}
       theme={(t) => ({
         ...t,
