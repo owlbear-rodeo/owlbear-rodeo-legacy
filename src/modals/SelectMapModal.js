@@ -17,7 +17,6 @@ import SelectMapSelectButton from "../components/map/SelectMapSelectButton";
 
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
-import TilesAddDroppable from "../components/tile/TilesAddDroppable";
 import TileActionBar from "../components/tile/TileActionBar";
 
 import { findGroup, getItemNames } from "../helpers/group";
@@ -231,7 +230,6 @@ function SelectMapModal({
               <TileActionBar onAdd={openImageDialog} addTitle="Import Map(s)" />
               <Box sx={{ position: "relative" }}>
                 <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
-                  <TilesAddDroppable containerSize={modalSize} />
                   <TilesContainer>
                     <MapTiles
                       maps={maps}
@@ -241,8 +239,7 @@ function SelectMapModal({
                   </TilesContainer>
                 </TileDragProvider>
                 <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
-                  <TilesAddDroppable containerSize={modalSize} />
-                  <TilesOverlay>
+                  <TilesOverlay modalSize={modalSize}>
                     <MapTiles
                       maps={maps}
                       onMapEdit={setEditingMapId}

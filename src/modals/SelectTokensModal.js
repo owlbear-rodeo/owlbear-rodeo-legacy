@@ -16,7 +16,6 @@ import TokenEditBar from "../components/token/TokenEditBar";
 
 import TilesOverlay from "../components/tile/TilesOverlay";
 import TilesContainer from "../components/tile/TilesContainer";
-import TilesAddDroppable from "../components/tile/TilesAddDroppable";
 import TileActionBar from "../components/tile/TileActionBar";
 
 import { getGroupItems, getItemNames } from "../helpers/group";
@@ -234,7 +233,6 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
               />
               <Box sx={{ position: "relative" }}>
                 <TileDragProvider onDragAdd={handleTokensAddToMap}>
-                  <TilesAddDroppable containerSize={modalSize} />
                   <TilesContainer>
                     <TokenTiles
                       tokens={tokens}
@@ -243,8 +241,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                   </TilesContainer>
                 </TileDragProvider>
                 <TileDragProvider onDragAdd={handleTokensAddToMap}>
-                  <TilesAddDroppable containerSize={modalSize} />
-                  <TilesOverlay>
+                  <TilesOverlay modalSize={modalSize}>
                     <TokenTiles
                       tokens={tokens}
                       onTokenEdit={setEditingTokenId}

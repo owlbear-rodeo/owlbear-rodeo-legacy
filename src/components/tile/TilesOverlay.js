@@ -5,8 +5,7 @@ import ReactResizeDetector from "react-resize-detector";
 import SimpleBar from "simplebar-react";
 
 import { useGroup } from "../../contexts/GroupContext";
-
-import TilesUngroupDroppable from "./TilesUngroupDroppable";
+import { UNGROUP_ID, ADD_TO_MAP_ID } from "../../contexts/TileDragContext";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
@@ -16,7 +15,9 @@ import GroupNameModal from "../../modals/GroupNameModal";
 
 import { renameGroup } from "../../helpers/group";
 
-function TilesOverlay({ children }) {
+import Droppable from "../drag/Droppable";
+
+function TilesOverlay({ modalSize, children }) {
   const {
     groups,
     openGroupId,
@@ -41,11 +42,6 @@ function TilesOverlay({ children }) {
     setContinerSize({ width: size, height: size });
   }
 
-  const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
-  function handleOverlayResize(width, height) {
-    setOverlaySize({ width, height });
-  }
-
   const [isGroupNameModalOpen, setIsGroupNameModalOpen] = useState(false);
   function handleGroupNameChange(name) {
     onGroupsChange(renameGroup(groups, openGroupId, name));
@@ -57,27 +53,15 @@ function TilesOverlay({ children }) {
   return (
     <>
       {openGroupId && (
-        <TilesUngroupDroppable
-          innerContainerSize={containerSize}
-          outerContainerSize={overlaySize}
+        <Box
+          sx={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+          }}
+          bg="overlay"
         />
-      )}
-      {openGroupId && (
-        <ReactResizeDetector
-          handleWidth
-          handleHeight
-          onResize={handleOverlayResize}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              top: 0,
-            }}
-            bg="overlay"
-          />
-        </ReactResizeDetector>
       )}
       <ReactResizeDetector
         handleWidth
@@ -147,11 +131,38 @@ function TilesOverlay({ children }) {
                 sx={{
                   borderRadius: "4px",
                   overflow: "hidden",
+                  position: "relative",
                 }}
                 gap={2}
                 columns={`repeat(${layout.groupGridColumns}, 1fr)`}
                 p={3}
               >
+                <Droppable
+                  id={ADD_TO_MAP_ID}
+                  style={{
+                    position: "absolute",
+                    width: modalSize.width,
+                    // height: modalSize.height,
+                    height: `calc(100% + ${
+                      modalSize.height - containerSize.height + 48
+                    }px)`,
+                    left: `-${
+                      (modalSize.width - containerSize.width) / 2 + 8
+                    }px`,
+                    top: `-${
+                      (modalSize.height - containerSize.height) / 2 + 48
+                    }px`,
+                    zIndex: -1,
+                  }}
+                />
+                <Droppable
+                  id={UNGROUP_ID}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: -1,
+                  }}
+                />
                 {children}
               </Grid>
             </SimpleBar>

@@ -3,8 +3,11 @@ import { Grid, useThemeUI } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
 import { useGroup } from "../../contexts/GroupContext";
+import { ADD_TO_MAP_ID } from "../../contexts/TileDragContext";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+
+import Droppable from "../drag/Droppable";
 
 function TilesContainer({ children }) {
   const { onGroupSelect } = useGroup();
@@ -28,10 +31,19 @@ function TilesContainer({ children }) {
           sx={{
             borderRadius: "4px",
             overflow: "hidden",
+            position: "relative",
           }}
           gap={2}
           columns={`repeat(${layout.tileGridColumns}, 1fr)`}
         >
+          <Droppable
+            id={ADD_TO_MAP_ID}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: -1,
+            }}
+          />
           {children}
         </Grid>
       </SimpleBar>

@@ -6,7 +6,6 @@ import {
   useSensor,
   useSensors,
   closestCenter,
-  rectIntersection,
 } from "@dnd-kit/core";
 
 import { useGroup } from "./GroupContext";
@@ -18,8 +17,26 @@ const TileDragContext = React.createContext();
 export const BASE_SORTABLE_ID = "__base__";
 export const GROUP_SORTABLE_ID = "__group__";
 export const GROUP_ID_PREFIX = "__group__";
-export const UNGROUP_ID_PREFIX = "__ungroup__";
-export const ADD_TO_MAP_ID_PREFIX = "__add__";
+export const UNGROUP_ID = "__ungroup__";
+export const ADD_TO_MAP_ID = "__add__";
+
+// Custom rectIntersect that takes a point
+function rectIntersection(rects, point) {
+  for (let rect of rects) {
+    const [id, bounds] = rect;
+    if (
+      id &&
+      bounds &&
+      point.x > bounds.offsetLeft &&
+      point.x < bounds.offsetLeft + bounds.width &&
+      point.y > bounds.offsetTop &&
+      point.y < bounds.offsetTop + bounds.height
+    ) {
+      return id;
+    }
+  }
+  return null;
+}
 
 export function TileDragProvider({ onDragAdd, children }) {
   const {
@@ -59,11 +76,11 @@ export function TileDragProvider({ onDragAdd, children }) {
     setOverId(over?.id);
     if (over) {
       if (
-        over.id.startsWith(UNGROUP_ID_PREFIX) ||
+        over.id.startsWith(UNGROUP_ID) ||
         over.id.startsWith(GROUP_ID_PREFIX)
       ) {
         setDragCursor("alias");
-      } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
+      } else if (over.id.startsWith(ADD_TO_MAP_ID)) {
         setDragCursor(onDragAdd ? "copy" : "no-drop");
       } else {
         setDragCursor("grabbing");
@@ -100,7 +117,7 @@ export function TileDragProvider({ onDragAdd, children }) {
         moveGroupsInto(activeGroups, overGroupIndex, selectedIndices),
         openGroupId
       );
-    } else if (over.id.startsWith(UNGROUP_ID_PREFIX)) {
+    } else if (over.id === UNGROUP_ID) {
       onGroupSelect();
       // Handle tile ungroup
       const newGroups = ungroup(groups, openGroupId, selectedIndices);
@@ -109,7 +126,7 @@ export function TileDragProvider({ onDragAdd, children }) {
         onGroupClose();
       }
       onGroupsChange(newGroups);
-    } else if (over.id.startsWith(ADD_TO_MAP_ID_PREFIX)) {
+    } else if (over.id === ADD_TO_MAP_ID) {
       onDragAdd && onDragAdd(selectedGroupIds, over.rect);
     } else if (!filter) {
       // Hanlde tile move only if we have no filter
@@ -124,27 +141,39 @@ export function TileDragProvider({ onDragAdd, children }) {
   }
 
   function customCollisionDetection(rects, rect) {
-    // Handle group rects
-    if (openGroupId) {
-      const ungroupRects = rects.filter(([id]) =>
-        id.startsWith(UNGROUP_ID_PREFIX)
-      );
-      const intersectingGroupRect = rectIntersection(ungroupRects, rect);
-      if (intersectingGroupRect) {
-        return intersectingGroupRect;
+    // Calculate rect bottom taking into account any scroll offset
+    const rectBottom = rect.top + rect.bottom - rect.offsetTop;
+    const rectCenter = {
+      x: rect.left + rect.width / 2,
+      y: rectBottom - rect.height / 2,
+    };
+
+    // Find whether out rect center is outside our add to map rect
+    const addRect = rects.find(([id]) => id === ADD_TO_MAP_ID);
+    if (addRect) {
+      const intersectingAddRect = rectIntersection([addRect], rectCenter);
+      if (!intersectingAddRect) {
+        return ADD_TO_MAP_ID;
       }
     }
 
-    // Handle add to map rects
-    const addRects = rects.filter(([id]) =>
-      id.startsWith(ADD_TO_MAP_ID_PREFIX)
-    );
-    const intersectingAddRect = rectIntersection(addRects, rect);
-    if (intersectingAddRect) {
-      return intersectingAddRect;
+    // Find whether out rect center is outside our ungroup rect
+    if (openGroupId) {
+      const ungroupRect = rects.find(([id]) => id === UNGROUP_ID);
+      if (ungroupRect) {
+        const intersectingGroupRect = rectIntersection(
+          [ungroupRect],
+          rectCenter
+        );
+        if (!intersectingGroupRect) {
+          return UNGROUP_ID;
+        }
+      }
     }
 
-    const otherRects = rects.filter(([id]) => id !== UNGROUP_ID_PREFIX);
+    const otherRects = rects.filter(
+      ([id]) => id !== ADD_TO_MAP_ID && id !== UNGROUP_ID
+    );
 
     return closestCenter(otherRects, rect);
   }
