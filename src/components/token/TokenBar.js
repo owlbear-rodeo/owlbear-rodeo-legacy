@@ -5,7 +5,8 @@ import SimpleBar from "simplebar-react";
 import {
   DragOverlay,
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -18,6 +19,7 @@ import SelectTokensButton from "./SelectTokensButton";
 import Draggable from "../drag/Draggable";
 
 import useSetting from "../../hooks/useSetting";
+import usePreventSelect from "../../hooks/usePreventSelect";
 
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -43,14 +45,20 @@ function TokenBar({ onMapTokensStateCreate }) {
   // https://github.com/clauderic/dnd-kit/issues/238
   const dragOverlayRef = useRef();
 
-  const pointerSensor = useSensor(PointerSensor, {
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { distance: 5 },
+  });
+  const touchSensor = useSensor(TouchSensor, {
     activationConstraint: { distance: 5 },
   });
   const keyboardSensor = useSensor(KeyboardSensor);
-  const sensors = useSensors(pointerSensor, keyboardSensor);
+  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
+
+  const [preventSelect, resumeSelect] = usePreventSelect();
 
   function handleDragStart({ active }) {
     setDragId(active.id);
+    preventSelect();
   }
 
   function handleDragEnd({ active }) {
@@ -93,10 +101,13 @@ function TokenBar({ onMapTokensStateCreate }) {
         }
       }
     }
+
+    resumeSelect();
   }
 
   function handleDragCancel() {
     setDragId(null);
+    resumeSelect();
   }
 
   function renderToken(group, draggable = true) {

@@ -1,7 +1,8 @@
 import React, { useState, useContext } from "react";
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -11,6 +12,8 @@ import {
 import { useGroup } from "./GroupContext";
 
 import { moveGroupsInto, moveGroups, ungroup } from "../helpers/group";
+
+import usePreventSelect from "../hooks/usePreventSelect";
 
 const TileDragContext = React.createContext();
 
@@ -56,16 +59,21 @@ export function TileDragProvider({
     filter,
   } = useGroup();
 
-  const pointerSensor = useSensor(PointerSensor, {
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { delay: 250, tolerance: 5 },
+  });
+  const touchSensor = useSensor(TouchSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
   });
   const keyboardSensor = useSensor(KeyboardSensor);
 
-  const sensors = useSensors(pointerSensor, keyboardSensor);
+  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
 
   const [dragId, setDragId] = useState();
   const [overId, setOverId] = useState();
   const [dragCursor, setDragCursor] = useState("pointer");
+
+  const [preventSelect, resumeSelect] = usePreventSelect();
 
   function handleDragStart(event) {
     const { active, over } = event;
@@ -77,6 +85,8 @@ export function TileDragProvider({
     setDragCursor("grabbing");
 
     onDragStart && onDragStart(event);
+
+    preventSelect();
   }
 
   function handleDragOver(event) {
@@ -146,6 +156,8 @@ export function TileDragProvider({
       }
     }
 
+    resumeSelect();
+
     onDragEnd && onDragEnd(event);
   }
 
@@ -153,6 +165,8 @@ export function TileDragProvider({
     setDragId();
     setOverId();
     setDragCursor("pointer");
+
+    resumeSelect();
 
     onDragCancel && onDragCancel(event);
   }

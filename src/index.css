@@ -13,3 +13,7 @@ html {
 input[type="checkbox"]:disabled ~ svg {
   opacity: 0.1;
 }
+
+.no-select div {
+  user-select: none;
+}
