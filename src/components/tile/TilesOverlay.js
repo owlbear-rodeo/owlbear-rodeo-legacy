@@ -142,7 +142,6 @@ function TilesOverlay({ modalSize, children }) {
                   style={{
                     position: "absolute",
                     width: modalSize.width,
-                    // height: modalSize.height,
                     height: `calc(100% + ${
                       modalSize.height - containerSize.height + 48
                     }px)`,
@@ -159,7 +158,10 @@ function TilesOverlay({ modalSize, children }) {
                   id={UNGROUP_ID}
                   style={{
                     position: "absolute",
-                    inset: 0,
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
                     zIndex: -1,
                   }}
                 />
