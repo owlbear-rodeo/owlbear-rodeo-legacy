@@ -168,6 +168,8 @@ function SelectMapModal({
 
   const [editingMapId, setEditingMapId] = useState();
 
+  const [isDraggingMap, setIsDraggingMap] = useState(false);
+
   const [canAddDraggedMap, setCanAddDraggedMap] = useState(false);
   function handleGroupsSelect(groupIds) {
     if (groupIds.length === 1) {
@@ -197,6 +199,7 @@ function SelectMapModal({
       isOpen={isOpen}
       onRequestClose={handleClose}
       style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      shouldCloseOnEsc={!isDraggingMap}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to import">
         <input
@@ -229,7 +232,12 @@ function SelectMapModal({
               </Label>
               <TileActionBar onAdd={openImageDialog} addTitle="Import Map(s)" />
               <Box sx={{ position: "relative" }}>
-                <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
+                <TileDragProvider
+                  onDragAdd={canAddDraggedMap && handleDragAdd}
+                  onDragStart={() => setIsDraggingMap(true)}
+                  onDragEnd={() => setIsDraggingMap(false)}
+                  onDragCancel={() => setIsDraggingMap(false)}
+                >
                   <TilesContainer>
                     <MapTiles
                       maps={maps}
@@ -238,7 +246,12 @@ function SelectMapModal({
                     />
                   </TilesContainer>
                 </TileDragProvider>
-                <TileDragProvider onDragAdd={canAddDraggedMap && handleDragAdd}>
+                <TileDragProvider
+                  onDragAdd={canAddDraggedMap && handleDragAdd}
+                  onDragStart={() => setIsDraggingMap(true)}
+                  onDragEnd={() => setIsDraggingMap(false)}
+                  onDragCancel={() => setIsDraggingMap(false)}
+                >
                   <TilesOverlay modalSize={modalSize}>
                     <MapTiles
                       maps={maps}

@@ -1,8 +1,8 @@
 import React, { useState, useContext } from "react";
 import {
   DndContext,
-  MouseSensor,
-  TouchSensor,
+  PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   closestCenter,
@@ -38,7 +38,13 @@ function rectIntersection(rects, point) {
   return null;
 }
 
-export function TileDragProvider({ onDragAdd, children }) {
+export function TileDragProvider({
+  onDragAdd,
+  onDragStart,
+  onDragEnd,
+  onDragCancel,
+  children,
+}) {
   const {
     groups,
     activeGroups,
@@ -50,29 +56,32 @@ export function TileDragProvider({ onDragAdd, children }) {
     filter,
   } = useGroup();
 
-  const mouseSensor = useSensor(MouseSensor, {
+  const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
   });
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: { delay: 250, tolerance: 5 },
-  });
+  const keyboardSensor = useSensor(KeyboardSensor);
 
-  const sensors = useSensors(mouseSensor, touchSensor);
+  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const [dragId, setDragId] = useState();
   const [overId, setOverId] = useState();
   const [dragCursor, setDragCursor] = useState("pointer");
 
-  function handleDragStart({ active, over }) {
+  function handleDragStart(event) {
+    const { active, over } = event;
     setDragId(active.id);
     setOverId(over?.id);
     if (!selectedGroupIds.includes(active.id)) {
       onGroupSelect(active.id);
     }
     setDragCursor("grabbing");
+
+    onDragStart && onDragStart(event);
   }
 
-  function handleDragOver({ over }) {
+  function handleDragOver(event) {
+    const { over } = event;
+
     setOverId(over?.id);
     if (over) {
       if (
@@ -88,56 +97,64 @@ export function TileDragProvider({ onDragAdd, children }) {
     }
   }
 
-  function handleDragEnd({ active, over }) {
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
     setDragId();
     setOverId();
     setDragCursor("pointer");
-    if (!active || !over || active.id === over.id) {
-      return;
+    if (active && over && active.id !== over.id) {
+      let selectedIndices = selectedGroupIds.map((groupId) =>
+        activeGroups.findIndex((group) => group.id === groupId)
+      );
+      // Maintain current group sorting
+      selectedIndices = selectedIndices.sort((a, b) => a - b);
+
+      if (over.id.startsWith(GROUP_ID_PREFIX)) {
+        onGroupSelect();
+        // Handle tile group
+        const overId = over.id.slice(9);
+        if (overId !== active.id) {
+          const overGroupIndex = activeGroups.findIndex(
+            (group) => group.id === overId
+          );
+          onGroupsChange(
+            moveGroupsInto(activeGroups, overGroupIndex, selectedIndices),
+            openGroupId
+          );
+        }
+      } else if (over.id === UNGROUP_ID) {
+        onGroupSelect();
+        // Handle tile ungroup
+        const newGroups = ungroup(groups, openGroupId, selectedIndices);
+        // Close group if it was removed
+        if (!newGroups.find((group) => group.id === openGroupId)) {
+          onGroupClose();
+        }
+        onGroupsChange(newGroups);
+      } else if (over.id === ADD_TO_MAP_ID) {
+        onDragAdd && onDragAdd(selectedGroupIds, over.rect);
+      } else if (!filter) {
+        // Hanlde tile move only if we have no filter
+        const overGroupIndex = activeGroups.findIndex(
+          (group) => group.id === over.id
+        );
+        onGroupsChange(
+          moveGroups(activeGroups, overGroupIndex, selectedIndices),
+          openGroupId
+        );
+      }
     }
 
-    let selectedIndices = selectedGroupIds.map((groupId) =>
-      activeGroups.findIndex((group) => group.id === groupId)
-    );
-    // Maintain current group sorting
-    selectedIndices = selectedIndices.sort((a, b) => a - b);
+    onDragEnd && onDragEnd(event);
+  }
 
-    if (over.id.startsWith(GROUP_ID_PREFIX)) {
-      onGroupSelect();
-      // Handle tile group
-      const overId = over.id.slice(9);
-      if (overId === active.id) {
-        return;
-      }
+  function handleDragCancel(event) {
+    setDragId();
+    setOverId();
+    setDragCursor("pointer");
 
-      const overGroupIndex = activeGroups.findIndex(
-        (group) => group.id === overId
-      );
-      onGroupsChange(
-        moveGroupsInto(activeGroups, overGroupIndex, selectedIndices),
-        openGroupId
-      );
-    } else if (over.id === UNGROUP_ID) {
-      onGroupSelect();
-      // Handle tile ungroup
-      const newGroups = ungroup(groups, openGroupId, selectedIndices);
-      // Close group if it was removed
-      if (!newGroups.find((group) => group.id === openGroupId)) {
-        onGroupClose();
-      }
-      onGroupsChange(newGroups);
-    } else if (over.id === ADD_TO_MAP_ID) {
-      onDragAdd && onDragAdd(selectedGroupIds, over.rect);
-    } else if (!filter) {
-      // Hanlde tile move only if we have no filter
-      const overGroupIndex = activeGroups.findIndex(
-        (group) => group.id === over.id
-      );
-      onGroupsChange(
-        moveGroups(activeGroups, overGroupIndex, selectedIndices),
-        openGroupId
-      );
-    }
+    onDragCancel && onDragCancel(event);
   }
 
   function customCollisionDetection(rects, rect) {
@@ -183,6 +200,7 @@ export function TileDragProvider({ onDragAdd, children }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
+      onDragCancel={handleDragCancel}
       sensors={sensors}
       collisionDetection={customCollisionDetection}
     >

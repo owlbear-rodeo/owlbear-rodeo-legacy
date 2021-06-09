@@ -6,6 +6,7 @@ import {
   DragOverlay,
   DndContext,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -45,7 +46,8 @@ function TokenBar({ onMapTokensStateCreate }) {
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 5 },
   });
-  const sensors = useSensors(pointerSensor);
+  const keyboardSensor = useSensor(KeyboardSensor);
+  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   function handleDragStart({ active }) {
     setDragId(active.id);
@@ -93,6 +95,10 @@ function TokenBar({ onMapTokensStateCreate }) {
     }
   }
 
+  function handleDragCancel() {
+    setDragId(null);
+  }
+
   function renderToken(group, draggable = true) {
     if (group.type === "item") {
       const token = tokensById[group.id];
@@ -132,6 +138,7 @@ function TokenBar({ onMapTokensStateCreate }) {
     <DndContext
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
       autoScroll={false}
       sensors={sensors}
     >

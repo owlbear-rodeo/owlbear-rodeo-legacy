@@ -139,6 +139,8 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
    */
   const [editingTokenId, setEditingTokenId] = useState();
 
+  const [isDraggingToken, setIsDraggingToken] = useState(false);
+
   const mapStageRef = useMapStage();
   function handleTokensAddToMap(groupIds, rect) {
     let clientPosition = new Vector2(
@@ -198,6 +200,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      shouldCloseOnEsc={!isDraggingToken}
     >
       <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to import">
         <input
@@ -232,7 +235,12 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                 addTitle="Import Token(s)"
               />
               <Box sx={{ position: "relative" }}>
-                <TileDragProvider onDragAdd={handleTokensAddToMap}>
+                <TileDragProvider
+                  onDragAdd={handleTokensAddToMap}
+                  onDragStart={() => setIsDraggingToken(true)}
+                  onDragEnd={() => setIsDraggingToken(false)}
+                  onDragCancel={() => setIsDraggingToken(false)}
+                >
                   <TilesContainer>
                     <TokenTiles
                       tokens={tokens}
@@ -240,7 +248,12 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                     />
                   </TilesContainer>
                 </TileDragProvider>
-                <TileDragProvider onDragAdd={handleTokensAddToMap}>
+                <TileDragProvider
+                  onDragAdd={handleTokensAddToMap}
+                  onDragStart={() => setIsDraggingToken(true)}
+                  onDragEnd={() => setIsDraggingToken(false)}
+                  onDragCancel={() => setIsDraggingToken(false)}
+                >
                   <TilesOverlay modalSize={modalSize}>
                     <TokenTiles
                       tokens={tokens}
