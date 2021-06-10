@@ -50,19 +50,21 @@ function TilesOverlay({ modalSize, children }) {
 
   const group = groups.find((group) => group.id === openGroupId);
 
+  if (!openGroupId) {
+    return null;
+  }
+
   return (
     <>
-      {openGroupId && (
-        <Box
-          sx={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            top: 0,
-          }}
-          bg="overlay"
-        />
-      )}
+      <Box
+        sx={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          top: 0,
+        }}
+        bg="overlay"
+      />
       <ReactResizeDetector
         handleWidth
         handleHeight
