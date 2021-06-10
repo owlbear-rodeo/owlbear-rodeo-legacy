@@ -69,13 +69,12 @@ function NetworkedMapAndTokens({ session }) {
     const { owner } = map;
     let processedTokens = new Set();
     for (let tokenState of Object.values(mapState.tokens)) {
-      if (
-        tokenState.file &&
-        !processedTokens.has(tokenState.file) &&
-        tokenState.owner === owner
-      ) {
+      if (tokenState.file && !processedTokens.has(tokenState.file)) {
         processedTokens.add(tokenState.file);
-        assets[tokenState.file] = { id: tokenState.file, owner };
+        assets[tokenState.file] = {
+          id: tokenState.file,
+          owner: tokenState.owner,
+        };
       }
     }
     if (map.type === "file") {
