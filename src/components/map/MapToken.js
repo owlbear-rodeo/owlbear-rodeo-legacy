@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Image as KonvaImage, Group, Line, Rect, Circle } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
 
-import useDebounce from "../../hooks/useDebounce";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
@@ -13,7 +12,6 @@ import {
   useSetPreventMapInteraction,
   useMapWidth,
   useMapHeight,
-  useDebouncedStageScale,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useDataURL } from "../../contexts/AssetsContext";
@@ -37,7 +35,6 @@ function MapToken({
 }) {
   const { userId } = useAuth();
 
-  const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
   const setPreventMapInteraction = useSetPreventMapInteraction();
@@ -45,7 +42,7 @@ function MapToken({
   const gridCellPixelSize = useGridCellPixelSize();
 
   const tokenURL = useDataURL(tokenState, tokenSources);
-  const [tokenImage, tokenImageStatus] = useImage(tokenURL);
+  const [tokenImage] = useImage(tokenURL);
 
   const tokenAspectRatio = tokenState.width / tokenState.height;
 
@@ -181,43 +178,7 @@ function MapToken({
   const tokenWidth = minCellSize * tokenState.size;
   const tokenHeight = (minCellSize / tokenAspectRatio) * tokenState.size;
 
-  const debouncedStageScale = useDebounce(stageScale, 50);
   const imageRef = useRef();
-  useEffect(() => {
-    const image = imageRef.current;
-    if (!image) {
-      return;
-    }
-
-    const canvas = image.getCanvas();
-    const pixelRatio = canvas.pixelRatio || 1;
-
-    if (
-      tokenImageStatus === "loaded" &&
-      tokenWidth > 0 &&
-      tokenHeight > 0 &&
-      tokenImage
-    ) {
-      const maxImageSize = Math.max(tokenImage.width, tokenImage.height);
-      const maxTokenSize = Math.max(tokenWidth, tokenHeight);
-      // Constrain image buffer to original image size
-      const maxRatio = maxImageSize / maxTokenSize;
-
-      image.cache({
-        pixelRatio: Math.min(
-          Math.max(debouncedStageScale * pixelRatio, 1),
-          maxRatio
-        ),
-      });
-      image.drawHitFromCache();
-    }
-  }, [
-    debouncedStageScale,
-    tokenWidth,
-    tokenHeight,
-    tokenImageStatus,
-    tokenImage,
-  ]);
 
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;
@@ -278,7 +239,7 @@ function MapToken({
     const outline = getScaledOutline();
     const sharedProps = {
       fill: colors.black,
-      opacity: 0.8,
+      opacity: tokenImage ? 0 : 0.8,
     };
     if (outline.type === "rect") {
       return (
@@ -332,31 +293,29 @@ function MapToken({
       name={tokenName}
       id={tokenState.id}
     >
-      {!tokenImage ? (
-        <Group
-          width={tokenWidth}
-          height={tokenHeight}
-          x={0}
-          y={0}
-          rotation={tokenState.rotation}
-          offsetX={tokenWidth / 2}
-          offsetY={tokenHeight / 2}
-        >
-          {renderOutline()}
-        </Group>
-      ) : (
-        <KonvaImage
-          ref={imageRef}
-          width={tokenWidth}
-          height={tokenHeight}
-          x={0}
-          y={0}
-          image={tokenImage}
-          rotation={tokenState.rotation}
-          offsetX={tokenWidth / 2}
-          offsetY={tokenHeight / 2}
-        />
-      )}
+      <Group
+        width={tokenWidth}
+        height={tokenHeight}
+        x={0}
+        y={0}
+        rotation={tokenState.rotation}
+        offsetX={tokenWidth / 2}
+        offsetY={tokenHeight / 2}
+      >
+        {renderOutline()}
+      </Group>
+      <KonvaImage
+        ref={imageRef}
+        width={tokenWidth}
+        height={tokenHeight}
+        x={0}
+        y={0}
+        image={tokenImage}
+        rotation={tokenState.rotation}
+        offsetX={tokenWidth / 2}
+        offsetY={tokenHeight / 2}
+        hitFunc={() => {}}
+      />
       <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
         <TokenStatus
           tokenState={tokenState}
