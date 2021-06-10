@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
 import {
-  DndContext,
   MouseSensor,
   TouchSensor,
   KeyboardSensor,
@@ -8,6 +7,8 @@ import {
   useSensors,
   closestCenter,
 } from "@dnd-kit/core";
+
+import DragContext from "./DragContext";
 
 import { useGroup } from "./GroupContext";
 
@@ -108,7 +109,7 @@ export function TileDragProvider({
   }
 
   function handleDragEnd(event) {
-    const { active, over } = event;
+    const { active, over, overlayNodeClientRect } = event;
 
     setDragId();
     setOverId();
@@ -143,7 +144,9 @@ export function TileDragProvider({
         }
         onGroupsChange(newGroups);
       } else if (over.id === ADD_TO_MAP_ID) {
-        onDragAdd && onDragAdd(selectedGroupIds, over.rect);
+        onDragAdd &&
+          overlayNodeClientRect &&
+          onDragAdd(selectedGroupIds, overlayNodeClientRect);
       } else if (!filter) {
         // Hanlde tile move only if we have no filter
         const overGroupIndex = activeGroups.findIndex(
@@ -210,7 +213,7 @@ export function TileDragProvider({
   const value = { dragId, overId, dragCursor };
 
   return (
-    <DndContext
+    <DragContext
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
@@ -221,7 +224,7 @@ export function TileDragProvider({
       <TileDragContext.Provider value={value}>
         {children}
       </TileDragContext.Provider>
-    </DndContext>
+    </DragContext>
   );
 }
 

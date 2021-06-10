@@ -144,8 +144,8 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   const mapStageRef = useMapStage();
   function handleTokensAddToMap(groupIds, rect) {
     let clientPosition = new Vector2(
-      rect.width / 2 + rect.offsetLeft,
-      rect.height / 2 + rect.offsetTop
+      rect.width / 2 + rect.left,
+      rect.height / 2 + rect.top
     );
     const mapStage = mapStageRef.current;
     if (!mapStage) {

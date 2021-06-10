@@ -1,10 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Box, Flex } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import {
   DragOverlay,
-  DndContext,
   MouseSensor,
   TouchSensor,
   KeyboardSensor,
@@ -24,6 +23,7 @@ import usePreventSelect from "../../hooks/usePreventSelect";
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useMapStage } from "../../contexts/MapStageContext";
+import DragContext from "../../contexts/DragContext";
 
 import {
   createTokenState,
@@ -40,10 +40,6 @@ function TokenBar({ onMapTokensStateCreate }) {
   const [dragId, setDragId] = useState();
 
   const mapStageRef = useMapStage();
-  // Use a ref to the drag overlay to get it's position on dragEnd
-  // TODO: use active.rect when dnd-kit bug is fixed
-  // https://github.com/clauderic/dnd-kit/issues/238
-  const dragOverlayRef = useRef();
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { distance: 5 },
@@ -61,13 +57,12 @@ function TokenBar({ onMapTokensStateCreate }) {
     preventSelect();
   }
 
-  function handleDragEnd({ active }) {
+  function handleDragEnd({ active, overlayNodeClientRect }) {
     setDragId(null);
 
     const mapStage = mapStageRef.current;
-    const dragOverlay = dragOverlayRef.current;
-    if (mapStage && dragOverlay) {
-      const dragRect = dragOverlay.getBoundingClientRect();
+    if (mapStage) {
+      const dragRect = overlayNodeClientRect;
       const dragPosition = {
         x: dragRect.left + dragRect.width / 2,
         y: dragRect.top + dragRect.height / 2,
@@ -146,7 +141,7 @@ function TokenBar({ onMapTokensStateCreate }) {
   }
 
   return (
-    <DndContext
+    <DragContext
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
@@ -185,24 +180,13 @@ function TokenBar({ onMapTokensStateCreate }) {
           <SelectTokensButton onMapTokensStateCreate={onMapTokensStateCreate} />
         </Flex>
         {createPortal(
-          <DragOverlay
-            // Ensure a drop animation plays to allow us to get the position of the drag overlay in drag end
-            dropAnimation={{
-              dragSourceOpacity: 0,
-              duration: 1,
-              easing: "ease",
-            }}
-          >
-            {dragId && (
-              <div ref={dragOverlayRef}>
-                {renderToken(findGroup(tokenGroups, dragId), false)}
-              </div>
-            )}
+          <DragOverlay dropAnimation={null}>
+            {dragId && renderToken(findGroup(tokenGroups, dragId), false)}
           </DragOverlay>,
           document.body
         )}
       </Box>
-    </DndContext>
+    </DragContext>
   );
 }
 
