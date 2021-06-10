@@ -453,6 +453,7 @@ export const versions = {
         let assets = [];
         assets.push({
           id: uuid(),
+          owner: map.owner,
           file: map.file,
           width: map.width,
           height: map.height,
@@ -465,6 +466,7 @@ export const versions = {
           const mapRes = map.resolutions[resolution];
           assets.push({
             id: uuid(),
+            owner: map.owner,
             file: mapRes.file,
             width: mapRes.width,
             height: mapRes.height,
@@ -477,6 +479,7 @@ export const versions = {
 
         assets.push({
           id: uuid(),
+          owner: map.owner,
           file: map.thumbnail.file,
           width: map.thumbnail.width,
           height: map.thumbnail.height,
@@ -496,6 +499,7 @@ export const versions = {
         let assets = [];
         assets.push({
           id: uuid(),
+          owner: token.owner,
           file: token.file,
           width: token.width,
           height: token.height,
@@ -505,6 +509,7 @@ export const versions = {
         });
         assets.push({
           id: uuid(),
+          owner: token.owner,
           file: token.thumbnail.file,
           width: token.thumbnail.width,
           height: token.thumbnail.height,
