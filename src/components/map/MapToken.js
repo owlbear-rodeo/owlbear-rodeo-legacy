@@ -246,34 +246,68 @@ function MapToken({
     tokenName = tokenName + "-locked";
   }
 
-  let outline = tokenState.outline;
-  if (Array.isArray(tokenState.outline)) {
-    outline = [...outline]; // Copy array so we can edit it imutably
-    for (let i = 0; i < outline.length; i += 2) {
-      // Scale outline to the token
-      outline[i] = (outline[i] / tokenState.width) * tokenWidth;
-      outline[i + 1] = (outline[i + 1] / tokenState.height) * tokenHeight;
+  function getScaledOutline() {
+    let outline = tokenState.outline;
+    if (outline.type === "rect") {
+      return {
+        ...outline,
+        x: (outline.x / tokenState.width) * tokenWidth,
+        y: (outline.y / tokenState.height) * tokenHeight,
+        width: (outline.width / tokenState.width) * tokenWidth,
+        height: (outline.height / tokenState.height) * tokenHeight,
+      };
+    } else if (outline.type === "circle") {
+      return {
+        ...outline,
+        x: (outline.x / tokenState.width) * tokenWidth,
+        y: (outline.y / tokenState.height) * tokenHeight,
+        radius: (outline.radius / tokenState.width) * tokenWidth,
+      };
+    } else {
+      let points = [...outline.points]; // Copy array so we can edit it imutably
+      for (let i = 0; i < points.length; i += 2) {
+        // Scale outline to the token
+        points[i] = (points[i] / tokenState.width) * tokenWidth;
+        points[i + 1] = (points[i + 1] / tokenState.height) * tokenHeight;
+      }
+      return { ...outline, points };
     }
   }
 
   function renderOutline() {
+    const outline = getScaledOutline();
     const sharedProps = {
       fill: colors.black,
-      width: tokenWidth,
-      height: tokenHeight,
-      x: 0,
-      y: 0,
-      rotation: tokenState.rotation,
-      offsetX: tokenWidth / 2,
-      offsetY: tokenHeight / 2,
       opacity: 0.8,
     };
-    if (outline === "rect") {
-      return <Rect {...sharedProps} />;
-    } else if (outline === "circle") {
-      return <Circle {...sharedProps} offsetX={0} offsetY={0} />;
+    if (outline.type === "rect") {
+      return (
+        <Rect
+          width={outline.width}
+          height={outline.height}
+          x={outline.x}
+          y={outline.y}
+          {...sharedProps}
+        />
+      );
+    } else if (outline.type === "circle") {
+      return (
+        <Circle
+          radius={outline.radius}
+          x={outline.x}
+          y={outline.y}
+          {...sharedProps}
+        />
+      );
     } else {
-      return <Line {...sharedProps} points={outline} closed tension={0.33} />;
+      return (
+        <Line
+          points={outline.points}
+          closed
+          tension={outline.points < 200 ? 0 : 0.33}
+          {...sharedProps}
+        />
+      );
     }
   }
 
@@ -299,7 +333,17 @@ function MapToken({
       id={tokenState.id}
     >
       {!tokenImage ? (
-        renderOutline()
+        <Group
+          width={tokenWidth}
+          height={tokenHeight}
+          x={0}
+          y={0}
+          rotation={tokenState.rotation}
+          offsetX={tokenWidth / 2}
+          offsetY={tokenHeight / 2}
+        >
+          {renderOutline()}
+        </Group>
       ) : (
         <KonvaImage
           ref={imageRef}

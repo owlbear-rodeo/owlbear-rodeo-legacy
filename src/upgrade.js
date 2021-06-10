@@ -555,11 +555,8 @@ export const versions = {
           token.defaultCategory = token.category;
           delete token.category;
           token.defaultLabel = "";
-          if (token.width === token.height) {
-            token.outline = "circle";
-          } else {
-            token.outline = "rect";
-          }
+          // TODO: move to outline detection
+          token.outline = { type: "circle", x: 256, y: 256, radius: 256 };
           delete token.lastUsed;
         });
     });

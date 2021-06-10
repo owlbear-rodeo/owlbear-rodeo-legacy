@@ -1,4 +1,7 @@
+import imageOutline from "image-outline";
+
 import blobToBuffer from "./blobToBuffer";
+import Vector2 from "./Vector2";
 
 const lightnessDetectionOffset = 0.1;
 
@@ -151,4 +154,76 @@ export async function createThumbnail(image, type, size = 300, quality = 0.5) {
     height: thumbnailImage.height,
     mime: type,
   };
+}
+
+/**
+ * @typedef CircleOutline
+ * @property {"circle"} type
+ * @property {number} x - Center X of the circle
+ * @property {number} y - Center Y of the circle
+ * @property {number} radius
+ */
+
+/**
+ * @typedef RectOutline
+ * @property {"rect"} type
+ * @property {number} width
+ * @property {number} height
+ * @property {number} x - Leftmost X position of the rect
+ * @property {number} y - Topmost Y position of the rect
+ */
+
+/**
+ * @typedef PathOutline
+ * @property {"path"} type
+ * @property {number[]} points - Alternating x, y coordinates zipped together
+ */
+
+/**
+ * @typedef {CircleOutline|RectOutline|PathOutline} Outline
+ */
+
+/**
+ * Get the outline of an image
+ * @param {HTMLImageElement} image
+ * @returns {Outline}
+ */
+export function getImageOutline(image, maxPoints = 100) {
+  let baseOutline = imageOutline(image);
+
+  if (baseOutline) {
+    if (baseOutline.length > maxPoints) {
+      baseOutline = Vector2.resample(baseOutline, maxPoints);
+    }
+    const bounds = Vector2.getBoundingBox(baseOutline);
+    if (Vector2.rectangular(baseOutline)) {
+      return {
+        type: "rect",
+        x: Math.round(bounds.min.x),
+        y: Math.round(bounds.min.y),
+        width: Math.round(bounds.width),
+        height: Math.round(bounds.height),
+      };
+    } else if (
+      Vector2.circular(
+        baseOutline,
+        Math.max(bounds.width / 10, bounds.height / 10)
+      )
+    ) {
+      return {
+        type: "circle",
+        x: Math.round(bounds.center.x),
+        y: Math.round(bounds.center.y),
+        radius: Math.round(Math.min(bounds.width, bounds.height) / 2),
+      };
+    } else {
+      // Flatten and round outline to save on storage size
+      const points = baseOutline
+        .map(({ x, y }) => [Math.round(x), Math.round(y)])
+        .flat();
+      return { type: "path", points };
+    }
+  } else {
+    return { type: "rect", x: 0, y: 0, width: 1, height: 1 };
+  }
 }

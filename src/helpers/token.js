@@ -1,10 +1,8 @@
 import { v4 as uuid } from "uuid";
 import Case from "case";
-import imageOutline from "image-outline";
 
 import blobToBuffer from "./blobToBuffer";
-import { createThumbnail } from "./image";
-import Vector2 from "./Vector2";
+import { createThumbnail, getImageOutline } from "./image";
 
 export function createTokenState(token, position, userId) {
   let tokenState = {
@@ -76,14 +74,7 @@ export async function createTokenFromFile(file, userId) {
       };
       assets.push(fileAsset);
 
-      let outline = imageOutline(image);
-      if (outline.length > 100) {
-        outline = Vector2.resample(outline, 100);
-      }
-      // Flatten and round outline to save on storage size
-      outline = outline
-        .map(({ x, y }) => [Math.round(x), Math.round(y)])
-        .flat();
+      const outline = getImageOutline(image);
 
       const token = {
         name,

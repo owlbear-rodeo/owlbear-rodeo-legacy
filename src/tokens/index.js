@@ -97,7 +97,7 @@ export function getDefaultTokens(userId) {
       hideInSidebar: false,
       width: 256,
       height: 256,
-      outline: "circle",
+      outline: { type: "circle", x: 128, y: 128, radius: 128 },
       owner: userId,
       created: tokenKeys.length - i,
       lastModified: Date.now(),
