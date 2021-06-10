@@ -610,6 +610,7 @@ export const versions = {
                 state.tokens[id].outline = token.outline;
                 state.tokens[id].width = token.width;
                 state.tokens[id].height = token.height;
+                state.tokens[id].owner = token.owner;
               } else {
                 state.tokens[id].category = "character";
                 state.tokens[id].type = "file";
