@@ -6,7 +6,7 @@ import Case from "case";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
-import { createThumbnail } from "./helpers/image";
+import { createThumbnail, getImageOutline } from "./helpers/image";
 import {
   AddShapeAction,
   EditShapeAction,
@@ -419,8 +419,35 @@ export const versions = {
         });
     });
   },
-  // v1.9.0 - Move map assets into new table
+  // v1.9.0 - Add outlines to tokens
   23(v) {
+    v.stores({}).upgrade(async (tx) => {
+      const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
+      const tokenOutlines = await Dexie.waitFor(
+        Promise.all(tokens.map(createDataOutline))
+      );
+
+      return tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          const tokenOutline = tokenOutlines.find((el) => el.id === token.id);
+          if (tokenOutline) {
+            token.outline = tokenOutline.outline;
+          } else {
+            token.outline = {
+              type: "rect",
+              width: token.width,
+              height: token.height,
+              x: 0,
+              y: 0,
+            };
+          }
+        });
+    });
+  },
+  // v1.9.0 - Move map assets into new table
+  24(v) {
     v.stores({ assets: "id, owner" }).upgrade((tx) => {
       tx.table("maps").each((map) => {
         let assets = [];
@@ -463,7 +490,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Move token assets into new table
-  24(v) {
+  25(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("tokens").each((token) => {
         let assets = [];
@@ -490,7 +517,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Create foreign keys for assets
-  25(v) {
+  26(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("assets").each((asset) => {
         if (asset.prevType === "map") {
@@ -515,7 +542,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove asset migration helpers
-  26(v) {
+  27(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("assets")
         .toCollection()
@@ -529,7 +556,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Remap map resolution assets
-  27(v) {
+  28(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("maps")
         .toCollection()
@@ -546,8 +573,8 @@ export const versions = {
         });
     });
   },
-  // v1.9.0 - Move tokens to use more defaults and add token outline to tokens
-  28(v) {
+  // v1.9.0 - Move tokens to use more defaults
+  29(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("tokens")
         .toCollection()
@@ -555,14 +582,12 @@ export const versions = {
           token.defaultCategory = token.category;
           delete token.category;
           token.defaultLabel = "";
-          // TODO: move to outline detection
-          token.outline = { type: "circle", x: 256, y: 256, radius: 256 };
           delete token.lastUsed;
         });
     });
   },
   // v1.9.0 - Move tokens to use more defaults and add token outline to token states
-  29(v) {
+  30(v) {
     v.stores({}).upgrade(async (tx) => {
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       tx.table("states")
@@ -584,7 +609,13 @@ export const versions = {
                 state.tokens[id].category = "character";
                 state.tokens[id].type = "file";
                 state.tokens[id].file = "";
-                state.tokens[id].outline = "rect";
+                state.tokens[id].outline = {
+                  type: "rect",
+                  width: 256,
+                  height: 256,
+                  x: 0,
+                  y: 0,
+                };
                 state.tokens[id].width = 256;
                 state.tokens[id].height = 256;
               }
@@ -594,7 +625,12 @@ export const versions = {
               state.tokens[id].key = Case.camel(
                 state.tokens[id].tokenId.slice(10)
               );
-              state.tokens[id].outline = "circle";
+              state.tokens[id].outline = {
+                type: "circle",
+                x: 128,
+                y: 128,
+                radius: 128,
+              };
               state.tokens[id].width = 256;
               state.tokens[id].height = 256;
             }
@@ -603,7 +639,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove maps not owned by user as cache is now done on the asset level
-  30(v) {
+  31(v) {
     v.stores({}).upgrade(async (tx) => {
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
@@ -613,7 +649,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove tokens not owned by user as cache is now done on the asset level
-  31(v) {
+  32(v) {
     v.stores({}).upgrade(async (tx) => {
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
@@ -623,7 +659,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Store default maps and tokens in db
-  32(v) {
+  33(v) {
     v.stores({}).upgrade(async (tx) => {
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
@@ -637,7 +673,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Add new group table
-  33(v) {
+  34(v) {
     v.stores({ groups: "id" }).upgrade(async (tx) => {
       function groupItems(items) {
         let groups = [];
@@ -672,7 +708,7 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove map and token group in respective tables
-  34(v) {
+  35(v) {
     v.stores({}).upgrade((tx) => {
       tx.table("maps")
         .toCollection()
@@ -688,7 +724,7 @@ export const versions = {
   },
 };
 
-export const latestVersion = 34;
+export const latestVersion = 35;
 
 /**
  * Load versions onto a database up to a specific version number
@@ -762,5 +798,30 @@ async function createDataThumbnail(data) {
       image.src = url;
     }),
     60000 * 10 // 10 minute timeout
+  );
+}
+
+async function createDataOutline(data) {
+  const url = URL.createObjectURL(new Blob([data.file]));
+  return await Dexie.waitFor(
+    new Promise((resolve) => {
+      let image = new Image();
+      image.onload = async () => {
+        resolve({ id: data.id, outline: getImageOutline(image) });
+      };
+      image.onerror = () => {
+        resolve({
+          id: data.id,
+          outline: {
+            type: "rect",
+            width: data.width,
+            height: data.height,
+            x: 0,
+            y: 0,
+          },
+        });
+      };
+      image.src = url;
+    })
   );
 }
