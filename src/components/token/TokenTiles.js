@@ -10,7 +10,7 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function TokenTiles({ tokens, onTokenEdit, subgroup }) {
+function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
   const {
     selectedGroupIds,
     selectMode,
@@ -20,7 +20,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
 
   function renderTile(group) {
     if (group.type === "item") {
-      const token = tokens.find((token) => token.id === group.id);
+      const token = tokensById[group.id];
       const isSelected = selectedGroupIds.includes(group.id);
       const canEdit =
         isSelected && selectMode === "single" && selectedGroupIds.length === 1;
@@ -48,9 +48,7 @@ function TokenTiles({ tokens, onTokenEdit, subgroup }) {
         <TokenTileGroup
           key={group.id}
           group={group}
-          tokens={items.map((item) =>
-            tokens.find((token) => token.id === item.id)
-          )}
+          tokens={items.map((item) => tokensById[item.id])}
           isSelected={isSelected}
           onSelect={onGroupSelect}
           onDoubleClick={() => canOpen && onGroupOpen(group.id)}

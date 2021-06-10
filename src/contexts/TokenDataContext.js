@@ -169,10 +169,15 @@ export function TokenDataProvider({ children }) {
     };
   }, [database, databaseStatus]);
 
-  const tokensById = tokens.reduce((obj, token) => {
-    obj[token.id] = token;
-    return obj;
-  }, {});
+  const [tokensById, setTokensById] = useState({});
+  useEffect(() => {
+    setTokensById(
+      tokens.reduce((obj, token) => {
+        obj[token.id] = token;
+        return obj;
+      }, {})
+    );
+  }, [tokens]);
 
   const value = {
     tokens,

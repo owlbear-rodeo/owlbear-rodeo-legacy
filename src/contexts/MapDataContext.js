@@ -221,6 +221,16 @@ export function MapDataProvider({ children }) {
     };
   }, [database, databaseStatus]);
 
+  const [mapsById, setMapsById] = useState({});
+  useEffect(() => {
+    setMapsById(
+      maps.reduce((obj, map) => {
+        obj[map.id] = map;
+        return obj;
+      }, {})
+    );
+  }, [maps]);
+
   const value = {
     maps,
     mapStates,
@@ -234,6 +244,7 @@ export function MapDataProvider({ children }) {
     mapsLoading,
     getMapState,
     updateMapGroups,
+    mapsById,
   };
   return (
     <MapDataContext.Provider value={value}>{children}</MapDataContext.Provider>

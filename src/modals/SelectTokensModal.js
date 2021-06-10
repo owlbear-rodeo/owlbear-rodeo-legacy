@@ -215,6 +215,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
           handleWidth
           handleHeight
           onResize={handleModalResize}
+          refreshMode="debounce"
         >
           <GroupProvider
             groups={tokenGroups}
@@ -243,7 +244,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                 >
                   <TilesContainer>
                     <TokenTiles
-                      tokens={tokens}
+                      tokensById={tokensById}
                       onTokenEdit={setEditingTokenId}
                     />
                   </TilesContainer>
@@ -256,7 +257,7 @@ function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
                 >
                   <TilesOverlay modalSize={modalSize}>
                     <TokenTiles
-                      tokens={tokens}
+                      tokensById={tokensById}
                       onTokenEdit={setEditingTokenId}
                       subgroup
                     />

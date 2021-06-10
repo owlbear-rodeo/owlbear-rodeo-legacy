@@ -52,6 +52,7 @@ function SelectMapModal({
     updateMapGroups,
     updateMap,
     updateMapState,
+    mapsById,
   } = useMapData();
   const { addAssets } = useAssets();
 
@@ -214,6 +215,7 @@ function SelectMapModal({
           handleWidth
           handleHeight
           onResize={handleModalResize}
+          refreshMode="debounce"
         >
           <GroupProvider
             groups={mapGroups}
@@ -240,7 +242,7 @@ function SelectMapModal({
                 >
                   <TilesContainer>
                     <MapTiles
-                      maps={maps}
+                      mapsById={mapsById}
                       onMapEdit={setEditingMapId}
                       onMapSelect={handleMapSelect}
                     />
@@ -254,7 +256,7 @@ function SelectMapModal({
                 >
                   <TilesOverlay modalSize={modalSize}>
                     <MapTiles
-                      maps={maps}
+                      mapsById={mapsById}
                       onMapEdit={setEditingMapId}
                       onMapSelect={handleMapSelect}
                       subgroup

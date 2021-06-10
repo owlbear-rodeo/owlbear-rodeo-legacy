@@ -9,7 +9,7 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
+function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
   const {
     selectedGroupIds,
     selectMode,
@@ -19,7 +19,7 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
 
   function renderTile(group) {
     if (group.type === "item") {
-      const map = maps.find((map) => map.id === group.id);
+      const map = mapsById[group.id];
       const isSelected = selectedGroupIds.includes(group.id);
       const canEdit =
         isSelected && selectMode === "single" && selectedGroupIds.length === 1;
@@ -44,7 +44,7 @@ function MapTiles({ maps, onMapEdit, onMapSelect, subgroup }) {
         <MapTileGroup
           key={group.id}
           group={group}
-          maps={items.map((item) => maps.find((map) => map.id === item.id))}
+          maps={items.map((item) => mapsById[item.id])}
           isSelected={isSelected}
           onSelect={onGroupSelect}
           onDoubleClick={() => canOpen && onGroupOpen(group.id)}
