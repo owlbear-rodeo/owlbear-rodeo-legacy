@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
-import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
@@ -19,7 +18,7 @@ const defaultMapState = {
 };
 
 export function MapDataProvider({ children }) {
-  const { database, databaseStatus, worker } = useDatabase();
+  const { database, databaseStatus } = useDatabase();
   const { userId } = useAuth();
 
   const [maps, setMaps] = useState([]);
@@ -34,18 +33,7 @@ export function MapDataProvider({ children }) {
     }
 
     async function loadMaps() {
-      let storedMaps = [];
-      // Try to load maps with worker, fallback to database if failed
-      const packedMaps = await worker.loadData("maps");
-      // let packedMaps;
-      if (packedMaps) {
-        storedMaps = decode(packedMaps);
-      } else {
-        console.warn("Unable to load maps with worker, loading may be slow");
-        await database.table("maps").each((map) => {
-          storedMaps.push(map);
-        });
-      }
+      const storedMaps = await database.table("maps").toArray();
       setMaps(storedMaps);
       const storedStates = await database.table("states").toArray();
       setMapStates(storedStates);
@@ -56,7 +44,7 @@ export function MapDataProvider({ children }) {
     }
 
     loadMaps();
-  }, [userId, database, databaseStatus, worker]);
+  }, [userId, database, databaseStatus]);
 
   const getMap = useCallback(
     async (mapId) => {

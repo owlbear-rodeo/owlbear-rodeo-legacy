@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
-import { decode } from "@msgpack/msgpack";
 
 import { useAuth } from "./AuthContext";
 import { useDatabase } from "./DatabaseContext";
@@ -10,7 +9,7 @@ import { removeGroupsItems } from "../helpers/group";
 const TokenDataContext = React.createContext();
 
 export function TokenDataProvider({ children }) {
-  const { database, databaseStatus, worker } = useDatabase();
+  const { database, databaseStatus } = useDatabase();
   const { userId } = useAuth();
 
   const [tokens, setTokens] = useState([]);
@@ -23,17 +22,7 @@ export function TokenDataProvider({ children }) {
     }
 
     async function loadTokens() {
-      let storedTokens = [];
-      // Try to load tokens with worker, fallback to database if failed
-      const packedTokens = await worker.loadData("tokens");
-      if (packedTokens) {
-        storedTokens = decode(packedTokens);
-      } else {
-        console.warn("Unable to load tokens with worker, loading may be slow");
-        await database.table("tokens").each((token) => {
-          storedTokens.push(token);
-        });
-      }
+      const storedTokens = await database.table("tokens").toArray();
       setTokens(storedTokens);
       const group = await database.table("groups").get("tokens");
       const storedGroups = group.items;
@@ -42,7 +31,7 @@ export function TokenDataProvider({ children }) {
     }
 
     loadTokens();
-  }, [userId, database, databaseStatus, worker]);
+  }, [userId, database, databaseStatus]);
 
   const getToken = useCallback(
     async (tokenId) => {
