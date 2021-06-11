@@ -1,4 +1,4 @@
-[embed:](https://www.youtube.com/embed/j-9X9CF7_UY)
+![embed:](https://www.youtube.com/embed/j-9X9CF7_UY)
 
 Once you have a map shared between a party all players can drag tokens from the Token List on the right hand side of the screen. Tokens can then be used to represent players, monsters or any other object that needs to be moved around the map.
 

@@ -1,4 +1,4 @@
-[embed:](https://www.youtube.com/embed/Er_grVmqpk0)
+![embed:](https://www.youtube.com/embed/Er_grVmqpk0)
 
 Owlbear Rodeo supports a physically simulated 3D dice tray and dice. To access these features click the Show Dice Tray icon in the top left of the map view.
 
