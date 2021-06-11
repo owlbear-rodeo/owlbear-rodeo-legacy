@@ -118,10 +118,35 @@ function SelectDataModal({
     });
   }, [maps, tokensByMap]);
 
+  function getCheckedGroups(groups, data) {
+    let checkedGroups = [];
+    for (let group of groups) {
+      if (group.type === "item") {
+        if (data[group.id] && data[group.id].checked) {
+          checkedGroups.push(group);
+        }
+      } else {
+        let items = [];
+        for (let item of group.items) {
+          if (data[item.id] && data[item.id].checked) {
+            items.push(item);
+          }
+        }
+        if (items.length > 0) {
+          checkedGroups.push({ ...group, items });
+        }
+      }
+    }
+    return checkedGroups;
+  }
+
   function handleConfirm() {
     let checkedMaps = Object.values(maps).filter((map) => map.checked);
     let checkedTokens = Object.values(tokens).filter((token) => token.checked);
-    onConfirm(checkedMaps, checkedTokens);
+    let checkedMapGroups = getCheckedGroups(mapGroups, maps);
+    let checkedTokenGroups = getCheckedGroups(tokenGroups, tokens);
+
+    onConfirm(checkedMaps, checkedTokens, checkedMapGroups, checkedTokenGroups);
   }
 
   function handleMapsChanged(event, maps) {

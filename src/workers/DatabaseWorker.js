@@ -73,15 +73,19 @@ let service = {
       .toArray();
     const assetIds = [];
     for (let map of maps) {
-      assetIds.push(map.file);
-      assetIds.push(map.thumbnail);
-      for (let res of Object.values(map.resolutions)) {
-        assetIds.push(res);
+      if (map.type === "file") {
+        assetIds.push(map.file);
+        assetIds.push(map.thumbnail);
+        for (let res of Object.values(map.resolutions)) {
+          assetIds.push(res);
+        }
       }
     }
     for (let token of tokens) {
-      assetIds.push(token.file);
-      assetIds.push(token.thumbnail);
+      if (token.type === "file") {
+        assetIds.push(token.file);
+        assetIds.push(token.thumbnail);
+      }
     }
 
     const filter = (table, value) => {
@@ -97,6 +101,11 @@ let service = {
       if (table === "assets") {
         return assetIds.includes(value.id);
       }
+      // Always include groups table
+      if (table === "groups") {
+        return true;
+      }
+
       return false;
     };
 

@@ -122,7 +122,12 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     setShowImportSelector(false);
   }
 
-  async function handleImportSelectorConfirm(checkedMaps, checkedTokens) {
+  async function handleImportSelectorConfirm(
+    checkedMaps,
+    checkedTokens,
+    checkedMapGroups,
+    checkedTokenGroups
+  ) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     setShowImportSelector(false);
@@ -135,6 +140,8 @@ function ImportExportModal({ isOpen, onRequestClose }) {
       let newTokenIds = {};
       // Mapping of old asset ids to new asset ids
       let newAssetIds = {};
+      // Mapping of old maps ids to new map ids
+      let newMapIds = {};
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
         const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
@@ -143,19 +150,24 @@ function ImportExportModal({ isOpen, onRequestClose }) {
           // Generate new ids
           const newId = uuid();
           newTokenIds[token.id] = newId;
-          const newFileId = uuid();
-          const newThumbnailId = uuid();
-          newAssetIds[token.file] = newFileId;
-          newAssetIds[token.thumbnail] = newThumbnailId;
 
-          // Change ids and owner
-          newTokens.push({
-            ...token,
-            id: newId,
-            owner: userId,
-            file: newFileId,
-            thumbnail: newThumbnailId,
-          });
+          if (token.type === "default") {
+            newTokens.push({ ...token, id: newId, owner: userId });
+          } else {
+            const newFileId = uuid();
+            const newThumbnailId = uuid();
+            newAssetIds[token.file] = newFileId;
+            newAssetIds[token.thumbnail] = newThumbnailId;
+
+            // Change ids and owner
+            newTokens.push({
+              ...token,
+              id: newId,
+              owner: userId,
+              file: newFileId,
+              thumbnail: newThumbnailId,
+            });
+          }
         }
         await db.table("tokens").bulkAdd(newTokens);
       }
@@ -173,35 +185,48 @@ function ImportExportModal({ isOpen, onRequestClose }) {
               state.tokens[tokenState.id].tokenId =
                 newTokenIds[tokenState.tokenId];
             }
+            // Change token state file asset id
             if (tokenState.type === "file" && tokenState.file in newAssetIds) {
               state.tokens[tokenState.id].file = newAssetIds[tokenState.file];
+            }
+            // Change token state owner if owned by the user of the map
+            if (tokenState.owner === map.owner) {
+              state.tokens[tokenState.id].owner = userId;
             }
           }
           // Generate new ids
           const newId = uuid();
-          const newFileId = uuid();
-          const newThumbnailId = uuid();
-          newAssetIds[map.file] = newFileId;
-          newAssetIds[map.thumbnail] = newThumbnailId;
-          const newResolutionIds = {};
-          for (let res of Object.keys(map.resolutions)) {
-            newResolutionIds[res] = uuid();
-            newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+          newMapIds[map.id] = newId;
+
+          if (map.type === "default") {
+            newMaps.push({ ...map, id: newId, owner: userId });
+          } else {
+            const newFileId = uuid();
+            const newThumbnailId = uuid();
+            newAssetIds[map.file] = newFileId;
+            newAssetIds[map.thumbnail] = newThumbnailId;
+            const newResolutionIds = {};
+            for (let res of Object.keys(map.resolutions)) {
+              newResolutionIds[res] = uuid();
+              newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+            }
+            // Change ids and owner
+            newMaps.push({
+              ...map,
+              id: newId,
+              owner: userId,
+              file: newFileId,
+              thumbnail: newThumbnailId,
+              resolutions: newResolutionIds,
+            });
           }
-          // Change ids and owner
-          newMaps.push({
-            ...map,
-            id: newId,
-            owner: userId,
-            file: newFileId,
-            thumbnail: newThumbnailId,
-            resolutions: newResolutionIds,
-          });
+
           newStates.push({ ...state, mapId: newId });
         }
         await db.table("maps").bulkAdd(newMaps);
         await db.table("states").bulkAdd(newStates);
       }
+
       // Add assets with new ids
       const assetsToAdd = await importDB
         .table("assets")
@@ -211,6 +236,53 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         assets.push({ ...asset, id: newAssetIds[asset.id] });
       }
       await db.table("assets").bulkAdd(assets);
+
+      // Add map groups with new ids
+      if (checkedMapGroups.length > 0) {
+        const mapGroup = await db.table("groups").get("maps");
+        let newMapGroups = [];
+        for (let group of checkedMapGroups) {
+          if (group.type === "item") {
+            newMapGroups.push({ ...group, id: newMapIds[group.id] });
+          } else {
+            newMapGroups.push({
+              ...group,
+              id: uuid(),
+              items: group.items.map((item) => ({
+                ...item,
+                id: newMapIds[item.id],
+              })),
+            });
+          }
+        }
+        await db
+          .table("groups")
+          .update("maps", { items: [...newMapGroups, ...mapGroup.items] });
+      }
+
+      // Add token groups with new ids
+      if (checkedTokenGroups.length > 0) {
+        const tokenGroup = await db.table("groups").get("tokens");
+        let newTokenGroups = [];
+        for (let group of checkedTokenGroups) {
+          if (group.type === "item") {
+            newTokenGroups.push({ ...group, id: newTokenIds[group.id] });
+          } else {
+            newTokenGroups.push({
+              ...group,
+              id: uuid(),
+              items: group.items.map((item) => ({
+                ...item,
+                id: newTokenIds[item.id],
+              })),
+            });
+          }
+        }
+        await db.table("groups").update("tokens", {
+          items: [...newTokenGroups, ...tokenGroup.items],
+        });
+      }
+
       addSuccessToast("Imported", checkedMaps, checkedTokens);
     } catch (e) {
       console.error(e);
@@ -223,18 +295,13 @@ function ImportExportModal({ isOpen, onRequestClose }) {
     backgroundTaskRunningRef.current = false;
   }
 
-  function exportSelectorFilter(table, value) {
-    // Only show owned maps and tokens
-    if (table === "maps" || table === "tokens") {
-      if (value.owner === userId) {
-        return true;
-      }
-    }
-    // Allow all states so tokens can be checked against maps
-    if (table === "states") {
-      return true;
-    }
-    return false;
+  function exportSelectorFilter(table) {
+    return (
+      table === "maps" ||
+      table === "tokens" ||
+      table === "states" ||
+      table === "groups"
+    );
   }
 
   async function handleExportSelectorClose() {
@@ -259,6 +326,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps, checkedTokens);
     } catch (e) {
+      console.error(e);
       setError(e);
     }
     setIsLoading(false);
