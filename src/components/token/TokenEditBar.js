@@ -20,16 +20,12 @@ function TokenEditBar({ disabled, onLoad }) {
 
   const { activeGroups, selectedGroupIds, onGroupSelect } = useGroup();
 
-  const [hasSelectedDefaultToken, setHasSelectedDefaultToken] = useState(false);
   const [allTokensVisible, setAllTokensVisisble] = useState(false);
 
   useEffect(() => {
     const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
     const selectedTokens = itemsFromGroups(selectedGroups, tokens);
 
-    setHasSelectedDefaultToken(
-      selectedTokens.some((token) => token.type === "default")
-    );
     setAllTokensVisisble(selectedTokens.every((token) => !token.hideInSidebar));
   }, [selectedGroupIds, tokens, activeGroups]);
 
@@ -64,11 +60,7 @@ function TokenEditBar({ disabled, onLoad }) {
     }
     if (shortcuts.delete(event)) {
       const selectedTokens = getSelectedTokens();
-      // Selected tokens and none are default
-      if (
-        selectedTokens.length > 0 &&
-        !selectedTokens.some((token) => token.type === "default")
-      ) {
+      if (selectedTokens.length > 0) {
         // Ensure all other modals are closed
         setIsTokensRemoveModalOpen(true);
       }
@@ -116,7 +108,6 @@ function TokenEditBar({ disabled, onLoad }) {
           aria-label="Remove Selected Token(s)"
           title="Remove Selected Token(s)"
           onClick={() => handleTokensRemove()}
-          disabled={hasSelectedDefaultToken}
         >
           <RemoveTokenIcon />
         </IconButton>

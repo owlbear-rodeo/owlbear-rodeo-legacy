@@ -16,7 +16,6 @@ import shortcuts from "../../shortcuts";
 
 function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
   const [hasMapState, setHasMapState] = useState(false);
-  const [hasSelectedDefaultMap, setHasSelectedDefaultMap] = useState(false);
 
   const { maps, mapStates, removeMaps, resetMap } = useMapData();
 
@@ -24,15 +23,10 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
 
   useEffect(() => {
     const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
-    const selectedMaps = itemsFromGroups(selectedGroups, maps);
     const selectedMapStates = itemsFromGroups(
       selectedGroups,
       mapStates,
       "mapId"
-    );
-
-    setHasSelectedDefaultMap(
-      selectedMaps.some((map) => map.type === "default")
     );
 
     let _hasMapState = false;
@@ -49,7 +43,7 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
     }
 
     setHasMapState(_hasMapState);
-  }, [selectedGroupIds, maps, mapStates, activeGroups]);
+  }, [selectedGroupIds, mapStates, activeGroups]);
 
   function getSelectedMaps() {
     const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
@@ -96,11 +90,7 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
     }
     if (shortcuts.delete(event)) {
       const selectedMaps = getSelectedMaps();
-      // Selected maps and none are default
-      if (
-        selectedMaps.length > 0 &&
-        !selectedMaps.some((map) => map.type === "default")
-      ) {
+      if (selectedMaps.length > 0) {
         setIsMapsResetModalOpen(false);
         setIsMapsRemoveModalOpen(true);
       }
@@ -142,7 +132,6 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
           aria-label="Remove Selected Map(s)"
           title="Remove Selected Map(s)"
           onClick={() => setIsMapsRemoveModalOpen(true)}
-          disabled={hasSelectedDefaultMap}
         >
           <RemoveMapIcon />
         </IconButton>
