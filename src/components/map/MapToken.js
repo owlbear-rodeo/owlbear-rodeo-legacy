@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Image as KonvaImage, Group, Line, Rect, Circle } from "react-konva";
+import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
 import Konva from "konva";
@@ -18,8 +18,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
-
-import colors from "../../helpers/colors";
+import TokenOutline from "../token/TokenOutline";
 
 import { tokenSources } from "../../tokens";
 
@@ -235,43 +234,6 @@ function MapToken({
     }
   }
 
-  function renderOutline() {
-    const outline = getScaledOutline();
-    const sharedProps = {
-      fill: colors.black,
-      opacity: tokenImage ? 0 : 0.8,
-    };
-    if (outline.type === "rect") {
-      return (
-        <Rect
-          width={outline.width}
-          height={outline.height}
-          x={outline.x}
-          y={outline.y}
-          {...sharedProps}
-        />
-      );
-    } else if (outline.type === "circle") {
-      return (
-        <Circle
-          radius={outline.radius}
-          x={outline.x}
-          y={outline.y}
-          {...sharedProps}
-        />
-      );
-    } else {
-      return (
-        <Line
-          points={outline.points}
-          closed
-          tension={outline.points < 200 ? 0 : 0.33}
-          {...sharedProps}
-        />
-      );
-    }
-  }
-
   return (
     <animated.Group
       {...props}
@@ -302,7 +264,7 @@ function MapToken({
         offsetX={tokenWidth / 2}
         offsetY={tokenHeight / 2}
       >
-        {renderOutline()}
+        <TokenOutline outline={getScaledOutline()} hidden={!!tokenImage} />
       </Group>
       <KonvaImage
         ref={imageRef}
