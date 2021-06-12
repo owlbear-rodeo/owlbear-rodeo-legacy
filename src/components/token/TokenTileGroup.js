@@ -25,15 +25,21 @@ function TokenTileGroup({
       <Grid
         columns={`repeat(${layout.groupGridColumns}, 1fr)`}
         p={2}
-        sx={{ gridGap: 2 }}
+        sx={{
+          gridGap: 2,
+          height: "100%",
+          gridTemplateRows: `repeat(${layout.groupGridColumns}, 1fr)`,
+        }}
       >
-        {tokens.slice(0, 9).map((token) => (
-          <TokenImage
-            sx={{ borderRadius: "8px" }}
-            token={token}
-            key={`${token.id}-group-tile`}
-          />
-        ))}
+        {tokens
+          .slice(0, layout.groupGridColumns * layout.groupGridColumns)
+          .map((token) => (
+            <TokenImage
+              sx={{ borderRadius: "8px" }}
+              token={token}
+              key={`${token.id}-group-tile`}
+            />
+          ))}
       </Grid>
     </Tile>
   );

@@ -23,7 +23,7 @@ const TokenImage = React.forwardRef(({ token, ...props }, ref) => {
         <Box
           title={props.alt}
           aria-label={props.alt}
-          sx={{ width: "100%", height: "100%" }}
+          sx={{ width: "100%", height: "100%", minHeight: 0 }}
         >
           <TokenOutlineSVG
             outline={token.outline}

@@ -70,11 +70,16 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
     } else {
       return (
         <Grid
-          columns="2fr 2fr"
+          columns="1fr 1fr"
           alt={group.name}
           title={group.name}
           bg="muted"
-          sx={{ borderRadius: "8px", gridGap: "4px", minHeight: "48px" }}
+          sx={{
+            borderRadius: "8px",
+            gridGap: "4px",
+            height: "48px",
+            gridTemplateRows: "1fr 1fr",
+          }}
           p="2px"
           {...listeners}
           {...attributes}

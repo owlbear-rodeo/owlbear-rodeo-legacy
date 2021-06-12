@@ -19,15 +19,20 @@ function MapTileGroup({ group, maps, isSelected, onSelect, onDoubleClick }) {
       <Grid
         columns={`repeat(${layout.groupGridColumns}, 1fr)`}
         p={2}
-        sx={{ gridGap: 2 }}
+        sx={{
+          gridGap: 2,
+          gridTemplateRows: `repeat(${layout.groupGridColumns}, 1fr)`,
+        }}
       >
-        {maps.slice(0, 9).map((map) => (
-          <MapImage
-            sx={{ borderRadius: "8px" }}
-            map={map}
-            key={`${map.id}-group-tile`}
-          />
-        ))}
+        {maps
+          .slice(0, layout.groupGridColumns * layout.groupGridColumns)
+          .map((map) => (
+            <MapImage
+              sx={{ borderRadius: "8px" }}
+              map={map}
+              key={`${map.id}-group-tile`}
+            />
+          ))}
       </Grid>
     </Tile>
   );
