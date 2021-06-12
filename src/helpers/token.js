@@ -3,6 +3,7 @@ import Case from "case";
 
 import blobToBuffer from "./blobToBuffer";
 import { createThumbnail, getImageOutline } from "./image";
+import Vector2 from "./Vector2";
 
 export function createTokenState(token, position, userId) {
   let tokenState = {
@@ -138,4 +139,109 @@ export function clientPositionToMapPosition(
   };
 
   return normalizedPosition;
+}
+
+export function getScaledOutline(tokenState, tokenWidth, tokenHeight) {
+  let outline = tokenState.outline;
+  if (outline.type === "rect") {
+    return {
+      ...outline,
+      x: (outline.x / tokenState.width) * tokenWidth,
+      y: (outline.y / tokenState.height) * tokenHeight,
+      width: (outline.width / tokenState.width) * tokenWidth,
+      height: (outline.height / tokenState.height) * tokenHeight,
+    };
+  } else if (outline.type === "circle") {
+    return {
+      ...outline,
+      x: (outline.x / tokenState.width) * tokenWidth,
+      y: (outline.y / tokenState.height) * tokenHeight,
+      radius: (outline.radius / tokenState.width) * tokenWidth,
+    };
+  } else {
+    let points = [...outline.points]; // Copy array so we can edit it imutably
+    for (let i = 0; i < points.length; i += 2) {
+      // Scale outline to the token
+      points[i] = (points[i] / tokenState.width) * tokenWidth;
+      points[i + 1] = (points[i + 1] / tokenState.height) * tokenHeight;
+    }
+    return { ...outline, points };
+  }
+}
+
+export class Intersection {
+  /**
+   *
+   * @param {Outline} outline
+   * @param {Vector2} position - Top left position of the token
+   * @param {Vector2} center - Center position of the token
+   * @param {number} rotation - Rotation of the token in degrees
+   */
+  constructor(outline, position, center, rotation) {
+    this.outline = outline;
+    this.position = position;
+    this.center = center;
+    this.rotation = rotation;
+    // Save points for intersection
+    if (outline.type === "rect") {
+      this.points = [
+        Vector2.rotate(
+          Vector2.add(new Vector2(outline.x, outline.y), position),
+          center,
+          rotation
+        ),
+        Vector2.rotate(
+          Vector2.add(
+            new Vector2(outline.x + outline.width, outline.y),
+            position
+          ),
+          center,
+          rotation
+        ),
+        Vector2.rotate(
+          Vector2.add(
+            new Vector2(outline.x + outline.width, outline.y + outline.height),
+            position
+          ),
+          center,
+          rotation
+        ),
+        Vector2.rotate(
+          Vector2.add(
+            new Vector2(outline.x, outline.y + outline.height),
+            position
+          ),
+          center,
+          rotation
+        ),
+      ];
+    } else if (outline.type === "path") {
+      this.points = [];
+      for (let i = 0; i < outline.points.length; i += 2) {
+        this.points.push(
+          Vector2.rotate(
+            Vector2.add(
+              new Vector2(outline.points[i], outline.points[i + 1]),
+              position
+            ),
+            center,
+            rotation
+          )
+        );
+      }
+    }
+  }
+
+  /**
+   * @param {Vector2} point
+   * @returns {boolean}
+   */
+  intersects(point) {
+    if (this.outline.type === "rect" || this.outline.type === "path") {
+      return Vector2.pointInPolygon(point, this.points);
+    } else if (this.outline.type === "circle") {
+      return Vector2.distance(this.center, point) < this.outline.radius;
+    }
+    return false;
+  }
 }

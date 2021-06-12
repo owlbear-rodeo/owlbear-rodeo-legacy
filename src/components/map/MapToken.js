@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
-import Konva from "konva";
 
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
@@ -19,6 +18,8 @@ import { useDataURL } from "../../contexts/AssetsContext";
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
 import TokenOutline from "../token/TokenOutline";
+
+import { Intersection, getScaledOutline } from "../../helpers/token";
 
 import { tokenSources } from "../../tokens";
 
@@ -49,11 +50,14 @@ function MapToken({
 
   function handleDragStart(event) {
     const tokenGroup = event.target;
-    const tokenImage = imageRef.current;
 
     if (tokenState.category === "vehicle") {
-      // Enable hit detection for .intersects() function
-      Konva.hitOnDragEnabled = true;
+      const tokenIntersection = new Intersection(
+        getScaledOutline(tokenState, tokenWidth, tokenHeight),
+        { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
+        { x: tokenX, y: tokenY },
+        tokenState.rotation
+      );
 
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
@@ -62,12 +66,7 @@ function MapToken({
         if (other === tokenGroup) {
           continue;
         }
-        const otherRect = other.getClientRect();
-        const otherCenter = {
-          x: otherRect.x + otherRect.width / 2,
-          y: otherRect.y + otherRect.height / 2,
-        };
-        if (tokenImage.intersects(otherCenter)) {
+        if (tokenIntersection.intersects(other.position())) {
           // Save and restore token position after moving layer
           const position = other.absolutePosition();
           other.moveTo(tokenGroup);
@@ -92,8 +91,6 @@ function MapToken({
 
     const mountChanges = {};
     if (tokenState.category === "vehicle") {
-      Konva.hitOnDragEnabled = false;
-
       const parent = tokenGroup.getParent();
       const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
@@ -177,8 +174,6 @@ function MapToken({
   const tokenWidth = minCellSize * tokenState.size;
   const tokenHeight = (minCellSize / tokenAspectRatio) * tokenState.size;
 
-  const imageRef = useRef();
-
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;
   const tokenY = tokenState.y * mapHeight;
@@ -204,34 +199,6 @@ function MapToken({
   }
   if (tokenState && tokenState.locked) {
     tokenName = tokenName + "-locked";
-  }
-
-  function getScaledOutline() {
-    let outline = tokenState.outline;
-    if (outline.type === "rect") {
-      return {
-        ...outline,
-        x: (outline.x / tokenState.width) * tokenWidth,
-        y: (outline.y / tokenState.height) * tokenHeight,
-        width: (outline.width / tokenState.width) * tokenWidth,
-        height: (outline.height / tokenState.height) * tokenHeight,
-      };
-    } else if (outline.type === "circle") {
-      return {
-        ...outline,
-        x: (outline.x / tokenState.width) * tokenWidth,
-        y: (outline.y / tokenState.height) * tokenHeight,
-        radius: (outline.radius / tokenState.width) * tokenWidth,
-      };
-    } else {
-      let points = [...outline.points]; // Copy array so we can edit it imutably
-      for (let i = 0; i < points.length; i += 2) {
-        // Scale outline to the token
-        points[i] = (points[i] / tokenState.width) * tokenWidth;
-        points[i + 1] = (points[i + 1] / tokenState.height) * tokenHeight;
-      }
-      return { ...outline, points };
-    }
   }
 
   return (
@@ -264,10 +231,12 @@ function MapToken({
         offsetX={tokenWidth / 2}
         offsetY={tokenHeight / 2}
       >
-        <TokenOutline outline={getScaledOutline()} hidden={!!tokenImage} />
+        <TokenOutline
+          outline={getScaledOutline(tokenState, tokenWidth, tokenHeight)}
+          hidden={!!tokenImage}
+        />
       </Group>
       <KonvaImage
-        ref={imageRef}
         width={tokenWidth}
         height={tokenHeight}
         x={0}
