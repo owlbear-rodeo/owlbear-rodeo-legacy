@@ -10,9 +10,7 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
   const layout = useResponsiveLayout();
 
   return (
-    <SimpleBar
-      style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
-    >
+    <SimpleBar style={{ height: layout.tileContainerHeight }}>
       <Grid
         p={2}
         pb={4}
@@ -22,7 +20,7 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
           minHeight: layout.screenSize === "large" ? "600px" : "400px",
         }}
         gap={2}
-        columns={`repeat${layout.tileGridColumns}, 1fr`}
+        columns={`repeat(${layout.tileGridColumns}, 1fr)`}
       >
         {dice.map((dice) => (
           <DiceTile
