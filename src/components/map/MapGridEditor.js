@@ -77,7 +77,10 @@ function MapGridEditor({ map, onGridChange }) {
       Vector2.subtract(position, previousPosition)
     );
 
-    const inset = map.grid.inset;
+    const inset = {
+      topLeft: { ...map.grid.inset.topLeft },
+      bottomRight: { ...map.grid.inset.bottomRight },
+    };
 
     if (direction.x === 0 && direction.y === 0) {
       return inset;

@@ -212,7 +212,10 @@ export function getGridDefaultInset(grid, mapWidth, mapHeight) {
  * @returns {GridInset}
  */
 export function getGridUpdatedInset(grid, mapWidth, mapHeight) {
-  let inset = grid.inset;
+  let inset = {
+    topLeft: { ...grid.inset.topLeft },
+    bottomRight: { ...grid.inset.bottomRight },
+  };
   // Take current inset width and use it to calculate the new height
   if (grid.size.x > 0 && grid.size.x > 0) {
     // Convert to px relative to map size
