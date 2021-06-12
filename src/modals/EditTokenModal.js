@@ -1,16 +1,18 @@
 import React, { useState } from "react";
-import { Button, Flex, Label } from "theme-ui";
+import { Button, Flex, Label, useThemeUI } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import Modal from "../components/Modal";
 import TokenSettings from "../components/token/TokenSettings";
 import TokenPreview from "../components/token/TokenPreview";
-import LoadingOverlay from "../components/LoadingOverlay";
 
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function EditTokenModal({ isOpen, onDone, token, onUpdateToken }) {
+  const { theme } = useThemeUI();
+
   function handleClose() {
     setTokenSettingChanges({});
     onDone();
@@ -47,6 +49,10 @@ function EditTokenModal({ isOpen, onDone, token, onUpdateToken }) {
 
   const layout = useResponsiveLayout();
 
+  if (!token) {
+    return null;
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -54,35 +60,37 @@ function EditTokenModal({ isOpen, onDone, token, onUpdateToken }) {
       style={{
         maxWidth: layout.modalSize,
         width: "calc(100% - 16px)",
+        padding: 0,
+        display: "flex",
+        overflow: "hidden",
       }}
     >
       <Flex
         sx={{
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        <Label pt={2} pb={1}>
+        <Label pt={2} pb={1} px={3}>
           Edit token
         </Label>
-        {!token ? (
-          <Flex
-            sx={{
-              width: "100%",
-              height: layout.screenSize === "large" ? "500px" : "300px",
-              position: "relative",
-            }}
-            bg="muted"
-          >
-            <LoadingOverlay />
-          </Flex>
-        ) : (
+        <SimpleBar
+          style={{
+            minHeight: 0,
+            padding: "0 20px",
+            backgroundColor: theme.colors.muted,
+            margin: "0 8px",
+          }}
+        >
           <TokenPreview token={selectedTokenWithChanges} />
-        )}
-        <TokenSettings
-          token={selectedTokenWithChanges}
-          onSettingsChange={handleTokenSettingsChange}
-        />
-        <Button onClick={handleSave}>Save</Button>
+          <TokenSettings
+            token={selectedTokenWithChanges}
+            onSettingsChange={handleTokenSettingsChange}
+          />
+        </SimpleBar>
+        <Button m={3} onClick={handleSave}>
+          Save
+        </Button>
       </Flex>
     </Modal>
   );

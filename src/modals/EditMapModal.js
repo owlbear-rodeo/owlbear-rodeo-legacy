@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Flex, Label } from "theme-ui";
+import { Button, Flex, Label, useThemeUI } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import Modal from "../components/Modal";
 import MapSettings from "../components/map/MapSettings";
@@ -18,6 +19,8 @@ function EditMapModal({
   onUpdateMap,
   onUpdateMapState,
 }) {
+  const { theme } = useThemeUI();
+
   function handleClose() {
     setMapSettingChanges({});
     setMapStateSettingChanges({});
@@ -99,8 +102,6 @@ function EditMapModal({
     ...mapStateSettingChanges,
   };
 
-  const [showMoreSettings, setShowMoreSettings] = useState(true);
-
   const layout = useResponsiveLayout();
 
   if (!map) {
@@ -111,29 +112,45 @@ function EditMapModal({
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ maxWidth: layout.modalSize, width: "calc(100% - 16px)" }}
+      style={{
+        maxWidth: layout.modalSize,
+        width: "calc(100% - 16px)",
+        padding: 0,
+        display: "flex",
+        overflow: "hidden",
+      }}
     >
       <Flex
         sx={{
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        <Label pt={2} pb={1}>
+        <Label pt={2} pb={1} px={3}>
           Edit map
         </Label>
-        <MapEditor
-          map={selectedMapWithChanges}
-          onSettingsChange={handleMapSettingsChange}
-        />
-        <MapSettings
-          map={selectedMapWithChanges}
-          mapState={selectedMapStateWithChanges}
-          onSettingsChange={handleMapSettingsChange}
-          onStateSettingsChange={handleMapStateSettingsChange}
-          showMore={showMoreSettings}
-          onShowMoreChange={setShowMoreSettings}
-        />
-        <Button onClick={handleSave}>Save</Button>
+        <SimpleBar
+          style={{
+            minHeight: 0,
+            padding: "0 20px",
+            backgroundColor: theme.colors.muted,
+            margin: "0 8px",
+          }}
+        >
+          <MapEditor
+            map={selectedMapWithChanges}
+            onSettingsChange={handleMapSettingsChange}
+          />
+          <MapSettings
+            map={selectedMapWithChanges}
+            mapState={selectedMapStateWithChanges}
+            onSettingsChange={handleMapSettingsChange}
+            onStateSettingsChange={handleMapStateSettingsChange}
+          />
+        </SimpleBar>
+        <Button m={3} onClick={handleSave}>
+          Save
+        </Button>
       </Flex>
     </Modal>
   );

@@ -24,7 +24,7 @@ function Select({ creatable, ...props }) {
         }),
         control: (provided, state) => ({
           ...provided,
-          backgroundColor: theme.colors.background,
+          backgroundColor: "transparent",
           color: theme.colors.text,
           borderColor: theme.colors.text,
           opacity: state.isDisabled ? 0.5 : 1,
