@@ -135,6 +135,7 @@ function EditMapModal({
             padding: "0 20px",
             backgroundColor: theme.colors.muted,
             margin: "0 8px",
+            height: "100%",
           }}
         >
           <MapEditor
