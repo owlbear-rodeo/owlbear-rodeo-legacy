@@ -49,6 +49,9 @@ export function getGridPixelSize(grid, baseWidth, baseHeight) {
  * @returns {Size}
  */
 export function getCellPixelSize(grid, gridWidth, gridHeight) {
+  if (grid.size.x === 0 || grid.size.y === 0) {
+    return new Size(0, 0);
+  }
   switch (grid.type) {
     case "square":
       return new Size(gridWidth / grid.size.x, gridHeight / grid.size.y);
