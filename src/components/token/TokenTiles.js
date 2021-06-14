@@ -21,24 +21,28 @@ function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
   function renderTile(group) {
     if (group.type === "item") {
       const token = tokensById[group.id];
-      const isSelected = selectedGroupIds.includes(group.id);
-      const canEdit =
-        isSelected && selectMode === "single" && selectedGroupIds.length === 1;
+      if (token) {
+        const isSelected = selectedGroupIds.includes(group.id);
+        const canEdit =
+          isSelected &&
+          selectMode === "single" &&
+          selectedGroupIds.length === 1;
 
-      return (
-        <TokenTile
-          key={token.id}
-          token={token}
-          isSelected={isSelected}
-          onSelect={onGroupSelect}
-          onTokenEdit={onTokenEdit}
-          canEdit={canEdit}
-          badges={[
-            `${token.defaultSize}x`,
-            <TokenHiddenBadge hidden={token.hideInSidebar} />,
-          ]}
-        />
-      );
+        return (
+          <TokenTile
+            key={token.id}
+            token={token}
+            isSelected={isSelected}
+            onSelect={onGroupSelect}
+            onTokenEdit={onTokenEdit}
+            canEdit={canEdit}
+            badges={[
+              `${token.defaultSize}x`,
+              <TokenHiddenBadge hidden={token.hideInSidebar} />,
+            ]}
+          />
+        );
+      }
     } else {
       const isSelected = selectedGroupIds.includes(group.id);
       const items = getGroupItems(group);
