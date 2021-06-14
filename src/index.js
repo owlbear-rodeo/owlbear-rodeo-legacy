@@ -16,6 +16,11 @@ if (!("PointerEvent" in window)) {
   import("pepjs");
 }
 
+// Intersection observer polyfill
+if (!("IntersectionObserver" in window)) {
+  import("intersection-observer");
+}
+
 if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
