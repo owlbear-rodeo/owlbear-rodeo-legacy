@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { Box, Flex } from "theme-ui";
+import { Box, Flex, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
 import {
   DragOverlay,
@@ -165,9 +165,9 @@ function TokenBar({ onMapTokensStateCreate }) {
             padding: "0 16px",
           }}
         >
-          <Flex sx={{ flexDirection: "column" }}>
+          <Grid columns="1fr" gap={2} py={2}>
             {tokenGroups.map((group) => renderToken(group))}
-          </Flex>
+          </Grid>
         </SimpleBar>
         <Flex
           bg="muted"

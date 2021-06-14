@@ -41,8 +41,9 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
         <Grid
           columns="1fr"
           bg="muted"
-          sx={{ borderRadius: "8px", gridGap: 0 }}
+          sx={{ borderRadius: "8px" }}
           p={0}
+          gap={2}
         >
           <Flex
             sx={{
