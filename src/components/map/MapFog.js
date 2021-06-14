@@ -432,7 +432,14 @@ function MapFog({
     }
 
     setDrawingShape(null);
-  }, [toolSettings, drawingShape, onShapesCut, onShapesAdd, shapes]);
+  }, [
+    toolSettings,
+    drawingShape,
+    onShapesCut,
+    onShapesAdd,
+    onShapeError,
+    shapes,
+  ]);
 
   // Add keyboard shortcuts
   function handleKeyDown(event) {
