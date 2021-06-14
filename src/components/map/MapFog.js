@@ -38,8 +38,10 @@ import {
   Tick,
   getRelativePointerPosition,
 } from "../../helpers/konva";
+import { keyBy } from "../../helpers/shared";
 
 import SubtractShapeAction from "../../actions/SubtractShapeAction";
+import CutShapeAction from "../../actions/CutShapeAction";
 
 import useSetting from "../../hooks/useSetting";
 
@@ -52,6 +54,7 @@ function MapFog({
   onShapesCut,
   onShapesRemove,
   onShapesEdit,
+  onShapeError,
   active,
   toolSettings,
   editable,
@@ -214,6 +217,8 @@ function MapFog({
       ) {
         const cut = toolSettings.useFogCut;
         let drawingShapes = [drawingShape];
+
+        // Filter out hidden or visible shapes if single layer enabled
         if (!toolSettings.multilayer) {
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
@@ -228,22 +233,32 @@ function MapFog({
         }
 
         if (drawingShapes.length > 0) {
-          drawingShapes = drawingShapes.map((shape) => {
-            if (cut) {
-              return {
-                id: shape.id,
-                type: shape.type,
-                data: shape.data,
-              };
-            } else {
-              return { ...shape, color: "black" };
-            }
-          });
-
           if (cut) {
-            onShapesCut(drawingShapes);
+            // Run a pre-emptive cut action to check whether we've cut anything
+            const cutAction = new CutShapeAction(drawingShapes);
+            const state = cutAction.execute(keyBy(shapes, "id"));
+
+            if (Object.keys(state).length === shapes.length) {
+              onShapeError("No fog found to cut");
+            } else {
+              onShapesCut(
+                drawingShapes.map((shape) => ({
+                  id: shape.id,
+                  type: shape.type,
+                  data: shape.data,
+                }))
+              );
+            }
           } else {
-            onShapesAdd(drawingShapes);
+            onShapesAdd(
+              drawingShapes.map((shape) => ({ ...shape, color: "black" }))
+            );
+          }
+        } else {
+          if (cut) {
+            onShapeError("Fog already cut");
+          } else {
+            onShapeError("Fog already placed");
           }
         }
         setDrawingShape(null);
@@ -373,6 +388,7 @@ function MapFog({
     };
 
     let polygonShapes = [polygonShape];
+    // Filter out hidden or visible shapes if single layer enabled
     if (!toolSettings.multilayer) {
       const shapesToSubtract = shapes.filter((shape) =>
         cut ? !shape.visible : shape.visible
@@ -388,7 +404,15 @@ function MapFog({
 
     if (polygonShapes.length > 0) {
       if (cut) {
-        onShapesCut(polygonShapes);
+        // Run a pre-emptive cut action to check whether we've cut anything
+        const cutAction = new CutShapeAction(polygonShapes);
+        const state = cutAction.execute(keyBy(shapes, "id"));
+
+        if (Object.keys(state).length === shapes.length) {
+          onShapeError("No fog found to cut");
+        } else {
+          onShapesCut(polygonShapes);
+        }
       } else {
         onShapesAdd(
           polygonShapes.map((shape) => ({
@@ -398,6 +422,12 @@ function MapFog({
             color: "black",
           }))
         );
+      }
+    } else {
+      if (cut) {
+        onShapeError("Fog already cut");
+      } else {
+        onShapeError("Fog already placed");
       }
     }
 
