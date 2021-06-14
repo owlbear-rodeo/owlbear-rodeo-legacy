@@ -11,7 +11,7 @@ function TokenBarToken({ token }) {
   usePreventTouch(imageRef);
 
   return (
-    <Box py={1} sx={{ width: "48px", height: "56px" }}>
+    <Box my={1} sx={{ width: "48px", height: "48px" }} title={token.name}>
       <TokenImage
         token={token}
         ref={imageRef}

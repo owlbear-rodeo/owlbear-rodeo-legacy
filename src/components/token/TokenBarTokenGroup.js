@@ -40,8 +40,6 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
       return (
         <Grid
           columns="1fr"
-          alt={group.name}
-          title={group.name}
           bg="muted"
           sx={{ borderRadius: "8px", gridGap: 0 }}
           p={0}
@@ -57,7 +55,6 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
             }}
             onClick={(e) => handleOpenClick(e, false)}
             key="group"
-            alt={group.name}
             title={group.name}
             {...listeners}
             {...attributes}
@@ -71,8 +68,6 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
       return (
         <Grid
           columns="1fr 1fr"
-          alt={group.name}
-          title={group.name}
           bg="muted"
           sx={{
             borderRadius: "8px",
@@ -81,6 +76,8 @@ function TokenBarTokenGroup({ group, tokens, draggable }) {
             gridTemplateRows: "1fr 1fr",
           }}
           p="2px"
+          alt={group.name}
+          title={group.name}
           {...listeners}
           {...attributes}
         >
