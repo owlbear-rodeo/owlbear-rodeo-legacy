@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Flex, Text } from "theme-ui";
+import { Box, Flex, Text } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 
 import LoadingOverlay from "../LoadingOverlay";
@@ -171,39 +171,61 @@ function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
           {...overlayListeners}
         >
           <Flex
-            bg="overlay"
             sx={{
               height: "10%",
               justifyContent: "center",
               alignItems: "center",
               color: droppingType === "maps" ? "primary" : "text",
               opacity: droppingType === "maps" ? 1 : 0.8,
-              margin: "4px 16px",
-              border: "1px dashed",
-              width: "calc(100% - 32px)",
-              borderRadius: "12px",
+              width: "100%",
+              position: "relative",
             }}
             onDragEnter={handleMapsOver}
           >
+            <Box
+              bg="overlay"
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                margin: "4px 16px",
+                border: "1px dashed",
+                borderRadius: "12px",
+                pointerEvents: "none",
+              }}
+            />
             <Text sx={{ pointerEvents: "none", userSelect: "none" }}>
               Drop as map
             </Text>
           </Flex>
           <Flex
-            bg="overlay"
             sx={{
               flexGrow: 1,
               justifyContent: "center",
               alignItems: "center",
               color: droppingType === "tokens" ? "primary" : "text",
               opacity: droppingType === "tokens" ? 1 : 0.8,
-              margin: "4px 16px",
-              border: "1px dashed",
-              width: "calc(100% - 32px)",
-              borderRadius: "12px",
+              width: "100%",
+              position: "relative",
             }}
             onDragEnter={handleTokensOver}
           >
+            <Box
+              bg="overlay"
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                margin: "4px 16px",
+                border: "1px dashed",
+                borderRadius: "12px",
+                pointerEvents: "none",
+              }}
+            />
             <Text sx={{ pointerEvents: "none", userSelect: "none" }}>
               Drop as token
             </Text>
