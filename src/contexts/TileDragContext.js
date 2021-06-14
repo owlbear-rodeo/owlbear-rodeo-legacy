@@ -61,7 +61,7 @@ export function TileDragProvider({
   } = useGroup();
 
   const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: { delay: 250, tolerance: 5 },
+    activationConstraint: { distance: 5 },
   });
   const touchSensor = useSensor(TouchSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
