@@ -249,15 +249,17 @@ function SelectDataModal({
         );
       }
     } else {
-      if (group.items.every((item) => item.id in maps)) {
+      if (group.items.some((item) => item.id in maps)) {
         return renderGroupContainer(
           group,
-          group.items.some((item) => maps[item.id].checked),
+          group.items.some((item) => maps[item.id]?.checked),
           renderMapGroup,
           (e, group) =>
             handleMapsChanged(
               e,
-              group.items.map((group) => maps[group.id])
+              group.items
+                .filter((group) => group.id in maps)
+                .map((group) => maps[group.id])
             )
         );
       }
@@ -290,10 +292,10 @@ function SelectDataModal({
         );
       }
     } else {
-      if (group.items.every((item) => item.id in tokens)) {
+      if (group.items.some((item) => item.id in tokens)) {
         const checked =
           group.items.some(
-            (item) => !(item.id in tokenUsedCount) && tokens[item.id].checked
+            (item) => !(item.id in tokenUsedCount) && tokens[item.id]?.checked
           ) || group.items.every((item) => item.id in tokenUsedCount);
         return renderGroupContainer(
           group,
@@ -302,7 +304,9 @@ function SelectDataModal({
           (e, group) =>
             handleTokensChanged(
               e,
-              group.items.map((group) => tokens[group.id])
+              group.items
+                .filter((group) => group.id in tokens)
+                .map((group) => tokens[group.id])
             )
         );
       }
