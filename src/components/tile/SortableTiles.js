@@ -1,26 +1,24 @@
 import React from "react";
-import { createPortal } from "react-dom";
-import { DragOverlay } from "@dnd-kit/core";
 import { SortableContext } from "@dnd-kit/sortable";
-import { animated, useSpring, config } from "react-spring";
-import { Badge } from "theme-ui";
 
 import { moveGroupsInto } from "../../helpers/group";
 import { keyBy } from "../../helpers/shared";
-import Vector2 from "../../helpers/Vector2";
 
 import SortableTile from "./SortableTile";
 
 import {
-  useTileDrag,
+  useTileDragId,
+  useTileDragCursor,
+  useTileOverGroupId,
   BASE_SORTABLE_ID,
   GROUP_SORTABLE_ID,
-  GROUP_ID_PREFIX,
 } from "../../contexts/TileDragContext";
 import { useGroup } from "../../contexts/GroupContext";
 
 function SortableTiles({ renderTile, subgroup }) {
-  const { dragId, overId, dragCursor } = useTileDrag();
+  const dragId = useTileDragId();
+  const dragCursor = useTileDragCursor();
+  const overGroupId = useTileOverGroupId();
   const {
     groups,
     selectedGroupIds: allSelectedIds,
@@ -46,15 +44,6 @@ function SortableTiles({ renderTile, subgroup }) {
   const disableSorting = (openGroupId && !subgroup) || filter;
   const disableGrouping = subgroup || disableSorting || filter;
 
-  const dragBounce = useSpring({
-    transform: !!dragId ? "scale(0.9)" : "scale(1)",
-    config: config.wobbly,
-    position: "relative",
-  });
-
-  const overGroupId =
-    overId && overId.startsWith(GROUP_ID_PREFIX) && overId.slice(9);
-
   function renderSortableGroup(group, selectedGroups) {
     if (overGroupId === group.id && dragId && group.id !== dragId) {
       // If dragging over a group render a preview of that group
@@ -66,57 +55,6 @@ function SortableTiles({ renderTile, subgroup }) {
       return renderTile(previewGroup);
     }
     return renderTile(group);
-  }
-
-  function renderDragOverlays() {
-    let selectedIndices = selectedGroupIds.map((groupId) =>
-      activeGroups.findIndex((group) => group.id === groupId)
-    );
-    const activeIndex = activeGroups.findIndex((group) => group.id === dragId);
-    // Sort so the draging tile is the first element
-    selectedIndices = selectedIndices.sort((a, b) =>
-      a === activeIndex ? -1 : b === activeIndex ? 1 : 0
-    );
-
-    selectedIndices = selectedIndices.slice(0, 5);
-
-    let coords = selectedIndices.map(
-      (_, index) => new Vector2(5 * index, 5 * index)
-    );
-
-    // Reverse so the first element is rendered on top
-    selectedIndices = selectedIndices.reverse();
-    coords = coords.reverse();
-
-    const selectedGroups = selectedIndices.map((index) => activeGroups[index]);
-
-    return selectedGroups.map((group, index) => (
-      <DragOverlay dropAnimation={null} key={group.id}>
-        <div
-          style={{
-            transform: `translate(${coords[index].x}%, ${coords[index].y}%)`,
-            cursor: dragCursor,
-          }}
-        >
-          <animated.div style={dragBounce}>
-            {renderTile(group)}
-            {index === selectedIndices.length - 1 &&
-              selectedGroupIds.length > 1 && (
-                <Badge
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    transform: "translate(25%, -25%)",
-                  }}
-                >
-                  {selectedGroupIds.length}
-                </Badge>
-              )}
-          </animated.div>
-        </div>
-      </DragOverlay>
-    ));
   }
 
   function renderTiles() {
@@ -156,7 +94,6 @@ function SortableTiles({ renderTile, subgroup }) {
   return (
     <SortableContext items={activeGroups} id={sortableId}>
       {renderTiles()}
-      {createPortal(dragId && renderDragOverlays(), document.body)}
     </SortableContext>
   );
 }

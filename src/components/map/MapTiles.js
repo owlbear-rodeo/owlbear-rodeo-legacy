@@ -4,6 +4,7 @@ import MapTile from "./MapTile";
 import MapTileGroup from "./MapTileGroup";
 
 import SortableTiles from "../tile/SortableTiles";
+import SortableTilesDragOverlay from "../tile/SortableTilesDragOverlay";
 
 import { getGroupItems } from "../../helpers/group";
 
@@ -57,7 +58,12 @@ function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
     }
   }
 
-  return <SortableTiles renderTile={renderTile} subgroup={subgroup} />;
+  return (
+    <>
+      <SortableTiles renderTile={renderTile} subgroup={subgroup} />
+      <SortableTilesDragOverlay renderTile={renderTile} subgroup={subgroup} />
+    </>
+  );
 }
 
 export default MapTiles;

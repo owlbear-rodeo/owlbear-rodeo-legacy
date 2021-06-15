@@ -5,6 +5,7 @@ import TokenTileGroup from "./TokenTileGroup";
 import TokenHiddenBadge from "./TokenHiddenBadge";
 
 import SortableTiles from "../tile/SortableTiles";
+import SortableTilesDragOverlay from "../tile/SortableTilesDragOverlay";
 
 import { getGroupItems } from "../../helpers/group";
 
@@ -61,7 +62,12 @@ function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
     }
   }
 
-  return <SortableTiles renderTile={renderTile} subgroup={subgroup} />;
+  return (
+    <>
+      <SortableTiles renderTile={renderTile} subgroup={subgroup} />
+      <SortableTilesDragOverlay renderTile={renderTile} subgroup={subgroup} />
+    </>
+  );
 }
 
 export default TokenTiles;

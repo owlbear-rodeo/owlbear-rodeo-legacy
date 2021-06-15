@@ -16,17 +16,14 @@ function Tile({
   children,
 }) {
   const [ref, inView] = useInView({ triggerOnce: true });
-
   return (
-    <Flex
+    <Box
       sx={{
         position: "relative",
         width: "100%",
         height: "0",
         paddingTop: "100%",
         borderRadius: "4px",
-        justifyContent: "center",
-        alignItems: "center",
         overflow: "hidden",
         userSelect: "none",
       }}
@@ -128,7 +125,7 @@ function Tile({
           )}
         </>
       )}
-    </Flex>
+    </Box>
   );
 }
 
