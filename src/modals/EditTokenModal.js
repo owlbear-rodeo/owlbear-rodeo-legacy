@@ -77,7 +77,7 @@ function EditTokenModal({ isOpen, onDone, token, onUpdateToken }) {
         <SimpleBar
           style={{
             minHeight: 0,
-            padding: "0 20px",
+            padding: "16px",
             backgroundColor: theme.colors.muted,
             margin: "0 8px",
             height: "100%",
