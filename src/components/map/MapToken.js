@@ -248,16 +248,20 @@ function MapToken({
         hitFunc={() => {}}
       />
       <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
-        <TokenStatus
-          tokenState={tokenState}
-          width={tokenWidth}
-          height={tokenHeight}
-        />
-        <TokenLabel
-          tokenState={tokenState}
-          width={tokenWidth}
-          height={tokenHeight}
-        />
+        {tokenState.statuses?.length > 0 ? (
+          <TokenStatus
+            tokenState={tokenState}
+            width={tokenWidth}
+            height={tokenHeight}
+          />
+        ) : null}
+        {tokenState.label ? (
+          <TokenLabel
+            tokenState={tokenState}
+            width={tokenWidth}
+            height={tokenHeight}
+          />
+        ) : null}
       </Group>
     </animated.Group>
   );
