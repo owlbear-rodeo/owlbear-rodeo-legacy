@@ -67,6 +67,7 @@ function Select({ creatable, ...props }) {
           primary25: theme.colors.highlight,
         },
       })}
+      captureMenuScroll={false}
       {...props}
     />
   );
