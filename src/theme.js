@@ -188,6 +188,14 @@ const theme = {
       },
     },
     textarea: {
+      "&:focus": {
+        outlineColor: "primary",
+      },
+      "&:disabled": {
+        backgroundColor: "muted",
+        opacity: 0.5,
+        borderColor: "text",
+      },
       fontFamily: "body2",
     },
   },
