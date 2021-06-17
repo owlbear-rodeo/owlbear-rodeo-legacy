@@ -165,7 +165,14 @@ function TokenBar({ onMapTokensStateCreate }) {
             padding: "0 16px",
           }}
         >
-          <Grid columns="1fr" gap={2} py={2}>
+          <Grid
+            columns="1fr"
+            gap={2}
+            py={2}
+            // Prevent selection on 3D touch for iOS
+            onTouchStart={preventSelect}
+            onTouchEnd={resumeSelect}
+          >
             {tokenGroups.map((group) => renderToken(group))}
           </Grid>
         </SimpleBar>
