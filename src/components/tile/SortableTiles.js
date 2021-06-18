@@ -5,6 +5,7 @@ import { moveGroupsInto } from "../../helpers/group";
 import { keyBy } from "../../helpers/shared";
 
 import SortableTile from "./SortableTile";
+import LazyTile from "./LazyTile";
 
 import {
   useTileDragId,
@@ -76,17 +77,18 @@ function SortableTiles({ renderTile, subgroup }) {
       const disableTileGrouping =
         disableGrouping || isDragging || hasSelectedContainerGroup;
       return (
-        <SortableTile
-          id={group.id}
-          key={group.id}
-          disableGrouping={disableTileGrouping}
-          disableSorting={disableSorting}
-          hidden={group.id === openGroupId}
-          isDragging={isDragging}
-          cursor={dragCursor}
-        >
-          {renderSortableGroup(group, selectedGroups)}
-        </SortableTile>
+        <LazyTile key={group.id}>
+          <SortableTile
+            id={group.id}
+            disableGrouping={disableTileGrouping}
+            disableSorting={disableSorting}
+            hidden={group.id === openGroupId}
+            isDragging={isDragging}
+            cursor={dragCursor}
+          >
+            {renderSortableGroup(group, selectedGroups)}
+          </SortableTile>
+        </LazyTile>
       );
     });
   }

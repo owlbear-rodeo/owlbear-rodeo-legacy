@@ -1,6 +1,5 @@
 import React from "react";
 import { Flex, IconButton, Box, Text, Badge } from "theme-ui";
-import { useInView } from "react-intersection-observer";
 
 import EditTileIcon from "../../icons/EditTileIcon";
 
@@ -15,7 +14,6 @@ function Tile({
   editTitle,
   children,
 }) {
-  const [ref, inView] = useInView({ triggerOnce: true });
   return (
     <Box
       sx={{
@@ -34,96 +32,91 @@ function Tile({
       }}
       onDoubleClick={onDoubleClick}
       aria-label={title}
-      ref={ref}
     >
-      {inView && (
-        <>
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
+      >
+        {children}
+      </Box>
+      <Flex
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.65) 100%);",
+          alignItems: "flex-end",
+          justifyContent: "center",
+        }}
+        p={2}
+      >
+        <Text
+          as="p"
+          variant="heading"
+          color="hsl(210, 50%, 96%)"
+          sx={{ textAlign: "center" }}
+        >
+          {title}
+        </Text>
+      </Flex>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          borderColor: "primary",
+          borderStyle: isSelected ? "solid" : "none",
+          borderWidth: "4px",
+          pointerEvents: "none",
+          borderRadius: "4px",
+        }}
+      />
+      <Flex
+        sx={{
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+        }}
+      >
+        {badges.map((badge, i) => (
+          <Badge
+            m="2px"
+            key={i}
+            bg="overlay"
+            color="text"
+            sx={{ width: "fit-content" }}
           >
-            {children}
-          </Box>
-          <Flex
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.65) 100%);",
-              alignItems: "flex-end",
-              justifyContent: "center",
+            {badge}
+          </Badge>
+        ))}
+      </Flex>
+      {canEdit && (
+        <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+          <IconButton
+            aria-label={editTitle}
+            title={editTitle}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onEdit();
             }}
-            p={2}
+            bg="overlay"
+            sx={{ borderRadius: "50%" }}
+            m={2}
           >
-            <Text
-              as="p"
-              variant="heading"
-              color="hsl(210, 50%, 96%)"
-              sx={{ textAlign: "center" }}
-            >
-              {title}
-            </Text>
-          </Flex>
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              borderColor: "primary",
-              borderStyle: isSelected ? "solid" : "none",
-              borderWidth: "4px",
-              pointerEvents: "none",
-              borderRadius: "4px",
-            }}
-          />
-          <Flex
-            sx={{
-              position: "absolute",
-              top: "6px",
-              left: "6px",
-            }}
-          >
-            {badges.map((badge, i) => (
-              <Badge
-                m="2px"
-                key={i}
-                bg="overlay"
-                color="text"
-                sx={{ width: "fit-content" }}
-              >
-                {badge}
-              </Badge>
-            ))}
-          </Flex>
-          {canEdit && (
-            <Box sx={{ position: "absolute", top: 0, right: 0 }}>
-              <IconButton
-                aria-label={editTitle}
-                title={editTitle}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onEdit();
-                }}
-                bg="overlay"
-                sx={{ borderRadius: "50%" }}
-                m={2}
-              >
-                <EditTileIcon />
-              </IconButton>
-            </Box>
-          )}
-        </>
+            <EditTileIcon />
+          </IconButton>
+        </Box>
       )}
     </Box>
   );
