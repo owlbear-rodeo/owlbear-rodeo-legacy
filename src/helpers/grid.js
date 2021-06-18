@@ -289,10 +289,7 @@ export function gridDistance(grid, a, b, cellSize) {
   const bCoord = getNearestCellCoordinates(grid, b.x, b.y, cellSize);
   if (grid.type === "square") {
     if (grid.measurement.type === "chebyshev") {
-      return Math.max(
-        Math.abs(aCoord.x - bCoord.x),
-        Math.abs(aCoord.y - bCoord.y)
-      );
+      return Vector2.max(Vector2.abs(Vector2.subtract(aCoord, bCoord)));
     } else if (grid.measurement.type === "alternating") {
       // Alternating diagonal distance like D&D 3.5 and Pathfinder
       const delta = Vector2.abs(Vector2.subtract(aCoord, bCoord));
@@ -300,7 +297,7 @@ export function gridDistance(grid, a, b, cellSize) {
       const min = Vector2.min(delta);
       return max - min + Math.floor(1.5 * min);
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.distance(aCoord, bCoord);
+      return Vector2.length(Vector2.divide(Vector2.subtract(a, b), cellSize));
     } else if (grid.measurement.type === "manhattan") {
       return Math.abs(aCoord.x - bCoord.x) + Math.abs(aCoord.y - bCoord.y);
     }
@@ -316,7 +313,7 @@ export function gridDistance(grid, a, b, cellSize) {
         2
       );
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.distance(aCoord, bCoord);
+      return Vector2.length(Vector2.divide(Vector2.subtract(a, b), cellSize));
     }
   }
 }
