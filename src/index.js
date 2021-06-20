@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
-import Dedupe from "@sentry/integrations";
+import { Dedupe } from "@sentry/integrations";
 import App from "./App";
 import Modal from "react-modal";
 
