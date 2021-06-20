@@ -15,7 +15,7 @@ import colors from "../../helpers/colors";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-const minTextSize = 16;
+const defaultFontSize = 16;
 
 function Note({
   note,
@@ -118,7 +118,7 @@ function Note({
     }
   }
 
-  const [fontSize, setFontSize] = useState(1);
+  const [fontScale, setFontScale] = useState(1);
   useEffect(() => {
     const text = textRef.current;
 
@@ -127,10 +127,10 @@ function Note({
     }
 
     function findFontSize() {
-      // Create an array from 1 / minTextSize of the note height to the full note height
-      const sizes = Array.from(
+      // Create an array from 1 / defaultFontSize of the note height to the full note height
+      let sizes = Array.from(
         { length: Math.ceil(noteHeight - notePadding * 2) },
-        (_, i) => i + Math.ceil(noteHeight / minTextSize)
+        (_, i) => i + Math.ceil(noteHeight / defaultFontSize)
       );
 
       if (sizes.length > 0) {
@@ -144,8 +144,7 @@ function Note({
             return prev;
           }
         });
-
-        setFontSize(size);
+        setFontScale(size / defaultFontSize);
       }
     }
 
@@ -215,11 +214,14 @@ function Note({
         }
         align="left"
         verticalAlign="middle"
-        padding={notePadding}
-        fontSize={fontSize}
+        padding={notePadding / fontScale}
+        fontSize={defaultFontSize}
+        // Scale font instead of changing font size to avoid kerning issues with Firefox
+        scaleX={fontScale}
+        scaleY={fontScale}
+        width={noteWidth / fontScale}
+        height={note.textOnly ? undefined : noteHeight / fontScale}
         wrap="word"
-        width={noteWidth}
-        height={note.textOnly ? undefined : noteHeight}
       />
       {/* Use an invisible text block to work out text sizing */}
       <Text visible={false} ref={textRef} text={note.text} wrap="none" />

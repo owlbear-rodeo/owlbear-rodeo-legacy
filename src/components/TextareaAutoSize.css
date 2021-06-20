@@ -1,0 +1,22 @@
+.textarea-auto-size {
+  box-sizing: border-box;
+  margin: 0;
+  min-width: 0;
+  display: block;
+  width: 100%;
+  appearance: none;
+  font-size: inherit;
+  line-height: inherit;
+  border-radius: 4px;
+  color: inherit;
+  background-color: transparent;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  padding: 4px;
+  border: none;
+  resize: none;
+}
+
+.textarea-auto-size:focus {
+  outline: none;
+}

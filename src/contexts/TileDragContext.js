@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   MouseSensor,
   TouchSensor,
@@ -16,7 +16,9 @@ import { moveGroupsInto, moveGroups, ungroup } from "../helpers/group";
 
 import usePreventSelect from "../hooks/usePreventSelect";
 
-const TileDragContext = React.createContext();
+const TileDragIdContext = React.createContext();
+const TileOverGroupIdContext = React.createContext();
+const TileDragCursorContext = React.createContext();
 
 export const BASE_SORTABLE_ID = "__base__";
 export const GROUP_SORTABLE_ID = "__group__";
@@ -61,7 +63,7 @@ export function TileDragProvider({
   } = useGroup();
 
   const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: { delay: 250, tolerance: 5 },
+    activationConstraint: { distance: 3 },
   });
   const touchSensor = useSensor(TouchSensor, {
     activationConstraint: { delay: 250, tolerance: 5 },
@@ -70,16 +72,23 @@ export function TileDragProvider({
 
   const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
 
-  const [dragId, setDragId] = useState();
-  const [overId, setOverId] = useState();
+  const [dragId, setDragId] = useState(null);
+  const [overId, setOverId] = useState(null);
   const [dragCursor, setDragCursor] = useState("pointer");
 
   const [preventSelect, resumeSelect] = usePreventSelect();
 
+  const [overGroupId, setOverGroupId] = useState(null);
+  useEffect(() => {
+    setOverGroupId(
+      (overId && overId.startsWith(GROUP_ID_PREFIX) && overId.slice(9)) || null
+    );
+  }, [overId]);
+
   function handleDragStart(event) {
     const { active, over } = event;
     setDragId(active.id);
-    setOverId(over?.id);
+    setOverId(over?.id || null);
     if (!selectedGroupIds.includes(active.id)) {
       onGroupSelect(active.id);
     }
@@ -93,7 +102,7 @@ export function TileDragProvider({
   function handleDragOver(event) {
     const { over } = event;
 
-    setOverId(over?.id);
+    setOverId(over?.id || null);
     if (over) {
       if (
         over.id.startsWith(UNGROUP_ID) ||
@@ -111,8 +120,8 @@ export function TileDragProvider({
   function handleDragEnd(event) {
     const { active, over, overlayNodeClientRect } = event;
 
-    setDragId();
-    setOverId();
+    setDragId(null);
+    setOverId(null);
     setDragCursor("pointer");
     if (active && over && active.id !== over.id) {
       let selectedIndices = selectedGroupIds.map((groupId) =>
@@ -165,8 +174,8 @@ export function TileDragProvider({
   }
 
   function handleDragCancel(event) {
-    setDragId();
-    setOverId();
+    setDragId(null);
+    setOverId(null);
     setDragCursor("pointer");
 
     resumeSelect();
@@ -210,8 +219,6 @@ export function TileDragProvider({
     return closestCenter(otherRects, rect);
   }
 
-  const value = { dragId, overId, dragCursor };
-
   return (
     <DragContext
       onDragStart={handleDragStart}
@@ -221,19 +228,37 @@ export function TileDragProvider({
       sensors={sensors}
       collisionDetection={customCollisionDetection}
     >
-      <TileDragContext.Provider value={value}>
-        {children}
-      </TileDragContext.Provider>
+      <TileDragIdContext.Provider value={dragId}>
+        <TileOverGroupIdContext.Provider value={overGroupId}>
+          <TileDragCursorContext.Provider value={dragCursor}>
+            {children}
+          </TileDragCursorContext.Provider>
+        </TileOverGroupIdContext.Provider>
+      </TileDragIdContext.Provider>
     </DragContext>
   );
 }
 
-export function useTileDrag() {
-  const context = useContext(TileDragContext);
+export function useTileDragId() {
+  const context = useContext(TileDragIdContext);
   if (context === undefined) {
     throw new Error("useTileDrag must be used within a TileDragProvider");
   }
   return context;
 }
 
-export default TileDragContext;
+export function useTileOverGroupId() {
+  const context = useContext(TileOverGroupIdContext);
+  if (context === undefined) {
+    throw new Error("useTileDrag must be used within a TileDragProvider");
+  }
+  return context;
+}
+
+export function useTileDragCursor() {
+  const context = useContext(TileDragCursorContext);
+  if (context === undefined) {
+    throw new Error("useTileDrag must be used within a TileDragProvider");
+  }
+  return context;
+}

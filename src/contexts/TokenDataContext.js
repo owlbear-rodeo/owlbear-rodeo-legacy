@@ -115,30 +115,24 @@ export function TokenDataProvider({ children }) {
     }
 
     function handleTokenChanges(changes) {
+      // Pool token changes together to call a single state update at the end
+      let tokensCreated = [];
+      let tokensUpdated = {};
+      let tokensDeleted = [];
       for (let change of changes) {
         if (change.table === "tokens") {
           if (change.type === 1) {
             // Created
             const token = change.obj;
-            setTokens((prevTokens) => [token, ...prevTokens]);
+            tokensCreated.push(token);
           } else if (change.type === 2) {
             // Updated
             const token = change.obj;
-            setTokens((prevTokens) => {
-              const newTokens = [...prevTokens];
-              const i = newTokens.findIndex((t) => t.id === token.id);
-              if (i > -1) {
-                newTokens[i] = token;
-              }
-              return newTokens;
-            });
+            tokensUpdated[token.id] = token;
           } else if (change.type === 3) {
             // Deleted
             const id = change.key;
-            setTokens((prevTokens) => {
-              const filtered = prevTokens.filter((token) => token.id !== id);
-              return filtered;
-            });
+            tokensDeleted.push(id);
           }
         }
         if (change.table === "groups") {
@@ -148,6 +142,23 @@ export function TokenDataProvider({ children }) {
             setTokenGroups(groups);
           }
         }
+      }
+      const tokensUpdatedArray = Object.values(tokensUpdated);
+      if (
+        tokensCreated.length > 0 ||
+        tokensUpdatedArray.length > 0 ||
+        tokensDeleted.length > 0
+      ) {
+        setTokens((prevTokens) => {
+          let newTokens = [...tokensCreated, ...prevTokens];
+          for (let token of tokensUpdatedArray) {
+            const tokenIndex = newTokens.findIndex((t) => t.id === token.id);
+            if (tokenIndex > -1) {
+              newTokens[tokenIndex] = token;
+            }
+          }
+          return newTokens.filter((token) => !tokensDeleted.includes(token.id));
+        });
       }
     }
 

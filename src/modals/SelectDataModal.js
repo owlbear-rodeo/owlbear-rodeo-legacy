@@ -237,65 +237,79 @@ function SelectDataModal({
   function renderMapGroup(group) {
     if (group.type === "item") {
       const map = maps[group.id];
-      return (
-        <Label key={map.id} my={1} pl={4} sx={{ fontFamily: "body2" }}>
-          <Checkbox
-            checked={map.checked}
-            onChange={(e) => handleMapsChanged(e, [map])}
-          />
-          {map.name}
-        </Label>
-      );
+      if (map) {
+        return (
+          <Label key={map.id} my={1} pl={4} sx={{ fontFamily: "body2" }}>
+            <Checkbox
+              checked={map.checked}
+              onChange={(e) => handleMapsChanged(e, [map])}
+            />
+            {map.name}
+          </Label>
+        );
+      }
     } else {
-      return renderGroupContainer(
-        group,
-        group.items.some((item) => maps[item.id].checked),
-        renderMapGroup,
-        (e, group) =>
-          handleMapsChanged(
-            e,
-            group.items.map((group) => maps[group.id])
-          )
-      );
+      if (group.items.some((item) => item.id in maps)) {
+        return renderGroupContainer(
+          group,
+          group.items.some((item) => maps[item.id]?.checked),
+          renderMapGroup,
+          (e, group) =>
+            handleMapsChanged(
+              e,
+              group.items
+                .filter((group) => group.id in maps)
+                .map((group) => maps[group.id])
+            )
+        );
+      }
     }
   }
 
   function renderTokenGroup(group) {
     if (group.type === "item") {
       const token = tokens[group.id];
-      return (
-        <Box pl={4} my={1} key={token.id}>
-          <Label sx={{ fontFamily: "body2" }}>
-            <Checkbox
-              checked={token.checked}
-              onChange={(e) => handleTokensChanged(e, [token])}
-              disabled={token.type !== "default" && token.id in tokenUsedCount}
-            />
-            {token.name}
-          </Label>
-          {token.id in tokenUsedCount && token.type !== "default" && (
-            <Text as="p" variant="caption" ml={4}>
-              Token used in {tokenUsedCount[token.id]} selected map
-              {tokenUsedCount[token.id] > 1 && "s"}
-            </Text>
-          )}
-        </Box>
-      );
+      if (token) {
+        return (
+          <Box pl={4} my={1} key={token.id}>
+            <Label sx={{ fontFamily: "body2" }}>
+              <Checkbox
+                checked={token.checked}
+                onChange={(e) => handleTokensChanged(e, [token])}
+                disabled={
+                  token.type !== "default" && token.id in tokenUsedCount
+                }
+              />
+              {token.name}
+            </Label>
+            {token.id in tokenUsedCount && token.type !== "default" && (
+              <Text as="p" variant="caption" ml={4}>
+                Token used in {tokenUsedCount[token.id]} selected map
+                {tokenUsedCount[token.id] > 1 && "s"}
+              </Text>
+            )}
+          </Box>
+        );
+      }
     } else {
-      const checked =
-        group.items.some(
-          (item) => !(item.id in tokenUsedCount) && tokens[item.id].checked
-        ) || group.items.every((item) => item.id in tokenUsedCount);
-      return renderGroupContainer(
-        group,
-        checked,
-        renderTokenGroup,
-        (e, group) =>
-          handleTokensChanged(
-            e,
-            group.items.map((group) => tokens[group.id])
-          )
-      );
+      if (group.items.some((item) => item.id in tokens)) {
+        const checked =
+          group.items.some(
+            (item) => !(item.id in tokenUsedCount) && tokens[item.id]?.checked
+          ) || group.items.every((item) => item.id in tokenUsedCount);
+        return renderGroupContainer(
+          group,
+          checked,
+          renderTokenGroup,
+          (e, group) =>
+            handleTokensChanged(
+              e,
+              group.items
+                .filter((group) => group.id in tokens)
+                .map((group) => tokens[group.id])
+            )
+        );
+      }
     }
   }
 

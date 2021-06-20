@@ -39,7 +39,24 @@ export async function createTokenFromFile(file, userId) {
     return Promise.reject();
   }
   let name = "Unknown Token";
+  let defaultSize = 1;
   if (file.name) {
+    if (file.name.matchAll) {
+      // Match against a regex to find the grid size in the file name
+      // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
+      const sizeMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+      for (let match of sizeMatches) {
+        const matchX = parseInt(match[1]);
+        const matchY = parseInt(match[3]);
+        if (
+          !isNaN(matchX) &&
+          !isNaN(matchY) &&
+          matchX < 256 // Add check to test match isn't resolution
+        ) {
+          defaultSize = matchX;
+        }
+      }
+    }
     // Remove file extension
     name = file.name.replace(/\.[^/.]+$/, "");
     // Removed grid size expression
@@ -79,6 +96,7 @@ export async function createTokenFromFile(file, userId) {
 
       const token = {
         name,
+        defaultSize,
         thumbnail: thumbnail.id,
         file: fileAsset.id,
         id: uuid(),
@@ -86,7 +104,6 @@ export async function createTokenFromFile(file, userId) {
         created: Date.now(),
         lastModified: Date.now(),
         owner: userId,
-        defaultSize: 1,
         defaultCategory: "character",
         defaultLabel: "",
         hideInSidebar: false,

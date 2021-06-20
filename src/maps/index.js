@@ -1,13 +1,13 @@
 import Case from "case";
 
-import blankImage from "./Blank Grid 22x22.jpg";
-import grassImage from "./Grass Grid 22x22.jpg";
-import sandImage from "./Sand Grid 22x22.jpg";
-import stoneImage from "./Stone Grid 22x22.jpg";
-import waterImage from "./Water Grid 22x22.jpg";
-import woodImage from "./Wood Grid 22x22.jpg";
+import blankImage from "./Blank.jpg";
+import grassImage from "./Grass.jpg";
+import sandImage from "./Sand.jpg";
+import stoneImage from "./Stone.jpg";
+import waterImage from "./Water.jpg";
+import woodImage from "./Wood.jpg";
 
-import unknownImage from "./Unknown Grid 22x22.jpg";
+import unknownImage from "./Unknown.jpg";
 
 export const mapSources = {
   blank: blankImage,
@@ -42,7 +42,7 @@ export function getDefaultMaps(userId) {
       type: "default",
       created: mapKeys.length - i,
       lastModified: Date.now(),
-      showGrid: false,
+      showGrid: key !== "stone",
       snapToGrid: true,
       group: "",
     };

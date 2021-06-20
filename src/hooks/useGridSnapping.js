@@ -17,12 +17,16 @@ import {
 /**
  * Returns a function that when called will snap a node to the current grid
  * @param {number=} snappingSensitivity 1 = Always snap, 0 = never snap if undefined the default user setting will be used
+ * @param {boolean=} useCorners Snap to grid cell corners
  */
-function useGridSnapping(snappingSensitivity) {
+function useGridSnapping(snappingSensitivity, useCorners = true) {
   const [defaultSnappingSensitivity] = useSetting(
     "map.gridSnappingSensitivity"
   );
-  snappingSensitivity = snappingSensitivity || defaultSnappingSensitivity;
+  snappingSensitivity =
+    snappingSensitivity === undefined
+      ? defaultSnappingSensitivity
+      : snappingSensitivity;
 
   const grid = useGrid();
   const gridOffset = useGridOffset();
@@ -57,7 +61,10 @@ function useGridSnapping(snappingSensitivity) {
       gridCellPixelSize
     );
 
-    const snapPoints = [cellPosition, ...cellCorners];
+    const snapPoints = [cellPosition];
+    if (useCorners) {
+      snapPoints.push(...cellCorners);
+    }
 
     for (let snapPoint of snapPoints) {
       const distanceToSnapPoint = Vector2.distance(offsetPosition, snapPoint);

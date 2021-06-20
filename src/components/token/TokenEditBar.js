@@ -48,7 +48,14 @@ function TokenEditBar({ disabled, onLoad }) {
   async function handleTokensHide(hideInSidebar) {
     const selectedTokens = getSelectedTokens();
     const selectedTokenIds = selectedTokens.map((token) => token.id);
-    updateTokensHidden(selectedTokenIds, hideInSidebar);
+    // Show loading indicator if hiding more than 10 tokens
+    if (selectedTokenIds.length > 10) {
+      onLoad(true);
+      await updateTokensHidden(selectedTokenIds, hideInSidebar);
+      onLoad(false);
+    } else {
+      updateTokensHidden(selectedTokenIds, hideInSidebar);
+    }
   }
 
   /**

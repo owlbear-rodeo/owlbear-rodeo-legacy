@@ -189,41 +189,64 @@ export async function createThumbnail(image, type, size = 300, quality = 0.5) {
  * @returns {Outline}
  */
 export function getImageOutline(image, maxPoints = 100) {
-  let baseOutline = imageOutline(image);
+  // Basic rect outline for fail conditions
+  const defaultOutline = {
+    type: "rect",
+    x: 0,
+    y: 0,
+    width: image.width,
+    height: image.height,
+  };
+  try {
+    let outlinePoints = imageOutline(image, {
+      opacityThreshold: 1, // Allow everything except full transparency
+    });
 
-  if (baseOutline) {
-    if (baseOutline.length > maxPoints) {
-      baseOutline = Vector2.resample(baseOutline, maxPoints);
-    }
-    const bounds = Vector2.getBoundingBox(baseOutline);
-    if (Vector2.rectangular(baseOutline)) {
-      return {
-        type: "rect",
-        x: Math.round(bounds.min.x),
-        y: Math.round(bounds.min.y),
-        width: Math.round(bounds.width),
-        height: Math.round(bounds.height),
-      };
-    } else if (
-      Vector2.circular(
-        baseOutline,
-        Math.max(bounds.width / 10, bounds.height / 10)
-      )
-    ) {
-      return {
-        type: "circle",
-        x: Math.round(bounds.center.x),
-        y: Math.round(bounds.center.y),
-        radius: Math.round(Math.min(bounds.width, bounds.height) / 2),
-      };
+    if (outlinePoints) {
+      if (outlinePoints.length > maxPoints) {
+        outlinePoints = Vector2.resample(outlinePoints, maxPoints);
+      }
+      const bounds = Vector2.getBoundingBox(outlinePoints);
+
+      // Reject outline if it's area is less than 5% of the image
+      const imageArea = image.width * image.height;
+      const area = bounds.width * bounds.height;
+      if (area < imageArea * 0.05) {
+        return defaultOutline;
+      }
+
+      // Detect if the outline is a rectangle or circle
+      if (Vector2.rectangular(outlinePoints)) {
+        return {
+          type: "rect",
+          x: Math.round(bounds.min.x),
+          y: Math.round(bounds.min.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      } else if (
+        Vector2.circular(
+          outlinePoints,
+          Math.max(bounds.width / 10, bounds.height / 10)
+        )
+      ) {
+        return {
+          type: "circle",
+          x: Math.round(bounds.center.x),
+          y: Math.round(bounds.center.y),
+          radius: Math.round(Math.min(bounds.width, bounds.height) / 2),
+        };
+      } else {
+        // Flatten and round outline to save on storage size
+        const points = outlinePoints
+          .map(({ x, y }) => [Math.round(x), Math.round(y)])
+          .flat();
+        return { type: "path", points };
+      }
     } else {
-      // Flatten and round outline to save on storage size
-      const points = baseOutline
-        .map(({ x, y }) => [Math.round(x), Math.round(y)])
-        .flat();
-      return { type: "path", points };
+      return defaultOutline;
     }
-  } else {
-    return { type: "rect", x: 0, y: 0, width: 1, height: 1 };
+  } catch {
+    return defaultOutline;
   }
 }

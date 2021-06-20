@@ -50,7 +50,7 @@ function TokenMenu({
   }, [isOpen, tokenState, wasOpen, tokenImage]);
 
   function handleLabelChange(event) {
-    const label = event.target.value.substring(0, 144);
+    const label = event.target.value.substring(0, 48);
     tokenState && onTokenStateChange({ [tokenState.id]: { label: label } });
   }
 

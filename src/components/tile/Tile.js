@@ -15,15 +15,13 @@ function Tile({
   children,
 }) {
   return (
-    <Flex
+    <Box
       sx={{
         position: "relative",
         width: "100%",
         height: "0",
         paddingTop: "100%",
         borderRadius: "4px",
-        justifyContent: "center",
-        alignItems: "center",
         overflow: "hidden",
         userSelect: "none",
       }}
@@ -120,7 +118,7 @@ function Tile({
           </IconButton>
         </Box>
       )}
-    </Flex>
+    </Box>
   );
 }
 

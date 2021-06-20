@@ -25,8 +25,8 @@ function TokenTileGroup({
       <Grid
         columns={`repeat(${layout.groupGridColumns}, 1fr)`}
         p={2}
+        gap={2}
         sx={{
-          gridGap: 2,
           height: "100%",
           gridTemplateRows: `repeat(${layout.groupGridColumns}, 1fr)`,
         }}

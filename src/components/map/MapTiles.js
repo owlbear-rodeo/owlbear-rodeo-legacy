@@ -4,6 +4,7 @@ import MapTile from "./MapTile";
 import MapTileGroup from "./MapTileGroup";
 
 import SortableTiles from "../tile/SortableTiles";
+import SortableTilesDragOverlay from "../tile/SortableTilesDragOverlay";
 
 import { getGroupItems } from "../../helpers/group";
 
@@ -20,21 +21,25 @@ function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
   function renderTile(group) {
     if (group.type === "item") {
       const map = mapsById[group.id];
-      const isSelected = selectedGroupIds.includes(group.id);
-      const canEdit =
-        isSelected && selectMode === "single" && selectedGroupIds.length === 1;
-      return (
-        <MapTile
-          key={map.id}
-          map={map}
-          isSelected={isSelected}
-          onSelect={onGroupSelect}
-          onEdit={onMapEdit}
-          onDoubleClick={() => canEdit && onMapSelect(group.id)}
-          canEdit={canEdit}
-          badges={[`${map.grid.size.x}x${map.grid.size.y}`]}
-        />
-      );
+      if (map) {
+        const isSelected = selectedGroupIds.includes(group.id);
+        const canEdit =
+          isSelected &&
+          selectMode === "single" &&
+          selectedGroupIds.length === 1;
+        return (
+          <MapTile
+            key={map.id}
+            map={map}
+            isSelected={isSelected}
+            onSelect={onGroupSelect}
+            onEdit={onMapEdit}
+            onDoubleClick={() => canEdit && onMapSelect(group.id)}
+            canEdit={canEdit}
+            badges={[`${map.grid.size.x}x${map.grid.size.y}`]}
+          />
+        );
+      }
     } else {
       const isSelected = selectedGroupIds.includes(group.id);
       const items = getGroupItems(group);
@@ -53,7 +58,12 @@ function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
     }
   }
 
-  return <SortableTiles renderTile={renderTile} subgroup={subgroup} />;
+  return (
+    <>
+      <SortableTiles renderTile={renderTile} subgroup={subgroup} />
+      <SortableTilesDragOverlay renderTile={renderTile} subgroup={subgroup} />
+    </>
+  );
 }
 
 export default MapTiles;
