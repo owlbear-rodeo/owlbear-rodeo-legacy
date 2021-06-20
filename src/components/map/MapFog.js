@@ -239,7 +239,7 @@ function MapFog({
             const state = cutAction.execute(keyBy(shapes, "id"));
 
             if (Object.keys(state).length === shapes.length) {
-              onShapeError("No fog found to cut");
+              onShapeError("No fog to cut");
             } else {
               onShapesCut(
                 drawingShapes.map((shape) => ({
@@ -409,7 +409,7 @@ function MapFog({
         const state = cutAction.execute(keyBy(shapes, "id"));
 
         if (Object.keys(state).length === shapes.length) {
-          onShapeError("No fog found to cut");
+          onShapeError("No fog to cut");
         } else {
           onShapesCut(polygonShapes);
         }
