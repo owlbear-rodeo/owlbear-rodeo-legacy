@@ -4,6 +4,7 @@ import { Rect, Text, Group } from "react-konva";
 import useSetting from "../../hooks/useSetting";
 
 const maxTokenSize = 3;
+const defaultFontSize = 16;
 
 function TokenLabel({ tokenState, width, height }) {
   const [labelSize] = useSetting("map.labelSize");
@@ -13,7 +14,7 @@ function TokenLabel({ tokenState, width, height }) {
   const paddingX =
     (height / 8 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
 
-  const [fontSize, setFontSize] = useState(1);
+  const [fontScale, setFontScale] = useState(0);
   useEffect(() => {
     const text = textSizerRef.current;
 
@@ -22,15 +23,14 @@ function TokenLabel({ tokenState, width, height }) {
     }
 
     let fontSizes = [];
-    for (let size = 10 * labelSize; size >= 6; size--) {
-      fontSizes.push(
-        (height / size / tokenState.size) *
-          Math.min(tokenState.size, maxTokenSize) *
-          labelSize
-      );
+    for (let size = 20 * labelSize; size >= 6; size--) {
+      const verticalSize = height / size / tokenState.size;
+      const tokenSize = Math.min(tokenState.size, maxTokenSize);
+      const fontSize = verticalSize * tokenSize * labelSize;
+      fontSizes.push(fontSize);
     }
 
-    function findFontSize() {
+    function findFontScale() {
       const size = fontSizes.reduce((prev, curr) => {
         text.fontSize(curr);
         const textWidth = text.getTextWidth() + paddingX * 2;
@@ -39,12 +39,12 @@ function TokenLabel({ tokenState, width, height }) {
         } else {
           return prev;
         }
-      });
+      }, 1);
 
-      setFontSize(size);
+      setFontScale(size / defaultFontSize);
     }
 
-    findFontSize();
+    findFontScale();
   }, [
     tokenState.label,
     tokenState.visible,
@@ -56,44 +56,47 @@ function TokenLabel({ tokenState, width, height }) {
   ]);
 
   const [rectWidth, setRectWidth] = useState(0);
+  const [textWidth, setTextWidth] = useState(0);
   useEffect(() => {
     const text = textRef.current;
     if (text && tokenState.label) {
-      setRectWidth(text.getTextWidth() + paddingX * 2);
+      setRectWidth(text.getTextWidth() * fontScale + paddingX * 2);
+      setTextWidth(text.getTextWidth() * fontScale);
     } else {
       setRectWidth(0);
+      setTextWidth(0);
     }
-  }, [tokenState.label, paddingX, width, fontSize]);
+  }, [tokenState.label, paddingX, width, fontScale]);
 
   const textRef = useRef();
   const textSizerRef = useRef();
 
   return (
-    <Group y={height - (fontSize + paddingY) / 2}>
+    <Group y={height - (defaultFontSize * fontScale + paddingY) / 2}>
       <Rect
         y={-paddingY / 2}
         width={rectWidth}
         offsetX={width / 2}
         x={width - rectWidth / 2}
-        height={fontSize + paddingY}
+        height={defaultFontSize * fontScale + paddingY}
         fill="hsla(230, 25%, 18%, 0.8)"
-        cornerRadius={(fontSize + paddingY) / 2}
+        cornerRadius={(defaultFontSize * fontScale + paddingY) / 2}
       />
-      <Text
-        ref={textRef}
-        width={width}
-        text={tokenState.label}
-        fontSize={fontSize}
-        lineHeight={1}
-        align="center"
-        verticalAlign="bottom"
-        fill="white"
-        paddingX={paddingX}
-        paddingY={paddingY}
-        wrap="none"
-        ellipsis={false}
-        hitFunc={() => {}}
-      />
+      <Group offsetX={(textWidth - width) / 2}>
+        <Text
+          ref={textRef}
+          text={tokenState.label}
+          fontSize={defaultFontSize}
+          lineHeight={1}
+          // Scale font instead of changing font size to avoid kerning issues with Firefox
+          scaleX={fontScale}
+          scaleY={fontScale}
+          fill="white"
+          wrap="none"
+          ellipsis={false}
+          hitFunc={() => {}}
+        />
+      </Group>
       {/* Use an invisible text block to work out text sizing */}
       <Text
         visible={false}
