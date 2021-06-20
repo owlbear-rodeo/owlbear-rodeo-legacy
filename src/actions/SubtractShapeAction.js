@@ -1,24 +1,24 @@
 import polygonClipping from "polygon-clipping";
 
 import Action from "./Action";
-import { addPolygonDifferenceToShapes } from "../helpers/actions";
+import {
+  addPolygonDifferenceToShapes,
+  shapeToGeometry,
+} from "../helpers/actions";
 
 class SubtractShapeAction extends Action {
   constructor(shapes) {
     super();
     this.update = (shapesById) => {
-      const actionGeom = shapes.map((actionShape) => [
-        actionShape.data.points.map(({ x, y }) => [x, y]),
-      ]);
+      const actionGeom = shapes.map(shapeToGeometry);
       let subtractedShapes = {};
       for (let shape of Object.values(shapesById)) {
-        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
-        const shapeHoles = shape.data.holes.map((hole) =>
-          hole.map(({ x, y }) => [x, y])
-        );
-        let shapeGeom = [[shapePoints, ...shapeHoles]];
+        const shapeGeom = shapeToGeometry(shape);
         try {
-          const difference = polygonClipping.difference(shapeGeom, actionGeom);
+          const difference = polygonClipping.difference(
+            shapeGeom,
+            ...actionGeom
+          );
           addPolygonDifferenceToShapes(shape, difference, subtractedShapes);
         } catch {
           console.error("Unable to find difference for shapes");
