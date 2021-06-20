@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
+import Dedupe from "@sentry/integrations";
 import App from "./App";
 import Modal from "react-modal";
 
@@ -25,6 +26,7 @@ if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
+    integrations: [new Dedupe()],
     // Ignore resize error as it is triggered by going fullscreen on slower computers
     // Ignore quota error
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
