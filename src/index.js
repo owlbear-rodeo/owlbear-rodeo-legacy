@@ -42,6 +42,8 @@ if (process.env.REACT_APP_LOGGING === "true") {
       new RegExp(
         "([InvalidStateError:\\s]*Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing([.]*[\\s]*))+"
       ),
+      "Browser is shutting down",
+      "An internal error was encountered in the Indexed Database server",
       // Random plugins/extensions
       "top.GLOBALS",
       // See: http://blog.errorception.com/2012/03/tale-of-unfindable-js-error.html
