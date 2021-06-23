@@ -390,12 +390,22 @@ function NetworkedMapAndTokens({ session }) {
     async function handlePeerData({ id, data, reply }) {
       if (id === "assetRequest") {
         const asset = await getAsset(data.id);
-        reply("assetResponse", asset, undefined, asset.id);
+        if (asset) {
+          reply("assetResponseSuccess", asset, undefined, data.id);
+        } else {
+          reply("assetResponseFail", data.id, undefined, data.id);
+        }
       }
 
-      if (id === "assetResponse") {
-        await putAsset(data);
-        requestingAssetsRef.current.delete(data.id);
+      if (id === "assetResponseSuccess") {
+        const asset = data;
+        await putAsset(asset);
+        requestingAssetsRef.current.delete(asset.id);
+      }
+
+      if (id === "assetResponseFail") {
+        const assetId = data;
+        requestingAssetsRef.current.delete(assetId);
       }
     }
 
