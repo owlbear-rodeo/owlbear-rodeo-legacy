@@ -633,6 +633,9 @@ export const versions = {
         .toCollection()
         .modify((state) => {
           for (let id in state.tokens) {
+            if (!state.tokens[id]) {
+              continue;
+            }
             if (!state.tokens[id].tokenId.startsWith("__default")) {
               const token = tokens.find(
                 (token) => token.id === state.tokens[id].tokenId
