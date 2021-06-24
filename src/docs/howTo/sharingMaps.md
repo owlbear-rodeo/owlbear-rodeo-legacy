@@ -1,5 +1,3 @@
-![embed:](https://www.youtube.com/embed/ztLDznOpmsg)
-
 Once you have started a game you can share a map to all other party members by clicking the Select Map button then selecting the desired map to share and clicking the Done button.
 
 ## Default Maps
@@ -41,7 +39,6 @@ Next you can set the name of your map shown in the Map Select Screen.
 ## Editing Maps (Advanced)
 
 When editing a map there are also a few more advanced settings available.
-To get access to these settings, click the Show More button under the Name input in the Map Edit Screen.
 
 ![Editing Maps Advanced](editingMapsAdvanced)
 
@@ -63,7 +60,7 @@ A brief summary of these settings is listed below.
   - Tokens: Controls whether others can move tokens that they have not placed themselves (default enabled).
   - Notes: Controls whether others can add or move notes (default enabled).
 
-## Reseting, Removing and Grouping Maps
+## Reseting, Removing, Organising Maps
 
 With a map selected there are a couple of actions you can perform on them.
 
@@ -75,7 +72,13 @@ Once a map has been used you can clear away all the tokens, fog and drawings by 
 
 To remove a custom map select the map in the Map Select Screen then click the Remove Map button or use the Delete keyboard shortcut.
 
-Maps can also be grouped to allow for better organisation. To do this with a map selected click on the Group Map button then select or create a new group.
+Maps can also be grouped to allow for better organisation. To do this with you can drag and drop a map onto another map to create a group.
+
+Once a group has been created you can double click that group to open it.
+
+To ungroup a map you can drag that map back out of the group into the main view when the group is open.
+
+Maps can also be reordered by dragging them into the desired position.
 
 ## Filtering Maps
 
