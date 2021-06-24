@@ -633,7 +633,7 @@ export const versions = {
         .toCollection()
         .modify((state) => {
           for (let id in state.tokens) {
-            if (!state.tokens[id]) {
+            if (!state.tokens[id]?.tokenId) {
               continue;
             }
             if (!state.tokens[id].tokenId.startsWith("__default")) {
