@@ -634,6 +634,7 @@ export const versions = {
         .modify((state) => {
           for (let id in state.tokens) {
             if (!state.tokens[id]?.tokenId) {
+              delete state.tokens[id];
               continue;
             }
             if (!state.tokens[id].tokenId.startsWith("__default")) {
