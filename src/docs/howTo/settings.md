@@ -6,6 +6,8 @@ To Access the settings screen click the Settings button in the bottom left of a 
 An overview of each setting is listed below:
 
 - Light theme: Enables/disables the light theme.
+- Show fog guides: Enables/disables the fog guide visual when editing fog.
+- Fog edit opacity: Adjusts how visible fog is while the GM is editing it.
 - Token label size: Changes the max label size for tokens.
 - Grid snapping sensitivity: Changes how sensitive the grid snapping is. 0 = no grid snapping, 1 = full grid snapping.
 - Clear cache: Clears the apps settings and any maps that other users have sent you. Does not remove any data you have added.
