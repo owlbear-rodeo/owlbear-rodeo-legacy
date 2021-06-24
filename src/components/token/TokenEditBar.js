@@ -114,7 +114,7 @@ function TokenEditBar({ disabled, onLoad }) {
         <IconButton
           aria-label="Remove Selected Token(s)"
           title="Remove Selected Token(s)"
-          onClick={() => handleTokensRemove()}
+          onClick={() => setIsTokensRemoveModalOpen(true)}
         >
           <RemoveTokenIcon />
         </IconButton>
