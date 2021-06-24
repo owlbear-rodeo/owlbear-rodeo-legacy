@@ -75,3 +75,24 @@ export function groupBy(array, key) {
 }
 
 export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+export function shuffle(array) {
+  let temp = [...array];
+  var currentIndex = temp.length,
+    randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [temp[currentIndex], temp[randomIndex]] = [
+      temp[randomIndex],
+      temp[currentIndex],
+    ];
+  }
+
+  return temp;
+}
