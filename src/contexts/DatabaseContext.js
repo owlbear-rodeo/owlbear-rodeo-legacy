@@ -39,6 +39,10 @@ export function DatabaseProvider({ children }) {
       db.on("ready", () => {
         setDatabaseStatus("loaded");
       });
+      db.on("versionchange", () => {
+        // When another tab loads a new version of the database refresh the page
+        window.location.reload();
+      });
       await db.open();
       window.indexedDB.deleteDatabase("__test");
     };
