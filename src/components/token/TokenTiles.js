@@ -1,183 +1,72 @@
 import React from "react";
-import { Flex, Box, Text, IconButton, Close, Label } from "theme-ui";
-import SimpleBar from "simplebar-react";
-import Case from "case";
-
-import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
-import GroupIcon from "../../icons/GroupIcon";
-import TokenHideIcon from "../../icons/TokenHideIcon";
-import TokenShowIcon from "../../icons/TokenShowIcon";
 
 import TokenTile from "./TokenTile";
-import Link from "../Link";
-import FilterBar from "../FilterBar";
+import TokenTileGroup from "./TokenTileGroup";
+import TokenHiddenBadge from "./TokenHiddenBadge";
 
-import { useDatabase } from "../../contexts/DatabaseContext";
+import SortableTiles from "../tile/SortableTiles";
+import SortableTilesDragOverlay from "../tile/SortableTilesDragOverlay";
 
-import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+import { getGroupItems } from "../../helpers/group";
 
-function TokenTiles({
-  tokens,
-  groups,
-  onTokenAdd,
-  onTokenEdit,
-  onTokenSelect,
-  selectedTokens,
-  onTokensRemove,
-  selectMode,
-  onSelectModeChange,
-  search,
-  onSearchChange,
-  onTokensGroup,
-  onTokensHide,
-}) {
-  const { databaseStatus } = useDatabase();
-  const layout = useResponsiveLayout();
+import { useGroup } from "../../contexts/GroupContext";
 
-  let hasSelectedDefaultToken = selectedTokens.some(
-    (token) => token.type === "default"
-  );
-  let allTokensVisible = selectedTokens.every((token) => !token.hideInSidebar);
+function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
+  const {
+    selectedGroupIds,
+    selectMode,
+    onGroupOpen,
+    onGroupSelect,
+  } = useGroup();
 
-  function tokenToTile(token) {
-    const isSelected = selectedTokens.includes(token);
-    return (
-      <TokenTile
-        key={token.id}
-        token={token}
-        isSelected={isSelected}
-        onTokenSelect={onTokenSelect}
-        onTokenEdit={onTokenEdit}
-        size={layout.tileSize}
-        canEdit={
+  function renderTile(group) {
+    if (group.type === "item") {
+      const token = tokensById[group.id];
+      if (token) {
+        const isSelected = selectedGroupIds.includes(group.id);
+        const canEdit =
           isSelected &&
-          token.type !== "default" &&
           selectMode === "single" &&
-          selectedTokens.length === 1
-        }
-        badges={[`${token.defaultSize}x`]}
-      />
-    );
-  }
+          selectedGroupIds.length === 1;
 
-  const multipleSelected = selectedTokens.length > 1;
-
-  let hideTitle = "";
-  if (multipleSelected) {
-    if (allTokensVisible) {
-      hideTitle = "Hide Tokens in Sidebar";
+        return (
+          <TokenTile
+            key={token.id}
+            token={token}
+            isSelected={isSelected}
+            onSelect={onGroupSelect}
+            onTokenEdit={onTokenEdit}
+            canEdit={canEdit}
+            badges={[
+              `${token.defaultSize}x`,
+              <TokenHiddenBadge hidden={token.hideInSidebar} />,
+            ]}
+          />
+        );
+      }
     } else {
-      hideTitle = "Show Tokens in Sidebar";
-    }
-  } else {
-    if (allTokensVisible) {
-      hideTitle = "Hide Token in Sidebar";
-    } else {
-      hideTitle = "Show Token in Sidebar";
+      const isSelected = selectedGroupIds.includes(group.id);
+      const items = getGroupItems(group);
+      const canOpen =
+        isSelected && selectMode === "single" && selectedGroupIds.length === 1;
+      return (
+        <TokenTileGroup
+          key={group.id}
+          group={group}
+          tokens={items.map((item) => tokensById[item.id])}
+          isSelected={isSelected}
+          onSelect={onGroupSelect}
+          onDoubleClick={() => canOpen && onGroupOpen(group.id)}
+        />
+      );
     }
   }
 
   return (
-    <Box sx={{ position: "relative" }}>
-      <FilterBar
-        onFocus={() => onTokenSelect()}
-        search={search}
-        onSearchChange={onSearchChange}
-        selectMode={selectMode}
-        onSelectModeChange={onSelectModeChange}
-        onAdd={onTokenAdd}
-        addTitle="Add Token"
-      />
-      <SimpleBar
-        style={{ height: layout.screenSize === "large" ? "600px" : "400px" }}
-      >
-        <Flex
-          p={2}
-          pb={4}
-          pt={databaseStatus === "disabled" ? 4 : 2}
-          bg="muted"
-          sx={{
-            flexWrap: "wrap",
-            borderRadius: "4px",
-            minHeight: layout.screenSize === "large" ? "600px" : "400px",
-            alignContent: "flex-start",
-          }}
-          onClick={() => onTokenSelect()}
-        >
-          {groups.map((group) => (
-            <React.Fragment key={group}>
-              <Label mx={1} mt={2}>
-                {Case.capital(group)}
-              </Label>
-              {tokens[group].map(tokenToTile)}
-            </React.Fragment>
-          ))}
-        </Flex>
-      </SimpleBar>
-      {databaseStatus === "disabled" && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "39px",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            borderRadius: "2px",
-          }}
-          bg="highlight"
-          p={1}
-        >
-          <Text as="p" variant="body2">
-            Token saving is unavailable. See <Link to="/faq#saving">FAQ</Link>{" "}
-            for more information.
-          </Text>
-        </Box>
-      )}
-      {selectedTokens.length > 0 && (
-        <Flex
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            justifyContent: "space-between",
-          }}
-          bg="overlay"
-        >
-          <Close
-            title="Clear Selection"
-            aria-label="Clear Selection"
-            onClick={() => onTokenSelect()}
-          />
-          <Flex>
-            <IconButton
-              aria-label={hideTitle}
-              title={hideTitle}
-              disabled={hasSelectedDefaultToken}
-              onClick={() => onTokensHide(allTokensVisible)}
-            >
-              {allTokensVisible ? <TokenShowIcon /> : <TokenHideIcon />}
-            </IconButton>
-            <IconButton
-              aria-label={multipleSelected ? "Group Tokens" : "Group Token"}
-              title={multipleSelected ? "Group Tokens" : "Group Token"}
-              onClick={() => onTokensGroup()}
-              disabled={hasSelectedDefaultToken}
-            >
-              <GroupIcon />
-            </IconButton>
-            <IconButton
-              aria-label={multipleSelected ? "Remove Tokens" : "Remove Token"}
-              title={multipleSelected ? "Remove Tokens" : "Remove Token"}
-              onClick={() => onTokensRemove()}
-              disabled={hasSelectedDefaultToken}
-            >
-              <RemoveTokenIcon />
-            </IconButton>
-          </Flex>
-        </Flex>
-      )}
-    </Box>
+    <>
+      <SortableTiles renderTile={renderTile} subgroup={subgroup} />
+      <SortableTilesDragOverlay renderTile={renderTile} subgroup={subgroup} />
+    </>
   );
 }
 

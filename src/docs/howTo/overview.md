@@ -1,1 +1,1 @@
-[embed:](https://www.youtube.com/embed/KLUsOZA-SHI)
+![embed:](https://www.youtube.com/embed/KLUsOZA-SHI)

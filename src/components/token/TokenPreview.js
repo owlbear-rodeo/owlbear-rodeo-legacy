@@ -10,12 +10,12 @@ import useImageCenter from "../../hooks/useImageCenter";
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import { GridProvider } from "../../contexts/GridContext";
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import GridOnIcon from "../../icons/GridOnIcon";
 import GridOffIcon from "../../icons/GridOffIcon";
 
-import { tokenSources, unknownSource } from "../../tokens";
+import { tokenSources } from "../../tokens";
 
 import Grid from "../Grid";
 
@@ -27,12 +27,8 @@ function TokenPreview({ token }) {
     }
   }, [token, tokenSourceData]);
 
-  const tokenSource = useImageSource(
-    tokenSourceData,
-    tokenSources,
-    unknownSource
-  );
-  const [tokenSourceImage] = useImage(tokenSource);
+  const tokenURL = useDataURL(tokenSourceData, tokenSources);
+  const [tokenSourceImage] = useImage(tokenURL);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);

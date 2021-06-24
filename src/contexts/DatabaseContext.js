@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
+// eslint-disable-next-line no-unused-vars
+import Dexie from "dexie";
 import * as Comlink from "comlink";
 
 import ErrorBanner from "../components/banner/ErrorBanner";
@@ -7,12 +9,24 @@ import { getDatabase } from "../database";
 
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
 
+/**
+ * @typedef DatabaseContext
+ * @property {Dexie|undefined} database
+ * @property {any} worker
+ * @property {string} databaseStatus
+ * @property {Error|undefined} databaseError
+ */
+
+/**
+ * @type {React.Context<undefined|DatabaseContext>}
+ */
 const DatabaseContext = React.createContext();
 
 const worker = Comlink.wrap(new DatabaseWorker());
 
 export function DatabaseProvider({ children }) {
   const [database, setDatabase] = useState();
+  // "loading" | "disabled" | "upgrading" | "loaded"
   const [databaseStatus, setDatabaseStatus] = useState("loading");
   const [databaseError, setDatabaseError] = useState();
 
@@ -21,10 +35,22 @@ export function DatabaseProvider({ children }) {
     let testDBRequest = window.indexedDB.open("__test");
     testDBRequest.onsuccess = async function () {
       testDBRequest.result.close();
-      let db = getDatabase({ autoOpen: false });
+      let db = getDatabase(
+        { autoOpen: false },
+        undefined,
+        undefined,
+        true,
+        (v) => {
+          setDatabaseStatus("upgrading");
+        }
+      );
       setDatabase(db);
       db.on("ready", () => {
         setDatabaseStatus("loaded");
+      });
+      db.on("versionchange", () => {
+        // When another tab loads a new version of the database refresh the page
+        window.location.reload();
       });
       await db.open();
       window.indexedDB.deleteDatabase("__test");
@@ -45,18 +71,18 @@ export function DatabaseProvider({ children }) {
 
     function handleDatabaseError(event) {
       event.preventDefault();
-      if (event.reason?.message.startsWith("QuotaExceededError")) {
+      if (event?.reason?.message?.startsWith("QuotaExceededError")) {
         setDatabaseError({
-          name: event.reason.name,
+          name: event?.reason?.name,
           message: "Storage Quota Exceeded Please Clear Space and Try Again.",
         });
       } else {
         setDatabaseError({
-          name: event.reason.name,
+          name: event?.reason?.name,
           message: "Something went wrong, please refresh your browser.",
         });
       }
-      console.error(event.reason);
+      console.error(event?.reason);
     }
     window.addEventListener("unhandledrejection", handleDatabaseError);
 

@@ -1,46 +1,44 @@
-import React, { useState, useRef, useContext } from "react";
-import { omit, isEmpty } from "../helpers/shared";
+import React, { useState, useRef, useContext, useCallback } from "react";
 
 const MapLoadingContext = React.createContext();
 
 export function MapLoadingProvider({ children }) {
-  const [loadingAssetCount, setLoadingAssetCount] = useState(0);
-
-  function assetLoadStart() {
-    setLoadingAssetCount((prevLoadingAssets) => prevLoadingAssets + 1);
-  }
-
-  function assetLoadFinish() {
-    setLoadingAssetCount((prevLoadingAssets) => prevLoadingAssets - 1);
-  }
-
+  const [isLoading, setIsLoading] = useState(false);
+  // Mapping from asset id to the count and total number of pieces loaded
   const assetProgressRef = useRef({});
+  // Loading progress of all assets between 0 and 1
   const loadingProgressRef = useRef(null);
-  function assetProgressUpdate({ id, count, total }) {
-    if (count === total) {
-      assetProgressRef.current = omit(assetProgressRef.current, [id]);
-    } else {
-      assetProgressRef.current = {
-        ...assetProgressRef.current,
-        [id]: { count, total },
-      };
-    }
-    if (!isEmpty(assetProgressRef.current)) {
-      let total = 0;
-      let count = 0;
-      for (let progress of Object.values(assetProgressRef.current)) {
-        total += progress.total;
-        count += progress.count;
-      }
-      loadingProgressRef.current = count / total;
-    }
-  }
 
-  const isLoading = loadingAssetCount > 0;
+  const assetLoadStart = useCallback((id) => {
+    setIsLoading(true);
+    // Add asset at a 0% progress
+    assetProgressRef.current = {
+      ...assetProgressRef.current,
+      [id]: { count: 0, total: 1 },
+    };
+  }, []);
+
+  const assetProgressUpdate = useCallback(({ id, count, total }) => {
+    assetProgressRef.current = {
+      ...assetProgressRef.current,
+      [id]: { count, total },
+    };
+    // Update loading progress
+    let complete = 0;
+    const progresses = Object.values(assetProgressRef.current);
+    for (let progress of progresses) {
+      complete += progress.count / progress.total;
+    }
+    loadingProgressRef.current = complete / progresses.length;
+    // All loading is complete
+    if (loadingProgressRef.current === 1) {
+      setIsLoading(false);
+      assetProgressRef.current = {};
+    }
+  }, []);
 
   const value = {
     assetLoadStart,
-    assetLoadFinish,
     isLoading,
     assetProgressUpdate,
     loadingProgressRef,

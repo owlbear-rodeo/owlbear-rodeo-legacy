@@ -1,5 +1,3 @@
-[embed:](https://www.youtube.com/embed/j-9X9CF7_UY)
-
 Once you have a map shared between a party all players can drag tokens from the Token List on the right hand side of the screen. Tokens can then be used to represent players, monsters or any other object that needs to be moved around the map.
 
 ## Default Tokens
@@ -71,7 +69,13 @@ To remove a custom token select the token in the Edit Tokens Screen then click t
 
 Once a token has been added you can use the Hide/Show Token in Sidebar toggle to prevent it from taking up room in the Token List on the right side of your screen.
 
-Tokens can also be grouped to allow for better organisation. To do this with a token selected click on the Group Token button then select or create a new group.
+Tokens can also be grouped to allow for better organisation. To do this with you can drag and drop a token onto another token to create a group.
+
+Once a group has been created you can double click that group to open it.
+
+To ungroup a token you can drag that token back out of the group into the main view when the group is open.
+
+Tokens can also be reordered by dragging them into the desired position.
 
 `Tip: You can select multiple tokens at the same time using the Select Multiple option or using the Ctrl/Cmd or Shift keyboard shortcuts`
 

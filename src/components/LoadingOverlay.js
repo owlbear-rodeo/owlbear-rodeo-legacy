@@ -3,7 +3,7 @@ import { Box } from "theme-ui";
 
 import Spinner from "./Spinner";
 
-function LoadingOverlay({ bg }) {
+function LoadingOverlay({ bg, children }) {
   return (
     <Box
       sx={{
@@ -21,6 +21,7 @@ function LoadingOverlay({ bg }) {
       bg={bg}
     >
       <Spinner />
+      {children}
     </Box>
   );
 }

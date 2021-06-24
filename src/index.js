@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
+import { Dedupe } from "@sentry/integrations";
 import App from "./App";
 import Modal from "react-modal";
 
@@ -16,10 +17,16 @@ if (!("PointerEvent" in window)) {
   import("pepjs");
 }
 
+// Intersection observer polyfill
+if (!("IntersectionObserver" in window)) {
+  import("intersection-observer");
+}
+
 if (process.env.REACT_APP_LOGGING === "true") {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     release: "owlbear-rodeo@" + process.env.REACT_APP_VERSION,
+    integrations: [new Dedupe()],
     // Ignore resize error as it is triggered by going fullscreen on slower computers
     // Ignore quota error
     // Ignore XDR encoding failure bug in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
@@ -35,6 +42,8 @@ if (process.env.REACT_APP_LOGGING === "true") {
       new RegExp(
         "([InvalidStateError:\\s]*Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing([.]*[\\s]*))+"
       ),
+      "Browser is shutting down",
+      "An internal error was encountered in the Indexed Database server",
       // Random plugins/extensions
       "top.GLOBALS",
       // See: http://blog.errorception.com/2012/03/tale-of-unfindable-js-error.html

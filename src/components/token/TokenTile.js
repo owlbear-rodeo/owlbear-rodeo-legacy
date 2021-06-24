@@ -1,42 +1,28 @@
 import React from "react";
 
-import Tile from "../Tile";
-
-import { useImageSource } from "../../contexts/ImageSourceContext";
-
-import {
-  tokenSources as defaultTokenSources,
-  unknownSource,
-} from "../../tokens";
+import Tile from "../tile/Tile";
+import TokenImage from "./TokenImage";
 
 function TokenTile({
   token,
   isSelected,
-  onTokenSelect,
+  onSelect,
   onTokenEdit,
-  size,
   canEdit,
   badges,
 }) {
-  const tokenSource = useImageSource(
-    token,
-    defaultTokenSources,
-    unknownSource,
-    token.type === "file"
-  );
-
   return (
     <Tile
-      src={tokenSource}
       title={token.name}
       isSelected={isSelected}
-      onSelect={() => onTokenSelect(token)}
+      onSelect={() => onSelect(token.id)}
       onEdit={() => onTokenEdit(token.id)}
-      size={size}
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Token"
-    />
+    >
+      <TokenImage token={token} />
+    </Tile>
   );
 }
 

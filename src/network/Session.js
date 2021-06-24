@@ -19,7 +19,8 @@ import { logError } from "../helpers/logging";
  * @callback peerReply
  * @param {string} id - The id of the event
  * @param {object} data - The data to send
- * @param {string} channel - The channel to send to
+ * @param {string=} channel - The channel to send to
+ * @param {string=} chunkId
  */
 
 /**
@@ -111,7 +112,7 @@ class Session extends EventEmitter {
   }
 
   disconnect() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
   }
 
   /**
@@ -120,9 +121,10 @@ class Session extends EventEmitter {
    * @param {string} sessionId - The socket id of the player to send to
    * @param {string} eventId - The id of the event to send
    * @param {object} data
-   * @param {string} channel
+   * @param {string=} channel
+   * @param {string=} chunkId
    */
-  sendTo(sessionId, eventId, data, channel) {
+  sendTo(sessionId, eventId, data, channel, chunkId) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -133,7 +135,8 @@ class Session extends EventEmitter {
       this.peers[sessionId].connection.once("connect", () => {
         this.peers[sessionId].connection.sendObject(
           { id: eventId, data },
-          channel
+          channel,
+          chunkId
         );
       });
     } else {
@@ -198,7 +201,12 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit("join_game", gameId, password, process.env.REACT_APP_VERSION);
+    this.socket.emit(
+      "join_game",
+      gameId,
+      password,
+      process.env.REACT_APP_VERSION
+    );
     this.emit("status", "joining");
   }
 
@@ -221,8 +229,8 @@ class Session extends EventEmitter {
 
       const peer = { id, connection, initiator, ready: false };
 
-      function sendPeer(id, data, channel) {
-        peer.connection.sendObject({ id, data }, channel);
+      function reply(id, data, channel, chunkId) {
+        peer.connection.sendObject({ id, data }, channel, chunkId);
       }
 
       function handleSignal(signal) {
@@ -241,7 +249,7 @@ class Session extends EventEmitter {
          * @property {SessionPeer} peer
          * @property {peerReply} reply
          */
-        this.emit("peerConnect", { peer, reply: sendPeer });
+        this.emit("peerConnect", { peer, reply });
       }
 
       function handleDataComplete(data) {
@@ -259,7 +267,7 @@ class Session extends EventEmitter {
           peer,
           id: data.id,
           data: data.data,
-          reply: sendPeer,
+          reply,
         });
       }
 
@@ -269,7 +277,7 @@ class Session extends EventEmitter {
           id,
           count,
           total,
-          reply: sendPeer,
+          reply,
         });
       }
 

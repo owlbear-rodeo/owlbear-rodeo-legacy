@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useImage from "use-image";
 
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import { mapSources as defaultMapSources } from "../../maps";
 
@@ -11,15 +11,13 @@ import Grid from "../Grid";
 
 function MapGrid({ map }) {
   let mapSourceMap = map;
-  // Use lowest resolution for grid lightness
-  if (map && map.type === "file" && map.resolutions) {
-    const resolutionArray = Object.keys(map.resolutions);
-    if (resolutionArray.length > 0) {
-      mapSourceMap = map.resolutions[resolutionArray[0]];
-    }
-  }
-  const mapSource = useImageSource(mapSourceMap, defaultMapSources);
-  const [mapImage, mapLoadingStatus] = useImage(mapSource);
+  const mapURL = useDataURL(
+    mapSourceMap,
+    defaultMapSources,
+    undefined,
+    map.type === "file"
+  );
+  const [mapImage, mapLoadingStatus] = useImage(mapURL);
 
   const [isImageLight, setIsImageLight] = useState(true);
 

@@ -1,17 +1,20 @@
 import React from "react";
+import { Image } from "theme-ui";
 
-import Tile from "../Tile";
+import Tile from "../tile/Tile";
 
-function DiceTile({ dice, isSelected, onDiceSelect, onDone, size }) {
+function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
   return (
-    <Tile
-      src={dice.preview}
-      title={dice.name}
-      isSelected={isSelected}
-      onSelect={() => onDiceSelect(dice)}
-      onDoubleClick={() => onDone(dice)}
-      size={size}
-    />
+    <div style={{ cursor: "pointer" }}>
+      <Tile
+        title={dice.name}
+        isSelected={isSelected}
+        onSelect={() => onDiceSelect(dice)}
+        onDoubleClick={() => onDone(dice)}
+      >
+        <Image src={dice.preview}></Image>
+      </Tile>
+    </div>
   );
 }
 

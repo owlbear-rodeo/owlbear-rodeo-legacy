@@ -44,7 +44,10 @@ function MapMeasure({ map, active }) {
 
   const gridScale = parseGridScale(active && grid.measurement.scale);
 
-  const snapPositionToGrid = useGridSnapping();
+  const snapPositionToGrid = useGridSnapping(
+    grid.measurement.type === "euclidean" ? 0 : 1,
+    false
+  );
 
   useEffect(() => {
     if (!active) {

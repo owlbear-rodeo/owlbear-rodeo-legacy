@@ -1,22 +1,24 @@
 import React from "react";
 import { Flex, IconButton } from "theme-ui";
 
-import AddIcon from "../icons/AddIcon";
-import SelectMultipleIcon from "../icons/SelectMultipleIcon";
-import SelectSingleIcon from "../icons/SelectSingleIcon";
+import AddIcon from "../../icons/AddIcon";
+import SelectMultipleIcon from "../../icons/SelectMultipleIcon";
+import SelectSingleIcon from "../../icons/SelectSingleIcon";
 
-import Search from "./Search";
-import RadioIconButton from "./RadioIconButton";
+import Search from "../Search";
+import RadioIconButton from "../RadioIconButton";
 
-function FilterBar({
-  onFocus,
-  search,
-  onSearchChange,
-  selectMode,
-  onSelectModeChange,
-  onAdd,
-  addTitle,
-}) {
+import { useGroup } from "../../contexts/GroupContext";
+
+function TileActionBar({ onAdd, addTitle }) {
+  const {
+    selectMode,
+    onSelectModeChange,
+    onGroupSelect,
+    filter,
+    onFilterChange,
+  } = useGroup();
+
   return (
     <Flex
       bg="muted"
@@ -31,9 +33,9 @@ function FilterBar({
           outlineOffset: "0px",
         },
       }}
-      onFocus={onFocus}
+      onFocus={() => onGroupSelect()}
     >
-      <Search value={search} onChange={onSearchChange} />
+      <Search value={filter} onChange={(e) => onFilterChange(e.target.value)} />
       <Flex
         mr={1}
         px={1}
@@ -66,4 +68,4 @@ function FilterBar({
   );
 }
 
-export default FilterBar;
+export default TileActionBar;

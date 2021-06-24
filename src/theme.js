@@ -16,7 +16,7 @@ const theme = {
         background: "hsl(10, 10%, 98%)",
         primary: "hsl(260, 100%, 80%)",
         secondary: "hsl(290, 100%, 80%)",
-        highlight: "hsl(260, 20%, 40%)",
+        highlight: "hsl(260, 20%, 70%)",
         muted: "hsla(230, 20%, 60%, 20%)",
         overlay: "hsla(230, 100%, 97%, 80%)",
         border: "hsla(10, 20%, 20%, 0.5)",
@@ -188,6 +188,14 @@ const theme = {
       },
     },
     textarea: {
+      "&:focus": {
+        outlineColor: "primary",
+      },
+      "&:disabled": {
+        backgroundColor: "muted",
+        opacity: 0.5,
+        borderColor: "text",
+      },
       fontFamily: "body2",
     },
   },

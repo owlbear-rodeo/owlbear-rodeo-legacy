@@ -28,22 +28,16 @@ function MapInteraction({
   onSelectedToolChange,
   disabledControls,
 }) {
-  const [mapImageSource, mapImageSourceStatus] = useMapImage(map);
+  const [mapImage, mapImageStatus] = useMapImage(map);
 
-  // Map loaded taking in to account different resolutions
   const [mapLoaded, setMapLoaded] = useState(false);
   useEffect(() => {
-    if (
-      !map ||
-      !mapState ||
-      (map.type === "file" && !map.file && !map.resolutions) ||
-      mapState.mapId !== map.id
-    ) {
+    if (!map || !mapState || mapState.mapId !== map.id) {
       setMapLoaded(false);
-    } else if (mapImageSourceStatus === "loaded") {
+    } else if (mapImageStatus === "loaded") {
       setMapLoaded(true);
     }
-  }, [mapImageSourceStatus, map, mapState]);
+  }, [mapImageStatus, map, mapState]);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -187,11 +181,12 @@ function MapInteraction({
       <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
         <Box
           sx={{
-            flexGrow: 1,
             position: "relative",
             cursor: getCursorForTool(selectedToolId),
             touchAction: "none",
             outline: "none",
+            width: "100%",
+            height: "100%",
           }}
           ref={containerRef}
           className="map"
@@ -211,7 +206,7 @@ function MapInteraction({
             >
               <Layer ref={mapLayerRef}>
                 <Image
-                  image={mapLoaded && mapImageSource}
+                  image={mapLoaded && mapImage}
                   width={mapWidth}
                   height={mapHeight}
                   id="mapImage"

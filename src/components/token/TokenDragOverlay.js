@@ -1,12 +1,12 @@
 import React from "react";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import {
   useMapWidth,
   useMapHeight,
 } from "../../contexts/MapInteractionContext";
 
-import DragOverlay from "../DragOverlay";
+import DragOverlay from "../map/DragOverlay";
 
 function TokenDragOverlay({
   onTokenStateRemove,
@@ -16,7 +16,7 @@ function TokenDragOverlay({
   tokenGroup,
   dragging,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();

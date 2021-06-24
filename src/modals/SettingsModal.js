@@ -14,7 +14,7 @@ import Modal from "../components/Modal";
 import Slider from "../components/Slider";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import useSetting from "../hooks/useSetting";
@@ -24,7 +24,7 @@ import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
   const { database, databaseStatus } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
   const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
@@ -57,35 +57,38 @@ function SettingsModal({ isOpen, onRequestClose }) {
 
   async function handleEraseAllData() {
     setIsLoading(true);
-    localStorage.clear();
-    await database.delete();
-    window.location.reload();
+    try {
+      localStorage.clear();
+      database.close();
+      await database.delete();
+    } catch {
+    } finally {
+      window.location.reload();
+    }
   }
 
   async function handleClearCache() {
     setIsLoading(true);
     // Clear saved settings
     localStorage.clear();
-    // Clear map cache
-    await database.table("maps").where("owner").notEqual(userId).delete();
-    // Find all other peoples tokens who aren't benig used in a map state and delete them
-    const tokens = await database
-      .table("tokens")
+
+    const assets = await database
+      .table("assets")
       .where("owner")
       .notEqual(userId)
       .toArray();
     const states = await database.table("states").toArray();
-    for (let token of tokens) {
+    for (let asset of assets) {
       let inUse = false;
       for (let state of states) {
         for (let tokenState of Object.values(state.tokens)) {
-          if (token.id === tokenState.tokenId) {
+          if (tokenState.type === "file" && asset.id === tokenState.file) {
             inUse = true;
           }
         }
       }
       if (!inUse) {
-        database.table("tokens").delete(token.id);
+        await database.table("assets").delete(asset.id);
       }
     }
     window.location.reload();

@@ -15,26 +15,21 @@ let service = {
    * Load either a whole table or individual item from the DB
    * @param {string} table Table to load from
    * @param {string=} key Optional database key to load, if undefined whole table will be loaded
-   * @param {bool} excludeFiles Optional exclude files from loaded data when using whole table loading
    */
-  async loadData(table, key, excludeFiles = true) {
+  async loadData(table, key) {
     try {
       let db = getDatabase({});
       if (key) {
         // Load specific item
         const data = await db.table(table).get(key);
-        return data;
+        const packed = encode(data);
+        return Comlink.transfer(packed, [packed.buffer]);
       } else {
         // Load entire table
         let items = [];
         // Use a cursor instead of toArray to prevent IPC max size error
         await db.table(table).each((item) => {
-          if (excludeFiles) {
-            const { file, resolutions, ...rest } = item;
-            items.push(rest);
-          } else {
-            items.push(item);
-          }
+          items.push(item);
         });
 
         // Pack data with msgpack so we can use transfer to avoid memory issues
@@ -48,17 +43,12 @@ let service = {
    * Put data into table encoded by msgpack
    * @param {Uint8Array} data
    * @param {string} table
-   * @param {boolean} wait Whether to wait for the put to finish
    */
-  async putData(data, table, wait = true) {
+  async putData(data, table) {
     try {
       let db = getDatabase({});
       const decoded = decode(data);
-      if (wait) {
-        await db.table(table).put(decoded);
-      } else {
-        db.table(table).put(decoded);
-      }
+      await db.table(table).put(decoded);
       return true;
     } catch {
       return false;
@@ -68,22 +58,54 @@ let service = {
   /**
    * Export current database
    * @param {function} progressCallback
-   * @param {string[]} maps An array of map ids to export
-   * @param {string[]} tokens An array of token ids to export
+   * @param {string[]} mapIds An array of map ids to export
+   * @param {string[]} tokenIds An array of token ids to export
    */
-  async exportData(progressCallback, maps, tokens) {
+  async exportData(progressCallback, mapIds, tokenIds) {
     let db = getDatabase({});
+
+    // Add assets for selected maps and tokens
+    const maps = await db.table("maps").where("id").anyOf(mapIds).toArray();
+    const tokens = await db
+      .table("tokens")
+      .where("id")
+      .anyOf(tokenIds)
+      .toArray();
+    const assetIds = [];
+    for (let map of maps) {
+      if (map.type === "file") {
+        assetIds.push(map.file);
+        assetIds.push(map.thumbnail);
+        for (let res of Object.values(map.resolutions)) {
+          assetIds.push(res);
+        }
+      }
+    }
+    for (let token of tokens) {
+      if (token.type === "file") {
+        assetIds.push(token.file);
+        assetIds.push(token.thumbnail);
+      }
+    }
 
     const filter = (table, value) => {
       if (table === "maps") {
-        return maps.includes(value.id);
+        return mapIds.includes(value.id);
       }
       if (table === "states") {
-        return maps.includes(value.mapId);
+        return mapIds.includes(value.mapId);
       }
       if (table === "tokens") {
-        return tokens.includes(value.id);
+        return tokenIds.includes(value.id);
       }
+      if (table === "assets") {
+        return assetIds.includes(value.id);
+      }
+      // Always include groups table
+      if (table === "groups") {
+        return true;
+      }
+
       return false;
     };
 
@@ -131,7 +153,8 @@ let service = {
     importDB = getDatabase(
       { addons: [] },
       databaseName,
-      importMeta.data.databaseVersion
+      importMeta.data.databaseVersion,
+      false
     );
     await importInto(importDB, data, {
       progressCallback,
@@ -150,6 +173,43 @@ let service = {
       acceptVersionDiff: true,
     });
     importDB.close();
+  },
+
+  /**
+   * Ensure the asset cache doesn't go over `maxCacheSize` by removing cached assets
+   * Removes largest assets first
+   * @param {number} maxCacheSize Max size of cache in bytes
+   */
+  async cleanAssetCache(maxCacheSize) {
+    try {
+      let db = getDatabase({});
+      const userId = (await db.table("user").get("userId")).value;
+      const cachedAssets = await db
+        .table("assets")
+        .where("owner")
+        .notEqual(userId)
+        .toArray();
+      const totalSize = cachedAssets.reduce(
+        (acc, cur) => acc + cur.file.byteLength,
+        0
+      );
+      if (totalSize > maxCacheSize) {
+        // Remove largest assets first
+        const largestAssets = cachedAssets.sort(
+          (a, b) => b.file.byteLength - a.file.byteLength
+        );
+        let assetsToDelete = [];
+        let deletedBytes = 0;
+        for (let asset of largestAssets) {
+          assetsToDelete.push(asset.id);
+          deletedBytes += asset.file.byteLength;
+          if (totalSize - deletedBytes < maxCacheSize) {
+            break;
+          }
+        }
+        await db.table("assets").bulkDelete(assetsToDelete);
+      }
+    } catch {}
   },
 };
 

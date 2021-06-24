@@ -21,39 +21,49 @@ function TokenSettings({ token, onSettingsChange }) {
           name="name"
           value={(token && token.name) || ""}
           onChange={(e) => onSettingsChange("name", e.target.value)}
-          disabled={tokenEmpty || token.type === "default"}
+          disabled={tokenEmpty}
           my={1}
         />
       </Box>
       <Box mt={2}>
-        <Label mb={1}>Category</Label>
+        <Label>Default Category</Label>
         <Select
           options={categorySettings}
           value={
             !tokenEmpty &&
-            categorySettings.find((s) => s.value === token.category)
+            categorySettings.find((s) => s.value === token.defaultCategory)
           }
-          isDisabled={tokenEmpty || token.type === "default"}
-          onChange={(option) => onSettingsChange("category", option.value)}
+          isDisabled={tokenEmpty}
+          onChange={(option) =>
+            onSettingsChange("defaultCategory", option.value)
+          }
           isSearchable={false}
         />
       </Box>
-      <Flex>
-        <Box my={2} sx={{ flexGrow: 1 }}>
-          <Label htmlFor="tokenSize">Default Size</Label>
-          <Input
-            type="number"
-            name="tokenSize"
-            value={`${(token && token.defaultSize) || 0}`}
-            onChange={(e) =>
-              onSettingsChange("defaultSize", parseFloat(e.target.value))
-            }
-            disabled={tokenEmpty || token.type === "default"}
-            min={1}
-            my={1}
-          />
-        </Box>
-      </Flex>
+      <Box mt={2} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="tokenSize">Default Size</Label>
+        <Input
+          type="number"
+          name="tokenSize"
+          value={`${(token && token.defaultSize) || 0}`}
+          onChange={(e) =>
+            onSettingsChange("defaultSize", parseFloat(e.target.value))
+          }
+          disabled={tokenEmpty}
+          min={1}
+          my={1}
+        />
+      </Box>
+      <Box my={2} mb={3} sx={{ flexGrow: 1 }}>
+        <Label htmlFor="label">Default Label</Label>
+        <Input
+          name="label"
+          value={(token && token.defaultLabel) || ""}
+          onChange={(e) => onSettingsChange("defaultLabel", e.target.value)}
+          disabled={tokenEmpty}
+          my={1}
+        />
+      </Box>
     </Flex>
   );
 }

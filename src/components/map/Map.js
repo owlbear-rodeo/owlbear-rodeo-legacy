@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Box } from "theme-ui";
+import { useToasts } from "react-toast-notifications";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
@@ -48,6 +50,8 @@ function Map({
   disabledTokens,
   session,
 }) {
+  const { addToast } = useToasts();
+
   const { tokensById } = useTokenData();
 
   const [selectedToolId, setSelectedToolId] = useState("move");
@@ -231,6 +235,7 @@ function Map({
       onShapesCut={handleFogShapesCut}
       onShapesRemove={handleFogShapesRemove}
       onShapesEdit={handleFogShapesEdit}
+      onShapeError={addToast}
       active={selectedToolId === "fog"}
       toolSettings={settings.fog}
       editable={allowFogDrawing && !settings.fog.preview}
@@ -336,30 +341,32 @@ function Map({
   );
 
   return (
-    <MapInteraction
-      map={map}
-      mapState={mapState}
-      controls={
-        <>
-          {mapControls}
-          {tokenMenu}
-          {noteMenu}
-          {tokenDragOverlay}
-          {noteDragOverlay}
-        </>
-      }
-      selectedToolId={selectedToolId}
-      onSelectedToolChange={setSelectedToolId}
-      disabledControls={disabledControls}
-    >
-      {mapGrid}
-      {mapDrawing}
-      {mapNotes}
-      {mapTokens}
-      {mapFog}
-      {mapPointer}
-      {mapMeasure}
-    </MapInteraction>
+    <Box sx={{ flexGrow: 1 }}>
+      <MapInteraction
+        map={map}
+        mapState={mapState}
+        controls={
+          <>
+            {mapControls}
+            {tokenMenu}
+            {noteMenu}
+            {tokenDragOverlay}
+            {noteDragOverlay}
+          </>
+        }
+        selectedToolId={selectedToolId}
+        onSelectedToolChange={setSelectedToolId}
+        disabledControls={disabledControls}
+      >
+        {mapGrid}
+        {mapDrawing}
+        {mapNotes}
+        {mapTokens}
+        {mapFog}
+        {mapPointer}
+        {mapMeasure}
+      </MapInteraction>
+    </Box>
   );
 }
 

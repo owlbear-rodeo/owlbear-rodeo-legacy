@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import useImage from "use-image";
 
-import { useImageSource } from "../contexts/ImageSourceContext";
+import { useDataURL } from "../contexts/AssetsContext";
 
 import { mapSources as defaultMapSources } from "../maps";
 
 function useMapImage(map) {
-  const mapSource = useImageSource(map, defaultMapSources);
-  const [mapSourceImage, mapSourceImageStatus] = useImage(mapSource);
+  const mapURL = useDataURL(map, defaultMapSources);
+  const [mapImage, mapImageStatus] = useImage(mapURL);
 
   // Create a map source that only updates when the image is fully loaded
-  const [loadedMapSourceImage, setLoadedMapSourceImage] = useState();
+  const [loadedMapImage, setLoadedMapImage] = useState();
   useEffect(() => {
-    if (mapSourceImageStatus === "loaded") {
-      setLoadedMapSourceImage(mapSourceImage);
+    if (mapImageStatus === "loaded") {
+      setLoadedMapImage(mapImage);
     }
-  }, [mapSourceImage, mapSourceImageStatus]);
+  }, [mapImage, mapImageStatus]);
 
-  return [loadedMapSourceImage, mapSourceImageStatus];
+  return [loadedMapImage, mapImageStatus];
 }
 
 export default useMapImage;

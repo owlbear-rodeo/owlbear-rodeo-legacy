@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import cloneDeep from "lodash.clonedeep";
 
 import useDebounce from "./useDebounce";
 import { diff, applyChanges } from "../helpers/diff";
@@ -70,7 +71,7 @@ function useNetworkedState(
       }
       dirtyRef.current = false;
       forceUpdateRef.current = false;
-      lastSyncedStateRef.current = debouncedState;
+      lastSyncedStateRef.current = cloneDeep(debouncedState);
     }
   }, [
     session.socket,

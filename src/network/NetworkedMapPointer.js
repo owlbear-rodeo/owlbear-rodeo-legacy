@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
@@ -13,7 +13,7 @@ import useSetting from "../hooks/useSetting";
 const sendTickRate = 50;
 
 function NetworkedMapPointer({ session, active }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
   const [localPointerState, setLocalPointerState] = useState({});
   const [pointerColor] = useSetting("pointer.color");
 
