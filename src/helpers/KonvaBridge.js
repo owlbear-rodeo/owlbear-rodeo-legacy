@@ -19,7 +19,7 @@ import {
   useDebouncedStageScale,
 } from "../contexts/MapInteractionContext";
 import { MapStageProvider, useMapStage } from "../contexts/MapStageContext";
-import AuthContext, { useAuth } from "../contexts/AuthContext";
+import UserIdContext, { useUserId } from "../contexts/UserIdContext";
 import SettingsContext, { useSettings } from "../contexts/SettingsContext";
 import KeyboardContext from "../contexts/KeyboardContext";
 import AssetsContext, {
@@ -50,7 +50,7 @@ import DatabaseContext, { useDatabase } from "../contexts/DatabaseContext";
  */
 function KonvaBridge({ stageRender, children }) {
   const mapStageRef = useMapStage();
-  const auth = useAuth();
+  const userId = useUserId();
   const settings = useSettings();
   const assets = useAssets();
   const assetURLs = useContext(AssetURLsStateContext);
@@ -78,7 +78,7 @@ function KonvaBridge({ stageRender, children }) {
 
   return stageRender(
     <DatabaseContext.Provider value={database}>
-      <AuthContext.Provider value={auth}>
+      <UserIdContext.Provider value={userId}>
         <SettingsContext.Provider value={settings}>
           <KeyboardContext.Provider value={keyboardValue}>
             <MapStageProvider value={mapStageRef}>
@@ -140,7 +140,7 @@ function KonvaBridge({ stageRender, children }) {
             </MapStageProvider>
           </KeyboardContext.Provider>
         </SettingsContext.Provider>
-      </AuthContext.Provider>
+      </UserIdContext.Provider>
     </DatabaseContext.Provider>
   );
 }

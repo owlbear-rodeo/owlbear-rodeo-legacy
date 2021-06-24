@@ -11,7 +11,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
 import ErrorBanner from "../components/banner/ErrorBanner";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import SelectDataModal from "./SelectDataModal";
@@ -22,7 +22,7 @@ const importDBName = "OwlbearRodeoImportDB";
 
 function ImportExportModal({ isOpen, onRequestClose }) {
   const { worker } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();

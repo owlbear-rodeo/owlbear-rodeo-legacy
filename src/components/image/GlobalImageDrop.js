@@ -14,7 +14,7 @@ import {
 } from "../../helpers/token";
 import Vector2 from "../../helpers/Vector2";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import { useMapData } from "../../contexts/MapDataContext";
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAssets } from "../../contexts/AssetsContext";
@@ -25,7 +25,7 @@ import useImageDrop from "../../hooks/useImageDrop";
 function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
   const { addToast } = useToasts();
 
-  const { userId } = useAuth();
+  const userId = useUserId();
   const { addMap, getMapState } = useMapData();
   const { addToken } = useTokenData();
   const { addAssets } = useAssets();

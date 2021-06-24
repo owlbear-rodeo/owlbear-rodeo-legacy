@@ -5,7 +5,7 @@ import SelectMapModal from "../../modals/SelectMapModal";
 import SelectMapIcon from "../../icons/SelectMapIcon";
 
 import { useMapData } from "../../contexts/MapDataContext";
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 function SelectMapButton({
   onMapChange,
@@ -17,7 +17,7 @@ function SelectMapButton({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { updateMapState } = useMapData();
-  const { userId } = useAuth();
+  const userId = useUserId();
   function openModal() {
     if (currentMapState && currentMap && currentMap.owner === userId) {
       updateMapState(currentMapState.mapId, currentMapState);

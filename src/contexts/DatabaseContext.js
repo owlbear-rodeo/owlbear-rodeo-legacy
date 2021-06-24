@@ -26,6 +26,7 @@ const worker = Comlink.wrap(new DatabaseWorker());
 
 export function DatabaseProvider({ children }) {
   const [database, setDatabase] = useState();
+  // "loading" | "disabled" | "upgrading" | "loaded"
   const [databaseStatus, setDatabaseStatus] = useState("loading");
   const [databaseError, setDatabaseError] = useState();
 
@@ -34,7 +35,15 @@ export function DatabaseProvider({ children }) {
     let testDBRequest = window.indexedDB.open("__test");
     testDBRequest.onsuccess = async function () {
       testDBRequest.result.close();
-      let db = getDatabase({ autoOpen: false });
+      let db = getDatabase(
+        { autoOpen: false },
+        undefined,
+        undefined,
+        true,
+        (v) => {
+          setDatabaseStatus("upgrading");
+        }
+      );
       setDatabase(db);
       db.on("ready", () => {
         setDatabaseStatus("loaded");

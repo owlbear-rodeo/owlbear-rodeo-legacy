@@ -18,8 +18,14 @@ import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
 
 /**
+ * @callback OnUpgrade
+ * @param {number} versionNumber
+ */
+
+/**
  * @callback VersionCallback
  * @param {Version} version
+ * @param {OnUpgrade=} onUpgrade
  */
 
 /**
@@ -37,8 +43,9 @@ export const versions = {
     });
   },
   // v1.2.1 - Move from blob files to array buffers
-  2(v) {
+  2(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(2);
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
       let mapBuffers = {};
       for (let map of maps) {
@@ -53,8 +60,9 @@ export const versions = {
     });
   },
   // v1.3.0 - Added new default tokens
-  3(v) {
+  3(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(3);
       return tx
         .table("states")
         .toCollection()
@@ -116,8 +124,9 @@ export const versions = {
     });
   },
   // v1.3.1 - Added show grid option
-  4(v) {
+  4(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(4);
       return tx
         .table("maps")
         .toCollection()
@@ -127,8 +136,9 @@ export const versions = {
     });
   },
   // v1.4.0 - Added fog subtraction
-  5(v) {
+  5(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(5);
       return tx
         .table("states")
         .toCollection()
@@ -144,8 +154,9 @@ export const versions = {
     });
   },
   // v1.4.2 - Added map resolutions
-  6(v) {
+  6(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(6);
       return tx
         .table("maps")
         .toCollection()
@@ -156,8 +167,9 @@ export const versions = {
     });
   },
   // v1.5.0 - Fixed default token rogue spelling
-  7(v) {
+  7(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(7);
       return tx
         .table("states")
         .toCollection()
@@ -171,8 +183,9 @@ export const versions = {
     });
   },
   // v1.5.0 - Added map snap to grid option
-  8(v) {
+  8(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(8);
       return tx
         .table("maps")
         .toCollection()
@@ -182,8 +195,9 @@ export const versions = {
     });
   },
   // v1.5.1 - Added lock, visibility and modified to tokens
-  9(v) {
+  9(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(9);
       return tx
         .table("states")
         .toCollection()
@@ -199,8 +213,9 @@ export const versions = {
     });
   },
   // v1.5.1 - Added token prop category and remove isVehicle bool
-  10(v) {
+  10(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(10);
       return tx
         .table("tokens")
         .toCollection()
@@ -211,8 +226,9 @@ export const versions = {
     });
   },
   // v1.5.2 - Added automatic cache invalidation to maps
-  11(v) {
+  11(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(11);
       return tx
         .table("maps")
         .toCollection()
@@ -222,8 +238,9 @@ export const versions = {
     });
   },
   // v1.5.2 - Added automatic cache invalidation to tokens
-  12(v) {
+  12(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(12);
       return tx
         .table("tokens")
         .toCollection()
@@ -233,8 +250,9 @@ export const versions = {
     });
   },
   // v1.6.0 - Added map grouping and grid scale and offset
-  13(v) {
+  13(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(13);
       return tx
         .table("maps")
         .toCollection()
@@ -256,8 +274,9 @@ export const versions = {
     });
   },
   // v1.6.0 - Added token grouping
-  14(v) {
+  14(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(14);
       return tx
         .table("tokens")
         .toCollection()
@@ -267,8 +286,9 @@ export const versions = {
     });
   },
   // v1.6.1 - Added width and height to tokens
-  15(v) {
+  15(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(15);
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       let tokenSizes = {};
       for (let token of tokens) {
@@ -293,8 +313,9 @@ export const versions = {
     });
   },
   // v1.7.0 - Added note tool
-  16(v) {
+  16(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(16);
       return tx
         .table("states")
         .toCollection()
@@ -305,8 +326,9 @@ export const versions = {
     });
   },
   // 1.7.0 (hotfix) - Optimized fog shape edits to only include needed data
-  17(v) {
+  17(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(17);
       return tx
         .table("states")
         .toCollection()
@@ -328,8 +350,9 @@ export const versions = {
     });
   },
   // 1.8.0 - Added note text only mode, converted draw and fog representations
-  18(v) {
+  18(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(18);
       return tx
         .table("states")
         .toCollection()
@@ -355,8 +378,9 @@ export const versions = {
     });
   },
   // 1.8.0 - Add thumbnail to maps and add measurement to grid
-  19(v) {
+  19(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(19);
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         .value;
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
@@ -378,8 +402,9 @@ export const versions = {
     });
   },
   // 1.8.0 - Add thumbnail to tokens
-  20(v) {
+  20(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(20);
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         .value;
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
@@ -404,8 +429,9 @@ export const versions = {
     v.stores({});
   },
   // v1.8.1 - Shorten fog shape ids
-  22(v) {
+  22(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(22);
       return tx
         .table("states")
         .toCollection()
@@ -420,8 +446,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Add outlines to tokens
-  23(v) {
+  23(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(23);
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       const tokenOutlines = await Dexie.waitFor(
         Promise.all(tokens.map(createDataOutline))
@@ -447,8 +474,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Move map assets into new table
-  24(v) {
+  24(v, onUpgrade) {
     v.stores({ assets: "id, owner" }).upgrade((tx) => {
+      onUpgrade?.(24);
       tx.table("maps").each((map) => {
         let assets = [];
         assets.push({
@@ -493,8 +521,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Move token assets into new table
-  25(v) {
+  25(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(25);
       tx.table("tokens").each((token) => {
         let assets = [];
         assets.push({
@@ -522,8 +551,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Create foreign keys for assets
-  26(v) {
+  26(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(26);
       tx.table("assets").each((asset) => {
         if (asset.prevType === "map") {
           tx.table("maps").update(asset.prevId, {
@@ -547,8 +577,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove asset migration helpers
-  27(v) {
+  27(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(27);
       tx.table("assets")
         .toCollection()
         .modify((asset) => {
@@ -561,8 +592,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Remap map resolution assets
-  28(v) {
+  28(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(28);
       tx.table("maps")
         .toCollection()
         .modify((map) => {
@@ -579,8 +611,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Move tokens to use more defaults
-  29(v) {
+  29(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(29);
       tx.table("tokens")
         .toCollection()
         .modify(async (token) => {
@@ -592,8 +625,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Move tokens to use more defaults and add token outline to token states
-  30(v) {
+  30(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(30);
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
       tx.table("states")
         .toCollection()
@@ -645,8 +679,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove maps not owned by user as cache is now done on the asset level
-  31(v) {
+  31(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(31);
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
       if (userId) {
@@ -655,8 +690,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove tokens not owned by user as cache is now done on the asset level
-  32(v) {
+  32(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(32);
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
       if (userId) {
@@ -665,8 +701,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Store default maps and tokens in db
-  33(v) {
+  33(v, onUpgrade) {
     v.stores({}).upgrade(async (tx) => {
+      onUpgrade?.(33);
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         ?.value;
       if (!userId) {
@@ -679,8 +716,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Add new group table
-  34(v) {
+  34(v, onUpgrade) {
     v.stores({ groups: "id" }).upgrade(async (tx) => {
+      onUpgrade?.(34);
       function groupItems(items) {
         let groups = [];
         let subGroups = {};
@@ -714,8 +752,9 @@ export const versions = {
     });
   },
   // v1.9.0 - Remove map and token group in respective tables
-  35(v) {
+  35(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
+      onUpgrade?.(35);
       tx.table("maps")
         .toCollection()
         .modify((map) => {
@@ -736,10 +775,11 @@ export const latestVersion = 35;
  * Load versions onto a database up to a specific version number
  * @param {Dexie} db
  * @param {number=} upTo version number to load up to, latest version if undefined
+ * @param {OnUpgrade=} onUpgrade
  */
-export function loadVersions(db, upTo = latestVersion) {
+export function loadVersions(db, upTo = latestVersion, onUpgrade = undefined) {
   for (let versionNumber = 1; versionNumber <= upTo; versionNumber++) {
-    versions[versionNumber](db.version(versionNumber));
+    versions[versionNumber](db.version(versionNumber), onUpgrade);
   }
 }
 

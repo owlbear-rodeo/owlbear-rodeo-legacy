@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from "react";
 
 import { useDatabase } from "./DatabaseContext";
-import { useAuth } from "./AuthContext";
+import { useUserId } from "./UserIdContext";
 
 import { getRandomMonster } from "../helpers/monsters";
 
@@ -11,7 +11,7 @@ export const PlayerStateContext = React.createContext();
 export const PlayerUpdaterContext = React.createContext(() => {});
 
 export function PlayerProvider({ session, children }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
   const { database, databaseStatus } = useDatabase();
 
   const [playerState, setPlayerState] = useNetworkedState(
@@ -53,7 +53,7 @@ export function PlayerProvider({ session, children }) {
     if (
       playerState.nickname &&
       database !== undefined &&
-      databaseStatus !== "loading"
+      (databaseStatus === "loaded" || databaseStatus === "disabled")
     ) {
       database
         .table("user")

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 
-import { useDatabase } from "./DatabaseContext";
-
 import FakeStorage from "../helpers/FakeStorage";
 
 const AuthContext = React.createContext();
@@ -17,31 +15,13 @@ try {
 }
 
 export function AuthProvider({ children }) {
-  const { database, databaseStatus } = useDatabase();
-
   const [password, setPassword] = useState(storage.getItem("auth") || "");
 
   useEffect(() => {
     storage.setItem("auth", password);
   }, [password]);
 
-  const [userId, setUserId] = useState();
-  useEffect(() => {
-    if (!database || databaseStatus === "loading") {
-      return;
-    }
-    async function loadUserId() {
-      const storedUserId = await database.table("user").get("userId");
-      if (storedUserId) {
-        setUserId(storedUserId.value);
-      }
-    }
-
-    loadUserId();
-  }, [database, databaseStatus]);
-
   const value = {
-    userId,
     password,
     setPassword,
   };

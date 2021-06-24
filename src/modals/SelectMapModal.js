@@ -25,7 +25,7 @@ import { createMapFromFile } from "../helpers/map";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useMapData } from "../contexts/MapDataContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
@@ -40,7 +40,7 @@ function SelectMapModal({
 }) {
   const { addToast } = useToasts();
 
-  const { userId } = useAuth();
+  const userId = useUserId();
   const {
     maps,
     mapStates,

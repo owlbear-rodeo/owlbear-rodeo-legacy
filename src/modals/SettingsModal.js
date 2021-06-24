@@ -14,7 +14,7 @@ import Modal from "../components/Modal";
 import Slider from "../components/Slider";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import useSetting from "../hooks/useSetting";
@@ -24,7 +24,7 @@ import ImportExportModal from "./ImportExportModal";
 
 function SettingsModal({ isOpen, onRequestClose }) {
   const { database, databaseStatus } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
   const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(

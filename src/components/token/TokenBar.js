@@ -21,7 +21,7 @@ import useSetting from "../../hooks/useSetting";
 import usePreventSelect from "../../hooks/usePreventSelect";
 
 import { useTokenData } from "../../contexts/TokenDataContext";
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import DragContext from "../../contexts/DragContext";
 
@@ -33,7 +33,7 @@ import { findGroup } from "../../helpers/group";
 import Vector2 from "../../helpers/Vector2";
 
 function TokenBar({ onMapTokensStateCreate }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
   const { tokensById, tokenGroups } = useTokenData();
   const [fullScreen] = useSetting("map.fullScreen");
 

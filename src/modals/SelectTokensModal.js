@@ -29,7 +29,7 @@ import Vector2 from "../helpers/Vector2";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useTokenData } from "../contexts/TokenDataContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
@@ -38,7 +38,7 @@ import { useMapStage } from "../contexts/MapStageContext";
 function SelectTokensModal({ isOpen, onRequestClose, onMapTokensStateCreate }) {
   const { addToast } = useToasts();
 
-  const { userId } = useAuth();
+  const userId = useUserId();
   const {
     tokens,
     addToken,

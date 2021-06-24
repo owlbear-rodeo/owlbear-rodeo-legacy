@@ -17,7 +17,7 @@ import HideIcon from "../../icons/TokenHideIcon";
 import NoteIcon from "../../icons/NoteToolIcon";
 import TextIcon from "../../icons/NoteTextIcon";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 const defaultNoteMaxSize = 6;
 
@@ -29,7 +29,7 @@ function NoteMenu({
   onNoteChange,
   map,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const wasOpen = usePrevious(isOpen);
 

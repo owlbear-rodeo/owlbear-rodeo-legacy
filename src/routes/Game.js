@@ -8,6 +8,7 @@ import OfflineBanner from "../components/banner/OfflineBanner";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Link from "../components/Link";
 import MapLoadingOverlay from "../components/map/MapLoadingOverlay";
+import UpgradingLoadingOverlay from "../components/UpgradingLoadingOverlay";
 
 import AuthModal from "../modals/AuthModal";
 import GameExpiredModal from "../modals/GameExpiredModal";
@@ -90,13 +91,16 @@ function Game() {
 
   // Join game
   useEffect(() => {
-    if (sessionStatus === "ready" && databaseStatus !== "loading") {
+    if (
+      sessionStatus === "ready" &&
+      (databaseStatus === "loaded" || databaseStatus === "disabled")
+    ) {
       session.joinGame(gameId, password);
     }
   }, [gameId, password, databaseStatus, session, sessionStatus]);
 
   function handleAuthSubmit(newPassword) {
-    if (databaseStatus !== "loading") {
+    if (databaseStatus === "loaded" || databaseStatus === "disabled") {
       session.joinGame(gameId, newPassword);
     }
   }
@@ -151,6 +155,9 @@ function Game() {
                       isOpen={sessionStatus === "needs_update"}
                     />
                     {!sessionStatus && <LoadingOverlay />}
+                    {sessionStatus && databaseStatus === "upgrading" && (
+                      <UpgradingLoadingOverlay />
+                    )}
                     <MapLoadingOverlay />
                   </MapStageProvider>
                 </PartyProvider>

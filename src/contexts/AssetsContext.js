@@ -50,11 +50,13 @@ const AssetsContext = React.createContext();
 const maxCacheSize = 1e8;
 
 export function AssetsProvider({ children }) {
-  const { worker, database } = useDatabase();
+  const { worker, database, databaseStatus } = useDatabase();
 
   useEffect(() => {
-    worker.cleanAssetCache(maxCacheSize);
-  }, [worker]);
+    if (databaseStatus === "loaded") {
+      worker.cleanAssetCache(maxCacheSize);
+    }
+  }, [worker, databaseStatus]);
 
   const getAsset = useCallback(
     async (assetId) => {

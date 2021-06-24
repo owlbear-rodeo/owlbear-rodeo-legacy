@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Rect, Text } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import {
   useSetPreventMapInteraction,
   useMapWidth,
@@ -27,7 +27,7 @@ function Note({
   onNoteDragEnd,
   fadeOnHover,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();

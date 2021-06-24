@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
 
-import { useAuth } from "./AuthContext";
+import { useUserId } from "./UserIdContext";
 import { useDatabase } from "./DatabaseContext";
 
 import { applyObservableChange } from "../helpers/dexie";
@@ -10,7 +10,7 @@ const TokenDataContext = React.createContext();
 
 export function TokenDataProvider({ children }) {
   const { database, databaseStatus } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const [tokens, setTokens] = useState([]);
   const [tokensLoading, setTokensLoading] = useState(true);

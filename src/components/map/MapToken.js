@@ -6,7 +6,7 @@ import useImage from "use-image";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import {
   useSetPreventMapInteraction,
   useMapWidth,
@@ -33,7 +33,7 @@ function MapToken({
   fadeOnHover,
   map,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();

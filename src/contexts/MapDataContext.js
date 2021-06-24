@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
 
-import { useAuth } from "./AuthContext";
+import { useUserId } from "./UserIdContext";
 import { useDatabase } from "./DatabaseContext";
 
 import { applyObservableChange } from "../helpers/dexie";
@@ -19,7 +19,7 @@ const defaultMapState = {
 
 export function MapDataProvider({ children }) {
   const { database, databaseStatus } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const [maps, setMaps] = useState([]);
   const [mapStates, setMapStates] = useState([]);

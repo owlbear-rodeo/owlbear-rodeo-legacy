@@ -3,7 +3,7 @@ import Dexie, { DexieOptions } from "dexie";
 import { v4 as uuid } from "uuid";
 import "dexie-observable";
 
-import { loadVersions, latestVersion } from "./upgrade";
+import { loadVersions } from "./upgrade";
 import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
 
@@ -36,16 +36,18 @@ function populate(db) {
  * @param {string=} name
  * @param {number=} versionNumber
  * @param {boolean=} populateData
+ * @param {import("./upgrade").OnUpgrade=} onUpgrade
  * @returns {Dexie}
  */
 export function getDatabase(
   options,
   name = "OwlbearRodeoDB",
-  versionNumber = latestVersion,
-  populateData = true
+  versionNumber = undefined,
+  populateData = true,
+  onUpgrade = undefined
 ) {
   let db = new Dexie(name, options);
-  loadVersions(db, versionNumber);
+  loadVersions(db, versionNumber, onUpgrade);
   if (populateData) {
     populate(db);
   }

@@ -3,7 +3,7 @@ import { useToasts } from "react-toast-notifications";
 
 import { useMapData } from "../contexts/MapDataContext";
 import { useMapLoading } from "../contexts/MapLoadingContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 import { useParty } from "../contexts/PartyContext";
 import { useAssets } from "../contexts/AssetsContext";
@@ -39,7 +39,7 @@ const defaultMapActions = {
  */
 function NetworkedMapAndTokens({ session }) {
   const { addToast } = useToasts();
-  const { userId } = useAuth();
+  const userId = useUserId();
   const partyState = useParty();
   const { assetLoadStart, assetProgressUpdate, isLoading } = useMapLoading();
 

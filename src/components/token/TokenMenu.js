@@ -14,7 +14,7 @@ import UnlockIcon from "../../icons/TokenUnlockIcon";
 import ShowIcon from "../../icons/TokenShowIcon";
 import HideIcon from "../../icons/TokenHideIcon";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 const defaultTokenMaxSize = 6;
 function TokenMenu({
@@ -25,7 +25,7 @@ function TokenMenu({
   onTokenStateChange,
   map,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const wasOpen = usePrevious(isOpen);
 
