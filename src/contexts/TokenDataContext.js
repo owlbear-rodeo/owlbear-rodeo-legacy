@@ -1,37 +1,44 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useMemo,
+} from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { useUserId } from "./UserIdContext";
 import { useDatabase } from "./DatabaseContext";
 
-import { applyObservableChange } from "../helpers/dexie";
 import { removeGroupsItems } from "../helpers/group";
 
 const TokenDataContext = React.createContext();
 
 export function TokenDataProvider({ children }) {
-  const { database, databaseStatus } = useDatabase();
-  const userId = useUserId();
+  const { database } = useDatabase();
 
-  const [tokens, setTokens] = useState([]);
-  const [tokensLoading, setTokensLoading] = useState(true);
+  const tokensQuery = useLiveQuery(
+    () => database?.table("tokens").toArray(),
+    [database]
+  );
+
+  const tokens = useMemo(() => tokensQuery || [], [tokensQuery]);
+  const tokensLoading = useMemo(() => !tokensQuery, [tokensQuery]);
+
+  const tokenGroupQuery = useLiveQuery(
+    () => database?.table("groups").get("tokens"),
+    [database]
+  );
+
   const [tokenGroups, setTokenGroups] = useState([]);
-
   useEffect(() => {
-    if (!userId || !database || databaseStatus === "loading") {
-      return;
-    }
-
-    async function loadTokens() {
-      const storedTokens = await database.table("tokens").toArray();
-      setTokens(storedTokens);
+    async function updateTokenGroups() {
       const group = await database.table("groups").get("tokens");
-      const storedGroups = group.items;
-      setTokenGroups(storedGroups);
-      setTokensLoading(false);
+      setTokenGroups(group.items);
     }
-
-    loadTokens();
-  }, [userId, database, databaseStatus]);
+    if (database && tokenGroupQuery) {
+      updateTokenGroups();
+    }
+  }, [tokenGroupQuery, database]);
 
   const getToken = useCallback(
     async (tokenId) => {
@@ -83,15 +90,15 @@ export function TokenDataProvider({ children }) {
 
   const updateTokensHidden = useCallback(
     async (ids, hideInSidebar) => {
-      // Update immediately to avoid UI delay
-      setTokens((prevTokens) => {
-        let newTokens = [...prevTokens];
-        for (let id of ids) {
-          const tokenIndex = newTokens.findIndex((token) => token.id === id);
-          newTokens[tokenIndex].hideInSidebar = hideInSidebar;
-        }
-        return newTokens;
-      });
+      // // Update immediately to avoid UI delay
+      // setTokens((prevTokens) => {
+      //   let newTokens = [...prevTokens];
+      //   for (let id of ids) {
+      //     const tokenIndex = newTokens.findIndex((token) => token.id === id);
+      //     newTokens[tokenIndex].hideInSidebar = hideInSidebar;
+      //   }
+      //   return newTokens;
+      // });
       await Promise.all(
         ids.map((id) => database.table("tokens").update(id, { hideInSidebar }))
       );
@@ -107,67 +114,6 @@ export function TokenDataProvider({ children }) {
     },
     [database]
   );
-
-  // Create DB observable to sync creating and deleting
-  useEffect(() => {
-    if (!database || databaseStatus === "loading") {
-      return;
-    }
-
-    function handleTokenChanges(changes) {
-      // Pool token changes together to call a single state update at the end
-      let tokensCreated = [];
-      let tokensUpdated = {};
-      let tokensDeleted = [];
-      for (let change of changes) {
-        if (change.table === "tokens") {
-          if (change.type === 1) {
-            // Created
-            const token = change.obj;
-            tokensCreated.push(token);
-          } else if (change.type === 2) {
-            // Updated
-            const token = change.obj;
-            tokensUpdated[token.id] = token;
-          } else if (change.type === 3) {
-            // Deleted
-            const id = change.key;
-            tokensDeleted.push(id);
-          }
-        }
-        if (change.table === "groups") {
-          if (change.type === 2 && change.key === "tokens") {
-            const group = applyObservableChange(change);
-            const groups = group.items.filter((item) => item !== null);
-            setTokenGroups(groups);
-          }
-        }
-      }
-      const tokensUpdatedArray = Object.values(tokensUpdated);
-      if (
-        tokensCreated.length > 0 ||
-        tokensUpdatedArray.length > 0 ||
-        tokensDeleted.length > 0
-      ) {
-        setTokens((prevTokens) => {
-          let newTokens = [...tokensCreated, ...prevTokens];
-          for (let token of tokensUpdatedArray) {
-            const tokenIndex = newTokens.findIndex((t) => t.id === token.id);
-            if (tokenIndex > -1) {
-              newTokens[tokenIndex] = token;
-            }
-          }
-          return newTokens.filter((token) => !tokensDeleted.includes(token.id));
-        });
-      }
-    }
-
-    database.on("changes", handleTokenChanges);
-
-    return () => {
-      database.on("changes").unsubscribe(handleTokenChanges);
-    };
-  }, [database, databaseStatus]);
 
   const [tokensById, setTokensById] = useState({});
   useEffect(() => {

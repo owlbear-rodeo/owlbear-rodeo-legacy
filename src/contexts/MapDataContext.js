@@ -1,9 +1,14 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useMemo,
+} from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { useUserId } from "./UserIdContext";
 import { useDatabase } from "./DatabaseContext";
 
-import { applyObservableChange } from "../helpers/dexie";
 import { removeGroupsItems } from "../helpers/group";
 
 const MapDataContext = React.createContext();
@@ -18,33 +23,39 @@ const defaultMapState = {
 };
 
 export function MapDataProvider({ children }) {
-  const { database, databaseStatus } = useDatabase();
-  const userId = useUserId();
+  const { database } = useDatabase();
 
-  const [maps, setMaps] = useState([]);
-  const [mapStates, setMapStates] = useState([]);
-  const [mapsLoading, setMapsLoading] = useState(true);
+  const mapsQuery = useLiveQuery(
+    () => database?.table("maps").toArray(),
+    [database]
+  );
+  const mapStatesQuery = useLiveQuery(
+    () => database?.table("states").toArray(),
+    [database]
+  );
+
+  const maps = useMemo(() => mapsQuery || [], [mapsQuery]);
+  const mapStates = useMemo(() => mapStatesQuery || [], [mapStatesQuery]);
+  const mapsLoading = useMemo(
+    () => !mapsQuery || !mapStatesQuery,
+    [mapsQuery, mapStatesQuery]
+  );
+
+  const mapGroupQuery = useLiveQuery(
+    () => database?.table("groups").get("maps"),
+    [database]
+  );
+
   const [mapGroups, setMapGroups] = useState([]);
-
-  // Load maps from the database and ensure state is properly setup
   useEffect(() => {
-    if (!userId || !database || databaseStatus === "loading") {
-      return;
-    }
-
-    async function loadMaps() {
-      const storedMaps = await database.table("maps").toArray();
-      setMaps(storedMaps);
-      const storedStates = await database.table("states").toArray();
-      setMapStates(storedStates);
+    async function updateMapGroups() {
       const group = await database.table("groups").get("maps");
-      const storedGroups = group.items;
-      setMapGroups(storedGroups);
-      setMapsLoading(false);
+      setMapGroups(group.items);
     }
-
-    loadMaps();
-  }, [userId, database, databaseStatus]);
+    if (database && mapGroupQuery) {
+      updateMapGroups();
+    }
+  }, [mapGroupQuery, database]);
 
   const getMap = useCallback(
     async (mapId) => {
@@ -137,77 +148,6 @@ export function MapDataProvider({ children }) {
     },
     [database]
   );
-
-  // Create DB observable to sync creating and deleting
-  useEffect(() => {
-    if (!database || databaseStatus === "loading") {
-      return;
-    }
-
-    function handleMapChanges(changes) {
-      for (let change of changes) {
-        if (change.table === "maps") {
-          if (change.type === 1) {
-            // Created
-            const map = change.obj;
-            const state = { ...defaultMapState, mapId: map.id };
-            setMaps((prevMaps) => [map, ...prevMaps]);
-            setMapStates((prevStates) => [state, ...prevStates]);
-          } else if (change.type === 2) {
-            const map = change.obj;
-            setMaps((prevMaps) => {
-              const newMaps = [...prevMaps];
-              const i = newMaps.findIndex((m) => m.id === map.id);
-              if (i > -1) {
-                newMaps[i] = map;
-              }
-              return newMaps;
-            });
-          } else if (change.type === 3) {
-            // Deleted
-            const id = change.key;
-            setMaps((prevMaps) => {
-              const filtered = prevMaps.filter((map) => map.id !== id);
-              return filtered;
-            });
-            setMapStates((prevMapsStates) => {
-              const filtered = prevMapsStates.filter(
-                (state) => state.mapId !== id
-              );
-              return filtered;
-            });
-          }
-        }
-        if (change.table === "states") {
-          if (change.type === 2) {
-            // Update map state
-            const state = change.obj;
-            setMapStates((prevMapStates) => {
-              const newStates = [...prevMapStates];
-              const i = newStates.findIndex((s) => s.mapId === state.mapId);
-              if (i > -1) {
-                newStates[i] = state;
-              }
-              return newStates;
-            });
-          }
-        }
-        if (change.table === "groups") {
-          if (change.type === 2 && change.key === "maps") {
-            const group = applyObservableChange(change);
-            const groups = group.items.filter((item) => item !== null);
-            setMapGroups(groups);
-          }
-        }
-      }
-    }
-
-    database.on("changes", handleMapChanges);
-
-    return () => {
-      database.on("changes").unsubscribe(handleMapChanges);
-    };
-  }, [database, databaseStatus]);
 
   const [mapsById, setMapsById] = useState({});
   useEffect(() => {

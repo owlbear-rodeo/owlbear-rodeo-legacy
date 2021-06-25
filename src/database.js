@@ -1,7 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import Dexie, { DexieOptions } from "dexie";
 import { v4 as uuid } from "uuid";
-import "dexie-observable";
 
 import { loadVersions } from "./upgrade";
 import { getDefaultMaps } from "./maps";
