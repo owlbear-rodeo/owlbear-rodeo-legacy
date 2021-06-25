@@ -132,18 +132,21 @@ export function AssetURLsProvider({ children }) {
   const { database } = useDatabase();
 
   // Keep track of when the asset keys change so we can update the URLs
-  const [assetKeys, setAssetKeys] = useState(new Set());
+  const [assetKeys, setAssetKeys] = useState([]);
   useEffect(() => {
     const keys = Object.keys(assetURLs);
-    let newKeys = keys.filter((key) => !assetKeys.has(key));
-    if (newKeys.length > 0) {
-      setAssetKeys((prevKeys) => new Set([...prevKeys, ...newKeys]));
+    let newKeys = keys.filter((key) => !assetKeys.includes(key));
+    let deletedKeys = assetKeys.filter((key) => !keys.includes(key));
+    if (newKeys.length > 0 || deletedKeys.length > 0) {
+      setAssetKeys((prevKeys) =>
+        [...prevKeys, ...newKeys].filter((key) => !deletedKeys.includes(key))
+      );
     }
   }, [assetURLs, assetKeys]);
 
   // Get the new assets whenever the keys change
   const assets = useLiveQuery(
-    () => database?.table("assets").where(":id").anyOf(assetKeys).toArray(),
+    () => database?.table("assets").where("id").anyOf(assetKeys).toArray(),
     [database, assetKeys]
   );
 
@@ -155,10 +158,13 @@ export function AssetURLsProvider({ children }) {
     setAssetURLs((prevURLs) => {
       let newURLs = { ...prevURLs };
       for (let asset of assets) {
-        if (!newURLs[asset.id].url) {
-          newURLs[asset.id].url = URL.createObjectURL(
-            new Blob([asset.file], { type: asset.mime })
-          );
+        if (newURLs[asset.id].url === null) {
+          newURLs[asset.id] = {
+            ...newURLs[asset.id],
+            url: URL.createObjectURL(
+              new Blob([asset.file], { type: asset.mime })
+            ),
+          };
         }
       }
       return newURLs;
@@ -213,8 +219,6 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
     throw new Error("useAssetURL must be used within a AssetURLsProvider");
   }
 
-  const { getAsset } = useAssets();
-
   useEffect(() => {
     if (!assetId || type !== "file") {
       return;
@@ -265,7 +269,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         }
       });
     };
-  }, [assetId, setAssetURLs, getAsset, type]);
+  }, [assetId, setAssetURLs, type]);
 
   if (!assetId) {
     return unknownSource;
