@@ -234,7 +234,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
         .bulkGet(Object.keys(newAssetIds));
       let assets = [];
       for (let asset of assetsToAdd) {
-        assets.push({ ...asset, id: newAssetIds[asset.id] });
+        assets.push({ ...asset, id: newAssetIds[asset.id], owner: userId });
       }
       await db.table("assets").bulkAdd(assets);
 
