@@ -1,6 +1,7 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import * as Comlink from "comlink";
 import { encode } from "@msgpack/msgpack";
+import { useLiveQuery } from "dexie-react-hooks";
 
 import { useDatabase } from "./DatabaseContext";
 
@@ -128,6 +129,41 @@ export const AssetURLsUpdaterContext = React.createContext();
  */
 export function AssetURLsProvider({ children }) {
   const [assetURLs, setAssetURLs] = useState({});
+  const { database } = useDatabase();
+
+  // Keep track of when the asset keys change so we can update the URLs
+  const [assetKeys, setAssetKeys] = useState(new Set());
+  useEffect(() => {
+    const keys = Object.keys(assetURLs);
+    let newKeys = keys.filter((key) => !assetKeys.has(key));
+    if (newKeys.length > 0) {
+      setAssetKeys((prevKeys) => new Set([...prevKeys, ...newKeys]));
+    }
+  }, [assetURLs, assetKeys]);
+
+  // Get the new assets whenever the keys change
+  const assets = useLiveQuery(
+    () => database?.table("assets").where(":id").anyOf(assetKeys).toArray(),
+    [database, assetKeys]
+  );
+
+  // Update asset URLs when assets are loaded
+  useEffect(() => {
+    if (!assets) {
+      return;
+    }
+    setAssetURLs((prevURLs) => {
+      let newURLs = { ...prevURLs };
+      for (let asset of assets) {
+        if (!newURLs[asset.id].url) {
+          newURLs[asset.id].url = URL.createObjectURL(
+            new Blob([asset.file], { type: asset.mime })
+          );
+        }
+      }
+      return newURLs;
+    });
+  }, [assets]);
 
   // Clean up asset URLs every minute
   const debouncedAssetURLs = useDebounce(assetURLs, 60 * 1000);
@@ -178,15 +214,9 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
   }
 
   const { getAsset } = useAssets();
-  const { database, databaseStatus } = useDatabase();
 
   useEffect(() => {
-    if (
-      !assetId ||
-      type !== "file" ||
-      !database ||
-      databaseStatus === "loading"
-    ) {
+    if (!assetId || type !== "file") {
       return;
     }
 
@@ -201,13 +231,10 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         };
       }
 
-      function createURL(prevURLs, asset) {
-        const url = URL.createObjectURL(
-          new Blob([asset.file], { type: asset.mime })
-        );
+      function createReference(prevURLs) {
         return {
           ...prevURLs,
-          [assetId]: { url, id: assetId, references: 1 },
+          [assetId]: { url: null, id: assetId, references: 1 },
         };
       }
       setAssetURLs((prevURLs) => {
@@ -215,21 +242,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
           // Check if the asset url is already added and increase references
           return increaseReferences(prevURLs);
         } else {
-          getAsset(assetId).then((asset) => {
-            if (!asset) {
-              return;
-            }
-            setAssetURLs((prevURLs) => {
-              if (assetId in prevURLs) {
-                // Check again if it exists
-                return increaseReferences(prevURLs);
-              } else {
-                // Create url if the asset doesn't have a url
-                return createURL(prevURLs, asset);
-              }
-            });
-          });
-          return prevURLs;
+          return createReference(prevURLs);
         }
       });
     }
@@ -252,7 +265,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         }
       });
     };
-  }, [assetId, setAssetURLs, getAsset, type, database, databaseStatus]);
+  }, [assetId, setAssetURLs, getAsset, type]);
 
   if (!assetId) {
     return unknownSource;
