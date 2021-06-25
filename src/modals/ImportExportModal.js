@@ -81,6 +81,7 @@ function ImportExportModal({ isOpen, onRequestClose }) {
           )
         );
       } else {
+        console.error(e);
         setError(e);
       }
     }
