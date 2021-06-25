@@ -3,6 +3,7 @@ import Dexie, { Version } from "dexie";
 import shortid from "shortid";
 import { v4 as uuid } from "uuid";
 import Case from "case";
+import chunk from "lodash.chunk";
 
 import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
@@ -475,120 +476,179 @@ export const versions = {
   },
   // v1.9.0 - Move map assets into new table
   24(v, onUpgrade) {
-    v.stores({ assets: "id, owner" }).upgrade((tx) => {
+    v.stores({ assets: "id, owner" }).upgrade(async (tx) => {
       onUpgrade?.(24);
-      tx.table("maps").each((map) => {
-        let assets = [];
-        assets.push({
-          id: uuid(),
-          owner: map.owner,
-          file: map.file,
-          width: map.width,
-          height: map.height,
-          mime: "",
-          prevId: map.id,
-          prevType: "map",
-        });
 
-        for (let resolution in map.resolutions) {
-          const mapRes = map.resolutions[resolution];
+      const primaryKeys = await Dexie.waitFor(
+        tx.table("maps").toCollection().primaryKeys()
+      );
+      const keyChunks = chunk(primaryKeys, 4);
+
+      for (let keys of keyChunks) {
+        let assets = [];
+        let maps = await Dexie.waitFor(tx.table("maps").bulkGet(keys));
+        while (maps.length > 0) {
+          const map = maps.pop();
           assets.push({
             id: uuid(),
             owner: map.owner,
-            file: mapRes.file,
-            width: mapRes.width,
-            height: mapRes.height,
+            file: map.file,
+            width: map.width,
+            height: map.height,
             mime: "",
             prevId: map.id,
-            prevType: "mapResolution",
-            resolution,
+            prevType: "map",
+          });
+
+          for (let resolution in map.resolutions) {
+            const mapRes = map.resolutions[resolution];
+            assets.push({
+              id: uuid(),
+              owner: map.owner,
+              file: mapRes.file,
+              width: mapRes.width,
+              height: mapRes.height,
+              mime: "",
+              prevId: map.id,
+              prevType: "mapResolution",
+              resolution,
+            });
+          }
+
+          assets.push({
+            id: uuid(),
+            owner: map.owner,
+            file: map.thumbnail.file,
+            width: map.thumbnail.width,
+            height: map.thumbnail.height,
+            mime: "",
+            prevId: map.id,
+            prevType: "mapThumbnail",
           });
         }
-
-        assets.push({
-          id: uuid(),
-          owner: map.owner,
-          file: map.thumbnail.file,
-          width: map.thumbnail.width,
-          height: map.thumbnail.height,
-          mime: "",
-          prevId: map.id,
-          prevType: "mapThumbnail",
-        });
-
-        tx.table("assets").bulkAdd(assets);
-      });
+        maps = null;
+        await tx.table("assets").bulkAdd(assets);
+        assets = null;
+      }
     });
   },
   // v1.9.0 - Move token assets into new table
   25(v, onUpgrade) {
-    v.stores({}).upgrade((tx) => {
+    v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(25);
-      tx.table("tokens").each((token) => {
+
+      const primaryKeys = await Dexie.waitFor(
+        tx.table("tokens").toCollection().primaryKeys()
+      );
+      const keyChunks = chunk(primaryKeys, 4);
+
+      for (let keys of keyChunks) {
         let assets = [];
-        assets.push({
-          id: uuid(),
-          owner: token.owner,
-          file: token.file,
-          width: token.width,
-          height: token.height,
-          mime: "",
-          prevId: token.id,
-          prevType: "token",
-        });
-        assets.push({
-          id: uuid(),
-          owner: token.owner,
-          file: token.thumbnail.file,
-          width: token.thumbnail.width,
-          height: token.thumbnail.height,
-          mime: "",
-          prevId: token.id,
-          prevType: "tokenThumbnail",
-        });
-        tx.table("assets").bulkAdd(assets);
-      });
+        let tokens = await Dexie.waitFor(tx.table("tokens").bulkGet(keys));
+        while (tokens.length > 0) {
+          let token = tokens.pop();
+          assets.push({
+            id: uuid(),
+            owner: token.owner,
+            file: token.file,
+            width: token.width,
+            height: token.height,
+            mime: "",
+            prevId: token.id,
+            prevType: "token",
+          });
+          assets.push({
+            id: uuid(),
+            owner: token.owner,
+            file: token.thumbnail.file,
+            width: token.thumbnail.width,
+            height: token.thumbnail.height,
+            mime: "",
+            prevId: token.id,
+            prevType: "tokenThumbnail",
+          });
+        }
+        tokens = null;
+        await tx.table("assets").bulkAdd(assets);
+        assets = null;
+      }
     });
   },
   // v1.9.0 - Create foreign keys for assets
   26(v, onUpgrade) {
-    v.stores({}).upgrade((tx) => {
+    v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(26);
-      tx.table("assets").each((asset) => {
-        if (asset.prevType === "map") {
-          tx.table("maps").update(asset.prevId, {
-            file: asset.id,
-          });
-        } else if (asset.prevType === "token") {
-          tx.table("tokens").update(asset.prevId, {
-            file: asset.id,
-          });
-        } else if (asset.prevType === "mapThumbnail") {
-          tx.table("maps").update(asset.prevId, { thumbnail: asset.id });
-        } else if (asset.prevType === "tokenThumbnail") {
-          tx.table("tokens").update(asset.prevId, { thumbnail: asset.id });
-        } else if (asset.prevType === "mapResolution") {
-          tx.table("maps").update(asset.prevId, {
-            resolutions: undefined,
-            [asset.resolution]: asset.id,
-          });
+
+      let mapUpdates = {};
+      let tokenUpdates = {};
+
+      const primaryKeys = await Dexie.waitFor(
+        tx.table("assets").toCollection().primaryKeys()
+      );
+      const keyChunks = chunk(primaryKeys, 4);
+
+      for (let keys of keyChunks) {
+        let assets = await Dexie.waitFor(tx.table("assets").bulkGet(keys));
+        while (assets.length > 0) {
+          const asset = assets.pop();
+          const { prevId, id, prevType, resolution } = asset;
+          if (prevType === "token" || prevType === "tokenThumbnail") {
+            if (!(prevId in tokenUpdates)) {
+              tokenUpdates[prevId] = {};
+            }
+          } else {
+            if (!(prevId in mapUpdates)) {
+              mapUpdates[prevId] = {};
+            }
+          }
+
+          if (prevType === "map") {
+            mapUpdates[prevId].file = id;
+          } else if (prevType === "token") {
+            tokenUpdates[prevId].file = id;
+          } else if (prevType === "mapThumbnail") {
+            mapUpdates[prevId].thumbnail = id;
+          } else if (prevType === "tokenThumbnail") {
+            tokenUpdates[prevId].thumbnail = id;
+          } else if (prevType === "mapResolution") {
+            mapUpdates[prevId][resolution] = id;
+          }
         }
-      });
+        assets = null;
+      }
+
+      await tx
+        .table("maps")
+        .toCollection()
+        .modify((map) => {
+          if (map.id in mapUpdates) {
+            for (let key in mapUpdates[map.id]) {
+              map[key] = mapUpdates[map.id][key];
+            }
+          }
+          delete map.resolutions;
+        });
+      await tx
+        .table("tokens")
+        .toCollection()
+        .modify((token) => {
+          if (token.id in tokenUpdates) {
+            for (let key in tokenUpdates[token.id]) {
+              token[key] = tokenUpdates[token.id][key];
+            }
+          }
+        });
     });
   },
   // v1.9.0 - Remove asset migration helpers
   27(v, onUpgrade) {
     v.stores({}).upgrade((tx) => {
       onUpgrade?.(27);
-      tx.table("assets")
-        .toCollection()
-        .modify((asset) => {
-          delete asset.prevId;
-          if (asset.prevType === "mapResolution") {
-            delete asset.resolution;
-          }
-          delete asset.prevType;
-        });
+      tx.table("assets").toCollection().modify({
+        prevId: undefined,
+        prevType: undefined,
+        resolution: undefined,
+      });
     });
   },
   // v1.9.0 - Remap map resolution assets
@@ -767,9 +827,17 @@ export const versions = {
         });
     });
   },
+  36(v) {
+    v.stores({
+      _changes: null,
+      _intercomm: null,
+      _syncNodes: null,
+      _uncommittedChanges: null,
+    });
+  },
 };
 
-export const latestVersion = 35;
+export const latestVersion = 36;
 
 /**
  * Load versions onto a database up to a specific version number
