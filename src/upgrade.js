@@ -514,17 +514,18 @@ export const versions = {
               resolution,
             });
           }
-
-          assets.push({
-            id: uuid(),
-            owner: map.owner,
-            file: map.thumbnail.file,
-            width: map.thumbnail.width,
-            height: map.thumbnail.height,
-            mime: "",
-            prevId: map.id,
-            prevType: "mapThumbnail",
-          });
+          if (map.thumbnail) {
+            assets.push({
+              id: uuid(),
+              owner: map.owner,
+              file: map.thumbnail.file,
+              width: map.thumbnail.width,
+              height: map.thumbnail.height,
+              mime: "",
+              prevId: map.id,
+              prevType: "mapThumbnail",
+            });
+          }
         }
         maps = null;
         await tx.table("assets").bulkAdd(assets);
@@ -557,16 +558,18 @@ export const versions = {
             prevId: token.id,
             prevType: "token",
           });
-          assets.push({
-            id: uuid(),
-            owner: token.owner,
-            file: token.thumbnail.file,
-            width: token.thumbnail.width,
-            height: token.thumbnail.height,
-            mime: "",
-            prevId: token.id,
-            prevType: "tokenThumbnail",
-          });
+          if (token.thumbnail) {
+            assets.push({
+              id: uuid(),
+              owner: token.owner,
+              file: token.thumbnail.file,
+              width: token.thumbnail.width,
+              height: token.thumbnail.height,
+              mime: "",
+              prevId: token.id,
+              prevType: "tokenThumbnail",
+            });
+          }
         }
         tokens = null;
         await tx.table("assets").bulkAdd(assets);
