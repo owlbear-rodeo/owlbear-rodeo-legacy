@@ -75,6 +75,9 @@ export function groupBy(array, key) {
 }
 
 export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+export const isSafari = /^((?!chrome|android).)*safari/i.test(
+  navigator.userAgent
+);
 
 export function shuffle(array) {
   let temp = [...array];

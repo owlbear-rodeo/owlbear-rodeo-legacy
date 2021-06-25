@@ -1,6 +1,7 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import * as Comlink from "comlink";
 import { encode } from "@msgpack/msgpack";
+import { useLiveQuery } from "dexie-react-hooks";
 
 import { useDatabase } from "./DatabaseContext";
 
@@ -128,6 +129,47 @@ export const AssetURLsUpdaterContext = React.createContext();
  */
 export function AssetURLsProvider({ children }) {
   const [assetURLs, setAssetURLs] = useState({});
+  const { database } = useDatabase();
+
+  // Keep track of when the asset keys change so we can update the URLs
+  const [assetKeys, setAssetKeys] = useState([]);
+  useEffect(() => {
+    const keys = Object.keys(assetURLs);
+    let newKeys = keys.filter((key) => !assetKeys.includes(key));
+    let deletedKeys = assetKeys.filter((key) => !keys.includes(key));
+    if (newKeys.length > 0 || deletedKeys.length > 0) {
+      setAssetKeys((prevKeys) =>
+        [...prevKeys, ...newKeys].filter((key) => !deletedKeys.includes(key))
+      );
+    }
+  }, [assetURLs, assetKeys]);
+
+  // Get the new assets whenever the keys change
+  const assets = useLiveQuery(
+    () => database?.table("assets").where("id").anyOf(assetKeys).toArray(),
+    [database, assetKeys]
+  );
+
+  // Update asset URLs when assets are loaded
+  useEffect(() => {
+    if (!assets) {
+      return;
+    }
+    setAssetURLs((prevURLs) => {
+      let newURLs = { ...prevURLs };
+      for (let asset of assets) {
+        if (newURLs[asset.id].url === null) {
+          newURLs[asset.id] = {
+            ...newURLs[asset.id],
+            url: URL.createObjectURL(
+              new Blob([asset.file], { type: asset.mime })
+            ),
+          };
+        }
+      }
+      return newURLs;
+    });
+  }, [assets]);
 
   // Clean up asset URLs every minute
   const debouncedAssetURLs = useDebounce(assetURLs, 60 * 1000);
@@ -177,16 +219,8 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
     throw new Error("useAssetURL must be used within a AssetURLsProvider");
   }
 
-  const { getAsset } = useAssets();
-  const { database, databaseStatus } = useDatabase();
-
   useEffect(() => {
-    if (
-      !assetId ||
-      type !== "file" ||
-      !database ||
-      databaseStatus === "loading"
-    ) {
+    if (!assetId || type !== "file") {
       return;
     }
 
@@ -201,13 +235,10 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         };
       }
 
-      function createURL(prevURLs, asset) {
-        const url = URL.createObjectURL(
-          new Blob([asset.file], { type: asset.mime })
-        );
+      function createReference(prevURLs) {
         return {
           ...prevURLs,
-          [assetId]: { url, id: assetId, references: 1 },
+          [assetId]: { url: null, id: assetId, references: 1 },
         };
       }
       setAssetURLs((prevURLs) => {
@@ -215,59 +246,14 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
           // Check if the asset url is already added and increase references
           return increaseReferences(prevURLs);
         } else {
-          getAsset(assetId).then((asset) => {
-            if (!asset) {
-              return;
-            }
-            setAssetURLs((prevURLs) => {
-              if (assetId in prevURLs) {
-                // Check again if it exists
-                return increaseReferences(prevURLs);
-              } else {
-                // Create url if the asset doesn't have a url
-                return createURL(prevURLs, asset);
-              }
-            });
-          });
-          return prevURLs;
+          return createReference(prevURLs);
         }
       });
     }
 
     updateAssetURL();
 
-    // Update the url when the asset is added to the db after the hook is used
-    function handleAssetChanges(changes) {
-      for (let change of changes) {
-        const id = change.key;
-        if (
-          change.table === "assets" &&
-          id === assetId &&
-          (change.type === 1 || change.type === 2)
-        ) {
-          const asset = change.obj;
-          setAssetURLs((prevURLs) => {
-            if (!(assetId in prevURLs)) {
-              const url = URL.createObjectURL(
-                new Blob([asset.file], { type: asset.mime })
-              );
-              return {
-                ...prevURLs,
-                [assetId]: { url, id: assetId, references: 1 },
-              };
-            } else {
-              return prevURLs;
-            }
-          });
-        }
-      }
-    }
-
-    database.on("changes", handleAssetChanges);
-
     return () => {
-      database.on("changes").unsubscribe(handleAssetChanges);
-
       // Decrease references
       setAssetURLs((prevURLs) => {
         if (assetId in prevURLs) {
@@ -283,7 +269,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         }
       });
     };
-  }, [assetId, setAssetURLs, getAsset, type, database, databaseStatus]);
+  }, [assetId, setAssetURLs, type]);
 
   if (!assetId) {
     return unknownSource;

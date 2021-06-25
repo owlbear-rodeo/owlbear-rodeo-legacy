@@ -40,7 +40,7 @@ export function DatabaseProvider({ children }) {
         undefined,
         undefined,
         true,
-        (v) => {
+        () => {
           setDatabaseStatus("upgrading");
         }
       );
