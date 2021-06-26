@@ -131,18 +131,27 @@ export function AssetURLsProvider({ children }) {
   const [assetURLs, setAssetURLs] = useState({});
   const { database } = useDatabase();
 
-  // Keep track of when the asset keys change so we can update the URLs
+  // Keep track of the assets that need to be loaded
   const [assetKeys, setAssetKeys] = useState([]);
+
+  // Load assets after 100ms
+  const loadingDebouncedAssetURLs = useDebounce(assetURLs, 100);
+
+  // Update the asset keys to load when a url is added without an asset attached
   useEffect(() => {
-    const keys = Object.keys(assetURLs);
-    let newKeys = keys.filter((key) => !assetKeys.includes(key));
-    let deletedKeys = assetKeys.filter((key) => !keys.includes(key));
-    if (newKeys.length > 0 || deletedKeys.length > 0) {
-      setAssetKeys((prevKeys) =>
-        [...prevKeys, ...newKeys].filter((key) => !deletedKeys.includes(key))
-      );
+    if (!loadingDebouncedAssetURLs) {
+      return;
     }
-  }, [assetURLs, assetKeys]);
+    let keysToLoad = [];
+    for (let url of Object.values(loadingDebouncedAssetURLs)) {
+      if (url.url === null) {
+        keysToLoad.push(url.id);
+      }
+    }
+    if (keysToLoad.length > 0) {
+      setAssetKeys(keysToLoad);
+    }
+  }, [loadingDebouncedAssetURLs]);
 
   // Get the new assets whenever the keys change
   const assets = useLiveQuery(
@@ -152,9 +161,12 @@ export function AssetURLsProvider({ children }) {
 
   // Update asset URLs when assets are loaded
   useEffect(() => {
-    if (!assets) {
+    if (!assets || assets.length === 0) {
       return;
     }
+    // Assets are about to be loaded so clear the keys to load
+    setAssetKeys([]);
+
     setAssetURLs((prevURLs) => {
       let newURLs = { ...prevURLs };
       for (let asset of assets) {
@@ -172,7 +184,7 @@ export function AssetURLsProvider({ children }) {
   }, [assets]);
 
   // Clean up asset URLs every minute
-  const debouncedAssetURLs = useDebounce(assetURLs, 60 * 1000);
+  const cleanUpDebouncedAssetURLs = useDebounce(assetURLs, 60 * 1000);
 
   // Revoke url when no more references
   useEffect(() => {
@@ -190,7 +202,7 @@ export function AssetURLsProvider({ children }) {
         return prevURLs;
       }
     });
-  }, [debouncedAssetURLs]);
+  }, [cleanUpDebouncedAssetURLs]);
 
   return (
     <AssetURLsStateContext.Provider value={assetURLs}>
