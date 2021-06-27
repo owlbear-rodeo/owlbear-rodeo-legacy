@@ -61,7 +61,7 @@ function TokenBar({ onMapTokensStateCreate }) {
     setDragId(null);
 
     const mapStage = mapStageRef.current;
-    if (mapStage) {
+    if (mapStage && overlayNodeClientRect) {
       const dragRect = overlayNodeClientRect;
       const dragPosition = {
         x: dragRect.left + dragRect.width / 2,
