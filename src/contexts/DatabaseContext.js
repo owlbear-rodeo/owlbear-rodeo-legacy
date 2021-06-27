@@ -70,19 +70,26 @@ export function DatabaseProvider({ children }) {
     };
 
     function handleDatabaseError(event) {
-      event.preventDefault();
-      if (event?.reason?.message?.startsWith("QuotaExceededError")) {
-        setDatabaseError({
-          name: event?.reason?.name,
-          message: "Storage Quota Exceeded Please Clear Space and Try Again.",
-        });
-      } else {
-        setDatabaseError({
-          name: event?.reason?.name,
-          message: "Something went wrong, please refresh your browser.",
-        });
+      if (event) {
+        event.preventDefault();
+        if (event.reason instanceof Dexie.QuotaExceededError) {
+          setDatabaseError({
+            name: event.reason?.name,
+            message: "Storage Quota Exceeded Please Clear Space and Try Again.",
+          });
+        } else if (event.reason instanceof Dexie.DatabaseClosedError) {
+          setDatabaseError({
+            name: event.reason?.name,
+            message: "Database closed, please refresh your browser.",
+          });
+        } else {
+          setDatabaseError({
+            name: event.reason?.name,
+            message: "Something went wrong, please refresh your browser.",
+          });
+        }
+        console.error(event.reason);
       }
-      console.error(event?.reason);
     }
     window.addEventListener("unhandledrejection", handleDatabaseError);
 
