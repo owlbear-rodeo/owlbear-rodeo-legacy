@@ -20,6 +20,13 @@ import { getDatabase } from "../database";
 
 const importDBName = "OwlbearRodeoImportDB";
 
+class MissingAssetError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "MissingAssetError";
+  }
+}
+
 function ImportExportModal({ isOpen, onRequestClose }) {
   const { worker } = useDatabase();
   const userId = useUserId();
@@ -143,10 +150,11 @@ function ImportExportModal({ isOpen, onRequestClose }) {
       let newAssetIds = {};
       // Mapping of old maps ids to new map ids
       let newMapIds = {};
+
+      let newTokens = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
         const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
-        let newTokens = [];
         for (let token of tokensToAdd) {
           // Generate new ids
           const newId = uuid();
@@ -170,14 +178,13 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             });
           }
         }
-        await db.table("tokens").bulkAdd(newTokens);
       }
 
+      let newMaps = [];
+      let newStates = [];
       if (checkedMaps.length > 0) {
         const mapIds = checkedMaps.map((map) => map.id);
         const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
-        let newMaps = [];
-        let newStates = [];
         for (let map of mapsToAdd) {
           let state = await importDB.table("states").get(map.id);
           // Apply new token ids to imported state
@@ -224,24 +231,28 @@ function ImportExportModal({ isOpen, onRequestClose }) {
 
           newStates.push({ ...state, mapId: newId });
         }
-        await db.table("maps").bulkAdd(newMaps);
-        await db.table("states").bulkAdd(newStates);
       }
 
       // Add assets with new ids
       const assetsToAdd = await importDB
         .table("assets")
         .bulkGet(Object.keys(newAssetIds));
-      let assets = [];
+      let newAssets = [];
       for (let asset of assetsToAdd) {
-        assets.push({ ...asset, id: newAssetIds[asset.id], owner: userId });
+        if (asset) {
+          newAssets.push({
+            ...asset,
+            id: newAssetIds[asset.id],
+            owner: userId,
+          });
+        } else {
+          throw new MissingAssetError("Import missing assets");
+        }
       }
-      await db.table("assets").bulkAdd(assets);
 
       // Add map groups with new ids
+      let newMapGroups = [];
       if (checkedMapGroups.length > 0) {
-        const mapGroup = await db.table("groups").get("maps");
-        let newMapGroups = [];
         for (let group of checkedMapGroups) {
           if (group.type === "item") {
             newMapGroups.push({ ...group, id: newMapIds[group.id] });
@@ -256,15 +267,11 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             });
           }
         }
-        await db
-          .table("groups")
-          .update("maps", { items: [...newMapGroups, ...mapGroup.items] });
       }
 
       // Add token groups with new ids
+      let newTokenGroups = [];
       if (checkedTokenGroups.length > 0) {
-        const tokenGroup = await db.table("groups").get("tokens");
-        let newTokenGroups = [];
         for (let group of checkedTokenGroups) {
           if (group.type === "item") {
             newTokenGroups.push({ ...group, id: newTokenIds[group.id] });
@@ -279,15 +286,52 @@ function ImportExportModal({ isOpen, onRequestClose }) {
             });
           }
         }
-        await db.table("groups").update("tokens", {
-          items: [...newTokenGroups, ...tokenGroup.items],
-        });
       }
 
+      db.transaction(
+        "rw",
+        [
+          db.table("tokens"),
+          db.table("maps"),
+          db.table("states"),
+          db.table("assets"),
+          db.table("groups"),
+        ],
+        async () => {
+          if (newTokens.length > 0) {
+            await db.table("tokens").bulkAdd(newTokens);
+          }
+          if (newMaps.length > 0) {
+            await db.table("maps").bulkAdd(newMaps);
+          }
+          if (newStates.length > 0) {
+            await db.table("states").bulkAdd(newStates);
+          }
+          if (newAssets.length > 0) {
+            await db.table("assets").bulkAdd(newAssets);
+          }
+          if (newMapGroups.length > 0) {
+            const mapGroup = await db.table("groups").get("maps");
+            await db
+              .table("groups")
+              .update("maps", { items: [...newMapGroups, ...mapGroup.items] });
+          }
+          if (newTokenGroups.length > 0) {
+            const tokenGroup = await db.table("groups").get("tokens");
+            await db.table("groups").update("tokens", {
+              items: [...newTokenGroups, ...tokenGroup.items],
+            });
+          }
+        }
+      );
       addSuccessToast("Imported", checkedMaps, checkedTokens);
     } catch (e) {
       console.error(e);
-      setError(new Error("Unable to import data"));
+      if (e instanceof MissingAssetError) {
+        setError(e);
+      } else {
+        setError(new Error("Unable to import data"));
+      }
     }
     await importDB.delete();
     importDB.close();
