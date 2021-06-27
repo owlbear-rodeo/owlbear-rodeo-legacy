@@ -184,25 +184,24 @@ let service = {
     try {
       let db = getDatabase({});
       const userId = (await db.table("user").get("userId")).value;
-      const cachedAssets = await db
+
+      const assetSizes = [];
+      await db
         .table("assets")
         .where("owner")
         .notEqual(userId)
-        .toArray();
-      const totalSize = cachedAssets.reduce(
-        (acc, cur) => acc + cur.file.byteLength,
-        0
-      );
+        .each((asset) => {
+          assetSizes.push({ id: asset.id, size: asset.file.byteLength });
+        });
+      const totalSize = assetSizes.reduce((acc, cur) => acc + cur.size, 0);
       if (totalSize > maxCacheSize) {
         // Remove largest assets first
-        const largestAssets = cachedAssets.sort(
-          (a, b) => b.file.byteLength - a.file.byteLength
-        );
+        const largestAssets = assetSizes.sort((a, b) => b.size - a.size);
         let assetsToDelete = [];
         let deletedBytes = 0;
         for (let asset of largestAssets) {
           assetsToDelete.push(asset.id);
-          deletedBytes += asset.file.byteLength;
+          deletedBytes += asset.size;
           if (totalSize - deletedBytes < maxCacheSize) {
             break;
           }
