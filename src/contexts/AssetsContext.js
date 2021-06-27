@@ -175,7 +175,7 @@ export function AssetURLsProvider({ children }) {
     setAssetURLs((prevURLs) => {
       let newURLs = { ...prevURLs };
       for (let asset of assets) {
-        if (newURLs[asset.id].url === null) {
+        if (newURLs[asset.id]?.url === null) {
           newURLs[asset.id] = {
             ...newURLs[asset.id],
             url: URL.createObjectURL(
