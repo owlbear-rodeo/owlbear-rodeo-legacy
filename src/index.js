@@ -36,6 +36,7 @@ if (process.env.REACT_APP_LOGGING === "true") {
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "QuotaExceededError",
+      "DatabaseClosedError",
       "XDR encoding failure",
       "Assertion failed: Input argument is not an HTMLInputElement",
       "Extension context invalidated",
