@@ -75,13 +75,18 @@ export function AssetsProvider({ children }) {
 
   const putAsset = useCallback(
     async (asset) => {
-      // Attempt to use worker to put map to avoid UI lockup
-      const packedAsset = encode(asset);
-      const success = await worker.putData(
-        Comlink.transfer(packedAsset, [packedAsset.buffer]),
-        "assets"
-      );
-      if (!success) {
+      // Check for broadcast channel and attempt to use worker to put map to avoid UI lockup
+      // Safari doesn't support BC so fallback to single thread
+      if (window.BroadcastChannel) {
+        const packedAsset = encode(asset);
+        const success = await worker.putData(
+          Comlink.transfer(packedAsset, [packedAsset.buffer]),
+          "assets"
+        );
+        if (!success) {
+          await database.table("assets").put(asset);
+        }
+      } else {
         await database.table("assets").put(asset);
       }
     },

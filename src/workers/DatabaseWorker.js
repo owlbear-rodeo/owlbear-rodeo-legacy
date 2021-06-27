@@ -8,7 +8,6 @@ import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
 import blobToBuffer from "../helpers/blobToBuffer";
-import { isSafari } from "../helpers/shared";
 
 // Worker to load large amounts of database data on a separate thread
 let service = {
@@ -46,10 +45,6 @@ let service = {
    * @param {string} table
    */
   async putData(data, table) {
-    if (isSafari) {
-      // Safari is unable to put data into indexedb and have useLiveQuery update
-      return false;
-    }
     try {
       let db = getDatabase({});
       const decoded = decode(data);
