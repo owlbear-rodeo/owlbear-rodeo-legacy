@@ -31,7 +31,9 @@ export function groupsFromIds(groupIds, groups) {
   const groupsByIds = keyBy(groups, "id");
   const filteredGroups = [];
   for (let groupId of groupIds) {
-    filteredGroups.push(groupsByIds[groupId]);
+    if (groupId in groupsByIds) {
+      filteredGroups.push(groupsByIds[groupId]);
+    }
   }
   return filteredGroups;
 }
@@ -258,6 +260,10 @@ export function removeGroupsItems(groups, itemIds) {
         if (itemIds.includes(item.id)) {
           newGroups[i].items.splice(j, 1);
         }
+      }
+      // Remove group if no items are left
+      if (newGroups[i].items.length === 0) {
+        newGroups.splice(i, 1);
       }
     }
   }

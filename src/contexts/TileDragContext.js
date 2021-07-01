@@ -58,7 +58,6 @@ export function TileDragProvider({
     selectedGroupIds,
     onGroupsChange,
     onGroupSelect,
-    onGroupClose,
     filter,
   } = useGroup();
 
@@ -147,10 +146,6 @@ export function TileDragProvider({
         onGroupSelect();
         // Handle tile ungroup
         const newGroups = ungroup(groups, openGroupId, selectedIndices);
-        // Close group if it was removed
-        if (!newGroups.find((group) => group.id === openGroupId)) {
-          onGroupClose();
-        }
         onGroupsChange(newGroups);
       } else if (over.id === ADD_TO_MAP_ID) {
         onDragAdd &&

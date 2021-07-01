@@ -29,7 +29,16 @@ export function GroupProvider({
   const [openGroupItems, setOpenGroupItems] = useState([]);
   useEffect(() => {
     if (openGroupId) {
-      setOpenGroupItems(getGroupItems(groupsFromIds([openGroupId], groups)[0]));
+      const openGroups = groupsFromIds([openGroupId], groups);
+      if (openGroups.length === 1) {
+        const openGroup = openGroups[0];
+        setOpenGroupItems(getGroupItems(openGroup));
+      } else {
+        // Close group if we can't find it
+        // This can happen if it was deleted or all it's items were deleted
+        setOpenGroupItems([]);
+        setOpenGroupId();
+      }
     } else {
       setOpenGroupItems([]);
     }
