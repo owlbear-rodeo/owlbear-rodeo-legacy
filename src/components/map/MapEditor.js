@@ -23,7 +23,7 @@ import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
 
 function MapEditor({ map, onSettingsChange }) {
-  const [mapImageSource] = useMapImage(map);
+  const [mapImage] = useMapImage(map);
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
@@ -93,13 +93,13 @@ function MapEditor({ map, onSettingsChange }) {
     interactionEmitter: null,
   };
 
-  const canEditGrid = map.type !== "default";
-
   const gridChanged =
     map.grid.inset.topLeft.x !== defaultInset.topLeft.x ||
     map.grid.inset.topLeft.y !== defaultInset.topLeft.y ||
     map.grid.inset.bottomRight.x !== defaultInset.bottomRight.x ||
     map.grid.inset.bottomRight.y !== defaultInset.bottomRight.y;
+
+  const gridValid = map.grid.size.x !== 0 && map.grid.size.y !== 0;
 
   const layout = useResponsiveLayout();
 
@@ -132,12 +132,8 @@ function MapEditor({ map, onSettingsChange }) {
               )}
             >
               <Layer ref={mapLayerRef}>
-                <Image
-                  image={mapImageSource}
-                  width={mapWidth}
-                  height={mapHeight}
-                />
-                {showGridControls && canEditGrid && (
+                <Image image={mapImage} width={mapWidth} height={mapHeight} />
+                {showGridControls && gridValid && (
                   <>
                     <MapGrid map={map} />
                     <MapGridEditor map={map} onGridChange={handleGridChange} />
@@ -146,7 +142,7 @@ function MapEditor({ map, onSettingsChange }) {
               </Layer>
             </KonvaBridge>
           </ReactResizeDetector>
-          {gridChanged && (
+          {gridChanged && gridValid && (
             <IconButton
               title="Reset Grid"
               aria-label="Reset Grid"
@@ -163,28 +159,26 @@ function MapEditor({ map, onSettingsChange }) {
               <ResetMapIcon />
             </IconButton>
           )}
-          {canEditGrid && (
-            <IconButton
-              title={
-                showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
-              }
-              aria-label={
-                showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
-              }
-              onClick={() => setShowGridControls(!showGridControls)}
-              bg="overlay"
-              sx={{
-                borderRadius: "50%",
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-              }}
-              m={2}
-              p="6px"
-            >
-              {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
-            </IconButton>
-          )}
+          <IconButton
+            title={
+              showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
+            }
+            aria-label={
+              showGridControls ? "Hide Grid Controls" : "Show Grid Controls"
+            }
+            onClick={() => setShowGridControls(!showGridControls)}
+            bg="overlay"
+            sx={{
+              borderRadius: "50%",
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+            }}
+            m={2}
+            p="6px"
+          >
+            {showGridControls ? <GridOnIcon /> : <GridOffIcon />}
+          </IconButton>
         </Box>
       </GridProvider>
     </MapInteractionProvider>

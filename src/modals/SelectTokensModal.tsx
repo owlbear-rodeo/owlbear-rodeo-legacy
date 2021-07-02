@@ -1,71 +1,72 @@
-import { ChangeEvent, useRef, useState } from "react";
-import { Flex, Label, Button } from "theme-ui";
-import shortid from "shortid";
-import Case from "case";
+import React, { useRef, useState, useEffect } from "react";
+import { Flex, Label, Button, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
+import ReactResizeDetector from "react-resize-detector";
 
 import EditTokenModal from "./EditTokenModal";
-import EditGroupModal from "./EditGroupModal";
 import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
-import ImageDrop from "../components/ImageDrop";
-import TokenTiles from "../components/token/TokenTiles";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import blobToBuffer from "../helpers/blobToBuffer";
-import { useSearch, useGroup, handleItemSelect } from "../helpers/select";
-import { createThumbnail } from "../helpers/image";
+import ImageDrop from "../components/image/ImageDrop";
+
+import TokenTiles from "../components/token/TokenTiles";
+import TokenEditBar from "../components/token/TokenEditBar";
+
+import TilesOverlay from "../components/tile/TilesOverlay";
+import TilesContainer from "../components/tile/TilesContainer";
+import TileActionBar from "../components/tile/TileActionBar";
+
+import { getGroupItems, getItemNames } from "../helpers/group";
+import {
+  createTokenFromFile,
+  createTokenState,
+  clientPositionToMapPosition,
+} from "../helpers/token";
+import Vector2 from "../helpers/Vector2";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 import { useTokenData } from "../contexts/TokenDataContext";
-import { useAuth } from "../contexts/AuthContext";
-import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { useUserId } from "../contexts/UserIdContext";
+import { useAssets } from "../contexts/AssetsContext";
+import { GroupProvider } from "../contexts/GroupContext";
+import { TileDragProvider } from "../contexts/TileDragContext";
+import { useMapStage } from "../contexts/MapStageContext";
 
-import shortcuts from "../shortcuts";
-import { FileToken, Token } from "../tokens";
+import { TokenState } from "../components/map/Map";
 
-function SelectTokensModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: any }) {
+type SelectTokensModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onMapTokensStateCreate: (states: TokenState[]) => void;
+};
+
+function SelectTokensModal({
+  isOpen,
+  onRequestClose,
+  onMapTokensStateCreate,
+}: SelectTokensModalProps) {
   const { addToast } = useToasts();
 
-  const { userId } = useAuth();
+  const userId = useUserId();
   const {
-    ownedTokens,
+    tokens,
     addToken,
-    removeTokens,
-    updateTokens,
     tokensLoading,
+    tokenGroups,
+    updateTokenGroups,
+    updateToken,
+    tokensById,
   } = useTokenData();
+  const { addAssets } = useAssets();
 
-  /**
-   * Search
-   */
-  const [search, setSearch] = useState("");
-  const [filteredTokens, filteredTokenScores] = useSearch(ownedTokens, search);
-
-  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
-    setSearch(event.target.value);
-  }
-
-  /**
-   * Group
-   */
-  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-
-  async function handleTokensGroup(group: string) {
-    setIsLoading(true);
-    setIsGroupModalOpen(false);
-    await updateTokens(selectedTokenIds, { group });
-    setIsLoading(false);
-  }
-
-  const [tokensByGroup, tokenGroups] = useGroup(
-    ownedTokens,
-    filteredTokens,
-    !!search,
-    filteredTokenScores
-  );
+  // Get token names for group filtering
+  const [tokenNames, setTokenNames] = useState(getItemNames(tokens));
+  useEffect(() => {
+    setTokenNames(getItemNames(tokens));
+  }, [tokens]);
 
   /**
    * Image Upload
@@ -74,18 +75,11 @@ function SelectTokensModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
   const fileInputRef = useRef<any>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
-    false
-  );
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =
+    useState(false);
   const largeImageWarningFiles = useRef<File[]>();
 
-  function openImageDialog() {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  }
-
-  async function handleImagesUpload(files: FileList | null) {
+  async function handleImagesUpload(files: FileList) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
@@ -126,6 +120,12 @@ function SelectTokensModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
     }
   }
 
+  function openImageDialog() {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }
+
   function handleLargeImageWarningCancel() {
     largeImageWarningFiles.current = undefined;
     setShowLargeImageWarning(false);
@@ -146,238 +146,177 @@ function SelectTokensModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
   }
 
   async function handleImageUpload(file: File) {
-    let name = "Unknown Token";
-    if (file.name) {
-      // Remove file extension
-      name = file.name.replace(/\.[^/.]+$/, "");
-      // Removed grid size expression
-      name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
-      // Clean string
-      name = name.replace(/ +/g, " ");
-      name = name.trim();
-      // Capitalize and remove underscores
-      name = Case.capital(name);
-    }
-    let image = new Image();
     setIsLoading(true);
-    const buffer = await blobToBuffer(file);
-
-    // Copy file to avoid permissions issues
-    const blob = new Blob([buffer]);
-    // Create and load the image temporarily to get its dimensions
-    const url = URL.createObjectURL(blob);
-
-    return new Promise((resolve, reject) => {
-      image.onload = async function () {
-        const thumbnail = await createThumbnail(image, file.type);
-
-        handleTokenAdd({
-          file: buffer,
-          thumbnail,
-          name,
-          id: shortid.generate(),
-          type: "file",
-          created: Date.now(),
-          lastModified: Date.now(),
-          lastUsed: Date.now(),
-          owner: userId,
-          defaultSize: 1,
-          category: "character",
-          hideInSidebar: false,
-          group: "",
-          width: image.width,
-          height: image.height,
-        });
-        setIsLoading(false);
-        resolve(undefined);
-      };
-      image.onerror = reject;
-      image.src = url;
-    });
+    const { token, assets } = await createTokenFromFile(file, userId);
+    await addToken(token);
+    await addAssets(assets);
+    setIsLoading(false);
   }
 
   /**
    * Token controls
    */
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  const [selectedTokenIds, setSelectedTokenIds] = useState<string[]>([]);
-  const selectedTokens = ownedTokens.filter((token) =>
-    selectedTokenIds.includes(token.id)
-  );
+  const [editingTokenId, setEditingTokenId] = useState<string>();
 
-  function handleTokenAdd(token: FileToken) {
-    addToken(token);
-    setSelectedTokenIds([token.id]);
-  }
+  const [isDraggingToken, setIsDraggingToken] = useState(false);
 
-  const [isTokensRemoveModalOpen, setIsTokensRemoveModalOpen] = useState(false);
-  async function handleTokensRemove() {
-    setIsLoading(true);
-    setIsTokensRemoveModalOpen(false);
-    await removeTokens(selectedTokenIds);
-    setSelectedTokenIds([]);
-    setIsLoading(false);
-  }
-
-  async function handleTokensHide(hideInSidebar: boolean) {
-    setIsLoading(true);
-    await updateTokens(selectedTokenIds, { hideInSidebar });
-    setIsLoading(false);
-  }
-
-  // Either single, multiple or range
-  const [selectMode, setSelectMode] = useState("single");
-
-  async function handleTokenSelect(token: Token) {
-    handleItemSelect(
-      token,
-      selectMode,
-      selectedTokenIds,
-      setSelectedTokenIds,
-      tokensByGroup,
-      tokenGroups
+  const mapStageRef = useMapStage();
+  function handleTokensAddToMap(groupIds: string[], rect: any) {
+    let clientPosition = new Vector2(
+      rect.width / 2 + rect.left,
+      rect.height / 2 + rect.top
     );
-  }
-
-  /**
-   * Shortcuts
-   */
-  function handleKeyDown(event: KeyboardEvent) {
-    if (!isOpen) {
+    const mapStage = mapStageRef.current;
+    if (!mapStage) {
       return;
     }
-    if (shortcuts.selectRange(event)) {
-      setSelectMode("range");
+
+    let position = clientPositionToMapPosition(mapStage, clientPosition, false);
+    if (!position) {
+      return;
     }
-    if (shortcuts.selectMultiple(event)) {
-      setSelectMode("multiple");
-    }
-    if (shortcuts.delete(event)) {
-      // Selected tokens and none are default
-      if (
-        selectedTokenIds.length > 0 &&
-        !selectedTokens.some((token) => token.type === "default")
-      ) {
-        // Ensure all other modals are closed
-        setIsEditModalOpen(false);
-        setIsGroupModalOpen(false);
-        setIsTokensRemoveModalOpen(true);
+
+    let newTokenStates = [];
+
+    for (let id of groupIds) {
+      if (id in tokensById) {
+        newTokenStates.push(createTokenState(tokensById[id], position, userId));
+        position = Vector2.add(position, 0.01);
+      } else {
+        // Check if a group is selected
+        const group = tokenGroups.find(
+          (group) => group.id === id && group.type === "group"
+        );
+        if (group) {
+          // Add all tokens of group
+          const items = getGroupItems(group);
+          for (let item of items) {
+            if (item.id in tokensById) {
+              newTokenStates.push(
+                createTokenState(tokensById[item.id], position, userId)
+              );
+              position = Vector2.add(position, 0.01);
+            }
+          }
+        }
       }
     }
-  }
 
-  function handleKeyUp(event: KeyboardEvent) {
-    if (!isOpen) {
-      return;
-    }
-    if (shortcuts.selectRange(event) && selectMode === "range") {
-      setSelectMode("single");
-    }
-    if (shortcuts.selectMultiple(event) && selectMode === "multiple") {
-      setSelectMode("single");
+    if (newTokenStates.length > 0) {
+      onMapTokensStateCreate(newTokenStates);
     }
   }
-
-  useKeyboard(handleKeyDown, handleKeyUp);
-
-  // Set select mode to single when cmd+tabing
-  function handleBlur() {
-    setSelectMode("single");
-  }
-
-  useBlur(handleBlur);
 
   const layout = useResponsiveLayout();
 
-  let tokenId;
-  if (selectedTokens.length === 1 && selectedTokens[0].id) {
-    tokenId = selectedTokens[0].id
-  } else {
-    // TODO: handle tokenId not found
-    tokenId = ""
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  function handleModalResize(width: number, height: number) {
+    setModalSize({ width, height });
   }
+
+  const editingToken =
+    editingTokenId && tokens.find((token) => token.id === editingTokenId);
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" } }}
+      style={{
+        content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" },
+      }}
+      shouldCloseOnEsc={!isDraggingToken}
     >
-      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to upload">
+      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to import">
         <input
-          onChange={(event) => handleImagesUpload(event.target.files)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.files && handleImagesUpload(event.target.files)
+          }
           type="file"
-          accept="image/*"
+          accept="image/jpeg, image/gif, image/png, image/webp"
           style={{ display: "none" }}
           ref={fileInputRef}
           multiple
         />
-        <Flex
-          sx={{
-            flexDirection: "column",
-          }}
+        <ReactResizeDetector
+          handleWidth
+          handleHeight
+          onResize={handleModalResize}
+          refreshMode="debounce"
         >
-          <Label pt={2} pb={1}>
-            Edit or import a token
-          </Label>
-          <TokenTiles
-            tokens={tokensByGroup}
+          <GroupProvider
             groups={tokenGroups}
-            onTokenAdd={openImageDialog}
-            onTokenEdit={() => setIsEditModalOpen(true)}
-            onTokensRemove={() => setIsTokensRemoveModalOpen(true)}
-            selectedTokens={selectedTokens}
-            onTokenSelect={handleTokenSelect}
-            selectMode={selectMode}
-            onSelectModeChange={setSelectMode}
-            search={search}
-            onSearchChange={handleSearchChange}
-            onTokensGroup={() => setIsGroupModalOpen(true)}
-            onTokensHide={handleTokensHide}
-          />
-          <Button
-            variant="primary"
-            disabled={isLoading}
-            onClick={onRequestClose}
-            mt={2}
+            itemNames={tokenNames}
+            onGroupsChange={updateTokenGroups}
+            disabled={!isOpen}
           >
-            Done
-          </Button>
-        </Flex>
+            <Flex
+              sx={{
+                flexDirection: "column",
+              }}
+            >
+              <Label pt={2} pb={1}>
+                Edit or import a token
+              </Label>
+              <TileActionBar
+                onAdd={openImageDialog}
+                addTitle="Import Token(s)"
+              />
+              <Box sx={{ position: "relative" }}>
+                <TileDragProvider
+                  onDragAdd={handleTokensAddToMap}
+                  onDragStart={() => setIsDraggingToken(true)}
+                  onDragEnd={() => setIsDraggingToken(false)}
+                  onDragCancel={() => setIsDraggingToken(false)}
+                >
+                  <TilesContainer>
+                    <TokenTiles
+                      tokensById={tokensById}
+                      onTokenEdit={setEditingTokenId}
+                    />
+                  </TilesContainer>
+                </TileDragProvider>
+                <TileDragProvider
+                  onDragAdd={handleTokensAddToMap}
+                  onDragStart={() => setIsDraggingToken(true)}
+                  onDragEnd={() => setIsDraggingToken(false)}
+                  onDragCancel={() => setIsDraggingToken(false)}
+                >
+                  <TilesOverlay modalSize={modalSize}>
+                    <TokenTiles
+                      tokensById={tokensById}
+                      onTokenEdit={setEditingTokenId}
+                      subgroup
+                    />
+                  </TilesOverlay>
+                </TileDragProvider>
+                <TokenEditBar
+                  onLoad={setIsLoading}
+                  disabled={isLoading || !isOpen}
+                />
+              </Box>
+              <Button
+                variant="primary"
+                disabled={isLoading}
+                onClick={onRequestClose}
+                mt={2}
+              >
+                Done
+              </Button>
+            </Flex>
+          </GroupProvider>
+        </ReactResizeDetector>
       </ImageDrop>
+      <>{(isLoading || tokensLoading) && <LoadingOverlay bg="overlay" />}</>
       <>
-      {(isLoading || tokensLoading) && <LoadingOverlay bg="overlay" />}
-      </>
-      <EditTokenModal
-        isOpen={isEditModalOpen}
-        onDone={() => setIsEditModalOpen(false)}
-        tokenId={tokenId}
-      />
-      <EditGroupModal
-        isOpen={isGroupModalOpen}
-        onChange={handleTokensGroup}
-        groups={tokenGroups.filter(
-          (group: string) => group !== "" && group !== "default"
+        {editingToken && (
+          <EditTokenModal
+            isOpen={!!editingTokenId}
+            onDone={() => setEditingTokenId(undefined)}
+            token={editingToken}
+            onUpdateToken={updateToken}
+          />
         )}
-        onRequestClose={() => setIsGroupModalOpen(false)}
-        // Select the default group by testing whether all selected tokens are the same
-        defaultGroup={
-          selectedTokens.length > 0 &&
-          selectedTokens
-            .map((map) => map.group)
-            .reduce((prev, curr) => (prev === curr ? curr : undefined))
-        }
-      />
-      <ConfirmModal
-        isOpen={isTokensRemoveModalOpen}
-        onRequestClose={() => setIsTokensRemoveModalOpen(false)}
-        onConfirm={handleTokensRemove}
-        confirmText="Remove"
-        label={`Remove ${selectedTokenIds.length} Token${
-          selectedTokenIds.length > 1 ? "s" : ""
-        }`}
-        description="This operation cannot be undone."
-      />
+      </>
       <ConfirmModal
         isOpen={isLargeImageWarningModalOpen}
         onRequestClose={handleLargeImageWarningCancel}

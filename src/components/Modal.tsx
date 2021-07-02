@@ -1,11 +1,13 @@
 import React, { ReactChild } from "react";
 import Modal, { Props } from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
+import { useSpring, animated, config } from "react-spring";
 
 type ModalProps = Props & {
-  children: ReactChild | ReactChild[],
-  allowClose: boolean
-}
+  children: ReactChild | ReactChild[];
+  allowClose: boolean;
+};
+
 function StyledModal({
   isOpen,
   onRequestClose,
@@ -13,27 +15,55 @@ function StyledModal({
   allowClose,
   style,
   ...props
-}: ModalProps ) {
+}: ModalProps) {
   const { theme } = useThemeUI();
+
+  const openAnimation = useSpring({
+    opacity: isOpen ? 1 : 0,
+    transform: isOpen ? "scale(1)" : "scale(0.99)",
+    config: config.default,
+  });
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{
-        overlay: { backgroundColor: "rgba(0, 0, 0, 0.73)", zIndex: 100 },
+        overlay: {
+          backgroundColor: "rgba(0, 0, 0, 0.73)",
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          ...(style?.overlay || {}),
+        },
         content: {
-          backgroundColor: theme.colors?.background,
-          top: "50%",
-          left: "50%",
-          right: "auto",
-          bottom: "auto",
-          marginRight: "-50%",
-          transform: "translate(-50%, -50%)",
+          backgroundColor: theme.colors.background,
+          top: "initial",
+          left: "initial",
+          bottom: "initial",
+          right: "initial",
           maxHeight: "100%",
-          ...style,
+          ...(style?.content || {}),
         } as React.CSSProperties,
       }}
+      contentElement={(props, content) => (
+        <animated.div {...props} style={{ ...props.style, ...openAnimation }}>
+          {content}
+        </animated.div>
+      )}
+      overlayElement={(props, content) => (
+        <div
+          onDragEnter={(e) => {
+            // Prevent drag event from triggering with a modal open
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          {...props}
+        >
+          {content}
+        </div>
+      )}
       {...props}
     >
       {children}
@@ -50,7 +80,7 @@ function StyledModal({
 
 StyledModal.defaultProps = {
   allowClose: true,
-  style: {}
+  style: {},
 };
 
 export default StyledModal;

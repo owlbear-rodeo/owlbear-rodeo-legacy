@@ -4,7 +4,7 @@ import { Group } from "react-konva";
 
 import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 import Vector2 from "../../helpers/Vector2";
 import { getRelativePointerPosition } from "../../helpers/konva";
@@ -28,7 +28,7 @@ function MapNotes({
   fadeOnHover,
 }) {
   const interactionEmitter = useInteractionEmitter();
-  const { userId } = useAuth();
+  const userId = useUserId();
   const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState(null);

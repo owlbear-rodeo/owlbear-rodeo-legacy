@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Flex, Text, IconButton, Textarea } from "theme-ui";
+import { Box, Flex, Text, IconButton } from "theme-ui";
 
 import Slider from "../Slider";
+import TextareaAutosize from "../TextareaAutoSize";
 
 import MapMenu from "../map/MapMenu";
 
@@ -16,7 +17,7 @@ import HideIcon from "../../icons/TokenHideIcon";
 import NoteIcon from "../../icons/NoteToolIcon";
 import TextIcon from "../../icons/NoteTextIcon";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 const defaultNoteMaxSize = 6;
 
@@ -28,7 +29,7 @@ function NoteMenu({
   onNoteChange,
   map,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const wasOpen = usePrevious(isOpen);
 
@@ -128,20 +129,12 @@ function NoteMenu({
           }}
           sx={{ alignItems: "center" }}
         >
-          <Textarea
+          <TextareaAutosize
             id="changeNoteText"
             onChange={handleTextChange}
             value={(note && note.text) || ""}
-            sx={{
-              padding: "4px",
-              border: "none",
-              ":focus": {
-                outline: "none",
-              },
-              resize: "none",
-            }}
-            rows={1}
             onKeyPress={handleTextKeyPress}
+            maxRows={4}
           />
         </Flex>
         <Box

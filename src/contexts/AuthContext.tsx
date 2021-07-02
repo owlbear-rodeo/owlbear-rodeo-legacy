@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useContext, SetStateAction } from "react";
-import shortid from "shortid";
-
-import { useDatabase } from "./DatabaseContext";
+import React, { useState, useEffect, useContext } from "react";
 
 import FakeStorage from "../helpers/FakeStorage";
 
-type AuthContext = { userId: string; password: string; setPassword: React.Dispatch<any>; }
+type AuthContext = { password: string; setPassword: React.Dispatch<any> };
 
 // TODO: check what default value we want here
 const AuthContext = React.createContext<AuthContext | undefined>(undefined);
@@ -20,37 +17,16 @@ try {
   storage = new FakeStorage();
 }
 
-export function AuthProvider({ children }: { children: any }) {
-  const { database, databaseStatus } = useDatabase();
-
-  const [password, setPassword] = useState<string>(storage.getItem("auth") || "");
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [password, setPassword] = useState<string>(
+    storage.getItem("auth") || ""
+  );
 
   useEffect(() => {
     storage.setItem("auth", password);
   }, [password]);
 
-  // TODO: check pattern here -> undefined or empty default values
-  const [userId, setUserId]: [ userId: string, setUserId: React.Dispatch<SetStateAction<string>> ] = useState("");
-  useEffect(() => {
-    if (!database || databaseStatus === "loading") {
-      return;
-    }
-    async function loadUserId() {
-      const storedUserId = await database?.table("user").get("userId");
-      if (storedUserId) {
-        setUserId(storedUserId.value);
-      } else {
-        const id = shortid.generate();
-        setUserId(id);
-        database?.table("user").add({ key: "userId", value: id });
-      }
-    }
-
-    loadUserId();
-  }, [database, databaseStatus]);
-
   const value = {
-    userId,
     password,
     setPassword,
   };

@@ -1,40 +1,30 @@
 import React from "react";
 
-import Tile from "../Tile";
-
-import { useImageSource } from "../../contexts/ImageSourceContext";
-import { mapSources as defaultMapSources, unknownSource } from "../../maps";
+import Tile from "../tile/Tile";
+import MapImage from "./MapImage";
 
 function MapTile({
   map,
   isSelected,
-  onMapSelect,
-  onMapEdit,
-  onDone,
-  size,
+  onSelect,
+  onEdit,
+  onDoubleClick,
   canEdit,
   badges,
 }) {
-  const mapSource = useImageSource(
-    map,
-    defaultMapSources,
-    unknownSource,
-    map.type === "file"
-  );
-
   return (
     <Tile
-      src={mapSource}
       title={map.name}
       isSelected={isSelected}
-      onSelect={() => onMapSelect(map)}
-      onEdit={() => onMapEdit(map.id)}
-      onDoubleClick={() => canEdit && onDone()}
-      size={size}
+      onSelect={() => onSelect(map.id)}
+      onEdit={() => onEdit(map.id)}
+      onDoubleClick={() => canEdit && onDoubleClick()}
       canEdit={canEdit}
       badges={badges}
       editTitle="Edit Map"
-    />
+    >
+      <MapImage map={map} />
+    </Tile>
   );
 }
 

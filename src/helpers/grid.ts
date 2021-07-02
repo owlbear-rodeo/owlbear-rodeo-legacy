@@ -65,6 +65,9 @@ export function getGridPixelSize(grid: Required<Grid>, baseWidth: number, baseHe
  * @returns {Size}
  */
 export function getCellPixelSize(grid: Grid, gridWidth: number, gridHeight: number): Size {
+  if (grid.size.x === 0 || grid.size.y === 0) {
+    return new Size(0, 0);
+  }
   switch (grid.type) {
     case "square":
       return new Size(gridWidth / grid.size.x, gridHeight / grid.size.y);
@@ -226,7 +229,10 @@ export function getGridDefaultInset(grid: Grid, mapWidth: number, mapHeight: num
  * @returns {GridInset}
  */
 export function getGridUpdatedInset(grid: Required<Grid>, mapWidth: number, mapHeight: number): GridInset {
-  let inset = grid.inset;
+  let inset = {
+    topLeft: { ...grid.inset.topLeft },
+    bottomRight: { ...grid.inset.bottomRight },
+  };
   // Take current inset width and use it to calculate the new height
   if (grid.size.x > 0 && grid.size.x > 0) {
     // Convert to px relative to map size
@@ -301,10 +307,7 @@ export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellS
   const bCoord = getNearestCellCoordinates(grid, b.x, b.y, cellSize);
   if (grid.type === "square") {
     if (grid.measurement.type === "chebyshev") {
-      return Math.max(
-        Math.abs(aCoord.x - bCoord.x),
-        Math.abs(aCoord.y - bCoord.y)
-      );
+      return Vector2.max(Vector2.abs(Vector2.subtract(aCoord, bCoord)));
     } else if (grid.measurement.type === "alternating") {
       // Alternating diagonal distance like D&D 3.5 and Pathfinder
       const delta = Vector2.abs(Vector2.subtract(aCoord, bCoord));
@@ -312,7 +315,7 @@ export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellS
       const min: any = Vector2.min(delta);
       return max - min + Math.floor(1.5 * min);
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.distance(aCoord, bCoord);
+      return Vector2.magnitude(Vector2.divide(Vector2.subtract(a, b), cellSize));
     } else if (grid.measurement.type === "manhattan") {
       return Math.abs(aCoord.x - bCoord.x) + Math.abs(aCoord.y - bCoord.y);
     }
@@ -328,7 +331,7 @@ export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellS
         2
       );
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.distance(aCoord, bCoord);
+      return Vector2.magnitude(Vector2.divide(Vector2.subtract(a, b), cellSize));
     }
   }
 }

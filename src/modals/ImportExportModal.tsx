@@ -3,6 +3,7 @@ import { Box, Label, Text, Button, Flex } from "theme-ui";
 import { saveAs } from "file-saver";
 import * as Comlink from "comlink";
 import shortid from "shortid";
+import { v4 as uuid } from "uuid";
 import { useToasts } from "react-toast-notifications";
 
 import Modal from "../components/Modal";
@@ -10,19 +11,33 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingBar from "../components/LoadingBar";
 import ErrorBanner from "../components/banner/ErrorBanner";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import SelectDataModal from "./SelectDataModal";
 
 import { getDatabase } from "../database";
 import { Map, MapState, TokenState } from "../components/map/Map";
+import { Token } from "../tokens";
 
 const importDBName = "OwlbearRodeoImportDB";
 
-function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void}) {
+class MissingAssetError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MissingAssetError";
+  }
+}
+
+function ImportExportModal({
+  isOpen,
+  onRequestClose,
+}: {
+  isOpen: boolean;
+  onRequestClose: () => void;
+}) {
   const { worker } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error>();
@@ -34,7 +49,7 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
   const [showExportSelector, setShowExportSelector] = useState(false);
 
   const { addToast } = useToasts();
-  function addSuccessToast(message: string, maps: any, tokens: TokenState[]) {
+  function addSuccessToast(message: string, maps: Map[], tokens: Token[]) {
     const mapText = `${maps.length} map${maps.length > 1 ? "s" : ""}`;
     const tokenText = `${tokens.length} token${tokens.length > 1 ? "s" : ""}`;
     if (maps.length > 0 && tokens.length > 0) {
@@ -54,7 +69,13 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
 
   const loadingProgressRef = useRef(0);
 
-  function handleDBProgress({ completedRows, totalRows }: { completedRows: number, totalRows: number }) {
+  function handleDBProgress({
+    completedRows,
+    totalRows,
+  }: {
+    completedRows: number;
+    totalRows: number;
+  }) {
     loadingProgressRef.current = completedRows / totalRows;
   }
 
@@ -81,6 +102,7 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
           )
         );
       } else {
+        console.error(e);
         setError(e);
       }
     }
@@ -122,7 +144,12 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
     setShowImportSelector(false);
   }
 
-  async function handleImportSelectorConfirm(checkedMaps: any, checkedTokens: TokenState[]) {
+  async function handleImportSelectorConfirm(
+    checkedMaps: Map[],
+    checkedTokens: Token[],
+    checkedMapGroups: any[],
+    checkedTokenGroups: any[]
+  ) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
     setShowImportSelector(false);
@@ -132,25 +159,46 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
     const db = getDatabase({});
     try {
       // Keep track of a mapping of old token ids to new ones to apply them to the map states
-      let newTokenIds: {[id: string]: string} = {};
+      let newTokenIds: Record<string, string> = {};
+      // Mapping of old asset ids to new asset ids
+      let newAssetIds: Record<string, string> = {};
+      // Mapping of old maps ids to new map ids
+      let newMapIds: Record<string, string> = {};
+
+      let newTokens: Token[] = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd: TokenState[] = await importDB.table("tokens").bulkGet(tokenIds);
-        let newTokens: TokenState[] = [];
+        const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
         for (let token of tokensToAdd) {
-          const newId = shortid.generate();
+          // Generate new ids
+          const newId = uuid();
           newTokenIds[token.id] = newId;
-          // Generate new id and change owner
-          newTokens.push({ ...token, id: newId, owner: userId });
+
+          if (token.type === "default") {
+            newTokens.push({ ...token, id: newId, owner: userId });
+          } else {
+            const newFileId = uuid();
+            const newThumbnailId = uuid();
+            newAssetIds[token.file] = newFileId;
+            newAssetIds[token.thumbnail] = newThumbnailId;
+
+            // Change ids and owner
+            newTokens.push({
+              ...token,
+              id: newId,
+              owner: userId,
+              file: newFileId,
+              thumbnail: newThumbnailId,
+            });
+          }
         }
-        await db.table("tokens").bulkAdd(newTokens);
       }
 
+      let newMaps: Map[] = [];
+      let newStates: MapState[] = [];
       if (checkedMaps.length > 0) {
         const mapIds = checkedMaps.map((map: any) => map.id);
         const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
-        let newMaps = [];
-        let newStates = [];
         for (let map of mapsToAdd) {
           let state: MapState = await importDB.table("states").get(map.id);
           // Apply new token ids to imported state
@@ -159,19 +207,145 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
               state.tokens[tokenState.id].tokenId =
                 newTokenIds[tokenState.tokenId];
             }
+            // Change token state file asset id
+            if (tokenState.type === "file" && tokenState.file in newAssetIds) {
+              state.tokens[tokenState.id].file = newAssetIds[tokenState.file];
+            }
+            // Change token state owner if owned by the user of the map
+            if (tokenState.owner === map.owner) {
+              state.tokens[tokenState.id].owner = userId;
+            }
           }
-          const newId = shortid.generate();
-          // Generate new id and change owner
-          newMaps.push({ ...map, id: newId, owner: userId });
+          // Generate new ids
+          const newId = uuid();
+          newMapIds[map.id] = newId;
+
+          if (map.type === "default") {
+            newMaps.push({ ...map, id: newId, owner: userId });
+          } else {
+            const newFileId = uuid();
+            const newThumbnailId = uuid();
+            newAssetIds[map.file] = newFileId;
+            newAssetIds[map.thumbnail] = newThumbnailId;
+            const newResolutionIds: Record<string, string> = {};
+            for (let res of Object.keys(map.resolutions)) {
+              newResolutionIds[res] = uuid();
+              newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+            }
+            // Change ids and owner
+            newMaps.push({
+              ...map,
+              id: newId,
+              owner: userId,
+              file: newFileId,
+              thumbnail: newThumbnailId,
+              resolutions: newResolutionIds,
+            });
+          }
+
           newStates.push({ ...state, mapId: newId });
         }
-        await db.table("maps").bulkAdd(newMaps);
-        await db.table("states").bulkAdd(newStates);
       }
+
+      // Add assets with new ids
+      const assetsToAdd = await importDB
+        .table("assets")
+        .bulkGet(Object.keys(newAssetIds));
+      let newAssets: any[] = [];
+      for (let asset of assetsToAdd) {
+        if (asset) {
+          newAssets.push({
+            ...asset,
+            id: newAssetIds[asset.id],
+            owner: userId,
+          });
+        } else {
+          throw new MissingAssetError("Import missing assets");
+        }
+      }
+
+      // Add map groups with new ids
+      let newMapGroups: any[] = [];
+      if (checkedMapGroups.length > 0) {
+        for (let group of checkedMapGroups) {
+          if (group.type === "item") {
+            newMapGroups.push({ ...group, id: newMapIds[group.id] });
+          } else {
+            newMapGroups.push({
+              ...group,
+              id: uuid(),
+              items: group.items.map((item) => ({
+                ...item,
+                id: newMapIds[item.id],
+              })),
+            });
+          }
+        }
+      }
+
+      // Add token groups with new ids
+      let newTokenGroups: any[] = [];
+      if (checkedTokenGroups.length > 0) {
+        for (let group of checkedTokenGroups) {
+          if (group.type === "item") {
+            newTokenGroups.push({ ...group, id: newTokenIds[group.id] });
+          } else {
+            newTokenGroups.push({
+              ...group,
+              id: uuid(),
+              items: group.items.map((item: any) => ({
+                ...item,
+                id: newTokenIds[item.id],
+              })),
+            });
+          }
+        }
+      }
+
+      db.transaction(
+        "rw",
+        [
+          db.table("tokens"),
+          db.table("maps"),
+          db.table("states"),
+          db.table("assets"),
+          db.table("groups"),
+        ],
+        async () => {
+          if (newTokens.length > 0) {
+            await db.table("tokens").bulkAdd(newTokens);
+          }
+          if (newMaps.length > 0) {
+            await db.table("maps").bulkAdd(newMaps);
+          }
+          if (newStates.length > 0) {
+            await db.table("states").bulkAdd(newStates);
+          }
+          if (newAssets.length > 0) {
+            await db.table("assets").bulkAdd(newAssets);
+          }
+          if (newMapGroups.length > 0) {
+            const mapGroup = await db.table("groups").get("maps");
+            await db
+              .table("groups")
+              .update("maps", { items: [...newMapGroups, ...mapGroup.items] });
+          }
+          if (newTokenGroups.length > 0) {
+            const tokenGroup = await db.table("groups").get("tokens");
+            await db.table("groups").update("tokens", {
+              items: [...newTokenGroups, ...tokenGroup.items],
+            });
+          }
+        }
+      );
       addSuccessToast("Imported", checkedMaps, checkedTokens);
     } catch (e) {
       console.error(e);
-      setError(new Error("Unable to import data"));
+      if (e instanceof MissingAssetError) {
+        setError(e);
+      } else {
+        setError(new Error("Unable to import data"));
+      }
     }
     await importDB.delete();
     importDB.close();
@@ -180,25 +354,23 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
     backgroundTaskRunningRef.current = false;
   }
 
-  function exportSelectorFilter(table: any, value: Map | TokenState) {
-    // Only show owned maps and tokens
-    if (table === "maps" || table === "tokens") {
-      if (value.owner === userId) {
-        return true;
-      }
-    }
-    // Allow all states so tokens can be checked against maps
-    if (table === "states") {
-      return true;
-    }
-    return false;
+  function exportSelectorFilter(table: string) {
+    return (
+      table === "maps" ||
+      table === "tokens" ||
+      table === "states" ||
+      table === "groups"
+    );
   }
 
   async function handleExportSelectorClose() {
     setShowExportSelector(false);
   }
 
-  async function handleExportSelectorConfirm(checkedMaps: Map[], checkedTokens: TokenState[]) {
+  async function handleExportSelectorConfirm(
+    checkedMaps: Map[],
+    checkedTokens: TokenState[]
+  ) {
     setShowExportSelector(false);
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
@@ -216,6 +388,7 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps, checkedTokens);
     } catch (e) {
+      console.error(e);
       setError(e);
     }
     setIsLoading(false);
@@ -239,7 +412,9 @@ function ImportExportModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequ
             Select import or export then select the data you wish to use
           </Text>
           <input
-            onChange={(event) => event.target.files && handleImportDatabase(event.target.files[0])}
+            onChange={(event) =>
+              event.target.files && handleImportDatabase(event.target.files[0])
+            }
             type="file"
             accept=".owlbear"
             style={{ display: "none" }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 
 import MapPointer from "../components/map/MapPointer";
 import { isEmpty } from "../helpers/shared";
@@ -13,8 +13,14 @@ import Session from "./Session";
 // Send pointer updates every 50ms (20fps)
 const sendTickRate = 50;
 
-function NetworkedMapPointer({ session, active }: { session: Session, active: boolean }) {
-  const { userId } = useAuth();
+function NetworkedMapPointer({
+  session,
+  active,
+}: {
+  session: Session;
+  active: boolean;
+}) {
+  const userId = useUserId();
   const [localPointerState, setLocalPointerState] = useState({});
   const [pointerColor] = useSetting("pointer.color");
 
@@ -39,7 +45,9 @@ function NetworkedMapPointer({ session, active }: { session: Session, active: bo
   // Send pointer updates every sendTickRate to peers to save on bandwidth
   // We use requestAnimationFrame as setInterval was being blocked during
   // re-renders on Chrome with Windows
-  const ownPointerUpdateRef: React.MutableRefObject<{ position: any; visible: boolean; id: any; color: any; } | undefined | null > = useRef();
+  const ownPointerUpdateRef: React.MutableRefObject<
+    { position: any; visible: boolean; id: any; color: any } | undefined | null
+  > = useRef();
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(update);

@@ -14,7 +14,7 @@ import Modal from "../components/Modal";
 import Slider from "../components/Slider";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
 import useSetting from "../hooks/useSetting";
@@ -23,9 +23,15 @@ import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";
 import { MapState } from "../components/map/Map";
 
-function SettingsModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void }) {
+function SettingsModal({
+  isOpen,
+  onRequestClose,
+}: {
+  isOpen: boolean;
+  onRequestClose: () => void;
+}) {
   const { database, databaseStatus } = useDatabase();
-  const { userId } = useAuth();
+  const userId = useUserId();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [labelSize, setLabelSize] = useSetting("map.labelSize");
   const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
@@ -58,9 +64,14 @@ function SettingsModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestC
 
   async function handleEraseAllData() {
     setIsLoading(true);
-    localStorage.clear();
-    await database?.delete();
-    window.location.reload();
+    try {
+      localStorage.clear();
+      database?.close();
+      await database?.delete();
+    } catch {
+    } finally {
+      window.location.reload();
+    }
   }
 
   async function handleClearCache() {
@@ -68,32 +79,28 @@ function SettingsModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestC
     // Clear saved settings
     localStorage.clear();
 
-    //TODO: handle id database is undefined
-    if (!database) {
-      return;
-    }
-    // Clear map cache
-    await database.table("maps").where("owner").notEqual(userId).delete();
-    // Find all other peoples tokens who aren't benig used in a map state and delete them
-    const tokens = await database
-      .table("tokens")
-      .where("owner")
-      .notEqual(userId)
-      .toArray();
-    const states: MapState[] = await database?.table("states").toArray();
-    for (let token of tokens) {
-      let inUse = false;
-      for (let state of states) {
-        for (let tokenState of Object.values(state.tokens)) {
-          if (token.id === tokenState.tokenId) {
-            inUse = true;
+    if (database && userId) {
+      const assets = await database
+        .table("assets")
+        .where("owner")
+        .notEqual(userId)
+        .toArray();
+      const states: MapState[] = await database.table("states").toArray();
+      for (let asset of assets) {
+        let inUse = false;
+        for (let state of states) {
+          for (let tokenState of Object.values(state.tokens)) {
+            if (tokenState.type === "file" && asset.id === tokenState.file) {
+              inUse = true;
+            }
           }
         }
-      }
-      if (!inUse) {
-        database.table("tokens").delete(token.id);
+        if (!inUse) {
+          await database.table("assets").delete(asset.id);
+        }
       }
     }
+
     window.location.reload();
   }
 
@@ -191,13 +198,14 @@ function SettingsModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestC
               Import / Export Data
             </Button>
           </Flex>
-          {storageEstimate !&& (
+          {storageEstimate! && (
             <Flex sx={{ justifyContent: "center" }}>
               <Text variant="caption">
                 Storage Used: {prettyBytes(storageEstimate.usage as number)} of{" "}
                 {prettyBytes(storageEstimate.quota as number)} (
                 {Math.round(
-                  (storageEstimate.usage as number / Math.max(storageEstimate.quota as number, 1)) *
+                  ((storageEstimate.usage as number) /
+                    Math.max(storageEstimate.quota as number, 1)) *
                     100
                 )}
                 %)

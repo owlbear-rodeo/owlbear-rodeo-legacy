@@ -21,7 +21,20 @@ function useResponsiveLayout() {
     ? "medium"
     : "large";
 
-  return { screenSize, modalSize, tileSize };
+  const tileGridColumns = isLargeScreen ? 4 : isMediumScreen ? 3 : 2;
+
+  const groupGridColumns = isLargeScreen ? 3 : 2;
+
+  const tileContainerHeight = isLargeScreen ? "600px" : "400px";
+
+  return {
+    screenSize,
+    modalSize,
+    tileSize,
+    tileGridColumns,
+    tileContainerHeight,
+    groupGridColumns,
+  };
 }
 
 export default useResponsiveLayout;

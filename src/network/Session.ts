@@ -26,7 +26,8 @@ export type SessionPeer = {
  * @callback peerReply
  * @param {string} id - The id of the event
  * @param {object} data - The data to send
- * @param {string} channel - The channel to send to
+ * @param {string=} channel - The channel to send to
+ * @param {string=} chunkId
  */
 
 type peerReply = (id: string, data: SimplePeerData, channel: string) => void;
@@ -126,7 +127,7 @@ class Session extends EventEmitter {
   }
 
   disconnect() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
   }
 
   /**
@@ -135,9 +136,10 @@ class Session extends EventEmitter {
    * @param {string} sessionId - The socket id of the player to send to
    * @param {string} eventId - The id of the event to send
    * @param {object} data
-   * @param {string} channel
+   * @param {string=} channel
+   * @param {string=} chunkId
    */
-  sendTo(sessionId: string, eventId: string, data: SimplePeerData, channel?: string) {
+  sendTo(sessionId: string, eventId: string, data: any, channel?: string, chunkId?: string) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -148,7 +150,8 @@ class Session extends EventEmitter {
       this.peers[sessionId].connection.once("connect", () => {
         this.peers[sessionId].connection.sendObject(
           { id: eventId, data },
-          channel
+          channel,
+          chunkId
         );
       });
     } else {
@@ -245,9 +248,9 @@ class Session extends EventEmitter {
 
       const peer = { id, connection, initiator, ready: false };
 
-      const sendPeer = (id: string, data: SimplePeerData, channel: any) => {
-        peer.connection.sendObject({ id, data }, channel);
-      };
+      function reply(id: string, data: any, channel?: string, chunkId?: string) {
+        peer.connection.sendObject({ id, data }, channel, chunkId);
+      }
 
       const handleSignal = (signal: any) => {
         this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
@@ -265,12 +268,8 @@ class Session extends EventEmitter {
          * @property {SessionPeer} peer
          * @property {peerReply} reply
          */
-        const peerConnectEvent: { peer: SessionPeer; reply: peerReply } = {
-          peer,
-          reply: sendPeer,
-        };
-        this.emit("peerConnect", peerConnectEvent);
-      };
+        this.emit("peerConnect", { peer, reply });
+      }
 
       const handleDataComplete = (data: any) => {
         /**
@@ -292,7 +291,7 @@ class Session extends EventEmitter {
           peer,
           id: data.id,
           data: data.data,
-          reply: sendPeer,
+          reply: reply,
         };
         console.log(`Data: ${JSON.stringify(data)}`)
         this.emit("peerData", peerDataEvent);
@@ -312,7 +311,7 @@ class Session extends EventEmitter {
           id,
           count,
           total,
-          reply: sendPeer,
+          reply,
         });
       };
 

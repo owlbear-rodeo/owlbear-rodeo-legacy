@@ -1,74 +1,49 @@
 import React from "react";
-import { Flex, Image as UIImage, IconButton, Box, Text, Badge } from "theme-ui";
+import { Flex, IconButton, Box, Text, Badge } from "theme-ui";
 
-import EditTileIcon from "../icons/EditTileIcon";
+import EditTileIcon from "../../icons/EditTileIcon";
 
 function Tile({
-  src,
   title,
   isSelected,
   onSelect,
   onEdit,
   onDoubleClick,
-  size,
   canEdit,
   badges,
   editTitle,
+  children,
 }) {
-  let width;
-  let margin;
-  switch (size) {
-    case "small":
-      width = "24%";
-      margin = "0.5%";
-      break;
-    case "medium":
-      width = "32%";
-      margin = `${2 / 3}%`;
-      break;
-    case "large":
-      width = "48%";
-      margin = "1%";
-      break;
-    default:
-      width = "32%";
-      margin = `${2 / 3}%`;
-  }
   return (
-    <Flex
+    <Box
       sx={{
         position: "relative",
-        width: width,
+        width: "100%",
         height: "0",
-        paddingTop: width,
+        paddingTop: "100%",
         borderRadius: "4px",
-        justifyContent: "center",
-        alignItems: "center",
-        cursor: "pointer",
         overflow: "hidden",
         userSelect: "none",
       }}
-      my={1}
-      mx={margin}
-      bg="muted"
+      bg="background"
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
       }}
       onDoubleClick={onDoubleClick}
+      aria-label={title}
     >
-      <UIImage
+      <Box
         sx={{
           width: "100%",
           height: "100%",
-          objectFit: "contain",
           position: "absolute",
           top: 0,
           left: 0,
         }}
-        src={src}
-        alt={title}
-      />
+      >
+        {children}
+      </Box>
       <Flex
         sx={{
           position: "absolute",
@@ -106,13 +81,25 @@ function Tile({
           borderRadius: "4px",
         }}
       />
-      <Box sx={{ position: "absolute", top: 0, left: 0 }}>
+      <Flex
+        sx={{
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+        }}
+      >
         {badges.map((badge, i) => (
-          <Badge m={2} key={i} bg="overlay">
+          <Badge
+            m="2px"
+            key={i}
+            bg="overlay"
+            color="text"
+            sx={{ width: "fit-content" }}
+          >
             {badge}
           </Badge>
         ))}
-      </Box>
+      </Flex>
       {canEdit && (
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <IconButton
@@ -131,12 +118,11 @@ function Tile({
           </IconButton>
         </Box>
       )}
-    </Flex>
+    </Box>
   );
 }
 
 Tile.defaultProps = {
-  src: "",
   title: "",
   isSelected: false,
   onSelect: () => {},
@@ -146,6 +132,7 @@ Tile.defaultProps = {
   canEdit: false,
   badges: [],
   editTitle: "Edit",
+  columns: "1fr",
 };
 
 export default Tile;

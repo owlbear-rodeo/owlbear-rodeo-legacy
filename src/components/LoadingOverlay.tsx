@@ -1,8 +1,15 @@
+import React from "react";
 import { Box } from "theme-ui";
 
 import Spinner from "./Spinner";
 
-function LoadingOverlay({ bg }: any ) {
+function LoadingOverlay({
+  bg,
+  children,
+}: {
+  bg: string;
+  children?: React.ReactNode;
+}) {
   return (
     <Box
       sx={{
@@ -20,6 +27,7 @@ function LoadingOverlay({ bg }: any ) {
       bg={bg}
     >
       <Spinner />
+      {children}
     </Box>
   );
 }

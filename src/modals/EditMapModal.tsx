@@ -1,59 +1,35 @@
-import { useEffect, useState } from "react";
-import { Button, Flex, Label } from "theme-ui";
+import { useState } from "react";
+import { Button, Flex, Label, useThemeUI } from "theme-ui";
+import SimpleBar from "simplebar-react";
 
 import Modal from "../components/Modal";
 import MapSettings from "../components/map/MapSettings";
 import MapEditor from "../components/map/MapEditor";
-import LoadingOverlay from "../components/LoadingOverlay";
-
-import { useMapData } from "../contexts/MapDataContext";
 
 import { isEmpty } from "../helpers/shared";
 import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
-import { MapState } from "../components/map/Map";
+import { Map, MapState } from "../components/map/Map";
 
 type EditMapProps = {
-  isOpen: boolean,
-  onDone: any,
-  mapId: string
-}
+  isOpen: boolean;
+  onDone: () => void;
+  map: Map;
+  mapState: MapState;
+  onUpdateMap: (id: string, update: Partial<Map>) => void;
+  onUpdateMapState: (id: string, update: Partial<MapState>) => void;
+};
 
-function EditMapModal({ isOpen, onDone, mapId }: EditMapProps) {
-  const {
-    updateMap,
-    updateMapState,
-    getMap,
-    getMapFromDB,
-    getMapStateFromDB,
-  } = useMapData();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [map, setMap] = useState<any>();
-  const [mapState, setMapState] = useState<MapState>();
-  // Load full map when modal is opened
-  useEffect(() => {
-    async function loadMap() {
-      setIsLoading(true);
-      let loadingMap = getMap(mapId);
-      // Ensure file is loaded for map
-      if (loadingMap?.type === "file" && !loadingMap?.file) {
-        loadingMap = await getMapFromDB(mapId);
-      }
-      const mapState = await getMapStateFromDB(mapId);
-      setMap(loadingMap);
-      setMapState(mapState as MapState);
-      setIsLoading(false);
-    }
-
-    if (isOpen && mapId) {
-      loadMap();
-    } else {
-      setMap(undefined);
-      setMapState(undefined);
-    }
-  }, [isOpen, mapId, getMapFromDB, getMapStateFromDB, getMap]);
+function EditMapModal({
+  isOpen,
+  onDone,
+  map,
+  mapState,
+  onUpdateMap,
+  onUpdateMapState,
+}: EditMapProps) {
+  const { theme } = useThemeUI();
 
   function handleClose() {
     setMapSettingChanges({});
@@ -119,8 +95,8 @@ function EditMapModal({ isOpen, onDone, mapId }: EditMapProps) {
           }
         }
       }
-      await updateMap(map.id, mapSettingChanges);
-      await updateMapState(map.id, mapStateSettingChanges);
+      await onUpdateMap(map.id, mapSettingChanges);
+      await onUpdateMapState(map.id, mapStateSettingChanges);
 
       setMapSettingChanges({});
       setMapStateSettingChanges({});
@@ -136,50 +112,58 @@ function EditMapModal({ isOpen, onDone, mapId }: EditMapProps) {
     ...mapStateSettingChanges,
   };
 
-  const [showMoreSettings, setShowMoreSettings] = useState(true);
-
   const layout = useResponsiveLayout();
+
+  if (!map) {
+    return null;
+  }
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={handleClose}
-      style={{ content: {maxWidth: layout.modalSize, width: "calc(100% - 16px)"} }}
+      style={{
+        content: {
+          maxWidth: layout.modalSize,
+          width: "calc(100% - 16px)",
+          padding: 0,
+          display: "flex",
+          overflow: "hidden",
+        },
+      }}
     >
       <Flex
         sx={{
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        <Label pt={2} pb={1}>
+        <Label pt={2} pb={1} px={3}>
           Edit map
         </Label>
-        {isLoading || !map ? (
-          <Flex
-            sx={{
-              width: "100%",
-              height: layout.screenSize === "large" ? "500px" : "300px",
-              position: "relative",
-            }}
-            bg="muted"
-          >
-            <LoadingOverlay />
-          </Flex>
-        ) : (
+        <SimpleBar
+          style={{
+            minHeight: 0,
+            padding: "16px",
+            backgroundColor: theme.colors.muted,
+            margin: "0 8px",
+            height: "100%",
+          }}
+        >
           <MapEditor
             map={selectedMapWithChanges}
             onSettingsChange={handleMapSettingsChange}
           />
-        )}
-        <MapSettings
-          map={selectedMapWithChanges}
-          mapState={selectedMapStateWithChanges}
-          onSettingsChange={handleMapSettingsChange}
-          onStateSettingsChange={handleMapStateSettingsChange}
-          showMore={showMoreSettings}
-          onShowMoreChange={setShowMoreSettings}
-        />
-        <Button onClick={handleSave}>Save</Button>
+          <MapSettings
+            map={selectedMapWithChanges}
+            mapState={selectedMapStateWithChanges}
+            onSettingsChange={handleMapSettingsChange}
+            onStateSettingsChange={handleMapStateSettingsChange}
+          />
+        </SimpleBar>
+        <Button m={3} onClick={handleSave}>
+          Save
+        </Button>
       </Flex>
     </Modal>
   );

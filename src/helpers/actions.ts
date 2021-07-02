@@ -42,3 +42,11 @@ export function addPolygonIntersectionToShapes(shape: any, intersection: any, sh
     };
   }
 }
+
+export function shapeToGeometry(shape) {
+  const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
+  const shapeHoles = shape.data.holes.map((hole) =>
+    hole.map(({ x, y }) => [x, y])
+  );
+  return [[shapePoints, ...shapeHoles]];
+}

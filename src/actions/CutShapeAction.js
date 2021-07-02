@@ -4,27 +4,25 @@ import Action from "./Action";
 import {
   addPolygonDifferenceToShapes,
   addPolygonIntersectionToShapes,
+  shapeToGeometry,
 } from "../helpers/actions";
 
 class CutShapeAction extends Action {
   constructor(shapes) {
     super();
     this.update = (shapesById) => {
-      const actionGeom = shapes.map((actionShape) => [
-        actionShape.data.points.map(({ x, y }) => [x, y]),
-      ]);
+      let actionGeom = shapes.map(shapeToGeometry);
       let cutShapes = {};
       for (let shape of Object.values(shapesById)) {
-        const shapePoints = shape.data.points.map(({ x, y }) => [x, y]);
-        const shapeHoles = shape.data.holes.map((hole) =>
-          hole.map(({ x, y }) => [x, y])
-        );
-        let shapeGeom = [[shapePoints, ...shapeHoles]];
+        const shapeGeom = shapeToGeometry(shape);
         try {
-          const difference = polygonClipping.difference(shapeGeom, actionGeom);
+          const difference = polygonClipping.difference(
+            shapeGeom,
+            ...actionGeom
+          );
           const intersection = polygonClipping.intersection(
             shapeGeom,
-            actionGeom
+            ...actionGeom
           );
           addPolygonDifferenceToShapes(shape, difference, cutShapes);
           addPolygonIntersectionToShapes(shape, intersection, cutShapes);

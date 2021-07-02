@@ -1,14 +1,14 @@
 import Case from "case";
-import { Map } from "../components/map/Map";
+import { Map, MapState } from "../components/map/Map";
 
-import blankImage from "./Blank Grid 22x22.jpg";
-import grassImage from "./Grass Grid 22x22.jpg";
-import sandImage from "./Sand Grid 22x22.jpg";
-import stoneImage from "./Stone Grid 22x22.jpg";
-import waterImage from "./Water Grid 22x22.jpg";
-import woodImage from "./Wood Grid 22x22.jpg";
+import blankImage from "./Blank.jpg";
+import grassImage from "./Grass.jpg";
+import sandImage from "./Sand.jpg";
+import stoneImage from "./Stone.jpg";
+import waterImage from "./Water.jpg";
+import woodImage from "./Wood.jpg";
 
-import unknownImage from "./Unknown Grid 22x22.jpg";
+import unknownImage from "./Unknown.jpg";
 
 export const mapSources = {
   blank: blankImage,
@@ -19,18 +19,46 @@ export const mapSources = {
   wood: woodImage,
 };
 
-export const maps: Array<Omit<Map, "lastModified" | "created" | "showGrid" | "snapToGrid" | "id" | "owner" | "group" |"file" | "quality" | "resolutions" | "lastUsed" |"thumbnail">> = Object.keys(mapSources).map((key) => ({
-  key,
-  name: Case.capital(key),
-  grid: {
-    size: { x: 22, y: 22 },
-    inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
-    type: "square",
-    measurement: { type: "chebyshev", scale: "5ft" },
-  },
-  width: 1024,
-  height: 1024,
-  type: "default",
-}));
+export function getDefaultMaps(userId: string) : {maps: Map[], mapStates: MapState[]} {
+  const mapKeys = Object.keys(mapSources);
+  let maps = [];
+  let mapStates = [];
+  for (let i = 0; i < mapKeys.length; i++) {
+    const key = mapKeys[i];
+    const name = Case.capital(key);
+    const id = `__default-${name}`;
+    const map = {
+      id,
+      key,
+      name,
+      owner: userId,
+      grid: {
+        size: { x: 22, y: 22 },
+        inset: { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: 1 } },
+        type: "square",
+        measurement: { type: "chebyshev", scale: "5ft" },
+      },
+      width: 1024,
+      height: 1024,
+      type: "default",
+      created: mapKeys.length - i,
+      lastModified: Date.now(),
+      showGrid: key !== "stone",
+      snapToGrid: true,
+      group: "",
+    };
+    maps.push(map);
+    const state = {
+      mapId: id,
+      tokens: {},
+      drawShapes: {},
+      fogShapes: {},
+      editFlags: ["drawing", "tokens", "notes"],
+      notes: {},
+    };
+    mapStates.push(state);
+  }
+  return { maps, mapStates };
+}
 
 export const unknownSource = unknownImage;

@@ -212,7 +212,7 @@ export function getUpdatedShapeData(
       y: data.y,
     });
     const scaled = Vector2.multiply(dif, gridRatio);
-    const distance = Vector2.setLength(scaled);
+    const distance = Vector2.magnitude(scaled);
     return {
       ...data,
       radius: distance,
@@ -234,7 +234,7 @@ export function getUpdatedShapeData(
     const points = data.points;
     const startPixel = Vector2.multiply(points[0], mapSize);
     const dif = Vector2.subtract(brushPositionPixel, startPixel);
-    const length = Vector2.setLength(dif);
+    const length = Vector2.magnitude(dif);
     const direction = Vector2.normalize(dif);
     // Get the angle for a triangle who's width is the same as it's length
     const angle = Math.atan(length / 2 / (length === 0 ? 1 : length));
@@ -257,18 +257,13 @@ export function getUpdatedShapeData(
   }
 }
 
-const defaultSimplifySize = 1 / 100;
 /**
  * Simplify points to a grid size
  * @param {Vector2[]} points
- * @param {Vector2} gridCellSize
- * @param {number} scale
+ * @param {number} tolerance
  */
-export function simplifyPoints(points: Vector2[], gridCellSize: Vector2, scale: number): any {
-  return simplify(
-    points,
-    (Vector2.min(gridCellSize) as number * defaultSimplifySize) / scale
-  );
+export function simplifyPoints(points: Vector2[], tolerance: number): Vector2[] {
+  return simplify(points, tolerance);
 }
 
 /**

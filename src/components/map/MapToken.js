@@ -1,30 +1,29 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "react-spring/konva";
 import useImage from "use-image";
-import Konva from "konva";
 
-import useDebounce from "../../hooks/useDebounce";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useUserId } from "../../contexts/UserIdContext";
 import {
   useSetPreventMapInteraction,
   useMapWidth,
   useMapHeight,
-  useDebouncedStageScale,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
-import { useImageSource } from "../../contexts/ImageSourceContext";
+import { useDataURL } from "../../contexts/AssetsContext";
 
 import TokenStatus from "../token/TokenStatus";
 import TokenLabel from "../token/TokenLabel";
+import TokenOutline from "../token/TokenOutline";
 
-import { tokenSources, unknownSource } from "../../tokens";
+import { Intersection, getScaledOutline } from "../../helpers/token";
+
+import { tokenSources } from "../../tokens";
 
 function MapToken({
-  token,
   tokenState,
   onTokenStateChange,
   onTokenMenuOpen,
@@ -34,34 +33,31 @@ function MapToken({
   fadeOnHover,
   map,
 }) {
-  const { userId } = useAuth();
+  const userId = useUserId();
 
-  const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
   const setPreventMapInteraction = useSetPreventMapInteraction();
 
   const gridCellPixelSize = useGridCellPixelSize();
 
-  const tokenSource = useImageSource(token, tokenSources, unknownSource);
-  const [tokenSourceImage, tokenSourceStatus] = useImage(tokenSource);
-  const [tokenAspectRatio, setTokenAspectRatio] = useState(1);
+  const tokenURL = useDataURL(tokenState, tokenSources);
+  const [tokenImage] = useImage(tokenURL);
 
-  useEffect(() => {
-    if (tokenSourceImage) {
-      setTokenAspectRatio(tokenSourceImage.width / tokenSourceImage.height);
-    }
-  }, [tokenSourceImage]);
+  const tokenAspectRatio = tokenState.width / tokenState.height;
 
   const snapPositionToGrid = useGridSnapping();
 
   function handleDragStart(event) {
     const tokenGroup = event.target;
-    const tokenImage = imageRef.current;
 
-    if (token && token.category === "vehicle") {
-      // Enable hit detection for .intersects() function
-      Konva.hitOnDragEnabled = true;
+    if (tokenState.category === "vehicle") {
+      const tokenIntersection = new Intersection(
+        getScaledOutline(tokenState, tokenWidth, tokenHeight),
+        { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
+        { x: tokenX, y: tokenY },
+        tokenState.rotation
+      );
 
       // Find all other tokens on the map
       const layer = tokenGroup.getLayer();
@@ -70,12 +66,7 @@ function MapToken({
         if (other === tokenGroup) {
           continue;
         }
-        const otherRect = other.getClientRect();
-        const otherCenter = {
-          x: otherRect.x + otherRect.width / 2,
-          y: otherRect.y + otherRect.height / 2,
-        };
-        if (tokenImage.intersects(otherCenter)) {
+        if (tokenIntersection.intersects(other.position())) {
           // Save and restore token position after moving layer
           const position = other.absolutePosition();
           other.moveTo(tokenGroup);
@@ -99,9 +90,7 @@ function MapToken({
     const tokenGroup = event.target;
 
     const mountChanges = {};
-    if (token && token.category === "vehicle") {
-      Konva.hitOnDragEnabled = false;
-
+    if (tokenState.category === "vehicle") {
       const parent = tokenGroup.getParent();
       const mountedTokens = tokenGroup.find(".character");
       for (let mountedToken of mountedTokens) {
@@ -185,33 +174,6 @@ function MapToken({
   const tokenWidth = minCellSize * tokenState.size;
   const tokenHeight = (minCellSize / tokenAspectRatio) * tokenState.size;
 
-  const debouncedStageScale = useDebounce(stageScale, 50);
-  const imageRef = useRef();
-  useEffect(() => {
-    const image = imageRef.current;
-    if (!image) {
-      return;
-    }
-
-    const canvas = image.getCanvas();
-    const pixelRatio = canvas.pixelRatio || 1;
-
-    if (tokenSourceStatus === "loaded" && tokenWidth > 0 && tokenHeight > 0) {
-      const maxImageSize = token ? Math.max(token.width, token.height) : 512; // Default to 512px
-      const maxTokenSize = Math.max(tokenWidth, tokenHeight);
-      // Constrain image buffer to original image size
-      const maxRatio = maxImageSize / maxTokenSize;
-
-      image.cache({
-        pixelRatio: Math.min(
-          Math.max(debouncedStageScale * pixelRatio, 1),
-          maxRatio
-        ),
-      });
-      image.drawHitFromCache();
-    }
-  }, [debouncedStageScale, tokenWidth, tokenHeight, tokenSourceStatus, token]);
-
   // Animate to new token positions if edited by others
   const tokenX = tokenState.x * mapWidth;
   const tokenY = tokenState.y * mapHeight;
@@ -232,8 +194,8 @@ function MapToken({
 
   // Token name is used by on click to find whether a token is a vehicle or prop
   let tokenName = "";
-  if (token) {
-    tokenName = token.category;
+  if (tokenState) {
+    tokenName = tokenState.category;
   }
   if (tokenState && tokenState.locked) {
     tokenName = tokenName + "-locked";
@@ -260,28 +222,46 @@ function MapToken({
       name={tokenName}
       id={tokenState.id}
     >
-      <KonvaImage
-        ref={imageRef}
+      <Group
         width={tokenWidth}
         height={tokenHeight}
         x={0}
         y={0}
-        image={tokenSourceImage}
         rotation={tokenState.rotation}
         offsetX={tokenWidth / 2}
         offsetY={tokenHeight / 2}
+      >
+        <TokenOutline
+          outline={getScaledOutline(tokenState, tokenWidth, tokenHeight)}
+          hidden={!!tokenImage}
+        />
+      </Group>
+      <KonvaImage
+        width={tokenWidth}
+        height={tokenHeight}
+        x={0}
+        y={0}
+        image={tokenImage}
+        rotation={tokenState.rotation}
+        offsetX={tokenWidth / 2}
+        offsetY={tokenHeight / 2}
+        hitFunc={() => {}}
       />
       <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
-        <TokenStatus
-          tokenState={tokenState}
-          width={tokenWidth}
-          height={tokenHeight}
-        />
-        <TokenLabel
-          tokenState={tokenState}
-          width={tokenWidth}
-          height={tokenHeight}
-        />
+        {tokenState.statuses?.length > 0 ? (
+          <TokenStatus
+            tokenState={tokenState}
+            width={tokenWidth}
+            height={tokenHeight}
+          />
+        ) : null}
+        {tokenState.label ? (
+          <TokenLabel
+            tokenState={tokenState}
+            width={tokenWidth}
+            height={tokenHeight}
+          />
+        ) : null}
       </Group>
     </animated.Group>
   );

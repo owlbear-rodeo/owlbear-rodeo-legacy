@@ -9,7 +9,7 @@ import {
 import ReactMarkdown from "react-markdown";
 
 function Paragraph(props) {
-  return <Text variant="body2" {...props} />;
+  return <Text as="p" my={2} variant="body2" {...props} />;
 }
 
 function Heading({ level, ...props }) {
@@ -27,6 +27,9 @@ function Heading({ level, ...props }) {
 }
 
 function Image(props) {
+  if (props.alt === "embed:") {
+    return <Embed as="span" sx={{ display: "block" }} src={props.src} my={2} />;
+  }
   if (props.src.endsWith(".mp4")) {
     return (
       <video
@@ -125,12 +128,7 @@ function TableCell({ children }) {
 }
 
 function Link({ href, children }) {
-  const linkText = children[0].props.value;
-  if (linkText === "embed:") {
-    return <Embed src={href} my={2} />;
-  } else {
-    return <UILink href={href}>{children}</UILink>;
-  }
+  return <UILink href={href}>{children}</UILink>;
 }
 
 function Markdown({ source, assets }) {
@@ -151,7 +149,7 @@ function Markdown({ source, assets }) {
     <ReactMarkdown
       source={source}
       renderers={renderers}
-      transformImageUri={(uri) => assets[uri]}
+      transformImageUri={(uri) => assets[uri] || uri}
     />
   );
 }

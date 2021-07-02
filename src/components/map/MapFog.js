@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import shortid from "shortid";
-import { Group, Rect, Line } from "react-konva";
+import { Group, Line } from "react-konva";
 import useImage from "use-image";
+import Color from "color";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
@@ -37,8 +38,10 @@ import {
   Tick,
   getRelativePointerPosition,
 } from "../../helpers/konva";
+import { keyBy } from "../../helpers/shared";
 
 import SubtractShapeAction from "../../actions/SubtractShapeAction";
+import CutShapeAction from "../../actions/CutShapeAction";
 
 import useSetting from "../../hooks/useSetting";
 
@@ -51,6 +54,7 @@ function MapFog({
   onShapesCut,
   onShapesRemove,
   onShapesEdit,
+  onShapeError,
   active,
   toolSettings,
   editable,
@@ -175,8 +179,7 @@ function MapFog({
           }
           const simplified = simplifyPoints(
             [...prevPoints, brushPosition],
-            gridCellNormalizedSize,
-            stageScale / 4
+            1 / 1000 / stageScale
           );
           return {
             ...prevShape,
@@ -214,6 +217,8 @@ function MapFog({
       ) {
         const cut = toolSettings.useFogCut;
         let drawingShapes = [drawingShape];
+
+        // Filter out hidden or visible shapes if single layer enabled
         if (!toolSettings.multilayer) {
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
@@ -228,22 +233,32 @@ function MapFog({
         }
 
         if (drawingShapes.length > 0) {
-          drawingShapes = drawingShapes.map((shape) => {
-            if (cut) {
-              return {
-                id: shape.id,
-                type: shape.type,
-                data: shape.data,
-              };
-            } else {
-              return { ...shape, color: "black" };
-            }
-          });
-
           if (cut) {
-            onShapesCut(drawingShapes);
+            // Run a pre-emptive cut action to check whether we've cut anything
+            const cutAction = new CutShapeAction(drawingShapes);
+            const state = cutAction.execute(keyBy(shapes, "id"));
+
+            if (Object.keys(state).length === shapes.length) {
+              onShapeError("No fog to cut");
+            } else {
+              onShapesCut(
+                drawingShapes.map((shape) => ({
+                  id: shape.id,
+                  type: shape.type,
+                  data: shape.data,
+                }))
+              );
+            }
           } else {
-            onShapesAdd(drawingShapes);
+            onShapesAdd(
+              drawingShapes.map((shape) => ({ ...shape, color: "black" }))
+            );
+          }
+        } else {
+          if (cut) {
+            onShapeError("Fog already cut");
+          } else {
+            onShapeError("Fog already placed");
           }
         }
         setDrawingShape(null);
@@ -373,6 +388,7 @@ function MapFog({
     };
 
     let polygonShapes = [polygonShape];
+    // Filter out hidden or visible shapes if single layer enabled
     if (!toolSettings.multilayer) {
       const shapesToSubtract = shapes.filter((shape) =>
         cut ? !shape.visible : shape.visible
@@ -388,7 +404,15 @@ function MapFog({
 
     if (polygonShapes.length > 0) {
       if (cut) {
-        onShapesCut(polygonShapes);
+        // Run a pre-emptive cut action to check whether we've cut anything
+        const cutAction = new CutShapeAction(polygonShapes);
+        const state = cutAction.execute(keyBy(shapes, "id"));
+
+        if (Object.keys(state).length === shapes.length) {
+          onShapeError("No fog to cut");
+        } else {
+          onShapesCut(polygonShapes);
+        }
       } else {
         onShapesAdd(
           polygonShapes.map((shape) => ({
@@ -399,10 +423,23 @@ function MapFog({
           }))
         );
       }
+    } else {
+      if (cut) {
+        onShapeError("Fog already cut");
+      } else {
+        onShapeError("Fog already placed");
+      }
     }
 
     setDrawingShape(null);
-  }, [toolSettings, drawingShape, onShapesCut, onShapesAdd, shapes]);
+  }, [
+    toolSettings,
+    drawingShape,
+    onShapesCut,
+    onShapesAdd,
+    onShapeError,
+    shapes,
+  ]);
 
   // Add keyboard shortcuts
   function handleKeyDown(event) {
@@ -489,6 +526,15 @@ function MapFog({
     const holes =
       shape.data.holes &&
       shape.data.holes.map((hole) => hole.reduce(reducePoints, []));
+    const opacity = editable ? editOpacity : 1;
+    // Control opacity only on fill as using opacity with stroke leads to performance issues
+    const fill = new Color(colors[shape.color] || shape.color)
+      .alpha(opacity)
+      .string();
+    const stroke =
+      editable && active
+        ? colors.lightGray
+        : colors[shape.color] || shape.color;
     return (
       <HoleyLine
         key={shape.id}
@@ -499,19 +545,12 @@ function MapFog({
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
         points={points}
-        stroke={
-          editable && active
-            ? colors.lightGray
-            : colors[shape.color] || shape.color
-        }
-        fill={colors[shape.color] || shape.color}
+        stroke={stroke}
+        fill={fill}
         closed
         lineCap="round"
         lineJoin="round"
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
-        opacity={
-          editable ? (!shape.visible ? editOpacity / 2 : editOpacity) : 1
-        }
         fillPatternImage={patternImage}
         fillPriority={editable && !shape.visible ? "pattern" : "color"}
         holes={holes}
@@ -590,15 +629,9 @@ function MapFog({
     }
   }, [shapes, editable, active, toolSettings, shouldRenderGuides]);
 
-  const fogGroupRef = useRef();
-
   return (
     <Group>
-      <Group ref={fogGroupRef}>
-        {/* Render a blank shape so cache works with no fog shapes */}
-        <Rect width={1} height={1} />
-        {fogShapes.map(renderShape)}
-      </Group>
+      <Group>{fogShapes.map(renderShape)}</Group>
       {shouldRenderGuides && renderGuides()}
       {drawingShape && renderShape(drawingShape)}
       {drawingShape &&

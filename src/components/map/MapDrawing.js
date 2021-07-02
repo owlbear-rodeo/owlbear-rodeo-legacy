@@ -119,8 +119,7 @@ function MapDrawing({
             }
             const simplified = simplifyPoints(
               [...prevPoints, brushPosition],
-              gridCellNormalizedSize,
-              stageScale
+              1 / 1000 / stageScale
             );
             return {
               ...prevShape,

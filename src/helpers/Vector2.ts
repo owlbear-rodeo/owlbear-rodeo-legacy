@@ -520,6 +520,66 @@ class Vector2 {
       return { x: -p.y, y: p.x };
     }
   }
+
+  /**
+   * Returns the centroid of the given points
+   * @param {Vector2[]} points
+   * @returns {Vector2}
+   */
+  static centroid(points) {
+    let center = { x: 0, y: 0 };
+    for (let point of points) {
+      center.x += point.x;
+      center.y += point.y;
+    }
+    if (points.length > 0) {
+      center = { x: center.x / points.length, y: center.y / points.length };
+    }
+    return center;
+  }
+
+  /**
+   * Determine whether given points are rectangular
+   * @param {Vector2[]} points
+   * @returns {boolean}
+   */
+  static rectangular(points) {
+    if (points.length !== 4) {
+      return false;
+    }
+    // Check whether distance to the center is the same for all four points
+    const centroid = this.centroid(points);
+    let prevDist;
+    for (let point of points) {
+      const dist = this.distance(point, centroid);
+      if (prevDist && dist !== prevDist) {
+        return false;
+      } else {
+        prevDist = dist;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Determine whether given points are circular
+   * @param {Vector2[]} points
+   * @returns {boolean}
+   */
+  static circular(points, threshold = 0.1) {
+    const centroid = this.centroid(points);
+    let distances = [];
+    for (let point of points) {
+      distances.push(this.distance(point, centroid));
+    }
+    if (distances.length > 0) {
+      const maxDistance = Math.max(...distances);
+      const minDistance = Math.min(...distances);
+      return maxDistance - minDistance < threshold;
+    } else {
+      return false;
+    }
+  }
 }
 
 export default Vector2;

@@ -83,47 +83,59 @@ function getDefaultTokenSize(key: string) {
 
 type TokenCategory = "character" | "vehicle" | "prop"
 
-export type Token = {
+export type BaseToken = {
   id: string,
   name: string,
   defaultSize: number, 
-  category: TokenCategory, 
+  defaultCategory: TokenCategory, 
+  defaultLabel: string,
   hideInSidebar: boolean, 
   width: number,
   height: number, 
   owner: string,
-  type: string,
-  group: string | undefined,
   created: number,
   lastModified: number,
   lastUsed: number,
 }
 
-export interface DefaultToken extends Omit<Token, "id" | "owner" | "created" | "lastModified" | "lastUsed"> {
-  id?: string,
-  owner?: string,
-  created?: number,
-  lastModified?: number,
-  lastUsed?: number,
+export interface DefaultToken extends BaseToken {
   key: string,
   type: "default",
-  group: "default",
 }
-export interface FileToken extends Token {
+
+export interface FileToken extends BaseToken {
   file: Uint8Array,
   thumbnail: ImageFile,
   type: "file",
 }
-export const tokens: DefaultToken[] = Object.keys(tokenSources).map((key) => ({
-  key,
-  name: Case.capital(key),
-  type: "default",
-  defaultSize: getDefaultTokenSize(key),
-  category: "character",
-  hideInSidebar: false,
-  width: 256,
-  height: 256,
-  group: "default",
-}));
+
+export type Token = DefaultToken | FileToken;
+
+export function getDefaultTokens(userId: string) {
+  const tokenKeys = Object.keys(tokenSources);
+  let tokens = [];
+  for (let i = 0; i < tokenKeys.length; i++) {
+    const key = tokenKeys[i];
+    const name = Case.capital(key);
+    const token = {
+      key,
+      name,
+      id: `__default-${name}`,
+      type: "default",
+      defaultSize: getDefaultTokenSize(key),
+      defaultLabel: "",
+      defaultCategory: "character",
+      hideInSidebar: false,
+      width: 256,
+      height: 256,
+      outline: { type: "circle", x: 128, y: 128, radius: 128 },
+      owner: userId,
+      created: tokenKeys.length - i,
+      lastModified: Date.now(),
+    };
+    tokens.push(token);
+  }
+  return tokens;
+}
 
 export const unknownSource = unknown;

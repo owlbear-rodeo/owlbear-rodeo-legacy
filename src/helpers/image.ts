@@ -1,4 +1,7 @@
+import imageOutline from "image-outline";
+
 import blobToBuffer from "./blobToBuffer";
+import Vector2 from "./Vector2";
 
 const lightnessDetectionOffset = 0.1;
 
@@ -101,12 +104,11 @@ export async function resizeImage(image: HTMLImageElement, size: number, type: s
 }
 
 /**
- * @typedef ImageFile
- * @property {Uint8Array|null} file
+ * @typedef ImageAsset
  * @property {number} width
  * @property {number} height
- * @property {"file"} type
- * @property {string} id
+ * @property {Uint8Array} file
+ * @property {string} mime
  */
 
 export type ImageFile = {
@@ -122,7 +124,7 @@ export type ImageFile = {
  * @param {string} type the mime type of the image
  * @param {number} size the width and height of the thumbnail
  * @param {number} quality if image is a jpeg or webp this is the quality setting
- * @returns {Promise<ImageFile>}
+ * @returns {Promise<ImageAsset>}
  */
 export async function createThumbnail(image: HTMLImageElement, type: string, size = 300, quality = 0.5): Promise<ImageFile> {
   let canvas = document.createElement("canvas");
@@ -174,7 +176,101 @@ export async function createThumbnail(image: HTMLImageElement, type: string, siz
     file: thumbnailBuffer,
     width: thumbnailImage.width,
     height: thumbnailImage.height,
-    type: "file",
-    id: "thumbnail",
+    mime: type,
   };
+}
+
+/**
+ * @typedef CircleOutline
+ * @property {"circle"} type
+ * @property {number} x - Center X of the circle
+ * @property {number} y - Center Y of the circle
+ * @property {number} radius
+ */
+
+/**
+ * @typedef RectOutline
+ * @property {"rect"} type
+ * @property {number} width
+ * @property {number} height
+ * @property {number} x - Leftmost X position of the rect
+ * @property {number} y - Topmost Y position of the rect
+ */
+
+/**
+ * @typedef PathOutline
+ * @property {"path"} type
+ * @property {number[]} points - Alternating x, y coordinates zipped together
+ */
+
+/**
+ * @typedef {CircleOutline|RectOutline|PathOutline} Outline
+ */
+
+/**
+ * Get the outline of an image
+ * @param {HTMLImageElement} image
+ * @returns {Outline}
+ */
+export function getImageOutline(image, maxPoints = 100) {
+  // Basic rect outline for fail conditions
+  const defaultOutline = {
+    type: "rect",
+    x: 0,
+    y: 0,
+    width: image.width,
+    height: image.height,
+  };
+  try {
+    let outlinePoints = imageOutline(image, {
+      opacityThreshold: 1, // Allow everything except full transparency
+    });
+
+    if (outlinePoints) {
+      if (outlinePoints.length > maxPoints) {
+        outlinePoints = Vector2.resample(outlinePoints, maxPoints);
+      }
+      const bounds = Vector2.getBoundingBox(outlinePoints);
+
+      // Reject outline if it's area is less than 5% of the image
+      const imageArea = image.width * image.height;
+      const area = bounds.width * bounds.height;
+      if (area < imageArea * 0.05) {
+        return defaultOutline;
+      }
+
+      // Detect if the outline is a rectangle or circle
+      if (Vector2.rectangular(outlinePoints)) {
+        return {
+          type: "rect",
+          x: Math.round(bounds.min.x),
+          y: Math.round(bounds.min.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      } else if (
+        Vector2.circular(
+          outlinePoints,
+          Math.max(bounds.width / 10, bounds.height / 10)
+        )
+      ) {
+        return {
+          type: "circle",
+          x: Math.round(bounds.center.x),
+          y: Math.round(bounds.center.y),
+          radius: Math.round(Math.min(bounds.width, bounds.height) / 2),
+        };
+      } else {
+        // Flatten and round outline to save on storage size
+        const points = outlinePoints
+          .map(({ x, y }) => [Math.round(x), Math.round(y)])
+          .flat();
+        return { type: "path", points };
+      }
+    } else {
+      return defaultOutline;
+    }
+  } catch {
+    return defaultOutline;
+  }
 }

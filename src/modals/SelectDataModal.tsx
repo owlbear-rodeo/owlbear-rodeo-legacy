@@ -1,20 +1,29 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { Box, Label, Flex, Button, Text, Checkbox, Divider } from "theme-ui";
+import React, { useEffect, useState } from "react";
+import { Box, Label, Flex, Button, Text, Checkbox } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
+import Divider from "../components/Divider";
 
 import { getDatabase } from "../database";
-import { Props } from "react-modal";
 
-type SelectDataProps = Props & {
-  onConfirm: any,
-  confirmText: string,
-  label: string,
-  databaseName: string,
-  filter: any,
-}
+type SelectDataProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onConfirm: any;
+  confirmText: string;
+  label: string;
+  databaseName: string;
+  filter: any;
+};
+
+type SelectData = {
+  name: string;
+  id: string;
+  type: "default" | "file";
+  checked: boolean;
+};
 
 function SelectDataModal({
   isOpen,
@@ -25,9 +34,13 @@ function SelectDataModal({
   databaseName,
   filter,
 }: SelectDataProps) {
-  const [maps, setMaps] = useState<any>({});
-  const [tokensByMap, setTokensByMap] = useState<any>({});
-  const [tokens, setTokens] = useState<any>({});
+  const [maps, setMaps] = useState<Record<string, SelectData>>({});
+  const [mapGroups, setMapGroups] = useState<any[]>([]);
+  const [tokensByMap, setTokensByMap] = useState<Record<string, Set<string>>>(
+    {}
+  );
+  const [tokens, setTokens] = useState<Record<string, SelectData>>({});
+  const [tokenGroups, setTokenGroups] = useState<any[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const hasMaps = Object.values(maps).length > 0;
@@ -38,14 +51,19 @@ function SelectDataModal({
       if (isOpen && databaseName) {
         setIsLoading(true);
         const db = getDatabase({ addons: [] }, databaseName);
-        let loadedMaps: any = [];
-        let loadedTokensByMap: any = {};
-        let loadedTokens: any = [];
+        let loadedMaps: Record<string, SelectData> = {};
+        let loadedTokensByMap: Record<string, Set<string>> = {};
+        let loadedTokens: Record<string, SelectData> = {};
         await db
           .table("maps")
           .filter((map) => filter("maps", map, map.id))
           .each((map) => {
-            loadedMaps[map.id] = { name: map.name, id: map.id, checked: true };
+            loadedMaps[map.id] = {
+              name: map.name,
+              id: map.id,
+              type: map.type,
+              checked: true,
+            };
           });
         await db
           .table("states")
@@ -65,17 +83,27 @@ function SelectDataModal({
             loadedTokens[token.id] = {
               name: token.name,
               id: token.id,
+              type: token.type,
               checked: true,
             };
           });
+
+        const mapGroup = await db.table("groups").get("maps");
+        const tokenGroup = await db.table("groups").get("tokens");
+
         db.close();
         setMaps(loadedMaps);
+        setMapGroups(mapGroup.items);
         setTokensByMap(loadedTokensByMap);
+        setTokenGroups(tokenGroup.items);
         setTokens(loadedTokens);
         setIsLoading(false);
       } else {
         setMaps({});
         setTokens({});
+        setTokenGroups([]);
+        setMapGroups([]);
+        setTokensByMap({});
       }
     }
     loadData();
@@ -101,7 +129,7 @@ function SelectDataModal({
     setTokens((prevTokens: any) => {
       let newTokens = { ...prevTokens };
       for (let id in newTokens) {
-        if (id in tokensUsed) {
+        if (id in tokensUsed && newTokens[id].type !== "default") {
           newTokens[id].checked = true;
         }
       }
@@ -109,17 +137,45 @@ function SelectDataModal({
     });
   }, [maps, tokensByMap]);
 
-  function handleConfirm() {
-    let checkedMaps = Object.values(maps).filter((map: any) => map.checked);
-    let checkedTokens = Object.values(tokens).filter((token: any) => token.checked);
-    onConfirm(checkedMaps, checkedTokens);
+  function getCheckedGroups(groups: any[], data: Record<string, SelectData>) {
+    let checkedGroups = [];
+    for (let group of groups) {
+      if (group.type === "item") {
+        if (data[group.id] && data[group.id].checked) {
+          checkedGroups.push(group);
+        }
+      } else {
+        let items = [];
+        for (let item of group.items) {
+          if (data[item.id] && data[item.id].checked) {
+            items.push(item);
+          }
+        }
+        if (items.length > 0) {
+          checkedGroups.push({ ...group, items });
+        }
+      }
+    }
+    return checkedGroups;
   }
 
-  function handleSelectMapsChanged(event: ChangeEvent<HTMLInputElement>) {
-    setMaps((prevMaps: any) => {
+  function handleConfirm() {
+    let checkedMaps = Object.values(maps).filter((map) => map.checked);
+    let checkedTokens = Object.values(tokens).filter((token) => token.checked);
+    let checkedMapGroups = getCheckedGroups(mapGroups, maps);
+    let checkedTokenGroups = getCheckedGroups(tokenGroups, tokens);
+
+    onConfirm(checkedMaps, checkedTokens, checkedMapGroups, checkedTokenGroups);
+  }
+
+  function handleMapsChanged(
+    event: React.ChangeEvent<HTMLInputElement>,
+    maps: SelectData[]
+  ) {
+    setMaps((prevMaps) => {
       let newMaps = { ...prevMaps };
-      for (let id in newMaps) {
-        newMaps[id].checked = event.target.checked;
+      for (let map of maps) {
+        newMaps[map.id].checked = event.target.checked;
       }
       return newMaps;
     });
@@ -127,26 +183,17 @@ function SelectDataModal({
     if (!event.target.checked && !tokensSelectChecked) {
       setTokens((prevTokens: any) => {
         let newTokens = { ...prevTokens };
+        let tempUsedCount = { ...tokenUsedCount };
         for (let id in newTokens) {
-          newTokens[id].checked = false;
-        }
-        return newTokens;
-      });
-    }
-  }
-
-  function handleMapChange(event: ChangeEvent<HTMLInputElement>, map: any) {
-    setMaps((prevMaps: any) => ({
-      ...prevMaps,
-      [map.id]: { ...map, checked: event.target.checked },
-    }));
-    // If all token select is unchecked then ensure tokens assosiated to this map are unchecked
-    if (!event.target.checked && !tokensSelectChecked) {
-      setTokens((prevTokens: any) => {
-        let newTokens = { ...prevTokens };
-        for (let id in newTokens) {
-          if (tokensByMap[map.id].has(id) && tokenUsedCount[id] === 1) {
-            newTokens[id].checked = false;
+          for (let map of maps) {
+            if (tokensByMap[map.id].has(id)) {
+              if (tempUsedCount[id] > 1) {
+                tempUsedCount[id] -= 1;
+              } else if (tempUsedCount[id] === 1) {
+                tempUsedCount[id] = 0;
+                newTokens[id].checked = false;
+              }
+            }
           }
         }
         return newTokens;
@@ -154,36 +201,164 @@ function SelectDataModal({
     }
   }
 
-  function handleSelectTokensChange(event: ChangeEvent<HTMLInputElement>) {
-    setTokens((prevTokens: any) => {
+  function handleTokensChanged(
+    event: React.ChangeEvent<HTMLInputElement>,
+    tokens: SelectData[]
+  ) {
+    setTokens((prevTokens) => {
       let newTokens = { ...prevTokens };
-      for (let id in newTokens) {
-        if (!(id in tokenUsedCount)) {
-          newTokens[id].checked = event.target.checked;
+      for (let token of tokens) {
+        if (!(token.id in tokenUsedCount) || token.type === "default") {
+          newTokens[token.id].checked = event.target.checked;
         }
       }
       return newTokens;
     });
   }
 
-  function handleTokenChange(event: ChangeEvent<HTMLInputElement>, token: any) {
-    setTokens((prevTokens: any) => ({
-      ...prevTokens,
-      [token.id]: { ...token, checked: event.target.checked },
-    }));
-  }
-
   // Some tokens are checked not by maps or all tokens are checked by maps
   const tokensSelectChecked =
     Object.values(tokens).some(
       (token: any) => !(token.id in tokenUsedCount) && token.checked
-    ) || Object.values(tokens).every((token: any) => token.id in tokenUsedCount);
+    ) ||
+    Object.values(tokens).every((token: any) => token.id in tokenUsedCount);
+
+  function renderGroupContainer(
+    group: any,
+    checked: boolean,
+    renderItem: (group: any) => React.ReactNode,
+    onGroupChange: (
+      event: React.ChangeEvent<HTMLInputElement>,
+      group: any
+    ) => void
+  ) {
+    return (
+      <Flex
+        ml={4}
+        sx={{
+          flexWrap: "wrap",
+          borderRadius: "4px",
+          flexDirection: "column",
+          position: "relative",
+        }}
+        key={group.id}
+      >
+        <Label my={1} sx={{ fontFamily: "body2" }}>
+          <Checkbox
+            checked={checked}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onGroupChange(e, group)
+            }
+          />
+          {group.name}
+        </Label>
+        <Flex
+          sx={{
+            flexWrap: "wrap",
+            flexDirection: "column",
+            position: "relative",
+          }}
+        >
+          {group.items.map(renderItem)}
+          <Box
+            sx={{ position: "absolute", left: "2px", top: 0, height: "100%" }}
+          >
+            <Divider vertical fill />
+          </Box>
+        </Flex>
+      </Flex>
+    );
+  }
+
+  function renderMapGroup(group: any) {
+    if (group.type === "item") {
+      const map = maps[group.id];
+      if (map) {
+        return (
+          <Label key={map.id} my={1} pl={4} sx={{ fontFamily: "body2" }}>
+            <Checkbox
+              checked={map.checked}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleMapsChanged(e, [map])
+              }
+            />
+            {map.name}
+          </Label>
+        );
+      }
+    } else {
+      if (group.items.some((item: any) => item.id in maps)) {
+        return renderGroupContainer(
+          group,
+          group.items.some((item: any) => maps[item.id]?.checked),
+          renderMapGroup,
+          (e, group) =>
+            handleMapsChanged(
+              e,
+              group.items
+                .filter((group: any) => group.id in maps)
+                .map((group: any) => maps[group.id])
+            )
+        );
+      }
+    }
+  }
+
+  function renderTokenGroup(group: any) {
+    if (group.type === "item") {
+      const token = tokens[group.id];
+      if (token) {
+        return (
+          <Box pl={4} my={1} key={token.id}>
+            <Label sx={{ fontFamily: "body2" }}>
+              <Checkbox
+                checked={token.checked}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleTokensChanged(e, [token])
+                }
+                disabled={
+                  token.type !== "default" && token.id in tokenUsedCount
+                }
+              />
+              {token.name}
+            </Label>
+            {token.id in tokenUsedCount && token.type !== "default" && (
+              <Text as="p" variant="caption" ml={4}>
+                Token used in {tokenUsedCount[token.id]} selected map
+                {tokenUsedCount[token.id] > 1 && "s"}
+              </Text>
+            )}
+          </Box>
+        );
+      }
+    } else {
+      if (group.items.some((item: any) => item.id in tokens)) {
+        const checked =
+          group.items.some(
+            (item: any) =>
+              !(item.id in tokenUsedCount) && tokens[item.id]?.checked
+          ) || group.items.every((item: any) => item.id in tokenUsedCount);
+        return renderGroupContainer(
+          group,
+          checked,
+          renderTokenGroup,
+          (e, group) =>
+            handleTokensChanged(
+              e,
+              group.items
+                .filter((group: any) => group.id in tokens)
+                .map((group: any) => tokens[group.id])
+            )
+        );
+      }
+    }
+  }
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ content: {maxWidth: "450px", width: "100%"} }}
+      style={{ content: { maxWidth: "450px", width: "100%" } }}
     >
       <Box
         sx={{
@@ -214,56 +389,30 @@ function SelectDataModal({
                 <Flex>
                   <Label>
                     <Checkbox
-                      checked={Object.values(maps).some((map: any) => map.checked)}
-                      onChange={handleSelectMapsChanged}
+                      checked={Object.values(maps).some((map) => map.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleMapsChanged(e, Object.values(maps))
+                      }
                     />
                     Maps
                   </Label>
                 </Flex>
-                {Object.values(maps).map((map: any) => (
-                  <Label
-                    key={map.id}
-                    my={1}
-                    pl={4}
-                    sx={{ fontFamily: "body2" }}
-                  >
-                    <Checkbox
-                      checked={map.checked}
-                      onChange={(e) => handleMapChange(e, map)}
-                    />
-                    {map.name}
-                  </Label>
-                ))}
+                {mapGroups.map(renderMapGroup)}
               </>
             )}
-            {hasMaps && hasTokens && <Divider bg="text" />}
+            {hasMaps && hasTokens && <Divider fill />}
             {hasTokens && (
               <>
                 <Label>
                   <Checkbox
                     checked={tokensSelectChecked}
-                    onChange={handleSelectTokensChange}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleTokensChanged(e, Object.values(tokens))
+                    }
                   />
                   Tokens
                 </Label>
-                {Object.values(tokens).map((token: any) => (
-                  <Box pl={4} my={1} key={token.id}>
-                    <Label sx={{ fontFamily: "body2" }}>
-                      <Checkbox
-                        checked={token.checked}
-                        onChange={(e) => handleTokenChange(e, token)}
-                        disabled={token.id in tokenUsedCount}
-                      />
-                      {token.name}
-                    </Label>
-                    {token.id in tokenUsedCount && (
-                      <Text as="p" variant="caption" ml={4}>
-                        Token used in {tokenUsedCount[token.id]} selected map
-                        {tokenUsedCount[token.id] > 1 && "s"}
-                      </Text>
-                    )}
-                  </Box>
-                ))}
+                {tokenGroups.map(renderTokenGroup)}
               </>
             )}
           </Flex>
