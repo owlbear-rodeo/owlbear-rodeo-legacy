@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
-import { useSpring, animated } from "react-spring/konva";
+import { useSpring, animated } from "@react-spring/konva";
 import useImage from "use-image";
 
 import usePrevious from "../../hooks/usePrevious";
