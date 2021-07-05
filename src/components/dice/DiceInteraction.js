@@ -40,7 +40,10 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
       const scene = new Scene(engine);
       scene.clearColor = new Color4(0, 0, 0, 0);
       // Enable physics
-      scene.enablePhysics(new Vector3(0, -98, 0), new AmmoJSPlugin(true, AMMO));
+      scene.enablePhysics(
+        new Vector3(0, -98, 0),
+        new AmmoJSPlugin(false, AMMO)
+      );
 
       let camera = new TargetCamera("camera", new Vector3(0, 33.5, 0), scene);
       camera.fov = 0.65;
@@ -67,13 +70,14 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
           const delta = newPosition.subtract(currentPosition);
           selectedMesh.setAbsolutePosition(newPosition);
           const velocity = delta.scale(1000 / scene.deltaTime);
-          selectedMeshVelocityWindowRef.current = selectedMeshVelocityWindowRef.current.slice(
-            Math.max(
-              selectedMeshVelocityWindowRef.current.length -
-                selectedMeshVelocityWindowSize,
-              0
-            )
-          );
+          selectedMeshVelocityWindowRef.current =
+            selectedMeshVelocityWindowRef.current.slice(
+              Math.max(
+                selectedMeshVelocityWindowRef.current.length -
+                  selectedMeshVelocityWindowSize,
+                0
+              )
+            );
           selectedMeshVelocityWindowRef.current.push(velocity);
         }
       });
