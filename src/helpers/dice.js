@@ -18,7 +18,11 @@ export function getDiceInstanceRoll(instance) {
       highestLocator = locator;
     }
   }
-  return parseInt(highestLocator.name.slice(12));
+  if (highestLocator) {
+    return parseInt(highestLocator.name.slice(12));
+  } else {
+    return 0;
+  }
 }
 
 /**
