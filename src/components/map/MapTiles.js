@@ -11,12 +11,8 @@ import { getGroupItems } from "../../helpers/group";
 import { useGroup } from "../../contexts/GroupContext";
 
 function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
-  const {
-    selectedGroupIds,
-    selectMode,
-    onGroupOpen,
-    onGroupSelect,
-  } = useGroup();
+  const { selectedGroupIds, selectMode, onGroupOpen, onGroupSelect } =
+    useGroup();
 
   function renderTile(group) {
     if (group.type === "item") {
@@ -65,5 +61,9 @@ function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
     </>
   );
 }
+
+MapTiles.defaultProps = {
+  subgroup: false,
+};
 
 export default MapTiles;

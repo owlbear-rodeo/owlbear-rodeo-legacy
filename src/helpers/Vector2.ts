@@ -44,10 +44,11 @@ class Vector2 {
   }
 
   /**
+   * Returns the length of vector `p` Note: magnitude to not conflict with native length property
    * @param {Vector2} p
    * @returns {number} Length of `p`
    */
-  static setLength(p: Vector2): number {
+  static magnitude(p: Vector2): number {
     return Math.sqrt(this.lengthSquared(p));
   }
 
@@ -56,7 +57,7 @@ class Vector2 {
    * @returns {Vector2} `p` normalized, if length of `p` is 0 `{x: 0, y: 0}` is returned
    */
   static normalize(p: Vector2): Vector2 {
-    const l = this.setLength(p);
+    const l = this.magnitude(p);
     if (l === 0) {
       return { x: 0, y: 0 };
     }
@@ -271,7 +272,7 @@ class Vector2 {
     const pa = this.subtract(p, a);
     const ba = this.subtract(b, a);
     const h = Math.min(Math.max(this.dot(pa, ba) / this.dot(ba, ba), 0), 1);
-    const distance = this.setLength(this.subtract(pa, this.multiply(ba, h)));
+    const distance = this.magnitude(this.subtract(pa, this.multiply(ba, h)));
     const point = this.add(a, this.multiply(ba, h));
     return { distance, point };
   }
@@ -443,7 +444,7 @@ class Vector2 {
    * @returns {number}
    */
   static distance(a: Vector2, b: Vector2): number {
-    return this.setLength(this.subtract(a, b));
+    return this.magnitude(this.subtract(a, b));
   }
 
   /**

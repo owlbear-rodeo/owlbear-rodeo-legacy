@@ -12,12 +12,8 @@ import { getGroupItems } from "../../helpers/group";
 import { useGroup } from "../../contexts/GroupContext";
 
 function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
-  const {
-    selectedGroupIds,
-    selectMode,
-    onGroupOpen,
-    onGroupSelect,
-  } = useGroup();
+  const { selectedGroupIds, selectMode, onGroupOpen, onGroupSelect } =
+    useGroup();
 
   function renderTile(group) {
     if (group.type === "item") {
@@ -69,5 +65,9 @@ function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
     </>
   );
 }
+
+TokenTiles.defaultProps = {
+  subgroup: false,
+};
 
 export default TokenTiles;

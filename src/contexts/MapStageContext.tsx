@@ -1,8 +1,6 @@
 import React, { useContext } from "react";
 
-const MapStageContext = React.createContext({
-  mapStageRef: { current: null },
-});
+const MapStageContext = React.createContext({ current: null });
 export const MapStageProvider: any = MapStageContext.Provider;
 
 export function useMapStage() {

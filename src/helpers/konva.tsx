@@ -6,7 +6,7 @@ import Color from "color";
 import Vector2 from "./Vector2";
 
 // Holes should be wound in the opposite direction as the containing points array
-export function HoleyLine({ holes, ...props }: { holes: any, props: []}) {
+export function HoleyLine({ holes, ...props }: { holes: any; props: [] }) {
   // Converted from https://github.com/rfestag/konva/blob/master/src/shapes/Line.ts
   function drawLine(points: number[], context: any, shape: any) {
     const length = points.length;
@@ -109,7 +109,19 @@ export function HoleyLine({ holes, ...props }: { holes: any, props: []}) {
   return <Line sceneFunc={sceneFunc} {...props} />;
 }
 
-export function Tick({ x, y, scale, onClick, cross }: { x: any, y: any, scale: any, onClick: any, cross: any}) {
+export function Tick({
+  x,
+  y,
+  scale,
+  onClick,
+  cross,
+}: {
+  x: any;
+  y: any;
+  scale: any;
+  onClick: any;
+  cross: any;
+}) {
   const [fill, setFill] = useState("white");
   function handleEnter() {
     setFill("hsl(260, 100%, 80%)");
@@ -145,10 +157,22 @@ export function Tick({ x, y, scale, onClick, cross }: { x: any, y: any, scale: a
 }
 
 interface TrailPoint extends Vector2 {
-  lifetime: number
+  lifetime: number;
 }
 
-export function Trail({ position, size, duration, segments, color }: { position: Vector2, size: any, duration: number, segments: any, color: string }) {
+export function Trail({
+  position,
+  size,
+  duration,
+  segments,
+  color,
+}: {
+  position: Vector2;
+  size: any;
+  duration: number;
+  segments: any;
+  color: string;
+}) {
   const trailRef: React.MutableRefObject<Konva.Line | undefined> = useRef();
   const pointsRef: React.MutableRefObject<TrailPoint[]> = useRef([]);
   const prevPositionRef = useRef(position);
@@ -259,7 +283,7 @@ export function Trail({ position, size, duration, segments, color }: { position:
     // Create a radial gradient from the center of the trail to the tail
     const gradientCenter = resampledPoints[resampledPoints.length - 1];
     const gradientEnd = resampledPoints[0];
-    const gradientRadius = Vector2.setLength(
+    const gradientRadius = Vector2.magnitude(
       Vector2.subtract(gradientCenter, gradientEnd)
     );
     let gradient = context.createRadialGradient(
@@ -302,7 +326,9 @@ Trail.defaultProps = {
  * @param {Konva.Node} node
  * @returns {Vector2}
  */
-export function getRelativePointerPosition(node: Konva.Node): { x: number, y: number } | undefined {
+export function getRelativePointerPosition(
+  node: Konva.Node
+): { x: number; y: number } | undefined {
   let transform = node.getAbsoluteTransform().copy();
   transform.invert();
   // TODO: handle possible null value
@@ -314,7 +340,9 @@ export function getRelativePointerPosition(node: Konva.Node): { x: number, y: nu
   return transform.point(position);
 }
 
-export function getRelativePointerPositionNormalized(node: Konva.Node): { x: number, y: number } | undefined {
+export function getRelativePointerPositionNormalized(
+  node: Konva.Node
+): { x: number; y: number } | undefined {
   const relativePosition = getRelativePointerPosition(node);
   if (!relativePosition) {
     // TODO: handle possible null value

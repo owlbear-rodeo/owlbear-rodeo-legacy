@@ -31,72 +31,70 @@ import Session from "../../network/Session";
 import { Grid } from "../../helpers/grid";
 import { ImageFile } from "../../helpers/image";
 
-export type Resolutions = Record<string, ImageFile>
+export type Resolutions = Record<string, ImageFile>;
 export type Map = {
-  id: string,
-  name: string,
-  owner: string,
-  file?: Uint8Array,
-  quality?: string,
-  resolutions?: Resolutions,
-  grid: Grid,
-  group: string,
-  width: number,
-  height: number,
-  type: string,
-  lastUsed: number,
-  lastModified: number,
-  created: number,
-  showGrid: boolean,
-  snapToGrid: boolean,
-  thumbnail?: ImageFile,
-}
+  id: string;
+  name: string;
+  owner: string;
+  file?: Uint8Array;
+  quality?: string;
+  resolutions?: Resolutions;
+  grid: Grid;
+  group: string;
+  width: number;
+  height: number;
+  type: string;
+  lastUsed: number;
+  lastModified: number;
+  created: number;
+  showGrid: boolean;
+  snapToGrid: boolean;
+  thumbnail?: ImageFile;
+};
 
 export type Note = {
-  id: string,
-  color: string,
-  lastModified: number,
-  lastModifiedBy: string,
-  locked: boolean,
-  size: number,
-  text: string,
-  textOnly: boolean,
-  visible: boolean,
-  x: number,
-  y: number,
-}
+  id: string;
+  color: string;
+  lastModified: number;
+  lastModifiedBy: string;
+  locked: boolean;
+  size: number;
+  text: string;
+  textOnly: boolean;
+  visible: boolean;
+  x: number;
+  y: number;
+};
 
 export type TokenState = {
-  id: string,
-  tokenId: string,
-  owner: string,
-  size: number,
-  label: string,
-  status: string[],
-  x: number,
-  y: number,
-  lastModifiedBy: string,
-  lastModified: number,
-  rotation: number,
-  locked: boolean,
-  visible: boolean
-}
+  id: string;
+  tokenId: string;
+  owner: string;
+  size: number;
+  category: string;
+  label: string;
+  statuses: string[];
+  x: number;
+  y: number;
+  lastModifiedBy: string;
+  lastModified: number;
+  rotation: number;
+  locked: boolean;
+  visible: boolean;
+  type: "default" | "file";
+  outline: any;
+  width: number;
+  height: number;
+};
 
-interface PathId extends Path {
-  id: string
-}
-
-interface ShapeId extends Shape {
-  id: string
-}
 export type MapState = {
-  tokens: Record<string, TokenState>,
-  drawShapes: PathId | ShapeId, 
-  fogShapes: Fog[],
-  editFlags: ["drawing", "tokens", "notes", "fog"], 
-  notes: Note[], 
-  mapId: string,
-}
+  tokens: Record<string, TokenState>;
+  drawShapes: Record<string, Path | Shape>;
+  fogShapes: Record<string, Fog>;
+  editFlags: ["drawing", "tokens", "notes", "fog"];
+  notes: Record<string, Note>;
+  mapId: string;
+};
 
 function Map({
   map,
@@ -121,34 +119,35 @@ function Map({
   disabledTokens,
   session,
 }: {
-  map: any
-  mapState: MapState
-  mapActions: any,
-  onMapTokenStateChange: any,
-  onMapTokenStateRemove: any,
-  onMapChange: any, 
-  onMapReset: any,
-  onMapDraw: any,
-  onMapDrawUndo: any,
-  onMapDrawRedo: any,
-  onFogDraw: any,
-  onFogDrawUndo: any,
-  onFogDrawRedo: any,
-  onMapNoteChange: any,
-  onMapNoteRemove: any,
-  allowMapDrawing: boolean,
-  allowFogDrawing: boolean,
-  allowMapChange: boolean,
-  allowNoteEditing: boolean,
-  disabledTokens: any,
-  session: Session
+  map: any;
+  mapState: MapState;
+  mapActions: any;
+  onMapTokenStateChange: any;
+  onMapTokenStateRemove: any;
+  onMapChange: any;
+  onMapReset: any;
+  onMapDraw: any;
+  onMapDrawUndo: any;
+  onMapDrawRedo: any;
+  onFogDraw: any;
+  onFogDrawUndo: any;
+  onFogDrawRedo: any;
+  onMapNoteChange: any;
+  onMapNoteRemove: any;
+  allowMapDrawing: boolean;
+  allowFogDrawing: boolean;
+  allowMapChange: boolean;
+  allowNoteEditing: boolean;
+  disabledTokens: any;
+  session: Session;
 }) {
   const { addToast } = useToasts();
 
   const { tokensById } = useTokenData();
 
   const [selectedToolId, setSelectedToolId] = useState("move");
-  const { settings, setSettings }: { settings: any, setSettings: any} = useSettings();
+  const { settings, setSettings }: { settings: any; setSettings: any } =
+    useSettings();
 
   function handleToolSettingChange(tool: any, change: any) {
     setSettings((prevSettings: any) => ({
@@ -224,7 +223,10 @@ function Map({
     disabledControls.push("note");
   }
 
-  const disabledSettings: { fog: any[], drawing: any[]} = { fog: [], drawing: [] };
+  const disabledSettings: { fog: any[]; drawing: any[] } = {
+    fog: [],
+    drawing: [],
+  };
   if (drawShapes.length === 0) {
     disabledSettings.drawing.push("erase");
   }
@@ -263,9 +265,18 @@ function Map({
     />
   );
 
-  const [isTokenMenuOpen, setIsTokenMenuOpen]: [ isTokenMenuOpen: boolean, setIsTokenMenuOpen: React.Dispatch<React.SetStateAction<boolean>>] = useState<boolean>(false);
-  const [tokenMenuOptions, setTokenMenuOptions]: [ tokenMenuOptions: any, setTokenMenuOptions: any ] = useState({});
-  const [tokenDraggingOptions, setTokenDraggingOptions]: [ tokenDraggingOptions: any, setTokenDragginOptions: any ] = useState();
+  const [isTokenMenuOpen, setIsTokenMenuOpen]: [
+    isTokenMenuOpen: boolean,
+    setIsTokenMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
+  ] = useState<boolean>(false);
+  const [tokenMenuOptions, setTokenMenuOptions]: [
+    tokenMenuOptions: any,
+    setTokenMenuOptions: any
+  ] = useState({});
+  const [tokenDraggingOptions, setTokenDraggingOptions]: [
+    tokenDraggingOptions: any,
+    setTokenDragginOptions: any
+  ] = useState();
   function handleTokenMenuOpen(tokenStateId: string, tokenImage: any) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
@@ -338,10 +349,7 @@ function Map({
   const mapGrid = map && map.showGrid && <MapGrid map={map} />;
 
   const mapMeasure = (
-    <MapMeasure
-      map={map}
-      active={selectedToolId === "measure"}
-    />
+    <MapMeasure map={map} active={selectedToolId === "measure"} />
   );
 
   const mapPointer = (
@@ -353,7 +361,7 @@ function Map({
 
   const [isNoteMenuOpen, setIsNoteMenuOpen] = useState<boolean>(false);
   const [noteMenuOptions, setNoteMenuOptions] = useState<any>({});
-  const [noteDraggingOptions, setNoteDraggingOptions]= useState<any>();
+  const [noteDraggingOptions, setNoteDraggingOptions] = useState<any>();
   function handleNoteMenuOpen(noteId: string, noteNode: any) {
     setNoteMenuOptions({ noteId, noteNode });
     setIsNoteMenuOpen(true);
