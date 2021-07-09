@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
 
 import { useDatabase } from "./DatabaseContext";
-/**
- * @type {React.Context<string|undefined>}
- */
-const UserIdContext = React.createContext();
 
-export function UserIdProvider({ children }) {
+const UserIdContext = React.createContext<string | undefined>(undefined);
+
+export function UserIdProvider({ children }: { children: React.ReactNode }) {
   const { database, databaseStatus } = useDatabase();
 
   const [userId, setUserId] = useState();
@@ -15,9 +13,11 @@ export function UserIdProvider({ children }) {
       return;
     }
     async function loadUserId() {
-      const storedUserId = await database.table("user").get("userId");
-      if (storedUserId) {
-        setUserId(storedUserId.value);
+      if (database) {
+        const storedUserId = await database.table("user").get("userId");
+        if (storedUserId) {
+          setUserId(storedUserId.value);
+        }
       }
     }
 

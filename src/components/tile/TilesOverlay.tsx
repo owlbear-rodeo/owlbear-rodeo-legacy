@@ -16,15 +16,16 @@ import GroupNameModal from "../../modals/GroupNameModal";
 import { renameGroup } from "../../helpers/group";
 
 import Droppable from "../drag/Droppable";
+import { Group } from "../../types/Group";
 
-function TilesOverlay({ modalSize, children }) {
-  const {
-    groups,
-    openGroupId,
-    onGroupClose,
-    onGroupSelect,
-    onGroupsChange,
-  } = useGroup();
+type TilesOverlayProps = {
+  modalSize: { width: number; height: number };
+  children: React.ReactNode;
+};
+
+function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
+  const { groups, openGroupId, onGroupClose, onGroupSelect, onGroupsChange } =
+    useGroup();
 
   const { theme } = useThemeUI();
 
@@ -37,22 +38,28 @@ function TilesOverlay({ modalSize, children }) {
   });
 
   const [containerSize, setContinerSize] = useState({ width: 0, height: 0 });
-  function handleContainerResize(width, height) {
-    const size = Math.min(width, height) - 16;
-    setContinerSize({ width: size, height: size });
+  function handleContainerResize(width?: number, height?: number) {
+    if (width && height) {
+      const size = Math.min(width, height) - 16;
+      setContinerSize({ width: size, height: size });
+    }
   }
 
   const [isGroupNameModalOpen, setIsGroupNameModalOpen] = useState(false);
-  function handleGroupNameChange(name) {
-    onGroupsChange(renameGroup(groups, openGroupId, name));
-    setIsGroupNameModalOpen(false);
+  function handleGroupNameChange(name: string) {
+    if (openGroupId) {
+      onGroupsChange(renameGroup(groups, openGroupId, name), undefined);
+      setIsGroupNameModalOpen(false);
+    }
   }
 
-  const group = groups.find((group) => group.id === openGroupId);
+  const group = groups.find((group: Group) => group.id === openGroupId);
 
   if (!openGroupId) {
     return null;
   }
+
+  const groupName = group && group.type === "group" && group.name;
 
   return (
     <>
@@ -104,14 +111,14 @@ function TilesOverlay({ modalSize, children }) {
           >
             <Flex my={1} sx={{ position: "relative" }}>
               <Text as="p" my="2px">
-                {group?.name}
+                {groupName}
               </Text>
               <IconButton
                 sx={{
                   width: "24px",
                   height: "24px",
-                  position: group?.name ? "absolute" : "relative",
-                  left: group?.name ? "100%" : 0,
+                  position: groupName ? "absolute" : "relative",
+                  left: groupName ? "100%" : 0,
                 }}
                 title="Edit Group"
                 aria-label="Edit Group"
@@ -125,9 +132,9 @@ function TilesOverlay({ modalSize, children }) {
                 width: containerSize.width - 16,
                 height: containerSize.height - 48,
                 marginBottom: "8px",
-                backgroundColor: theme.colors.muted,
+                backgroundColor: theme.colors?.muted as string,
               }}
-              onClick={() => onGroupSelect()}
+              onClick={() => onGroupSelect(undefined)}
             >
               <Grid
                 sx={{
@@ -179,7 +186,7 @@ function TilesOverlay({ modalSize, children }) {
       </ReactResizeDetector>
       <GroupNameModal
         isOpen={isGroupNameModalOpen}
-        name={group?.name}
+        name={groupName || ""}
         onSubmit={handleGroupNameChange}
         onRequestClose={() => setIsGroupNameModalOpen(false)}
       />

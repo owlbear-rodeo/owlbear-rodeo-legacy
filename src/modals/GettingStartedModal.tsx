@@ -7,7 +7,15 @@ import Link from "../components/Link";
 
 const gettingStarted = raw("../docs/howTo/gettingStarted.md");
 
-function GettingStartedModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void } ) {
+type GettingStartedModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+};
+
+function GettingStartedModal({
+  isOpen,
+  onRequestClose,
+}: GettingStartedModalProps) {
   return (
     <Modal
       isOpen={isOpen}

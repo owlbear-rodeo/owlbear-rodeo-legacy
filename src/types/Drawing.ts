@@ -32,6 +32,8 @@ export type CircleData = {
   radius: number;
 };
 
+export type ShapeData = PointsData | RectData | CircleData;
+
 export type BaseDrawing = {
   blend: boolean;
   color: string;
@@ -42,6 +44,8 @@ export type BaseDrawing = {
 export type BaseShape = BaseDrawing & {
   type: "shape";
 };
+
+export type ShapeType = "line" | "rectangle" | "circle" | "triangle";
 
 export type Line = BaseShape & {
   shapeType: "line";

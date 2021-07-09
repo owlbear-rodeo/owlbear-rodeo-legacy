@@ -24,7 +24,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "incremental": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "typeRoots": [
+      "src/types/external",
+      "node_modules/@types"
+    ]
   },
   "include": [
     "src/**/*"

@@ -19,7 +19,9 @@ import GlassPreview from "./glass/preview.png";
 import GemstonePreview from "./gemstone/preview.png";
 import Dice from "./Dice";
 
-type DiceClasses = Record<string, Dice>;
+import { DefaultDice } from "../types/Dice";
+
+type DiceClasses = Record<string, typeof Dice>;
 
 export const diceClasses: DiceClasses = {
   galaxy: GalaxyDice,
@@ -45,7 +47,7 @@ export const dicePreviews: DicePreview = {
   gemstone: GemstonePreview,
 };
 
-export const dice = Object.keys(diceClasses).map((key) => ({
+export const dice: DefaultDice[] = Object.keys(diceClasses).map((key) => ({
   key,
   name: Case.capital(key),
   class: diceClasses[key],

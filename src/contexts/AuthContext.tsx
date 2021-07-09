@@ -2,9 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 
 import FakeStorage from "../helpers/FakeStorage";
 
-type AuthContext = { password: string; setPassword: React.Dispatch<any> };
+type AuthContext = {
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+};
 
-// TODO: check what default value we want here
 const AuthContext = React.createContext<AuthContext | undefined>(undefined);
 
 let storage: Storage | FakeStorage;

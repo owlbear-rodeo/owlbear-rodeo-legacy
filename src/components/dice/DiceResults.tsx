@@ -5,17 +5,28 @@ import ClearDiceIcon from "../../icons/ClearDiceIcon";
 import RerollDiceIcon from "../../icons/RerollDiceIcon";
 
 import { getDiceRollTotal } from "../../helpers/dice";
+import { DiceRoll } from "../../types/Dice";
 
 const maxDiceRollsShown = 6;
 
-function DiceResults({ diceRolls, onDiceClear, onDiceReroll }) {
+type DiceResultsProps = {
+  diceRolls: DiceRoll[];
+  onDiceClear: () => void;
+  onDiceReroll: () => void;
+};
+
+function DiceResults({
+  diceRolls,
+  onDiceClear,
+  onDiceReroll,
+}: DiceResultsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (diceRolls.length === 0) {
     return null;
   }
 
-  let rolls = [];
+  let rolls: React.ReactChild[] = [];
   if (diceRolls.length > 1) {
     rolls = diceRolls
       .filter((dice) => dice.roll !== "unknown")

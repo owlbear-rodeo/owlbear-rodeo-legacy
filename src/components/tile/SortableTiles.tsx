@@ -15,8 +15,14 @@ import {
   GROUP_SORTABLE_ID,
 } from "../../contexts/TileDragContext";
 import { useGroup } from "../../contexts/GroupContext";
+import { Group } from "../../types/Group";
 
-function SortableTiles({ renderTile, subgroup }) {
+type SortableTilesProps = {
+  renderTile: (group: Group) => React.ReactNode;
+  subgroup: boolean;
+};
+
+function SortableTiles({ renderTile, subgroup }: SortableTilesProps) {
   const dragId = useTileDragId();
   const dragCursor = useTileDragCursor();
   const overGroupId = useTileOverGroupId();
@@ -38,14 +44,14 @@ function SortableTiles({ renderTile, subgroup }) {
   const sortableId = subgroup ? GROUP_SORTABLE_ID : BASE_SORTABLE_ID;
 
   // Only populate selected groups if needed
-  let selectedGroupIds = [];
+  let selectedGroupIds: string[] = [];
   if ((subgroup && openGroupId) || (!subgroup && !openGroupId)) {
     selectedGroupIds = allSelectedIds;
   }
-  const disableSorting = (openGroupId && !subgroup) || filter;
-  const disableGrouping = subgroup || disableSorting || filter;
+  const disableSorting = !!((openGroupId && !subgroup) || filter);
+  const disableGrouping = !!(subgroup || disableSorting || filter);
 
-  function renderSortableGroup(group, selectedGroups) {
+  function renderSortableGroup(group: Group, selectedGroups: Group[]) {
     if (overGroupId === group.id && dragId && group.id !== dragId) {
       // If dragging over a group render a preview of that group
       const previewGroup = moveGroupsInto(
@@ -61,7 +67,7 @@ function SortableTiles({ renderTile, subgroup }) {
   function renderTiles() {
     const groupsByIds = keyBy(activeGroups, "id");
     const selectedGroupIdsSet = new Set(selectedGroupIds);
-    let selectedGroups = [];
+    let selectedGroups: Group[] = [];
     let hasSelectedContainerGroup = false;
     for (let groupId of selectedGroupIds) {
       const group = groupsByIds[groupId];
@@ -72,8 +78,8 @@ function SortableTiles({ renderTile, subgroup }) {
         }
       }
     }
-    return activeGroups.map((group) => {
-      const isDragging = dragId && selectedGroupIdsSet.has(group.id);
+    return activeGroups.map((group: Group) => {
+      const isDragging = dragId !== null && selectedGroupIdsSet.has(group.id);
       const disableTileGrouping =
         disableGrouping || isDragging || hasSelectedContainerGroup;
       return (
@@ -84,7 +90,7 @@ function SortableTiles({ renderTile, subgroup }) {
             disableSorting={disableSorting}
             hidden={group.id === openGroupId}
             isDragging={isDragging}
-            cursor={dragCursor}
+            cursor={dragCursor || ""}
           >
             {renderSortableGroup(group, selectedGroups)}
           </SortableTile>

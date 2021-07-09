@@ -1,4 +1,5 @@
 import { Vector3 } from "@babylonjs/core/Maths/math";
+import { DiceRoll } from "../types/Dice";
 
 /**
  * Find the number facing up on a mesh instance of a dice
@@ -42,7 +43,7 @@ export function getDiceRoll(dice: any) {
   return { type: dice.type, roll: number };
 }
 
-export function getDiceRollTotal(diceRolls: []) {
+export function getDiceRollTotal(diceRolls: DiceRoll[]) {
   return diceRolls.reduce((accumulator: number, dice: any) => {
     if (dice.roll === "unknown") {
       return accumulator;

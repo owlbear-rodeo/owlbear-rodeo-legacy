@@ -2,7 +2,12 @@ import { Box, Label, Flex, Button, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function GameExpiredModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void }) {
+type GameExpiredModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+};
+
+function GameExpiredModal({ isOpen, onRequestClose }: GameExpiredModalProps) {
   return (
     <Modal
       isOpen={isOpen}

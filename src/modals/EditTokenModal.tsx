@@ -9,7 +9,7 @@ import TokenPreview from "../components/token/TokenPreview";
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
-import { Token } from "../tokens";
+import { Token } from "../types/Token";
 
 type EditModalProps = {
   isOpen: boolean;
@@ -98,7 +98,7 @@ function EditTokenModal({
           style={{
             minHeight: 0,
             padding: "16px",
-            backgroundColor: theme.colors.muted,
+            backgroundColor: theme.colors?.muted as string,
             margin: "0 8px",
             height: "100%",
           }}

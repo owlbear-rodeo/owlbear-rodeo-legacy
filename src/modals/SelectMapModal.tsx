@@ -140,11 +140,13 @@ function SelectMapModal({
   }
 
   async function handleImageUpload(file: File) {
-    setIsLoading(true);
-    const { map, assets } = await createMapFromFile(file, userId);
-    await addMap(map);
-    await addAssets(assets);
-    setIsLoading(false);
+    if (userId) {
+      setIsLoading(true);
+      const { map, assets } = await createMapFromFile(file, userId);
+      await addMap(map);
+      await addAssets(assets);
+      setIsLoading(false);
+    }
   }
 
   /**
@@ -183,7 +185,7 @@ function SelectMapModal({
     if (groupIds.length === 1) {
       // Only allow adding a map from dragging if there is a single group item selected
       const group = findGroup(mapGroups, groupIds[0]);
-      setCanAddDraggedMap(group && group.type === "item");
+      setCanAddDraggedMap(group !== undefined && group.type === "item");
     } else {
       setCanAddDraggedMap(false);
     }
@@ -198,8 +200,10 @@ function SelectMapModal({
   const layout = useResponsiveLayout();
 
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
-  function handleModalResize(width: number, height: number) {
-    setModalSize({ width, height });
+  function handleModalResize(width?: number, height?: number) {
+    if (width && height) {
+      setModalSize({ width, height });
+    }
   }
 
   const editingMap =
@@ -249,7 +253,7 @@ function SelectMapModal({
               <TileActionBar onAdd={openImageDialog} addTitle="Import Map(s)" />
               <Box sx={{ position: "relative" }}>
                 <TileDragProvider
-                  onDragAdd={canAddDraggedMap && handleDragAdd}
+                  onDragAdd={(canAddDraggedMap && handleDragAdd) || undefined}
                   onDragStart={() => setIsDraggingMap(true)}
                   onDragEnd={() => setIsDraggingMap(false)}
                   onDragCancel={() => setIsDraggingMap(false)}
@@ -263,7 +267,7 @@ function SelectMapModal({
                   </TilesContainer>
                 </TileDragProvider>
                 <TileDragProvider
-                  onDragAdd={canAddDraggedMap && handleDragAdd}
+                  onDragAdd={(canAddDraggedMap && handleDragAdd) || undefined}
                   onDragStart={() => setIsDraggingMap(true)}
                   onDragEnd={() => setIsDraggingMap(false)}
                   onDragCancel={() => setIsDraggingMap(false)}

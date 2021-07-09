@@ -1,7 +1,12 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 
-function Droppable({ id, children, disabled, ...props }) {
+type DroppableProps = React.HTMLAttributes<HTMLDivElement> & {
+  id: string;
+  disabled: boolean;
+};
+
+function Droppable({ id, children, disabled, ...props }: DroppableProps) {
   const { setNodeRef } = useDroppable({ id, disabled });
 
   return (

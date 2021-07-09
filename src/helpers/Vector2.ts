@@ -6,12 +6,12 @@ import {
 } from "./shared";
 
 export type BoundingBox = {
-  min: Vector2, 
-  max: Vector2, 
-  width: number, 
-  height: number, 
-  center: Vector2
-}
+  min: Vector2;
+  max: Vector2;
+  width: number;
+  height: number;
+  center: Vector2;
+};
 
 /**
  * Vector class with x, y and static helper methods
@@ -287,7 +287,12 @@ class Vector2 {
    * @param {Vector2} C End of the curve
    * @returns {Object} The distance to and the closest point on the curve
    */
-  static distanceToQuadraticBezier(pos: Vector2, A: Vector2, B: Vector2, C: Vector2): Object {
+  static distanceToQuadraticBezier(
+    pos: Vector2,
+    A: Vector2,
+    B: Vector2,
+    C: Vector2
+  ): Object {
     let distance = 0;
     let point = { x: pos.x, y: pos.y };
 
@@ -514,7 +519,10 @@ class Vector2 {
    * @param {("counterClockwise"|"clockwise")=} direction Direction to rotate the vector
    * @returns {Vector2}
    */
-  static rotate90(p: Vector2, direction: "counterClockwise" | "clockwise" = "clockwise"): Vector2 {
+  static rotate90(
+    p: Vector2,
+    direction: "counterClockwise" | "clockwise" = "clockwise"
+  ): Vector2 {
     if (direction === "clockwise") {
       return { x: p.y, y: -p.x };
     } else {
@@ -527,7 +535,7 @@ class Vector2 {
    * @param {Vector2[]} points
    * @returns {Vector2}
    */
-  static centroid(points) {
+  static centroid(points: Vector2[]): Vector2 {
     let center = { x: 0, y: 0 };
     for (let point of points) {
       center.x += point.x;
@@ -544,7 +552,7 @@ class Vector2 {
    * @param {Vector2[]} points
    * @returns {boolean}
    */
-  static rectangular(points) {
+  static rectangular(points: Vector2[]): boolean {
     if (points.length !== 4) {
       return false;
     }
@@ -567,7 +575,7 @@ class Vector2 {
    * @param {Vector2[]} points
    * @returns {boolean}
    */
-  static circular(points, threshold = 0.1) {
+  static circular(points: Vector2[], threshold = 0.1): boolean {
     const centroid = this.centroid(points);
     let distances = [];
     for (let point of points) {

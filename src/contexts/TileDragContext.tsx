@@ -6,19 +6,26 @@ import {
   useSensor,
   useSensors,
   closestCenter,
+  RectEntry,
 } from "@dnd-kit/core";
 
-import DragContext from "./DragContext";
+import DragContext, { CustomDragEndEvent } from "./DragContext";
+import { DragStartEvent, DragOverEvent, ViewRect } from "@dnd-kit/core";
+import { DragCancelEvent } from "@dnd-kit/core/dist/types";
 
 import { useGroup } from "./GroupContext";
 
 import { moveGroupsInto, moveGroups, ungroup } from "../helpers/group";
+import Vector2 from "../helpers/Vector2";
 
 import usePreventSelect from "../hooks/usePreventSelect";
 
-const TileDragIdContext = React.createContext();
-const TileOverGroupIdContext = React.createContext();
-const TileDragCursorContext = React.createContext();
+const TileDragIdContext =
+  React.createContext<string | undefined | null>(undefined);
+const TileOverGroupIdContext =
+  React.createContext<string | undefined | null>(undefined);
+const TileDragCursorContext =
+  React.createContext<string | undefined | null>(undefined);
 
 export const BASE_SORTABLE_ID = "__base__";
 export const GROUP_SORTABLE_ID = "__group__";
@@ -27,7 +34,7 @@ export const UNGROUP_ID = "__ungroup__";
 export const ADD_TO_MAP_ID = "__add__";
 
 // Custom rectIntersect that takes a point
-function rectIntersection(rects, point) {
+function rectIntersection(rects: RectEntry[], point: Vector2) {
   for (let rect of rects) {
     const [id, bounds] = rect;
     if (
@@ -44,13 +51,21 @@ function rectIntersection(rects, point) {
   return null;
 }
 
+type TileDragProviderProps = {
+  onDragAdd?: (selectedGroupIds: string[], rect: DOMRect) => void;
+  onDragStart?: (event: DragStartEvent) => void;
+  onDragEnd?: (event: CustomDragEndEvent) => void;
+  onDragCancel?: (event: DragCancelEvent) => void;
+  children?: React.ReactNode;
+};
+
 export function TileDragProvider({
   onDragAdd,
   onDragStart,
   onDragEnd,
   onDragCancel,
   children,
-}) {
+}: TileDragProviderProps) {
   const {
     groups,
     activeGroups,
@@ -71,23 +86,23 @@ export function TileDragProvider({
 
   const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
 
-  const [dragId, setDragId] = useState(null);
-  const [overId, setOverId] = useState(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const [dragCursor, setDragCursor] = useState("pointer");
 
   const [preventSelect, resumeSelect] = usePreventSelect();
 
-  const [overGroupId, setOverGroupId] = useState(null);
+  const [overGroupId, setOverGroupId] = useState<string | null>(null);
   useEffect(() => {
     setOverGroupId(
       (overId && overId.startsWith(GROUP_ID_PREFIX) && overId.slice(9)) || null
     );
   }, [overId]);
 
-  function handleDragStart(event) {
-    const { active, over } = event;
+  function handleDragStart(event: DragStartEvent) {
+    const { active } = event;
     setDragId(active.id);
-    setOverId(over?.id || null);
+    setOverId(null);
     if (!selectedGroupIds.includes(active.id)) {
       onGroupSelect(active.id);
     }
@@ -98,7 +113,7 @@ export function TileDragProvider({
     preventSelect();
   }
 
-  function handleDragOver(event) {
+  function handleDragOver(event: DragOverEvent) {
     const { over } = event;
 
     setOverId(over?.id || null);
@@ -116,7 +131,7 @@ export function TileDragProvider({
     }
   }
 
-  function handleDragEnd(event) {
+  function handleDragEnd(event: CustomDragEndEvent) {
     const { active, over, overlayNodeClientRect } = event;
 
     setDragId(null);
@@ -130,7 +145,7 @@ export function TileDragProvider({
       selectedIndices = selectedIndices.sort((a, b) => a - b);
 
       if (over.id.startsWith(GROUP_ID_PREFIX)) {
-        onGroupSelect();
+        onGroupSelect(undefined);
         // Handle tile group
         const overId = over.id.slice(9);
         if (overId !== active.id) {
@@ -143,10 +158,12 @@ export function TileDragProvider({
           );
         }
       } else if (over.id === UNGROUP_ID) {
-        onGroupSelect();
-        // Handle tile ungroup
-        const newGroups = ungroup(groups, openGroupId, selectedIndices);
-        onGroupsChange(newGroups);
+        if (openGroupId) {
+          onGroupSelect(undefined);
+          // Handle tile ungroup
+          const newGroups = ungroup(groups, openGroupId, selectedIndices);
+          onGroupsChange(newGroups, undefined);
+        }
       } else if (over.id === ADD_TO_MAP_ID) {
         onDragAdd &&
           overlayNodeClientRect &&
@@ -168,7 +185,7 @@ export function TileDragProvider({
     onDragEnd && onDragEnd(event);
   }
 
-  function handleDragCancel(event) {
+  function handleDragCancel(event: DragCancelEvent) {
     setDragId(null);
     setOverId(null);
     setDragCursor("pointer");
@@ -178,7 +195,7 @@ export function TileDragProvider({
     onDragCancel && onDragCancel(event);
   }
 
-  function customCollisionDetection(rects, rect) {
+  function customCollisionDetection(rects: RectEntry[], rect: ViewRect) {
     const rectCenter = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,

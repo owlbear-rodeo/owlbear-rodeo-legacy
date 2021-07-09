@@ -3,22 +3,24 @@ import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+type ChangeNicknameModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onChangeSubmit: any;
+  nickname: string;
+  onChange: any;
+};
+
 function ChangeNicknameModal({
   isOpen,
   onRequestClose,
   onChangeSubmit,
   nickname,
   onChange,
-}: {
-  isOpen: boolean,
-  onRequestClose: () => void,
-  onChangeSubmit: any,
-  nickname: string,
-  onChange: any,
-}) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+}: ChangeNicknameModalProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   function focusInput() {
-    inputRef.current && inputRef.current?.focus();
+    inputRef.current?.focus();
   }
 
   return (

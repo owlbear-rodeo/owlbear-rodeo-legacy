@@ -2,34 +2,14 @@ import { v4 as uuid } from "uuid";
 import cloneDeep from "lodash.clonedeep";
 
 import { keyBy } from "./shared";
-
-/**
- * @typedef GroupItem
- * @property {string} id
- * @property {"item"} type
- */
-
-/**
- * @typedef GroupContainer
- * @property {string} id
- * @property {"group"} type
- * @property {GroupItem[]} items
- * @property {string} name
- */
-
-/**
- * @typedef {GroupItem|GroupContainer} Group
- */
+import { Group, GroupContainer, GroupItem } from "../types/Group";
 
 /**
  * Transform an array of group ids to their groups
- * @param {string[]} groupIds
- * @param {Group[]} groups
- * @return {Group[[]}
  */
-export function groupsFromIds(groupIds, groups) {
+export function groupsFromIds(groupIds: string[], groups: Group[]): Group[] {
   const groupsByIds = keyBy(groups, "id");
-  const filteredGroups = [];
+  const filteredGroups: Group[] = [];
   for (let groupId of groupIds) {
     if (groupId in groupsByIds) {
       filteredGroups.push(groupsByIds[groupId]);
@@ -40,10 +20,8 @@ export function groupsFromIds(groupIds, groups) {
 
 /**
  * Get all items from a group including all sub groups
- * @param {Group} group
- * @return {GroupItem[]}
  */
-export function getGroupItems(group) {
+export function getGroupItems(group: Group): GroupItem[] {
   if (group.type === "group") {
     let groups = [];
     for (let item of group.items) {
@@ -57,14 +35,14 @@ export function getGroupItems(group) {
 
 /**
  * Transform an array of groups into their assosiated items
- * @param {Group[]} groups
- * @param {any[]} allItems
- * @param {string} itemKey
- * @returns {any[]}
  */
-export function itemsFromGroups(groups, allItems, itemKey = "id") {
+export function itemsFromGroups<Item>(
+  groups: Group[],
+  allItems: Item[],
+  itemKey = "id"
+): Item[] {
   const allItemsById = keyBy(allItems, itemKey);
-  const groupedItems = [];
+  const groupedItems: Item[] = [];
 
   for (let group of groups) {
     const groupItems = getGroupItems(group);
@@ -76,47 +54,52 @@ export function itemsFromGroups(groups, allItems, itemKey = "id") {
 }
 
 /**
- * Combine two groups
- * @param {Group} a
- * @param {Group} b
- * @returns {GroupContainer}
+ * Combine a group and a group item
  */
-export function combineGroups(a, b) {
-  if (a.type === "item") {
-    return {
-      id: uuid(),
-      type: "group",
-      items: [a, b],
-      name: "",
-    };
-  }
-  if (a.type === "group") {
-    return {
-      id: a.id,
-      type: "group",
-      items: [...a.items, b],
-      name: a.name,
-    };
+export function combineGroups(a: Group, b: Group): GroupContainer {
+  switch (a.type) {
+    case "item":
+      if (b.type !== "item") {
+        throw new Error("Unable to combine two GroupContainers");
+      }
+      return {
+        id: uuid(),
+        type: "group",
+        items: [a, b],
+        name: "",
+      };
+    case "group":
+      if (b.type !== "item") {
+        throw new Error("Unable to combine two GroupContainers");
+      }
+      return {
+        id: a.id,
+        type: "group",
+        items: [...a.items, b],
+        name: a.name,
+      };
+    default:
+      throw new Error("Group type not implemented");
   }
 }
 
 /**
  * Immutably move group at indices `indices` into group at index `into`
- * @param {Group[]} groups
- * @param {number} into
- * @param {number[]} indices
- * @returns {Group[]}
  */
-export function moveGroupsInto(groups, into, indices) {
+export function moveGroupsInto(
+  groups: Group[],
+  into: number,
+  indices: number[]
+): Group[] {
   const newGroups = cloneDeep(groups);
 
   const intoGroup = newGroups[into];
-  let fromGroups = [];
+  let fromGroups: Group[] = [];
   for (let i of indices) {
     fromGroups.push(newGroups[i]);
   }
 
-  let combined = intoGroup;
+  let combined: Group = intoGroup;
   for (let fromGroup of fromGroups) {
     combined = combineGroups(combined, fromGroup);
   }
@@ -133,12 +116,12 @@ export function moveGroupsInto(groups, into, indices) {
 
 /**
  * Immutably move group at indices `indices` to index `to`
- * @param {Group[]} groups
- * @param {number} into
- * @param {number[]} indices
- * @returns {Group[]}
  */
-export function moveGroups(groups, to, indices) {
+export function moveGroups(
+  groups: Group[],
+  to: number,
+  indices: number[]
+): Group[] {
   const newGroups = cloneDeep(groups);
 
   let fromGroups = [];
@@ -160,28 +143,31 @@ export function moveGroups(groups, to, indices) {
 
 /**
  * Move items from a sub group to the start of the base group
- * @param {Group[]} groups
- * @param {string} fromId The id of the group to move from
- * @param {number[]} indices The indices of the items in the group
+ * @param fromId The id of the group to move from
+ * @param indices The indices of the items in the group
  */
-export function ungroup(groups, fromId, indices) {
+export function ungroup(groups: Group[], fromId: string, indices: number[]) {
   const newGroups = cloneDeep(groups);
 
-  let fromIndex = newGroups.findIndex((group) => group.id === fromId);
+  const fromIndex = newGroups.findIndex((group) => group.id === fromId);
+  const from = newGroups[fromIndex];
+  if (from.type !== "group") {
+    throw new Error(`Unable to ungroup ${fromId}, not a group`);
+  }
 
-  let items = [];
+  let items: GroupItem[] = [];
   for (let i of indices) {
-    items.push(newGroups[fromIndex].items[i]);
+    items.push(from.items[i]);
   }
 
   // Remove items from previous group
   for (let item of items) {
-    const i = newGroups[fromIndex].items.findIndex((el) => el.id === item.id);
-    newGroups[fromIndex].items.splice(i, 1);
+    const i = from.items.findIndex((el) => el.id === item.id);
+    from.items.splice(i, 1);
   }
 
   // If we have no more items in the group delete it
-  if (newGroups[fromIndex].items.length === 0) {
+  if (from.items.length === 0) {
     newGroups.splice(fromIndex, 1);
   }
 
@@ -193,11 +179,8 @@ export function ungroup(groups, fromId, indices) {
 
 /**
  * Recursively find a group within a group array
- * @param {Group[]} groups
- * @param {string} groupId
- * @returns {Group}
  */
-export function findGroup(groups, groupId) {
+export function findGroup(groups: Group[], groupId: string): Group | undefined {
   for (let group of groups) {
     if (group.id === groupId) {
       return group;
@@ -213,11 +196,9 @@ export function findGroup(groups, groupId) {
 
 /**
  * Transform and item array to a record of item ids to item names
- * @param {any[]} items
- * @param {string=} itemKey
  */
-export function getItemNames(items, itemKey = "id") {
-  let names = {};
+export function getItemNames(items: any[], itemKey: string = "id") {
+  let names: Record<string, string> = {};
   for (let item of items) {
     names[item[itemKey]] = item.name;
   }
@@ -226,15 +207,20 @@ export function getItemNames(items, itemKey = "id") {
 
 /**
  * Immutably rename a group
- * @param {Group[]} groups
- * @param {string} groupId
- * @param {string} newName
  */
-export function renameGroup(groups, groupId, newName) {
+export function renameGroup(
+  groups: Group[],
+  groupId: string,
+  newName: string
+): Group[] {
   let newGroups = cloneDeep(groups);
   const groupIndex = newGroups.findIndex((group) => group.id === groupId);
+  const group = groups[groupIndex];
+  if (group.type !== "group") {
+    throw new Error(`Unable to rename group ${groupId}, not of type group`);
+  }
   if (groupIndex >= 0) {
-    newGroups[groupIndex].name = newName;
+    group.name = newName;
   }
   return newGroups;
 }
@@ -244,7 +230,7 @@ export function renameGroup(groups, groupId, newName) {
  * @param {Group[]} groups
  * @param {string[]} itemIds
  */
-export function removeGroupsItems(groups, itemIds) {
+export function removeGroupsItems(groups: Group[], itemIds: string[]): Group[] {
   let newGroups = cloneDeep(groups);
 
   for (let i = newGroups.length - 1; i >= 0; i--) {
@@ -258,11 +244,11 @@ export function removeGroupsItems(groups, itemIds) {
       for (let j = items.length - 1; j >= 0; j--) {
         const item = items[j];
         if (itemIds.includes(item.id)) {
-          newGroups[i].items.splice(j, 1);
+          group.items.splice(j, 1);
         }
       }
       // Remove group if no items are left
-      if (newGroups[i].items.length === 0) {
+      if (group.items.length === 0) {
         newGroups.splice(i, 1);
       }
     }

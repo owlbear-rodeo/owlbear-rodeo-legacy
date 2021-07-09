@@ -1,10 +1,22 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { IconButton } from "theme-ui";
 
 import SelectDiceIcon from "../../icons/SelectDiceIcon";
 import SelectDiceModal from "../../modals/SelectDiceModal";
 
-function SelectDiceButton({ onDiceChange, currentDice, disabled }) {
+import { DefaultDice } from "../../types/Dice";
+
+type SelectDiceButtonProps = {
+  onDiceChange: (dice: DefaultDice) => void;
+  currentDice: DefaultDice;
+  disabled: boolean;
+};
+
+function SelectDiceButton({
+  onDiceChange,
+  currentDice,
+  disabled,
+}: SelectDiceButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   function openModal() {
@@ -14,7 +26,7 @@ function SelectDiceButton({ onDiceChange, currentDice, disabled }) {
     setIsModalOpen(false);
   }
 
-  function handleDone(dice) {
+  function handleDone(dice: DefaultDice) {
     onDiceChange(dice);
     closeModal();
   }
@@ -38,5 +50,9 @@ function SelectDiceButton({ onDiceChange, currentDice, disabled }) {
     </>
   );
 }
+
+SelectDiceButton.defaultProps = {
+  disabled: false,
+};
 
 export default SelectDiceButton;

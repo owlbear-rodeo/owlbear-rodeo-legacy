@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Flex, IconButton, Box } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
@@ -21,6 +21,20 @@ import Divider from "../Divider";
 import { dice } from "../../dice";
 import useSetting from "../../hooks/useSetting";
 
+import { DefaultDice, DiceRoll, DiceType } from "../../types/Dice";
+import Dice from "../../dice/Dice";
+
+type DiceButtonsProps = {
+  diceRolls: DiceRoll[];
+  onDiceAdd: (style: typeof Dice, type: DiceType) => void;
+  onDiceLoad: (dice: DefaultDice) => void;
+  diceTraySize: "single" | "double";
+  onDiceTraySizeChange: (newSize: "single" | "double") => void;
+  shareDice: boolean;
+  onShareDiceChange: (value: boolean) => void;
+  loading: boolean;
+};
+
 function DiceButtons({
   diceRolls,
   onDiceAdd,
@@ -30,29 +44,32 @@ function DiceButtons({
   shareDice,
   onShareDiceChange,
   loading,
-}) {
+}: DiceButtonsProps) {
   const [currentDiceStyle, setCurrentDiceStyle] = useSetting("dice.style");
-  const [currentDice, setCurrentDice] = useState(
-    dice.find((d) => d.key === currentDiceStyle)
+  const [currentDice, setCurrentDice] = useState<DefaultDice>(
+    dice.find((d) => d.key === currentDiceStyle) || dice[0]
   );
 
   useEffect(() => {
     const initialDice = dice.find((d) => d.key === currentDiceStyle);
-    onDiceLoad(initialDice);
-    setCurrentDice(initialDice);
+    if (initialDice) {
+      onDiceLoad(initialDice);
+      setCurrentDice(initialDice);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const diceCounts = {};
+  const diceCounts: Partial<Record<DiceType, number>> = {};
   for (let dice of diceRolls) {
     if (dice.type in diceCounts) {
-      diceCounts[dice.type] += 1;
+      // TODO: Check type
+      diceCounts[dice.type]! += 1;
     } else {
       diceCounts[dice.type] = 1;
     }
   }
 
-  async function handleDiceChange(dice) {
+  async function handleDiceChange(dice: DefaultDice) {
     await onDiceLoad(dice);
     setCurrentDice(dice);
     setCurrentDiceStyle(dice.key);

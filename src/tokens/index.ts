@@ -32,7 +32,6 @@ import undead from "./Undead.png";
 import warlock from "./Warlock.png";
 import wizard from "./Wizard.png";
 import unknown from "./Unknown.png";
-import { ImageFile } from "../helpers/image";
 
 export const tokenSources = {
   barbarian,
@@ -80,36 +79,6 @@ function getDefaultTokenSize(key: string) {
       return 1;
   }
 }
-
-type TokenCategory = "character" | "vehicle" | "prop"
-
-export type BaseToken = {
-  id: string,
-  name: string,
-  defaultSize: number, 
-  defaultCategory: TokenCategory, 
-  defaultLabel: string,
-  hideInSidebar: boolean, 
-  width: number,
-  height: number, 
-  owner: string,
-  created: number,
-  lastModified: number,
-  lastUsed: number,
-}
-
-export interface DefaultToken extends BaseToken {
-  key: string,
-  type: "default",
-}
-
-export interface FileToken extends BaseToken {
-  file: Uint8Array,
-  thumbnail: ImageFile,
-  type: "file",
-}
-
-export type Token = DefaultToken | FileToken;
 
 export function getDefaultTokens(userId: string) {
   const tokenKeys = Object.keys(tokenSources);

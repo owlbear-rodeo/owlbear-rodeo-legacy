@@ -6,6 +6,16 @@ import { animated, useSpring } from "react-spring";
 
 import { GROUP_ID_PREFIX } from "../../contexts/TileDragContext";
 
+type SortableTileProps = {
+  id: string;
+  disableGrouping: boolean;
+  disableSorting: boolean;
+  hidden: boolean;
+  children: React.ReactNode;
+  isDragging: boolean;
+  cursor: string;
+};
+
 function SortableTile({
   id,
   disableGrouping,
@@ -14,7 +24,7 @@ function SortableTile({
   children,
   isDragging,
   cursor,
-}) {
+}: SortableTileProps) {
   const {
     attributes,
     listeners,
@@ -35,7 +45,7 @@ function SortableTile({
   };
 
   // Sort div left aligned
-  const sortDropStyle = {
+  const sortDropStyle: React.CSSProperties = {
     position: "absolute",
     left: "-5px",
     top: 0,
@@ -46,7 +56,7 @@ function SortableTile({
   };
 
   // Group div center aligned
-  const groupDropStyle = {
+  const groupDropStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
     left: 0,
@@ -55,7 +65,7 @@ function SortableTile({
     borderWidth: "4px",
     borderRadius: "4px",
     borderStyle:
-      over?.id === `${GROUP_ID_PREFIX}${id}` && active.id !== id
+      over?.id === `${GROUP_ID_PREFIX}${id}` && active?.id !== id
         ? "solid"
         : "none",
   };

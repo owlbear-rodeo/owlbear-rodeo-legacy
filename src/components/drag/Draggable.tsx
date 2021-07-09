@@ -1,7 +1,14 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { Data } from "@dnd-kit/core/dist/store/types";
 
-function Draggable({ id, children, data }) {
+type DraggableProps = {
+  id: string;
+  children: React.ReactNode;
+  data: Data;
+};
+
+function Draggable({ id, children, data }: DraggableProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id,
     data,

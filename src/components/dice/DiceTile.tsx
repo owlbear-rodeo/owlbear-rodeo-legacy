@@ -1,9 +1,17 @@
-import React from "react";
 import { Image } from "theme-ui";
 
 import Tile from "../tile/Tile";
 
-function DiceTile({ dice, isSelected, onDiceSelect, onDone }) {
+import { DefaultDice } from "../../types/Dice";
+
+type DiceTileProps = {
+  dice: DefaultDice;
+  isSelected: boolean;
+  onDiceSelect: (dice: DefaultDice) => void;
+  onDone: (dice: DefaultDice) => void;
+};
+
+function DiceTile({ dice, isSelected, onDiceSelect, onDone }: DiceTileProps) {
   return (
     <div style={{ cursor: "pointer" }}>
       <Tile

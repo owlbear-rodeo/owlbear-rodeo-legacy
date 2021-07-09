@@ -9,7 +9,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { useDatabase } from "./DatabaseContext";
 
-import { Map, MapState, Note } from "../components/map/Map";
+import { Map } from "../types/Map";
+import { MapState } from "../types/MapState";
+import { Note } from "../types/Note";
 
 import { removeGroupsItems } from "../helpers/group";
 

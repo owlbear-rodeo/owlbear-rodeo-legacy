@@ -1,7 +1,10 @@
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
-import { PhysicsImpostor, PhysicsImpostorParameters } from "@babylonjs/core/Physics/physicsImpostor";
+import {
+  PhysicsImpostor,
+  PhysicsImpostorParameters,
+} from "@babylonjs/core/Physics/physicsImpostor";
 
 import d4Source from "./shared/d4.glb";
 import d6Source from "./shared/d6.glb";
@@ -13,7 +16,15 @@ import d100Source from "./shared/d100.glb";
 
 import { lerp } from "../helpers/shared";
 import { importTextureAsync } from "../helpers/babylon";
-import { BaseTexture, InstancedMesh, Material, Mesh, Scene, Texture } from "@babylonjs/core";
+import {
+  BaseTexture,
+  InstancedMesh,
+  Material,
+  Mesh,
+  Scene,
+  Texture,
+} from "@babylonjs/core";
+import { DiceType } from "../types/Dice";
 
 const minDiceRollSpeed = 600;
 const maxDiceRollSpeed = 800;
@@ -21,10 +32,16 @@ const maxDiceRollSpeed = 800;
 class Dice {
   static instanceCount = 0;
 
-  static async loadMeshes(material: Material, scene: Scene, sourceOverrides?: any): Promise<Record<string, Mesh>> {
+  static async loadMeshes(
+    material: Material,
+    scene: Scene,
+    sourceOverrides?: any
+  ): Promise<Record<string, Mesh>> {
     let meshes: any = {};
     const addToMeshes = async (type: string | number, defaultSource: any) => {
-      let source: string = sourceOverrides ? sourceOverrides[type] : defaultSource;
+      let source: string = sourceOverrides
+        ? sourceOverrides[type]
+        : defaultSource;
       const mesh = await this.loadMesh(source, material, scene);
       meshes[type] = mesh;
     };
@@ -54,7 +71,11 @@ class Dice {
 
   static async loadMaterial(materialName: string, textures: any, scene: Scene) {
     let pbr = new PBRMaterial(materialName, scene);
-    let [albedo, normal, metalRoughness]: [albedo: BaseTexture, normal: Texture, metalRoughness: Texture] = await Promise.all([
+    let [albedo, normal, metalRoughness]: [
+      albedo: BaseTexture,
+      normal: Texture,
+      metalRoughness: Texture
+    ] = await Promise.all([
       importTextureAsync(textures.albedo),
       importTextureAsync(textures.normal),
       importTextureAsync(textures.metalRoughness),
@@ -69,7 +90,12 @@ class Dice {
     return pbr;
   }
 
-  static createInstanceFromMesh(mesh: Mesh, name: string, physicalProperties: PhysicsImpostorParameters, scene: Scene) {
+  static createInstanceFromMesh(
+    mesh: Mesh,
+    name: string,
+    physicalProperties: PhysicsImpostorParameters,
+    scene: Scene
+  ) {
     let instance = mesh.createInstance(name);
     instance.position = mesh.position;
     for (let child of mesh.getChildTransformNodes()) {
@@ -77,7 +103,7 @@ class Dice {
       const locator: any = child.clone(child.name, instance);
       // TODO: handle possible null value
       if (!locator) {
-        throw Error
+        throw Error;
       }
       locator.setAbsolutePosition(child.getAbsolutePosition());
       locator.name = child.name;
@@ -114,7 +140,7 @@ class Dice {
     }
   }
 
-  static roll(instance: Mesh) {
+  static roll(instance: InstancedMesh) {
     instance.physicsImpostor?.setLinearVelocity(Vector3.Zero());
     instance.physicsImpostor?.setAngularVelocity(Vector3.Zero());
 
@@ -156,7 +182,11 @@ class Dice {
     );
   }
 
-  static createInstanceMesh(mesh: Mesh, physicalProperties: PhysicsImpostorParameters, scene: Scene): InstancedMesh {
+  static createInstanceMesh(
+    mesh: Mesh,
+    physicalProperties: PhysicsImpostorParameters,
+    scene: Scene
+  ): InstancedMesh {
     this.instanceCount++;
 
     return this.createInstanceFromMesh(
@@ -165,6 +195,14 @@ class Dice {
       physicalProperties,
       scene
     );
+  }
+
+  static async load(scene: Scene) {
+    throw new Error(`Unable to load ${scene}`);
+  }
+
+  static createInstance(diceType: DiceType, scene: Scene): InstancedMesh {
+    throw new Error(`No instance available for ${diceType} in ${scene}`);
   }
 }
 

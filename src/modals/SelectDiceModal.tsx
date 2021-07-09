@@ -7,16 +7,22 @@ import DiceTiles from "../components/dice/DiceTiles";
 import { dice } from "../dice";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
-import Dice from "../dice/Dice";
+
+import { DefaultDice } from "../types/Dice";
 
 type SelectDiceProps = {
-  isOpen: boolean,
-  onRequestClose: () => void,
-  onDone: any,
-  defaultDice: Dice
-}
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onDone: (dice: DefaultDice) => void;
+  defaultDice: DefaultDice;
+};
 
-function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }: SelectDiceProps) {
+function SelectDiceModal({
+  isOpen,
+  onRequestClose,
+  onDone,
+  defaultDice,
+}: SelectDiceProps) {
   const [selectedDice, setSelectedDice] = useState(defaultDice);
   const layout = useResponsiveLayout();
 
@@ -24,7 +30,9 @@ function SelectDiceModal({ isOpen, onRequestClose, onDone, defaultDice }: Select
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      style={{ content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" } }}
+      style={{
+        content: { maxWidth: layout.modalSize, width: "calc(100% - 16px)" },
+      }}
     >
       <Flex
         sx={{

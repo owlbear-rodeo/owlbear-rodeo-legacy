@@ -2,136 +2,19 @@ import simplify from "simplify-js";
 import polygonClipping, { Geom, Polygon, Ring } from "polygon-clipping";
 
 import Vector2, { BoundingBox } from "./Vector2";
-import Size from "./Size"
+import Size from "./Size";
 import { toDegrees } from "./shared";
-import { Grid, getNearestCellCoordinates, getCellLocation } from "./grid";
+import { getNearestCellCoordinates, getCellLocation } from "./grid";
 
-/**
- * @typedef PointsData
- * @property {Vector2[]} points
- */
-
-type PointsData = {
-  points: Vector2[]
-}
-
-/**
- * @typedef RectData
- * @property {number} x
- * @property {number} y
- * @property {number} width
- * @property {number} height
- */
-
-type RectData = {
-  x: number,
-  y: number, 
-  width: number, 
-  height: number
-}
-
-/**
- * @typedef CircleData
- * @property {number} x
- * @property {number} y
- * @property {number} radius
- */
-
-type CircleData = {
-  x: number, 
-  y: number, 
-  radius: number
-}
-
-/**
- * @typedef FogData
- * @property {Vector2[]} points
- * @property {Vector2[][]} holes
- */
-
-type FogData = {
-  points: Vector2[]
-  holes: Vector2[][]
-}
-
-/**
- * @typedef {(PointsData|RectData|CircleData)} ShapeData
- */
-
-type ShapeData = PointsData | RectData | CircleData
-
-/**
- * @typedef {("line"|"rectangle"|"circle"|"triangle")} ShapeType
- */
-
-type ShapeType = "line" | "rectangle" | "circle" | "triangle"
-
-/**
- * @typedef {("fill"|"stroke")} PathType
- */
-
-type PathType = "fill" | "stroke"
-
-/**
- * @typedef Path
- * @property {boolean} blend
- * @property {string} color
- * @property {PointsData} data
- * @property {string} id
- * @property {PathType} pathType
- * @property {number} strokeWidth
- * @property {"path"} type
- */
-
-export type Path = {
-  blend: boolean, 
-  color: string, 
-  data: PointsData,
-  id: string, 
-  pathType: PathType, 
-  strokeWidth: number, 
-  type: "path"
-}
-
-/**
- * @typedef Shape
- * @property {boolean} blend
- * @property {string} color
- * @property {ShapeData} data
- * @property {string} id
- * @property {ShapeType} shapeType
- * @property {number} strokeWidth
- * @property {"shape"} type
- */
-
-export type Shape = {
-  blend: boolean, 
-  color: string, 
-  data: ShapeData, 
-  id: string, 
-  shapeType: ShapeType, 
-  strokeWidth: number, 
-  type: "shape"
-}
-
-/**
- * @typedef Fog
- * @property {string} color
- * @property {FogData} data
- * @property {string} id
- * @property {number} strokeWidth
- * @property {"fog"} type
- * @property {boolean} visible
- */
-
-export type Fog = {
-  color: string, 
-  data: FogData, 
-  id: string, 
-  strokeWidth: number, 
-  type: "fog", 
-  visible: boolean
-}
+import {
+  ShapeType,
+  ShapeData,
+  PointsData,
+  RectData,
+  CircleData,
+} from "../types/Drawing";
+import { Fog } from "../types/Fog";
+import { Grid } from "../types/Grid";
 
 /**
  *
@@ -139,24 +22,26 @@ export type Fog = {
  * @param {Vector2} brushPosition
  * @returns {ShapeData}
  */
-export function getDefaultShapeData(type: ShapeType, brushPosition: Vector2): ShapeData | undefined{
-  // TODO: handle undefined if no type found
+export function getDefaultShapeData(
+  type: ShapeType,
+  brushPosition: Vector2
+): ShapeData {
   if (type === "line") {
     return {
       points: [
         { x: brushPosition.x, y: brushPosition.y },
         { x: brushPosition.x, y: brushPosition.y },
       ],
-    } as PointsData;
+    };
   } else if (type === "circle") {
-    return { x: brushPosition.x, y: brushPosition.y, radius: 0 } as CircleData;
+    return { x: brushPosition.x, y: brushPosition.y, radius: 0 };
   } else if (type === "rectangle") {
     return {
       x: brushPosition.x,
       y: brushPosition.y,
       width: 0,
       height: 0,
-    } as RectData;
+    };
   } else if (type === "triangle") {
     return {
       points: [
@@ -164,7 +49,9 @@ export function getDefaultShapeData(type: ShapeType, brushPosition: Vector2): Sh
         { x: brushPosition.x, y: brushPosition.y },
         { x: brushPosition.x, y: brushPosition.y },
       ],
-    } as PointsData;
+    };
+  } else {
+    throw new Error("Shape type not implemented");
   }
 }
 
@@ -197,15 +84,14 @@ export function getUpdatedShapeData(
   gridCellNormalizedSize: Vector2,
   mapWidth: number,
   mapHeight: number
-): ShapeData | undefined {
-  // TODO: handle undefined type
+): ShapeData {
   if (type === "line") {
     data = data as PointsData;
     return {
       points: [data.points[0], { x: brushPosition.x, y: brushPosition.y }],
     } as PointsData;
   } else if (type === "circle") {
-    data = data as CircleData; 
+    data = data as CircleData;
     const gridRatio = getGridCellRatio(gridCellNormalizedSize);
     const dif = Vector2.subtract(brushPosition, {
       x: data.x,
@@ -254,6 +140,8 @@ export function getUpdatedShapeData(
         Vector2.add(Vector2.multiply(rightDirNorm, sideLength), points[0]),
       ],
     };
+  } else {
+    throw new Error("Shape type not implemented");
   }
 }
 
@@ -262,7 +150,10 @@ export function getUpdatedShapeData(
  * @param {Vector2[]} points
  * @param {number} tolerance
  */
-export function simplifyPoints(points: Vector2[], tolerance: number): Vector2[] {
+export function simplifyPoints(
+  points: Vector2[],
+  tolerance: number
+): Vector2[] {
   return simplify(points, tolerance);
 }
 
@@ -272,7 +163,10 @@ export function simplifyPoints(points: Vector2[], tolerance: number): Vector2[] 
  * @param {boolean} ignoreHidden
  * @returns {Fog[]}
  */
-export function mergeFogShapes(shapes: Fog[], ignoreHidden: boolean = true): Fog[] {
+export function mergeFogShapes(
+  shapes: Fog[],
+  ignoreHidden: boolean = true
+): Fog[] {
   if (shapes.length === 0) {
     return shapes;
   }
@@ -283,7 +177,7 @@ export function mergeFogShapes(shapes: Fog[], ignoreHidden: boolean = true): Fog
     }
     const shapePoints: Ring = shape.data.points.map(({ x, y }) => [x, y]);
     const shapeHoles: Polygon = shape.data.holes.map((hole) =>
-      hole.map(({ x, y }: { x: number, y: number }) => [x, y])
+      hole.map(({ x, y }: { x: number; y: number }) => [x, y])
     );
     let shapeGeom: Geom = [[shapePoints, ...shapeHoles]];
     geometries.push(shapeGeom);
@@ -315,7 +209,7 @@ export function mergeFogShapes(shapes: Fog[], ignoreHidden: boolean = true): Fog
           points: union[i][0].map(([x, y]) => ({ x, y })),
           holes,
         },
-        type: "fog"
+        type: "fog",
       });
     }
     return merged;
@@ -330,7 +224,10 @@ export function mergeFogShapes(shapes: Fog[], ignoreHidden: boolean = true): Fog
  * @param {boolean} maxPoints Max amount of points per shape to get bounds for
  * @returns {Vector2.BoundingBox[]}
  */
-export function getFogShapesBoundingBoxes(shapes: Fog[], maxPoints = 0): BoundingBox[] {
+export function getFogShapesBoundingBoxes(
+  shapes: Fog[],
+  maxPoints = 0
+): BoundingBox[] {
   let boxes = [];
   for (let shape of shapes) {
     if (maxPoints > 0 && shape.data.points.length > maxPoints) {
@@ -361,11 +258,11 @@ export function getFogShapesBoundingBoxes(shapes: Fog[], maxPoints = 0): Boundin
  */
 
 type Guide = {
-  start: Vector2, 
-  end: Vector2, 
-  orientation: "horizontal" | "vertical",
-  distance: number
-}
+  start: Vector2;
+  end: Vector2;
+  orientation: "horizontal" | "vertical";
+  distance: number;
+};
 
 /**
  * @param {Vector2} brushPosition Brush position in pixels
@@ -382,7 +279,7 @@ export function getGuidesFromGridCell(
   grid: Grid,
   gridCellSize: Size,
   gridOffset: Vector2,
-  gridCellOffset:  Vector2,
+  gridCellOffset: Vector2,
   snappingSensitivity: number,
   mapSize: Vector2
 ): Guide[] {
@@ -500,7 +397,10 @@ export function getGuidesFromBoundingBoxes(
  * @param {Guide[]} guides
  * @returns {Guide[]}
  */
-export function findBestGuides(brushPosition: Vector2, guides: Guide[]): Guide[] {
+export function findBestGuides(
+  brushPosition: Vector2,
+  guides: Guide[]
+): Guide[] {
   let bestGuides: Guide[] = [];
   let verticalGuide = guides
     .filter((guide) => guide.orientation === "vertical")

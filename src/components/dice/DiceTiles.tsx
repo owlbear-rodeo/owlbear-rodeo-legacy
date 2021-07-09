@@ -1,12 +1,24 @@
-import React from "react";
 import { Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
 import DiceTile from "./DiceTile";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+import { DefaultDice } from "../../types/Dice";
 
-function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
+type DiceTileProps = {
+  dice: DefaultDice[];
+  onDiceSelect: (dice: DefaultDice) => void;
+  selectedDice: DefaultDice;
+  onDone: (dice: DefaultDice) => void;
+};
+
+function DiceTiles({
+  dice,
+  onDiceSelect,
+  selectedDice,
+  onDone,
+}: DiceTileProps) {
   const layout = useResponsiveLayout();
 
   return (
@@ -29,7 +41,6 @@ function DiceTiles({ dice, onDiceSelect, selectedDice, onDone }) {
             isSelected={selectedDice && dice.key === selectedDice.key}
             onDiceSelect={onDiceSelect}
             onDone={onDone}
-            size={layout.tileSize}
           />
         ))}
       </Grid>

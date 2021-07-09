@@ -12,6 +12,7 @@ import d12Source from "./d12.glb";
 import d20Source from "./d20.glb";
 import d100Source from "./d100.glb";
 import { Material, Mesh, Scene } from "@babylonjs/core";
+import { DiceType } from "../../types/Dice";
 
 const sourceOverrides = {
   d4: d4Source,
@@ -24,7 +25,7 @@ const sourceOverrides = {
 };
 
 class WalnutDice extends Dice {
-  static meshes: Record<string, Mesh>;
+  static meshes: Record<DiceType, Mesh>;
   static material: Material;
 
   static getDicePhysicalProperties(diceType: string) {
@@ -49,7 +50,7 @@ class WalnutDice extends Dice {
     }
   }
 
-  static createInstance(diceType: string, scene: Scene) {
+  static createInstance(diceType: DiceType, scene: Scene) {
     if (!this.material || !this.meshes) {
       throw Error("Dice not loaded, call load before creating an instance");
     }

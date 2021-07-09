@@ -7,8 +7,40 @@ import { useKeyboard, useBlur } from "./KeyboardContext";
 import { getGroupItems, groupsFromIds } from "../helpers/group";
 
 import shortcuts from "../shortcuts";
+import { Group, GroupContainer, GroupItem } from "../types/Group";
 
-const GroupContext = React.createContext();
+type GroupContext = {
+  groups: Group[];
+  activeGroups: Group[];
+  openGroupId: string | undefined;
+  openGroupItems: Group[];
+  filter: string | undefined;
+  filteredGroupItems: GroupItem[];
+  selectedGroupIds: string[];
+  selectMode: any;
+  onSelectModeChange: React.Dispatch<
+    React.SetStateAction<"single" | "multiple" | "range">
+  >;
+  onGroupOpen: (groupId: string) => void;
+  onGroupClose: () => void;
+  onGroupsChange: (
+    newGroups: Group[] | GroupItem[],
+    groupId: string | undefined
+  ) => void;
+  onGroupSelect: (groupId: string | undefined) => void;
+  onFilterChange: React.Dispatch<React.SetStateAction<string | undefined>>;
+};
+
+const GroupContext = React.createContext<GroupContext | undefined>(undefined);
+
+type GroupProviderProps = {
+  groups: Group[];
+  itemNames: Record<string, string>;
+  onGroupsChange: (groups: Group[]) => void;
+  onGroupsSelect: (groupIds: string[]) => void;
+  disabled: boolean;
+  children: React.ReactNode;
+};
 
 export function GroupProvider({
   groups,
@@ -17,16 +49,17 @@ export function GroupProvider({
   onGroupsSelect,
   disabled,
   children,
-}) {
-  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
+}: GroupProviderProps) {
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   // Either single, multiple or range
-  const [selectMode, setSelectMode] = useState("single");
+  const [selectMode, setSelectMode] =
+    useState<"single" | "multiple" | "range">("single");
 
   /**
    * Group Open
    */
-  const [openGroupId, setOpenGroupId] = useState();
-  const [openGroupItems, setOpenGroupItems] = useState([]);
+  const [openGroupId, setOpenGroupId] = useState<string>();
+  const [openGroupItems, setOpenGroupItems] = useState<Group[]>([]);
   useEffect(() => {
     if (openGroupId) {
       const openGroups = groupsFromIds([openGroupId], groups);
@@ -37,29 +70,29 @@ export function GroupProvider({
         // Close group if we can't find it
         // This can happen if it was deleted or all it's items were deleted
         setOpenGroupItems([]);
-        setOpenGroupId();
+        setOpenGroupId(undefined);
       }
     } else {
       setOpenGroupItems([]);
     }
   }, [openGroupId, groups]);
 
-  function handleGroupOpen(groupId) {
+  function handleGroupOpen(groupId: string) {
     setSelectedGroupIds([]);
     setOpenGroupId(groupId);
   }
 
   function handleGroupClose() {
     setSelectedGroupIds([]);
-    setOpenGroupId();
+    setOpenGroupId(undefined);
   }
 
   /**
    * Search
    */
-  const [filter, setFilter] = useState();
-  const [filteredGroupItems, setFilteredGroupItems] = useState([]);
-  const [fuse, setFuse] = useState();
+  const [filter, setFilter] = useState<string>();
+  const [filteredGroupItems, setFilteredGroupItems] = useState<GroupItem[]>([]);
+  const [fuse, setFuse] = useState<Fuse<GroupItem & { name: string }>>();
   // Update search index when items change
   useEffect(() => {
     let items = [];
@@ -76,10 +109,10 @@ export function GroupProvider({
 
   // Perform search when search changes
   useEffect(() => {
-    if (filter) {
+    if (filter && fuse) {
       const query = fuse.search(filter);
       setFilteredGroupItems(query.map((result) => result.item));
-      setOpenGroupId();
+      setOpenGroupId(undefined);
     } else {
       setFilteredGroupItems([]);
     }
@@ -96,23 +129,30 @@ export function GroupProvider({
     : groups;
 
   /**
+   * @param {Group[] | GroupItem[]} newGroups
    * @param {string|undefined} groupId The group to apply changes to, leave undefined to replace the full group object
    */
-  function handleGroupsChange(newGroups, groupId) {
+  function handleGroupsChange(
+    newGroups: Group[] | GroupItem[],
+    groupId: string | undefined
+  ) {
     if (groupId) {
       // If a group is specidifed then update that group with the new items
       const groupIndex = groups.findIndex((group) => group.id === groupId);
       let updatedGroups = cloneDeep(groups);
       const group = updatedGroups[groupIndex];
-      updatedGroups[groupIndex] = { ...group, items: newGroups };
+      updatedGroups[groupIndex] = {
+        ...group,
+        items: newGroups,
+      } as GroupContainer;
       onGroupsChange(updatedGroups);
     } else {
       onGroupsChange(newGroups);
     }
   }
 
-  function handleGroupSelect(groupId) {
-    let groupIds = [];
+  function handleGroupSelect(groupId: string | undefined) {
+    let groupIds: string[] = [];
     if (groupId) {
       switch (selectMode) {
         case "single":
@@ -133,8 +173,8 @@ export function GroupProvider({
             const lastIndex = activeGroups.findIndex(
               (g) => g.id === selectedGroupIds[selectedGroupIds.length - 1]
             );
-            let idsToAdd = [];
-            let idsToRemove = [];
+            let idsToAdd: string[] = [];
+            let idsToRemove: string[] = [];
             const direction = currentIndex > lastIndex ? 1 : -1;
             for (
               let i = lastIndex + direction;
@@ -166,7 +206,7 @@ export function GroupProvider({
   /**
    * Shortcuts
    */
-  function handleKeyDown(event) {
+  function handleKeyDown(event: React.KeyboardEvent) {
     if (disabled) {
       return;
     }
@@ -178,7 +218,7 @@ export function GroupProvider({
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: React.KeyboardEvent) {
     if (disabled) {
       return;
     }

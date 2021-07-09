@@ -26,75 +26,7 @@ import {
   EditShapeAction,
   RemoveShapeAction,
 } from "../../actions";
-import { Fog, Path, Shape } from "../../helpers/drawing";
 import Session from "../../network/Session";
-import { Grid } from "../../helpers/grid";
-import { ImageFile } from "../../helpers/image";
-
-export type Resolutions = Record<string, ImageFile>;
-export type Map = {
-  id: string;
-  name: string;
-  owner: string;
-  file?: Uint8Array;
-  quality?: string;
-  resolutions?: Resolutions;
-  grid: Grid;
-  group: string;
-  width: number;
-  height: number;
-  type: string;
-  lastUsed: number;
-  lastModified: number;
-  created: number;
-  showGrid: boolean;
-  snapToGrid: boolean;
-  thumbnail?: ImageFile;
-};
-
-export type Note = {
-  id: string;
-  color: string;
-  lastModified: number;
-  lastModifiedBy: string;
-  locked: boolean;
-  size: number;
-  text: string;
-  textOnly: boolean;
-  visible: boolean;
-  x: number;
-  y: number;
-};
-
-export type TokenState = {
-  id: string;
-  tokenId: string;
-  owner: string;
-  size: number;
-  category: string;
-  label: string;
-  statuses: string[];
-  x: number;
-  y: number;
-  lastModifiedBy: string;
-  lastModified: number;
-  rotation: number;
-  locked: boolean;
-  visible: boolean;
-  type: "default" | "file";
-  outline: any;
-  width: number;
-  height: number;
-};
-
-export type MapState = {
-  tokens: Record<string, TokenState>;
-  drawShapes: Record<string, Path | Shape>;
-  fogShapes: Record<string, Fog>;
-  editFlags: ["drawing", "tokens", "notes", "fog"];
-  notes: Record<string, Note>;
-  mapId: string;
-};
 
 function Map({
   map,

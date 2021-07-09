@@ -8,8 +8,17 @@ import Vector2 from "../../helpers/Vector2";
 
 import { useTileDragId } from "../../contexts/TileDragContext";
 import { useGroup } from "../../contexts/GroupContext";
+import { Group } from "../../types/Group";
 
-function SortableTilesDragOverlay({ renderTile, subgroup }) {
+type SortableTilesDragOverlayProps = {
+  renderTile: (group: Group) => React.ReactNode;
+  subgroup: boolean;
+};
+
+function SortableTilesDragOverlay({
+  renderTile,
+  subgroup,
+}: SortableTilesDragOverlayProps) {
   const dragId = useTileDragId();
   const {
     groups,
@@ -27,7 +36,7 @@ function SortableTilesDragOverlay({ renderTile, subgroup }) {
     : groups;
 
   // Only populate selected groups if needed
-  let selectedGroupIds = [];
+  let selectedGroupIds: string[] = [];
   if ((subgroup && openGroupId) || (!subgroup && !openGroupId)) {
     selectedGroupIds = allSelectedIds;
   }

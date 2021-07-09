@@ -3,25 +3,37 @@ import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 
-function GroupNameModal({ isOpen, name, onSubmit, onRequestClose }) {
+type GroupNameModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  name: string;
+  onSubmit: (name: string) => void;
+};
+
+function GroupNameModal({
+  isOpen,
+  name,
+  onSubmit,
+  onRequestClose,
+}: GroupNameModalProps) {
   const [tmpName, setTempName] = useState(name);
 
   useEffect(() => {
     setTempName(name);
   }, [name]);
 
-  function handleChange(event) {
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setTempName(event.target.value);
   }
 
-  function handleSubmit(event) {
+  function handleSubmit(event: React.FormEvent<HTMLDivElement>) {
     event.preventDefault();
     onSubmit(tmpName);
   }
 
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement>(null);
   function focusInput() {
-    inputRef.current && inputRef.current.focus();
+    inputRef.current?.focus();
   }
 
   return (

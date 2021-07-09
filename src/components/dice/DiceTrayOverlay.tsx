@@ -1,10 +1,11 @@
-import React, { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import { CubeTexture } from "@babylonjs/core/Materials/Textures/cubeTexture";
 import { Box } from "theme-ui";
 
+// @ts-ignore
 import environment from "../../dice/environment.dds";
 
 import DiceInteraction from "./DiceInteraction";
@@ -19,6 +20,16 @@ import { useDiceLoading } from "../../contexts/DiceLoadingContext";
 
 import { getDiceRoll } from "../../helpers/dice";
 import useSetting from "../../hooks/useSetting";
+import { DefaultDice, DiceMesh, DiceRoll, DiceType } from "../../types/Dice";
+import { Scene } from "@babylonjs/core";
+
+type DiceTrayOverlayProps = {
+  isOpen: boolean;
+  shareDice: boolean;
+  onShareDiceChange: () => void;
+  diceRolls: DiceRoll[];
+  onDiceRollsChange: (newRolls: DiceRoll[]) => void;
+};
 
 function DiceTrayOverlay({
   isOpen,
@@ -26,17 +37,18 @@ function DiceTrayOverlay({
   onShareDiceChange,
   diceRolls,
   onDiceRollsChange,
-}) {
-  const sceneRef = useRef();
-  const shadowGeneratorRef = useRef();
-  const diceRefs = useRef([]);
+}: DiceTrayOverlayProps) {
+  const sceneRef = useRef<Scene>();
+  const shadowGeneratorRef = useRef<ShadowGenerator>();
+  const diceRefs = useRef<DiceMesh[]>([]);
   const sceneVisibleRef = useRef(false);
   const sceneInteractionRef = useRef(false);
   // Add to the counter to ingore sleep values
   const sceneKeepAwakeRef = useRef(0);
-  const diceTrayRef = useRef();
+  const diceTrayRef = useRef<DiceTray>();
 
-  const [diceTraySize, setDiceTraySize] = useState("single");
+  const [diceTraySize, setDiceTraySize] =
+    useState<"single" | "double">("single");
   const { assetLoadStart, assetLoadFinish, isLoading } = useDiceLoading();
   const [fullScreen] = useSetting("map.fullScreen");
 
@@ -50,7 +62,7 @@ function DiceTrayOverlay({
   }
 
   // Forces rendering for 1 second
-  function forceRender() {
+  function forceRender(): () => void {
     // Force rerender
     sceneKeepAwakeRef.current++;
     let triggered = false;
@@ -97,7 +109,7 @@ function DiceTrayOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function initializeScene(scene) {
+  async function initializeScene(scene: Scene) {
     handleAssetLoadStart();
     let light = new DirectionalLight(
       "DirectionalLight",
@@ -124,16 +136,14 @@ function DiceTrayOverlay({
     handleAssetLoadFinish();
   }
 
-  function update(scene) {
-    function getDiceSpeed(dice) {
-      const diceSpeed = dice.instance.physicsImpostor
-        .getLinearVelocity()
-        .length();
+  function update(scene: Scene) {
+    function getDiceSpeed(dice: DiceMesh) {
+      const diceSpeed =
+        dice.instance.physicsImpostor?.getLinearVelocity()?.length() || 0;
       // If the dice is a d100 check the d10 as well
-      if (dice.type === "d100") {
-        const d10Speed = dice.d10Instance.physicsImpostor
-          .getLinearVelocity()
-          .length();
+      if (dice.d10Instance) {
+        const d10Speed =
+          dice.d10Instance.physicsImpostor?.getLinearVelocity()?.length() || 0;
         return Math.max(diceSpeed, d10Speed);
       } else {
         return diceSpeed;
@@ -157,14 +167,14 @@ function DiceTrayOverlay({
       const dice = die[i];
       const speed = getDiceSpeed(dice);
       // If the speed has been below 0.01 for 1s set dice to sleep
-      if (speed < 0.01 && !dice.sleepTimout) {
-        dice.sleepTimout = setTimeout(() => {
+      if (speed < 0.01 && !dice.sleepTimeout) {
+        dice.sleepTimeout = setTimeout(() => {
           dice.asleep = true;
         }, 1000);
-      } else if (speed > 0.5 && (dice.asleep || dice.sleepTimout)) {
+      } else if (speed > 0.5 && (dice.asleep || dice.sleepTimeout)) {
         dice.asleep = false;
-        clearTimeout(dice.sleepTimout);
-        dice.sleepTimout = null;
+        dice.sleepTimeout && clearTimeout(dice.sleepTimeout);
+        dice.sleepTimeout = undefined;
       }
     }
 
@@ -173,14 +183,14 @@ function DiceTrayOverlay({
     }
   }
 
-  function handleDiceAdd(style, type) {
+  function handleDiceAdd(style: typeof Dice, type: DiceType) {
     const scene = sceneRef.current;
     const shadowGenerator = shadowGeneratorRef.current;
     if (scene && shadowGenerator) {
       const instance = style.createInstance(type, scene);
       shadowGenerator.addShadowCaster(instance);
-      Dice.roll(instance);
-      let dice = { type, instance, asleep: false };
+      style.roll(instance);
+      let dice: DiceMesh = { type, instance, asleep: false };
       // If we have a d100 add a d10 as well
       if (type === "d100") {
         const d10Instance = style.createInstance("d10", scene);
@@ -196,7 +206,7 @@ function DiceTrayOverlay({
     const die = diceRefs.current;
     for (let dice of die) {
       dice.instance.dispose();
-      if (dice.type === "d100") {
+      if (dice.d10Instance) {
         dice.d10Instance.dispose();
       }
     }
@@ -208,14 +218,14 @@ function DiceTrayOverlay({
     const die = diceRefs.current;
     for (let dice of die) {
       Dice.roll(dice.instance);
-      if (dice.type === "d100") {
+      if (dice.d10Instance) {
         Dice.roll(dice.d10Instance);
       }
       dice.asleep = false;
     }
   }
 
-  async function handleDiceLoad(dice) {
+  async function handleDiceLoad(dice: DefaultDice) {
     handleAssetLoadStart();
     const scene = sceneRef.current;
     if (scene) {
@@ -230,10 +240,13 @@ function DiceTrayOverlay({
   });
 
   useEffect(() => {
-    let renderTimeout;
-    let renderCleanup;
+    let renderTimeout: NodeJS.Timeout;
+    let renderCleanup: () => void;
     function handleResize() {
       const map = document.querySelector(".map");
+      if (!map) {
+        return;
+      }
       const mapRect = map.getBoundingClientRect();
 
       const availableWidth = mapRect.width - 108; // Subtract padding
@@ -283,7 +296,7 @@ function DiceTrayOverlay({
         return;
       }
 
-      let newRolls = [];
+      let newRolls: DiceRoll[] = [];
       for (let i = 0; i < die.length; i++) {
         const dice = die[i];
         let roll = getDiceRoll(dice);

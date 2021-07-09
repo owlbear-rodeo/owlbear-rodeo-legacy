@@ -1,9 +1,8 @@
-import React from "react";
-import { Box, Input } from "theme-ui";
+import { Box, Input, InputProps } from "theme-ui";
 
 import SearchIcon from "../icons/SearchIcon";
 
-function Search(props) {
+function Search(props: InputProps) {
   return (
     <Box sx={{ position: "relative", flexGrow: 1 }}>
       <Input

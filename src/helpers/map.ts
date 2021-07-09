@@ -10,14 +10,16 @@ import {
 } from "./grid";
 import Vector2 from "./Vector2";
 
-const defaultMapProps = {
-  showGrid: false,
-  snapToGrid: true,
-  quality: "original",
-  group: "",
+import { Map, FileMapResolutions, FileMap } from "../types/Map";
+import { Asset } from "../types/Asset";
+
+type Resolution = {
+  size: number;
+  quality: number;
+  id: "low" | "medium" | "high" | "ultra";
 };
 
-const mapResolutions = [
+const mapResolutions: Resolution[] = [
   {
     size: 30, // Pixels per grid
     quality: 0.5, // JPEG compression quality
@@ -33,30 +35,35 @@ const mapResolutions = [
  * @param {any} map
  * @returns {undefined|string}
  */
-export function getMapPreviewAsset(map) {
-  const res = map.resolutions;
-  switch (map.quality) {
-    case "low":
-      return;
-    case "medium":
-      return res.low;
-    case "high":
-      return res.medium;
-    case "ultra":
-      return res.medium;
-    case "original":
-      if (res.medium) {
-        return res.medium;
-      } else if (res.low) {
+export function getMapPreviewAsset(map: Map): string | undefined {
+  if (map.type === "file") {
+    const res = map.resolutions;
+    switch (map.quality) {
+      case "low":
+        return;
+      case "medium":
         return res.low;
-      }
-      return;
-    default:
-      return;
+      case "high":
+        return res.medium;
+      case "ultra":
+        return res.medium;
+      case "original":
+        if (res.medium) {
+          return res.medium;
+        } else if (res.low) {
+          return res.low;
+        }
+        return;
+      default:
+        return;
+    }
   }
 }
 
-export async function createMapFromFile(file, userId) {
+export async function createMapFromFile(
+  file: File,
+  userId: string
+): Promise<{ map: Map; assets: Asset[] }> {
   let image = new Image();
 
   const buffer = await blobToBuffer(file);
@@ -107,10 +114,10 @@ export async function createMapFromFile(file, userId) {
         gridSize = { x: 22, y: 22 };
       }
 
-      let assets = [];
+      let assets: Asset[] = [];
 
       // Create resolutions
-      const resolutions = {};
+      const resolutions: FileMapResolutions = {};
       for (let resolution of mapResolutions) {
         const resolutionPixelSize = Vector2.multiply(gridSize, resolution.size);
         if (
@@ -119,20 +126,16 @@ export async function createMapFromFile(file, userId) {
         ) {
           const resized = await resizeImage(
             image,
-            Vector2.max(resolutionPixelSize),
+            Vector2.max(resolutionPixelSize) as number,
             file.type,
             resolution.quality
           );
-          if (resized.blob) {
+          if (resized) {
             const assetId = uuid();
             resolutions[resolution.id] = assetId;
-            const resizedBuffer = await blobToBuffer(resized.blob);
             const asset = {
-              file: resizedBuffer,
-              width: resized.width,
-              height: resized.height,
+              ...resized,
               id: assetId,
-              mime: file.type,
               owner: userId,
             };
             assets.push(asset);
@@ -141,12 +144,11 @@ export async function createMapFromFile(file, userId) {
       }
       // Create thumbnail
       const thumbnailImage = await createThumbnail(image, file.type);
-      const thumbnail = {
-        ...thumbnailImage,
-        id: uuid(),
-        owner: userId,
-      };
-      assets.push(thumbnail);
+      const thumbnailId = uuid();
+      if (thumbnailImage) {
+        const thumbnail = { ...thumbnailImage, id: thumbnailId, owner: userId };
+        assets.push(thumbnail);
+      }
 
       const fileAsset = {
         id: uuid(),
@@ -158,11 +160,11 @@ export async function createMapFromFile(file, userId) {
       };
       assets.push(fileAsset);
 
-      const map = {
+      const map: FileMap = {
         name,
         resolutions,
         file: fileAsset.id,
-        thumbnail: thumbnail.id,
+        thumbnail: thumbnailId,
         type: "file",
         grid: {
           size: gridSize,
@@ -183,7 +185,9 @@ export async function createMapFromFile(file, userId) {
         created: Date.now(),
         lastModified: Date.now(),
         owner: userId,
-        ...defaultMapProps,
+        showGrid: false,
+        snapToGrid: true,
+        quality: "original",
       };
 
       URL.revokeObjectURL(url);

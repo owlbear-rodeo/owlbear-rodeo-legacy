@@ -1,12 +1,22 @@
 import { v4 as uuid } from "uuid";
 import Case from "case";
+import { Stage } from "konva/types/Stage";
 
 import blobToBuffer from "./blobToBuffer";
 import { createThumbnail, getImageOutline } from "./image";
 import Vector2 from "./Vector2";
 
-export function createTokenState(token, position, userId) {
-  let tokenState = {
+import { Token, FileToken } from "../types/Token";
+import { TokenState, BaseTokenState } from "../types/TokenState";
+import { Asset } from "../types/Asset";
+import { Outline } from "../types/Outline";
+
+export function createTokenState(
+  token: Token,
+  position: Vector2,
+  userId: string
+): TokenState {
+  let tokenState: BaseTokenState = {
     id: uuid(),
     tokenId: token.id,
     owner: userId,
@@ -21,20 +31,29 @@ export function createTokenState(token, position, userId) {
     rotation: 0,
     locked: false,
     visible: true,
-    type: token.type,
     outline: token.outline,
     width: token.width,
     height: token.height,
   };
   if (token.type === "file") {
-    tokenState.file = token.file;
-  } else if (token.type === "default") {
-    tokenState.key = token.key;
+    return {
+      ...tokenState,
+      type: "file",
+      file: token.file,
+    };
+  } else {
+    return {
+      ...tokenState,
+      type: "default",
+      key: token.key,
+    };
   }
-  return tokenState;
 }
 
-export async function createTokenFromFile(file, userId) {
+export async function createTokenFromFile(
+  file: File,
+  userId: string
+): Promise<{ token: Token; assets: Asset[] }> {
   if (!file) {
     return Promise.reject();
   }
@@ -77,10 +96,13 @@ export async function createTokenFromFile(file, userId) {
 
   return new Promise((resolve, reject) => {
     image.onload = async function () {
-      let assets = [];
+      let assets: Asset[] = [];
       const thumbnailImage = await createThumbnail(image, file.type);
-      const thumbnail = { ...thumbnailImage, id: uuid(), owner: userId };
-      assets.push(thumbnail);
+      const thumbnailId = uuid();
+      if (thumbnailImage) {
+        const thumbnail = { ...thumbnailImage, id: thumbnailId, owner: userId };
+        assets.push(thumbnail);
+      }
 
       const fileAsset = {
         id: uuid(),
@@ -94,10 +116,10 @@ export async function createTokenFromFile(file, userId) {
 
       const outline = getImageOutline(image);
 
-      const token = {
+      const token: FileToken = {
         name,
         defaultSize,
-        thumbnail: thumbnail.id,
+        thumbnail: thumbnailId,
         file: fileAsset.id,
         id: uuid(),
         type: "file",
@@ -107,7 +129,6 @@ export async function createTokenFromFile(file, userId) {
         defaultCategory: "character",
         defaultLabel: "",
         hideInSidebar: false,
-        group: "",
         width: image.width,
         height: image.height,
         outline,
@@ -122,12 +143,15 @@ export async function createTokenFromFile(file, userId) {
 }
 
 export function clientPositionToMapPosition(
-  mapStage,
-  clientPosition,
+  mapStage: Stage,
+  clientPosition: Vector2,
   checkMapBounds = true
-) {
+): Vector2 | undefined {
   const mapImage = mapStage.findOne("#mapImage");
   const map = document.querySelector(".map");
+  if (!map) {
+    return;
+  }
   const mapRect = map.getBoundingClientRect();
 
   // Check map bounds
@@ -158,7 +182,11 @@ export function clientPositionToMapPosition(
   return normalizedPosition;
 }
 
-export function getScaledOutline(tokenState, tokenWidth, tokenHeight) {
+export function getScaledOutline(
+  tokenState: TokenState,
+  tokenWidth: number,
+  tokenHeight: number
+): Outline {
   let outline = tokenState.outline;
   if (outline.type === "rect") {
     return {
@@ -187,14 +215,23 @@ export function getScaledOutline(tokenState, tokenWidth, tokenHeight) {
 }
 
 export class Intersection {
+  outline;
+  position;
+  center;
+  rotation;
+  points: Vector2[] | undefined;
   /**
-   *
    * @param {Outline} outline
    * @param {Vector2} position - Top left position of the token
    * @param {Vector2} center - Center position of the token
    * @param {number} rotation - Rotation of the token in degrees
    */
-  constructor(outline, position, center, rotation) {
+  constructor(
+    outline: Outline,
+    position: Vector2,
+    center: Vector2,
+    rotation: number
+  ) {
     this.outline = outline;
     this.position = position;
     this.center = center;
@@ -253,8 +290,11 @@ export class Intersection {
    * @param {Vector2} point
    * @returns {boolean}
    */
-  intersects(point) {
-    if (this.outline.type === "rect" || this.outline.type === "path") {
+  intersects(point: Vector2) {
+    if (
+      this.points &&
+      (this.outline.type === "rect" || this.outline.type === "path")
+    ) {
       return Vector2.pointInPolygon(point, this.points);
     } else if (this.outline.type === "circle") {
       return Vector2.distance(this.center, point) < this.outline.radius;

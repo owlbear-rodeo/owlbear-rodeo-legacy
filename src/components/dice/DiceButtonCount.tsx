@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Text } from "theme-ui";
 
-function DiceButtonCount({ children }) {
+function DiceButtonCount({ children }: { children: React.ReactNode }) {
   return (
     <Box
       sx={{

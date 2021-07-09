@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { Vector3, Color4, Matrix } from "@babylonjs/core/Maths/math";
 import { AmmoJSPlugin } from "@babylonjs/core/Physics/Plugins/ammoJSPlugin";
 import { TargetCamera } from "@babylonjs/core/Cameras/targetCamera";
+//@ts-ignore
 import * as AMMO from "ammo.js";
 
 import "@babylonjs/core/Physics/physicsEngineComponent";
@@ -19,20 +20,44 @@ import ReactResizeDetector from "react-resize-detector";
 import usePreventTouch from "../../hooks/usePreventTouch";
 
 import ErrorBanner from "../banner/ErrorBanner";
+import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 
 const diceThrowSpeed = 2;
 
-function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
-  const [error, setError] = useState();
+type DiceInteractionProps = {
+  onSceneMount?: ({
+    scene,
+    engine,
+    canvas,
+  }: {
+    scene: Scene;
+    engine: Engine;
+    canvas: HTMLCanvasElement | WebGLRenderingContext;
+  }) => void;
+  onPointerDown: () => void;
+  onPointerUp: () => any;
+};
 
-  const sceneRef = useRef();
-  const engineRef = useRef();
-  const canvasRef = useRef();
-  const containerRef = useRef();
+function DiceInteraction({
+  onSceneMount,
+  onPointerDown,
+  onPointerUp,
+}: DiceInteractionProps) {
+  const [error, setError] = useState<Error | undefined>();
+
+  const sceneRef = useRef<Scene>();
+  const engineRef = useRef<Engine>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) {
+      return;
+    }
+
     try {
-      const canvas = canvasRef.current;
       const engine = new Engine(canvas, true, {
         preserveDrawingBuffer: true,
         stencil: true,
@@ -67,13 +92,14 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
           const delta = newPosition.subtract(currentPosition);
           selectedMesh.setAbsolutePosition(newPosition);
           const velocity = delta.scale(1000 / scene.deltaTime);
-          selectedMeshVelocityWindowRef.current = selectedMeshVelocityWindowRef.current.slice(
-            Math.max(
-              selectedMeshVelocityWindowRef.current.length -
-                selectedMeshVelocityWindowSize,
-              0
-            )
-          );
+          selectedMeshVelocityWindowRef.current =
+            selectedMeshVelocityWindowRef.current.slice(
+              Math.max(
+                selectedMeshVelocityWindowRef.current.length -
+                  selectedMeshVelocityWindowSize,
+                0
+              )
+            );
           selectedMeshVelocityWindowRef.current.push(velocity);
         }
       });
@@ -82,21 +108,27 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
     }
   }, [onSceneMount]);
 
-  const selectedMeshRef = useRef();
-  const selectedMeshVelocityWindowRef = useRef([]);
+  const selectedMeshRef = useRef<AbstractMesh | null>(null);
+  const selectedMeshVelocityWindowRef = useRef<Vector3[]>([]);
   const selectedMeshVelocityWindowSize = 4;
-  const selectedMeshMassRef = useRef();
+  const selectedMeshMassRef = useRef<number>(0);
   function handlePointerDown() {
     const scene = sceneRef.current;
     if (scene) {
       const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
-      if (pickInfo.hit && pickInfo.pickedMesh.name !== "dice_tray") {
-        pickInfo.pickedMesh.physicsImpostor.setLinearVelocity(Vector3.Zero());
-        pickInfo.pickedMesh.physicsImpostor.setAngularVelocity(Vector3.Zero());
+      if (
+        pickInfo &&
+        pickInfo.hit &&
+        pickInfo.pickedMesh &&
+        pickInfo.pickedMesh.name !== "dice_tray"
+      ) {
+        pickInfo.pickedMesh.physicsImpostor?.setLinearVelocity(Vector3.Zero());
+        pickInfo.pickedMesh.physicsImpostor?.setAngularVelocity(Vector3.Zero());
 
         // Save the meshes mass and set it to 0 so we can pick it up
-        selectedMeshMassRef.current = pickInfo.pickedMesh.physicsImpostor.mass;
-        pickInfo.pickedMesh.physicsImpostor.setMass(0);
+        selectedMeshMassRef.current =
+          pickInfo.pickedMesh.physicsImpostor?.mass || 0;
+        pickInfo.pickedMesh.physicsImpostor?.setMass(0);
 
         selectedMeshRef.current = pickInfo.pickedMesh;
       }
@@ -119,27 +151,29 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
       }
 
       // Re-apply the meshes mass
-      selectedMesh.physicsImpostor.setMass(selectedMeshMassRef.current);
-      selectedMesh.physicsImpostor.forceUpdate();
+      selectedMesh.physicsImpostor?.setMass(selectedMeshMassRef.current);
+      selectedMesh.physicsImpostor?.forceUpdate();
 
-      selectedMesh.physicsImpostor.applyImpulse(
+      selectedMesh.physicsImpostor?.applyImpulse(
         velocity.scale(diceThrowSpeed * selectedMesh.physicsImpostor.mass),
         selectedMesh.physicsImpostor.getObjectCenter()
       );
     }
     selectedMeshRef.current = null;
     selectedMeshVelocityWindowRef.current = [];
-    selectedMeshMassRef.current = null;
+    selectedMeshMassRef.current = 0;
 
     onPointerUp();
   }
 
-  function handleResize(width, height) {
-    const engine = engineRef.current;
-    if (engine) {
-      engine.resize();
-      canvasRef.current.width = width;
-      canvasRef.current.height = height;
+  function handleResize(width?: number, height?: number) {
+    if (width && height) {
+      const engine = engineRef.current;
+      if (engine && canvasRef.current) {
+        engine.resize();
+        canvasRef.current.width = width;
+        canvasRef.current.height = height;
+      }
     }
   }
 
@@ -165,7 +199,7 @@ function DiceInteraction({ onSceneMount, onPointerDown, onPointerUp }) {
           style={{ outline: "none" }}
         />
       </ReactResizeDetector>
-      <ErrorBanner error={error} onRequestClose={() => setError()} />
+      <ErrorBanner error={error} onRequestClose={() => setError(undefined)} />
     </div>
   );
 }

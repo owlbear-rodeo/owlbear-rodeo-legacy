@@ -14,11 +14,13 @@ import ErrorBanner from "../components/banner/ErrorBanner";
 import { useUserId } from "../contexts/UserIdContext";
 import { useDatabase } from "../contexts/DatabaseContext";
 
-import SelectDataModal from "./SelectDataModal";
+import SelectDataModal, { SelectData } from "./SelectDataModal";
 
 import { getDatabase } from "../database";
-import { Map, MapState, TokenState } from "../components/map/Map";
-import { Token } from "../tokens";
+import { Map } from "../types/Map";
+import { MapState } from "../types/MapState";
+import { Token } from "../types/Token";
+import { Group } from "../types/Group";
 
 const importDBName = "OwlbearRodeoImportDB";
 
@@ -49,7 +51,11 @@ function ImportExportModal({
   const [showExportSelector, setShowExportSelector] = useState(false);
 
   const { addToast } = useToasts();
-  function addSuccessToast(message: string, maps: Map[], tokens: Token[]) {
+  function addSuccessToast(
+    message: string,
+    maps: SelectData[],
+    tokens: SelectData[]
+  ) {
     const mapText = `${maps.length} map${maps.length > 1 ? "s" : ""}`;
     const tokenText = `${tokens.length} token${tokens.length > 1 ? "s" : ""}`;
     if (maps.length > 0 && tokens.length > 0) {
@@ -145,10 +151,10 @@ function ImportExportModal({
   }
 
   async function handleImportSelectorConfirm(
-    checkedMaps: Map[],
-    checkedTokens: Token[],
-    checkedMapGroups: any[],
-    checkedTokenGroups: any[]
+    checkedMaps: SelectData[],
+    checkedTokens: SelectData[],
+    checkedMapGroups: Group[],
+    checkedTokenGroups: Group[]
   ) {
     setIsLoading(true);
     backgroundTaskRunningRef.current = true;
@@ -204,16 +210,15 @@ function ImportExportModal({
           // Apply new token ids to imported state
           for (let tokenState of Object.values(state.tokens)) {
             if (tokenState.tokenId in newTokenIds) {
-              state.tokens[tokenState.id].tokenId =
-                newTokenIds[tokenState.tokenId];
+              tokenState.tokenId = newTokenIds[tokenState.tokenId];
             }
             // Change token state file asset id
             if (tokenState.type === "file" && tokenState.file in newAssetIds) {
-              state.tokens[tokenState.id].file = newAssetIds[tokenState.file];
+              tokenState.file = newAssetIds[tokenState.file];
             }
             // Change token state owner if owned by the user of the map
-            if (tokenState.owner === map.owner) {
-              state.tokens[tokenState.id].owner = userId;
+            if (tokenState.owner === map.owner && userId) {
+              tokenState.owner = userId;
             }
           }
           // Generate new ids
@@ -368,8 +373,8 @@ function ImportExportModal({
   }
 
   async function handleExportSelectorConfirm(
-    checkedMaps: Map[],
-    checkedTokens: TokenState[]
+    checkedMaps: SelectData[],
+    checkedTokens: SelectData[]
   ) {
     setShowExportSelector(false);
     setIsLoading(true);

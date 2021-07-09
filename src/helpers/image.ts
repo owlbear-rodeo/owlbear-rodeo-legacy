@@ -3,13 +3,15 @@ import imageOutline from "image-outline";
 import blobToBuffer from "./blobToBuffer";
 import Vector2 from "./Vector2";
 
+import { Outline } from "../types/Outline";
+
 const lightnessDetectionOffset = 0.1;
 
 /**
  * @param {HTMLImageElement} image
  * @returns {boolean} True is the image is light
  */
-export function getImageLightness(image: HTMLImageElement) {
+export function getImageLightness(image: HTMLImageElement): boolean {
   const width = image.width;
   const height = image.height;
   let canvas = document.createElement("canvas");
@@ -17,8 +19,7 @@ export function getImageLightness(image: HTMLImageElement) {
   canvas.height = height;
   let context = canvas.getContext("2d");
   if (!context) {
-    // TODO: handle if context is null
-    return;
+    return false;
   }
 
   context.drawImage(image, 0, 0);
@@ -45,18 +46,12 @@ export function getImageLightness(image: HTMLImageElement) {
   return norm + lightnessDetectionOffset >= 0;
 }
 
-/**
- * @typedef CanvasImage
- * @property {Blob|null} blob The blob of the resized image, `null` if the image was unable to be resized to that dimension
- * @property {number} width
- * @property {number} height
- */
-
 type CanvasImage = {
-  blob: Blob | null,
-  width: number,
-  height: number
-}
+  file: Uint8Array;
+  width: number;
+  height: number;
+  mime: string;
+};
 
 /**
  * @param {HTMLCanvasElement} canvas
@@ -64,11 +59,25 @@ type CanvasImage = {
  * @param {number} quality
  * @returns {Promise<CanvasImage>}
  */
-export async function canvasToImage(canvas: HTMLCanvasElement, type: string, quality: number): Promise<CanvasImage> {
+export async function canvasToImage(
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number
+): Promise<CanvasImage | undefined> {
   return new Promise((resolve) => {
     canvas.toBlob(
-      (blob) => {
-        resolve({ blob, width: canvas.width, height: canvas.height });
+      async (blob) => {
+        if (blob) {
+          const file = await blobToBuffer(blob);
+          resolve({
+            file,
+            width: canvas.width,
+            height: canvas.height,
+            mime: type,
+          });
+        } else {
+          resolve(undefined);
+        }
       },
       type,
       quality
@@ -81,9 +90,14 @@ export async function canvasToImage(canvas: HTMLCanvasElement, type: string, qua
  * @param {number} size the size of the longest edge of the new image
  * @param {string} type the mime type of the image
  * @param {number} quality if image is a jpeg or webp this is the quality setting
- * @returns {Promise<CanvasImage>}
+ * @returns {Promise<CanvasImage | undefined>}
  */
-export async function resizeImage(image: HTMLImageElement, size: number, type: string, quality: number): Promise<CanvasImage> {
+export async function resizeImage(
+  image: HTMLImageElement,
+  size: number,
+  type: string,
+  quality: number
+): Promise<CanvasImage | undefined> {
   const width = image.width;
   const height = image.height;
   const ratio = width / height;
@@ -96,37 +110,27 @@ export async function resizeImage(image: HTMLImageElement, size: number, type: s
     canvas.height = size;
   }
   let context = canvas.getContext("2d");
-  // TODO: Add error if context is empty
   if (context) {
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  } else {
+    return undefined;
   }
   return await canvasToImage(canvas, type, quality);
 }
 
-/**
- * @typedef ImageAsset
- * @property {number} width
- * @property {number} height
- * @property {Uint8Array} file
- * @property {string} mime
- */
-
-export type ImageFile = {
-  file: Uint8Array | null, 
-  width: number, 
-  height: number, 
-  type: "file",
-  id: string
-}
 /**
  * Create a image file with resolution `size`x`size` with cover cropping
  * @param {HTMLImageElement} image the image to resize
  * @param {string} type the mime type of the image
  * @param {number} size the width and height of the thumbnail
  * @param {number} quality if image is a jpeg or webp this is the quality setting
- * @returns {Promise<ImageAsset>}
  */
-export async function createThumbnail(image: HTMLImageElement, type: string, size = 300, quality = 0.5): Promise<ImageFile> {
+export async function createThumbnail(
+  image: HTMLImageElement,
+  type: string,
+  size = 300,
+  quality = 0.5
+): Promise<CanvasImage | undefined> {
   let canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -166,55 +170,20 @@ export async function createThumbnail(image: HTMLImageElement, type: string, siz
     }
   }
 
-  const thumbnailImage = await canvasToImage(canvas, type, quality);
-
-  let thumbnailBuffer = null;
-  if (thumbnailImage.blob) {
-    thumbnailBuffer = await blobToBuffer(thumbnailImage.blob);
-  }
-  return {
-    file: thumbnailBuffer,
-    width: thumbnailImage.width,
-    height: thumbnailImage.height,
-    mime: type,
-  };
+  return await canvasToImage(canvas, type, quality);
 }
-
-/**
- * @typedef CircleOutline
- * @property {"circle"} type
- * @property {number} x - Center X of the circle
- * @property {number} y - Center Y of the circle
- * @property {number} radius
- */
-
-/**
- * @typedef RectOutline
- * @property {"rect"} type
- * @property {number} width
- * @property {number} height
- * @property {number} x - Leftmost X position of the rect
- * @property {number} y - Topmost Y position of the rect
- */
-
-/**
- * @typedef PathOutline
- * @property {"path"} type
- * @property {number[]} points - Alternating x, y coordinates zipped together
- */
-
-/**
- * @typedef {CircleOutline|RectOutline|PathOutline} Outline
- */
 
 /**
  * Get the outline of an image
  * @param {HTMLImageElement} image
  * @returns {Outline}
  */
-export function getImageOutline(image, maxPoints = 100) {
+export function getImageOutline(
+  image: HTMLImageElement,
+  maxPoints: number = 100
+): Outline {
   // Basic rect outline for fail conditions
-  const defaultOutline = {
+  const defaultOutline: Outline = {
     type: "rect",
     x: 0,
     y: 0,

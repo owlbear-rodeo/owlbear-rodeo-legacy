@@ -1,4 +1,3 @@
-import React from "react";
 import { Flex, IconButton } from "theme-ui";
 
 import AddIcon from "../../icons/AddIcon";
@@ -10,7 +9,12 @@ import RadioIconButton from "../RadioIconButton";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function TileActionBar({ onAdd, addTitle }) {
+type TileActionBarProps = {
+  onAdd: () => void;
+  addTitle: string;
+};
+
+function TileActionBar({ onAdd, addTitle }: TileActionBarProps) {
   const {
     selectMode,
     onSelectModeChange,
@@ -33,7 +37,7 @@ function TileActionBar({ onAdd, addTitle }) {
           outlineOffset: "0px",
         },
       }}
-      onFocus={() => onGroupSelect()}
+      onFocus={() => onGroupSelect(undefined)}
     >
       <Search value={filter} onChange={(e) => onFilterChange(e.target.value)} />
       <Flex

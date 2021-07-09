@@ -1,11 +1,11 @@
 import React from "react";
-import { Box } from "theme-ui";
+import { Box, ThemeUIStyleObject } from "theme-ui";
 import { useInView } from "react-intersection-observer";
 
-function LazyTile({ children }) {
+function LazyTile({ children }: { children: React.ReactNode }) {
   const [ref, inView] = useInView({ triggerOnce: false });
 
-  const sx = inView
+  const sx: ThemeUIStyleObject = inView
     ? {}
     : { width: "100%", height: "0", paddingTop: "100%", position: "relative" };
 

@@ -31,6 +31,7 @@ export type FileMap = BaseMap & {
   file: string;
   resolutions: FileMapResolutions;
   thumbnail: string;
+  quality: "low" | "medium" | "high" | "ultra" | "original";
 };
 
 export type Map = DefaultMap | FileMap;

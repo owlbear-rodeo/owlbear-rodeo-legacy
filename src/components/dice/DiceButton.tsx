@@ -3,7 +3,21 @@ import { IconButton } from "theme-ui";
 
 import Count from "./DiceButtonCount";
 
-function DiceButton({ title, children, count, onClick, disabled }) {
+type DiceButtonProps = {
+  title: string;
+  children: React.ReactNode;
+  count?: number;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  disabled: boolean;
+};
+
+function DiceButton({
+  title,
+  children,
+  count,
+  onClick,
+  disabled,
+}: DiceButtonProps) {
   return (
     <IconButton
       title={title}

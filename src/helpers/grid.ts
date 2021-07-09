@@ -9,49 +9,17 @@ const SQRT3 = 1.73205;
 const GRID_TYPE_NOT_IMPLEMENTED = new Error("Grid type not implemented");
 
 /**
- * @typedef GridInset
- * @property {Vector2} topLeft Top left position of the inset
- * @property {Vector2} bottomRight Bottom right position of the inset
- */
-
-type GridInset = {
-  topLeft: Vector2,
-  bottomRight: Vector2
-}
-
-/**
- * @typedef GridMeasurement
- * @property {("chebyshev"|"alternating"|"euclidean"|"manhattan")} type
- * @property {string} scale
- */
-
-type GridMeasurement ={
-  type: ("chebyshev"|"alternating"|"euclidean"|"manhattan")
-  scale: string
-}
-
-/**
- * @typedef Grid
- * @property {GridInset} inset The inset of the grid from the map
- * @property {Vector2} size The number of columns and rows of the grid as `x` and `y`
- * @property {("square"|"hexVertical"|"hexHorizontal")} type
- * @property {GridMeasurement} measurement
- */
-export type Grid = {
-  inset?: GridInset,
-  size: Vector2,
-  type: ("square"|"hexVertical"|"hexHorizontal"),
-  measurement?: GridMeasurement
-}
-
-/**
  * Gets the size of a grid in pixels taking into account the inset
  * @param {Grid} grid
  * @param {number} baseWidth Width of the grid in pixels before inset
  * @param {number} baseHeight Height of the grid in pixels before inset
  * @returns {Size}
  */
-export function getGridPixelSize(grid: Required<Grid>, baseWidth: number, baseHeight: number): Size {
+export function getGridPixelSize(
+  grid: Required<Grid>,
+  baseWidth: number,
+  baseHeight: number
+): Size {
   const width = (grid.inset.bottomRight.x - grid.inset.topLeft.x) * baseWidth;
   const height = (grid.inset.bottomRight.y - grid.inset.topLeft.y) * baseHeight;
   return new Size(width, height);
@@ -64,7 +32,11 @@ export function getGridPixelSize(grid: Required<Grid>, baseWidth: number, baseHe
  * @param {number} gridHeight Height of the grid in pixels after inset
  * @returns {Size}
  */
-export function getCellPixelSize(grid: Grid, gridWidth: number, gridHeight: number): Size {
+export function getCellPixelSize(
+  grid: Grid,
+  gridWidth: number,
+  gridHeight: number
+): Size {
   if (grid.size.x === 0 || grid.size.y === 0) {
     return new Size(0, 0);
   }
@@ -91,7 +63,12 @@ export function getCellPixelSize(grid: Grid, gridWidth: number, gridHeight: numb
  * @param {Size} cellSize Cell size in pixels
  * @returns {Vector2}
  */
-export function getCellLocation(grid: Grid, col: number, row: number, cellSize: Size): Vector2 {
+export function getCellLocation(
+  grid: Grid,
+  col: number,
+  row: number,
+  cellSize: Size
+): Vector2 {
   switch (grid.type) {
     case "square":
       return {
@@ -121,7 +98,12 @@ export function getCellLocation(grid: Grid, col: number, row: number, cellSize: 
  * @param {Size} cellSize Cell size in pixels
  * @returns {Vector2}
  */
-export function getNearestCellCoordinates(grid: Grid, x: number, y: number, cellSize: Size): Vector2 {
+export function getNearestCellCoordinates(
+  grid: Grid,
+  x: number,
+  y: number,
+  cellSize: Size
+): Vector2 {
   switch (grid.type) {
     case "square":
       return Vector2.divide(Vector2.floorTo({ x, y }, cellSize), cellSize);
@@ -151,7 +133,12 @@ export function getNearestCellCoordinates(grid: Grid, x: number, y: number, cell
  * @param {Size} cellSize Cell size in pixels
  * @returns {Vector2[]}
  */
-export function getCellCorners(grid: Grid, x: number, y: number, cellSize: Size): Vector2[] {
+export function getCellCorners(
+  grid: Grid,
+  x: number,
+  y: number,
+  cellSize: Size
+): Vector2[] {
   const position = new Vector2(x, y);
   switch (grid.type) {
     case "square":
@@ -193,7 +180,7 @@ export function getCellCorners(grid: Grid, x: number, y: number, cellSize: Size)
  * @param {number} gridWidth Width of the grid in pixels after inset
  * @returns {number}
  */
-function getGridHeightFromWidth(grid: Grid, gridWidth: number): number{
+function getGridHeightFromWidth(grid: Grid, gridWidth: number): number {
   switch (grid.type) {
     case "square":
       return (grid.size.y * gridWidth) / grid.size.x;
@@ -215,7 +202,11 @@ function getGridHeightFromWidth(grid: Grid, gridWidth: number): number{
  * @param {number} mapHeight Height of the map in pixels before inset
  * @returns {GridInset}
  */
-export function getGridDefaultInset(grid: Grid, mapWidth: number, mapHeight: number): GridInset {
+export function getGridDefaultInset(
+  grid: Grid,
+  mapWidth: number,
+  mapHeight: number
+): GridInset {
   // Max the width of the inset and figure out the resulting height value
   const insetHeightNorm = getGridHeightFromWidth(grid, mapWidth) / mapHeight;
   return { topLeft: { x: 0, y: 0 }, bottomRight: { x: 1, y: insetHeightNorm } };
@@ -228,7 +219,11 @@ export function getGridDefaultInset(grid: Grid, mapWidth: number, mapHeight: num
  * @param {number} mapHeight Height of the map in pixels before inset
  * @returns {GridInset}
  */
-export function getGridUpdatedInset(grid: Required<Grid>, mapWidth: number, mapHeight: number): GridInset {
+export function getGridUpdatedInset(
+  grid: Required<Grid>,
+  mapWidth: number,
+  mapHeight: number
+): GridInset {
   let inset = {
     topLeft: { ...grid.inset.topLeft },
     bottomRight: { ...grid.inset.bottomRight },
@@ -263,7 +258,10 @@ export function getGridMaxZoom(grid: Grid): number {
  * @param {("hexVertical"|"hexHorizontal")} type
  * @returns {Vector2}
  */
-export function hexCubeToOffset(cube: Vector3, type: ("hexVertical"|"hexHorizontal")) {
+export function hexCubeToOffset(
+  cube: Vector3,
+  type: "hexVertical" | "hexHorizontal"
+) {
   if (type === "hexVertical") {
     const x = cube.x + (cube.z + (cube.z & 1)) / 2;
     const y = cube.z;
@@ -280,7 +278,10 @@ export function hexCubeToOffset(cube: Vector3, type: ("hexVertical"|"hexHorizont
  * @param {("hexVertical"|"hexHorizontal")} type
  * @returns {Vector3}
  */
-export function hexOffsetToCube(offset: Vector2, type: ("hexVertical"|"hexHorizontal")) {
+export function hexOffsetToCube(
+  offset: Vector2,
+  type: "hexVertical" | "hexHorizontal"
+) {
   if (type === "hexVertical") {
     const x = offset.x - (offset.y + (offset.y & 1)) / 2;
     const z = offset.y;
@@ -301,7 +302,12 @@ export function hexOffsetToCube(offset: Vector2, type: ("hexVertical"|"hexHorizo
  * @param {Vector2} b
  * @param {Size} cellSize
  */
-export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellSize: Size) {
+export function gridDistance(
+  grid: Required<Grid>,
+  a: Vector2,
+  b: Vector2,
+  cellSize: Size
+) {
   // Get grid coordinates
   const aCoord = getNearestCellCoordinates(grid, a.x, a.y, cellSize);
   const bCoord = getNearestCellCoordinates(grid, b.x, b.y, cellSize);
@@ -315,7 +321,9 @@ export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellS
       const min: any = Vector2.min(delta);
       return max - min + Math.floor(1.5 * min);
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.magnitude(Vector2.divide(Vector2.subtract(a, b), cellSize));
+      return Vector2.magnitude(
+        Vector2.divide(Vector2.subtract(a, b), cellSize)
+      );
     } else if (grid.measurement.type === "manhattan") {
       return Math.abs(aCoord.x - bCoord.x) + Math.abs(aCoord.y - bCoord.y);
     }
@@ -331,22 +339,11 @@ export function gridDistance(grid: Required<Grid>, a: Vector2, b: Vector2, cellS
         2
       );
     } else if (grid.measurement.type === "euclidean") {
-      return Vector2.magnitude(Vector2.divide(Vector2.subtract(a, b), cellSize));
+      return Vector2.magnitude(
+        Vector2.divide(Vector2.subtract(a, b), cellSize)
+      );
     }
   }
-}
-
-/**
- * @typedef GridScale
- * @property {number} multiplier The number multiplier of the scale
- * @property {string} unit The unit of the scale
- * @property {number} digits The precision of the scale
- */
-
-type GridScale = {
-  multiplier: number, 
-  unit: string, 
-  digits: number
 }
 
 /**
@@ -441,7 +438,10 @@ export function gridSizeVaild(x: number, y: number): boolean {
  * @param {number[]} candidates
  * @returns {Vector2 | null}
  */
-function gridSizeHeuristic(image: CanvasImageSource, candidates: number[]): Vector2  | null {
+function gridSizeHeuristic(
+  image: CanvasImageSource,
+  candidates: number[]
+): Vector2 | null {
   // TODO: check type for Image and CanvasSourceImage
   const width: any = image.width;
   const height: any = image.height;
@@ -474,7 +474,10 @@ function gridSizeHeuristic(image: CanvasImageSource, candidates: number[]): Vect
  * @param {number[]} candidates
  * @returns {Vector2 | null}
  */
-async function gridSizeML(image: CanvasImageSource, candidates: number[]): Promise<Vector2 | null> {
+async function gridSizeML(
+  image: CanvasImageSource,
+  candidates: number[]
+): Promise<Vector2 | null> {
   // TODO: check this function because of context and CanvasImageSource -> JSDoc and Typescript do not match
   const width: any = image.width;
   const height: any = image.height;

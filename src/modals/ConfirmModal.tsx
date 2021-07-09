@@ -3,13 +3,13 @@ import { Box, Label, Flex, Button, Text } from "theme-ui";
 import Modal from "../components/Modal";
 
 type ConfirmModalProps = {
-  isOpen:  boolean,
-  onRequestClose: () => void,
-  onConfirm: () => void,
-  confirmText: string,
-  label: string,
-  description: string,
-}
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onConfirm: () => void;
+  confirmText: string;
+  label: string;
+  description: string;
+};
 
 function ConfirmModal({
   isOpen,
@@ -18,7 +18,7 @@ function ConfirmModal({
   confirmText,
   label,
   description,
-}: ConfirmModalProps ) {
+}: ConfirmModalProps) {
   return (
     <Modal
       isOpen={isOpen}

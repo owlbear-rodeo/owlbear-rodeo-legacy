@@ -8,49 +8,20 @@ import { useDatabase } from "./DatabaseContext";
 import useDebounce from "../hooks/useDebounce";
 
 import { omit } from "../helpers/shared";
+import { Asset } from "../types/Asset";
 
-/**
- * @typedef Asset
- * @property {string} id
- * @property {number} width
- * @property {number} height
- * @property {Uint8Array} file
- * @property {string} mime
- * @property {string} owner
- */
+type AssetsContext = {
+  getAsset: (assetId: string) => Promise<Asset | undefined>;
+  addAssets: (assets: Asset[]) => void;
+  putAsset: (asset: Asset) => void;
+};
 
-/**
- * @callback getAsset
- * @param {string} assetId
- * @returns {Promise<Asset|undefined>}
- */
-
-/**
- * @callback addAssets
- * @param {Asset[]} assets
- */
-
-/**
- * @callback putAsset
- * @param {Asset} asset
- */
-
-/**
- * @typedef AssetsContext
- * @property {getAsset} getAsset
- * @property {addAssets} addAssets
- * @property {putAsset} putAsset
- */
-
-/**
- * @type {React.Context<undefined|AssetsContext>}
- */
-const AssetsContext = React.createContext();
+const AssetsContext = React.createContext<AssetsContext | undefined>(undefined);
 
 // 100 MB max cache size
 const maxCacheSize = 1e8;
 
-export function AssetsProvider({ children }) {
+export function AssetsProvider({ children }: { children: React.ReactNode }) {
   const { worker, database, databaseStatus } = useDatabase();
 
   useEffect(() => {
@@ -61,33 +32,39 @@ export function AssetsProvider({ children }) {
 
   const getAsset = useCallback(
     async (assetId) => {
-      return await database.table("assets").get(assetId);
+      if (database) {
+        return await database.table("assets").get(assetId);
+      }
     },
     [database]
   );
 
   const addAssets = useCallback(
     async (assets) => {
-      await database.table("assets").bulkAdd(assets);
+      if (database) {
+        await database.table("assets").bulkAdd(assets);
+      }
     },
     [database]
   );
 
   const putAsset = useCallback(
     async (asset) => {
-      // Check for broadcast channel and attempt to use worker to put map to avoid UI lockup
-      // Safari doesn't support BC so fallback to single thread
-      if (window.BroadcastChannel) {
-        const packedAsset = encode(asset);
-        const success = await worker.putData(
-          Comlink.transfer(packedAsset, [packedAsset.buffer]),
-          "assets"
-        );
-        if (!success) {
+      if (database) {
+        // Check for broadcast channel and attempt to use worker to put map to avoid UI lockup
+        // Safari doesn't support BC so fallback to single thread
+        if (window.BroadcastChannel) {
+          const packedAsset = encode(asset);
+          const success = await worker.putData(
+            Comlink.transfer(packedAsset, [packedAsset.buffer]),
+            "assets"
+          );
+          if (!success) {
+            await database.table("assets").put(asset);
+          }
+        } else {
           await database.table("assets").put(asset);
         }
-      } else {
-        await database.table("assets").put(asset);
       }
     },
     [database, worker]
@@ -119,35 +96,38 @@ export function useAssets() {
  * @property {number} references
  */
 
-/**
- * @type React.Context<undefined|Object.<string, AssetURL>>
- */
-export const AssetURLsStateContext = React.createContext();
+type AssetURL = {
+  url: string | null;
+  id: string;
+  references: number;
+};
 
-/**
- * @type React.Context<undefined|React.Dispatch<React.SetStateAction<{}>>>
- */
-export const AssetURLsUpdaterContext = React.createContext();
+type AssetURLs = Record<string, AssetURL>;
+
+export const AssetURLsStateContext =
+  React.createContext<AssetURLs | undefined>(undefined);
+
+export const AssetURLsUpdaterContext =
+  React.createContext<
+    React.Dispatch<React.SetStateAction<AssetURLs>> | undefined
+  >(undefined);
 
 /**
  * Helper to manage sharing of custom image sources between uses of useAssetURL
  */
-export function AssetURLsProvider({ children }) {
-  const [assetURLs, setAssetURLs] = useState({});
+export function AssetURLsProvider({ children }: { children: React.ReactNode }) {
+  const [assetURLs, setAssetURLs] = useState<AssetURLs>({});
   const { database } = useDatabase();
 
   // Keep track of the assets that need to be loaded
-  const [assetKeys, setAssetKeys] = useState([]);
+  const [assetKeys, setAssetKeys] = useState<string[]>([]);
 
   // Load assets after 100ms
   const loadingDebouncedAssetURLs = useDebounce(assetURLs, 100);
 
   // Update the asset keys to load when a url is added without an asset attached
   useEffect(() => {
-    if (!loadingDebouncedAssetURLs) {
-      return;
-    }
-    let keysToLoad = [];
+    let keysToLoad: string[] = [];
     for (let url of Object.values(loadingDebouncedAssetURLs)) {
       if (url.url === null) {
         keysToLoad.push(url.id);
@@ -159,8 +139,9 @@ export function AssetURLsProvider({ children }) {
   }, [loadingDebouncedAssetURLs]);
 
   // Get the new assets whenever the keys change
-  const assets = useLiveQuery(
-    () => database?.table("assets").where("id").anyOf(assetKeys).toArray(),
+  const assets = useLiveQuery<Asset[]>(
+    () =>
+      database?.table("assets").where("id").anyOf(assetKeys).toArray() || [],
     [database, assetKeys]
   );
 
@@ -197,7 +178,7 @@ export function AssetURLsProvider({ children }) {
       let urlsToCleanup = [];
       for (let url of Object.values(prevURLs)) {
         if (url.references <= 0) {
-          URL.revokeObjectURL(url.url);
+          url.url && URL.revokeObjectURL(url.url);
           urlsToCleanup.push(url.id);
         }
       }
@@ -220,13 +201,13 @@ export function AssetURLsProvider({ children }) {
 
 /**
  * Helper function to load either file or default asset into a URL
- * @param {string} assetId
- * @param {"file"|"default"} type
- * @param {Object.<string, string>} defaultSources
- * @param {string|undefined} unknownSource
- * @returns {string|undefined}
  */
-export function useAssetURL(assetId, type, defaultSources, unknownSource) {
+export function useAssetURL(
+  assetId: string,
+  type: "file" | "default",
+  defaultSources: Record<string, string>,
+  unknownSource?: string
+) {
   const assetURLs = useContext(AssetURLsStateContext);
   if (assetURLs === undefined) {
     throw new Error("useAssetURL must be used within a AssetURLsProvider");
@@ -242,7 +223,7 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
     }
 
     function updateAssetURL() {
-      function increaseReferences(prevURLs) {
+      function increaseReferences(prevURLs: AssetURLs): AssetURLs {
         return {
           ...prevURLs,
           [assetId]: {
@@ -252,13 +233,13 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
         };
       }
 
-      function createReference(prevURLs) {
+      function createReference(prevURLs: AssetURLs): AssetURLs {
         return {
           ...prevURLs,
           [assetId]: { url: null, id: assetId, references: 1 },
         };
       }
-      setAssetURLs((prevURLs) => {
+      setAssetURLs?.((prevURLs) => {
         if (assetId in prevURLs) {
           // Check if the asset url is already added and increase references
           return increaseReferences(prevURLs);
@@ -303,36 +284,29 @@ export function useAssetURL(assetId, type, defaultSources, unknownSource) {
   return unknownSource;
 }
 
-/**
- * @typedef FileData
- * @property {string} file
- * @property {"file"} type
- * @property {string} thumbnail
- * @property {string=} quality
- * @property {Object.<string, string>=} resolutions
- */
+type FileData = {
+  file: string;
+  type: "file";
+  thumbnail: string;
+  quality?: string;
+  resolutions?: Record<string, string>;
+};
 
-/**
- * @typedef DefaultData
- * @property {string} key
- * @property {"default"} type
- */
+type DefaultData = {
+  key: string;
+  type: "default";
+};
 
 /**
  * Load a map or token into a URL taking into account a thumbnail and multiple resolutions
- * @param {FileData|DefaultData} data
- * @param {Object.<string, string>} defaultSources
- * @param {string|undefined} unknownSource
- * @param {boolean} thumbnail
- * @returns {string|undefined}
  */
 export function useDataURL(
-  data,
-  defaultSources,
-  unknownSource,
+  data: FileData | DefaultData,
+  defaultSources: Record<string, string>,
+  unknownSource: string | undefined,
   thumbnail = false
 ) {
-  const [assetId, setAssetId] = useState();
+  const [assetId, setAssetId] = useState<string>();
 
   useEffect(() => {
     if (!data) {
@@ -344,7 +318,11 @@ export function useDataURL(
       } else {
         if (thumbnail) {
           setAssetId(data.thumbnail);
-        } else if (data.resolutions && data.quality !== "original") {
+        } else if (
+          data.resolutions &&
+          data.quality &&
+          data.quality !== "original"
+        ) {
           setAssetId(data.resolutions[data.quality]);
         } else {
           setAssetId(data.file);
@@ -356,7 +334,7 @@ export function useDataURL(
   }, [data, thumbnail]);
 
   const assetURL = useAssetURL(
-    assetId,
+    assetId || "",
     data?.type,
     defaultSources,
     unknownSource

@@ -10,7 +10,8 @@ import { isEmpty } from "../helpers/shared";
 import { getGridDefaultInset } from "../helpers/grid";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
-import { Map, MapState } from "../components/map/Map";
+import { Map } from "../types/Map";
+import { MapState } from "../types/MapState";
 
 type EditMapProps = {
   isOpen: boolean;
@@ -145,7 +146,7 @@ function EditMapModal({
           style={{
             minHeight: 0,
             padding: "16px",
-            backgroundColor: theme.colors.muted,
+            backgroundColor: theme.colors?.muted as string,
             margin: "0 8px",
             height: "100%",
           }}

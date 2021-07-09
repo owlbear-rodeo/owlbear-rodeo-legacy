@@ -9,7 +9,7 @@ import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
 import Droppable from "../drag/Droppable";
 
-function TilesContainer({ children }) {
+function TilesContainer({ children }: { children: React.ReactNode }) {
   const { onGroupSelect } = useGroup();
 
   const { theme } = useThemeUI();
@@ -21,9 +21,9 @@ function TilesContainer({ children }) {
       <SimpleBar
         style={{
           height: layout.tileContainerHeight,
-          backgroundColor: theme.colors.muted,
+          backgroundColor: theme.colors?.muted as string,
         }}
-        onClick={() => onGroupSelect()}
+        onClick={() => onGroupSelect(undefined)}
       >
         <Grid
           p={3}

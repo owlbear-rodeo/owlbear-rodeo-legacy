@@ -35,7 +35,7 @@ import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
 import { useMapStage } from "../contexts/MapStageContext";
 
-import { TokenState } from "../components/map/Map";
+import { TokenState } from "../types/TokenState";
 
 type SelectTokensModalProps = {
   isOpen: boolean;
@@ -146,6 +146,9 @@ function SelectTokensModal({
   }
 
   async function handleImageUpload(file: File) {
+    if (!userId) {
+      return;
+    }
     setIsLoading(true);
     const { token, assets } = await createTokenFromFile(file, userId);
     await addToken(token);
@@ -161,7 +164,7 @@ function SelectTokensModal({
   const [isDraggingToken, setIsDraggingToken] = useState(false);
 
   const mapStageRef = useMapStage();
-  function handleTokensAddToMap(groupIds: string[], rect: any) {
+  function handleTokensAddToMap(groupIds: string[], rect: DOMRect) {
     let clientPosition = new Vector2(
       rect.width / 2 + rect.left,
       rect.height / 2 + rect.top
@@ -172,11 +175,11 @@ function SelectTokensModal({
     }
 
     let position = clientPositionToMapPosition(mapStage, clientPosition, false);
-    if (!position) {
+    if (!position || !userId) {
       return;
     }
 
-    let newTokenStates = [];
+    let newTokenStates: TokenState[] = [];
 
     for (let id of groupIds) {
       if (id in tokensById) {
@@ -210,8 +213,10 @@ function SelectTokensModal({
   const layout = useResponsiveLayout();
 
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
-  function handleModalResize(width: number, height: number) {
-    setModalSize({ width, height });
+  function handleModalResize(width?: number, height?: number) {
+    if (width && height) {
+      setModalSize({ width, height });
+    }
   }
 
   const editingToken =

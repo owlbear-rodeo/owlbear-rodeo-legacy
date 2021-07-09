@@ -1,5 +1,5 @@
-export function omit(obj:object, keys: string[]) {
-  let tmp: { [key: string]: any } = {};
+export function omit(obj: Record<PropertyKey, any>, keys: string[]) {
+  let tmp: Record<PropertyKey, any> = {};
   for (let [key, value] of Object.entries(obj)) {
     if (keys.includes(key)) {
       continue;
@@ -9,18 +9,21 @@ export function omit(obj:object, keys: string[]) {
   return tmp;
 }
 
-export function fromEntries(iterable: any) {
+export function fromEntries(iterable: Iterable<[string | number, any]>) {
   if (Object.fromEntries) {
     return Object.fromEntries(iterable);
   }
-  return [...iterable].reduce((obj, [key, val]) => {
-    obj[key] = val;
-    return obj;
-  }, {});
+  return [...iterable].reduce(
+    (obj: Record<string | number, any>, [key, val]) => {
+      obj[key] = val;
+      return obj;
+    },
+    {}
+  );
 }
 
 // Check to see if all tracks are muted
-export function isStreamStopped(stream: any) {
+export function isStreamStopped(stream: MediaStream) {
   return stream.getTracks().reduce((a: any, b: any) => a && b, { mute: true });
 }
 
@@ -55,19 +58,22 @@ export function logImage(url: string, width: number, height: number): void {
   console.log("%c ", style);
 }
 
-export function isEmpty(obj: any): boolean {
+export function isEmpty(obj: Object): boolean {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-export function keyBy(array: any, key: any) {
+export function keyBy<Type>(array: Type[], key: string): Record<string, Type> {
   return array.reduce(
-    (prev: any, current: any) => ({ ...prev, [key ? current[key] : current]: current }),
+    (prev: any, current: any) => ({
+      ...prev,
+      [key ? current[key] : current]: current,
+    }),
     {}
   );
 }
 
-export function groupBy(array: any, key: string) {
-  return array.reduce((prev: any, current: any) => {
+export function groupBy(array: Record<PropertyKey, any>[], key: string) {
+  return array.reduce((prev: Record<string, any[]>, current) => {
     const k = current[key];
     (prev[k] || (prev[k] = [])).push(current);
     return prev;
@@ -76,7 +82,7 @@ export function groupBy(array: any, key: string) {
 
 export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
-export function shuffle(array) {
+export function shuffle<Type>(array: Type[]) {
   let temp = [...array];
   var currentIndex = temp.length,
     randomIndex;

@@ -3,6 +3,18 @@ import { Flex, IconButton, Box, Text, Badge } from "theme-ui";
 
 import EditTileIcon from "../../icons/EditTileIcon";
 
+type TileProps = {
+  title: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  onEdit: () => void;
+  onDoubleClick: () => void;
+  canEdit: boolean;
+  badges: React.ReactChild[];
+  editTitle: string;
+  children: React.ReactNode;
+};
+
 function Tile({
   title,
   isSelected,
@@ -13,7 +25,7 @@ function Tile({
   badges,
   editTitle,
   children,
-}) {
+}: TileProps) {
   return (
     <Box
       sx={{

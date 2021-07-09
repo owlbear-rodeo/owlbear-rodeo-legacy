@@ -5,7 +5,12 @@ import { useAuth } from "../contexts/AuthContext";
 
 import Modal from "../components/Modal";
 
-function AuthModal({ isOpen, onSubmit }:  { isOpen: boolean, onSubmit: (newPassword: string) => void}) {
+type AuthModalProps = {
+  isOpen: boolean;
+  onSubmit: (newPassword: string) => void;
+};
+
+function AuthModal({ isOpen, onSubmit }: AuthModalProps) {
   const { password, setPassword } = useAuth();
   const [tmpPassword, setTempPassword] = useState<string>(password);
 
@@ -19,7 +24,7 @@ function AuthModal({ isOpen, onSubmit }:  { isOpen: boolean, onSubmit: (newPassw
     onSubmit(tmpPassword);
   }
 
-  const inputRef = useRef<any>();
+  const inputRef = useRef<HTMLInputElement>(null);
   function focusInput(): void {
     inputRef.current && inputRef.current?.focus();
   }

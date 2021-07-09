@@ -4,7 +4,12 @@ import { useHistory } from "react-router-dom";
 
 import Modal from "../components/Modal";
 
-function JoinModal({ isOpen, onRequestClose }: any) {
+type JoinModalProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+};
+
+function JoinModal({ isOpen, onRequestClose }: JoinModalProps) {
   let history = useHistory();
   const [gameId, setGameId] = useState("");
 
@@ -17,9 +22,9 @@ function JoinModal({ isOpen, onRequestClose }: any) {
     history.push(`/game/${gameId}`);
   }
 
-  const inputRef = useRef<any>();
+  const inputRef = useRef<HTMLInputElement>(null);
   function focusInput() {
-    inputRef.current && inputRef.current.focus();
+    inputRef.current?.focus();
   }
 
   return (
@@ -27,7 +32,6 @@ function JoinModal({ isOpen, onRequestClose }: any) {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       onAfterOpen={focusInput}
-       
     >
       <Flex
         sx={{
