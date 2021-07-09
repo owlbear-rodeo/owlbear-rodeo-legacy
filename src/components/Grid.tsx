@@ -1,4 +1,3 @@
-import React from "react";
 import { Group, Rect } from "react-konva";
 import useImage from "use-image";
 
@@ -16,7 +15,7 @@ import squarePatternLight from "../images/SquarePatternLight.png";
 import hexPatternDark from "../images/HexPatternDark.png";
 import hexPatternLight from "../images/HexPatternLight.png";
 
-function Grid({ stroke }) {
+function Grid({ stroke }: { stroke: "black" | "white" }) {
   const grid = useGrid();
   const gridPixelSize = useGridPixelSize();
   const gridOffset = useGridOffset();
@@ -45,7 +44,7 @@ function Grid({ stroke }) {
 
   const negativeGridOffset = Vector2.multiply(gridOffset, -1);
 
-  let patternProps = {};
+  let patternProps: Record<any, any> = {};
   if (grid.type === "square") {
     // Square grid pattern is 150 DPI
     const scale = gridCellPixelSize.width / 300;

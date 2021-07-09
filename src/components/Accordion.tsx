@@ -3,7 +3,13 @@ import { Box, Flex, Text, IconButton, Divider } from "theme-ui";
 
 import ExpandMoreIcon from "../icons/ExpandMoreIcon";
 
-function Accordion({ heading, children, defaultOpen }) {
+type AccordianProps = {
+  heading: string;
+  children: React.ReactNode;
+  defaultOpen: boolean;
+};
+
+function Accordion({ heading, children, defaultOpen }: AccordianProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (

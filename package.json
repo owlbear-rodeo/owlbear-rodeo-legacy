@@ -105,6 +105,7 @@
     "@types/react-dom": "^17.0.5",
     "@types/react-modal": "^3.12.0",
     "@types/react-router-dom": "^5.1.7",
+    "@types/react-select": "^4.0.17",
     "@types/shortid": "^0.0.29",
     "@types/simple-peer": "^9.6.3",
     "@types/uuid": "^8.3.1",

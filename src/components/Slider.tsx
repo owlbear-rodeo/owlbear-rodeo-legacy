@@ -2,15 +2,21 @@ import { useState } from "react";
 import { Box, Slider as ThemeSlider, SliderProps } from "theme-ui";
 
 type SliderModalProps = SliderProps & {
-  min: number,
-  max: number,
-  value: number,
-  ml: any,
-  mr: any,
-  labelFunc: any
-}
+  min: number;
+  max: number;
+  value: number;
+  labelFunc: (value: number) => string;
+};
 
-function Slider({ min, max, value, ml, mr, labelFunc, ...rest }: SliderModalProps ) {
+function Slider({
+  min,
+  max,
+  value,
+  ml,
+  mr,
+  labelFunc,
+  ...rest
+}: SliderModalProps) {
   const percentValue = ((value - min) * 100) / (max - min);
 
   const [labelVisible, setLabelVisible] = useState<boolean>(false);

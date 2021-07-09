@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Text } from "theme-ui";
 
 import LoadingOverlay from "./LoadingOverlay";
@@ -21,7 +21,7 @@ const facts = [
 ];
 
 function UpgradingLoadingOverlay() {
-  const [subText, setSubText] = useState();
+  const [subText, setSubText] = useState<string>();
 
   useEffect(() => {
     let index = 0;
@@ -33,7 +33,7 @@ function UpgradingLoadingOverlay() {
     }
 
     // Show first fact after 10 seconds then every 20 seconds after that
-    let interval;
+    let interval: NodeJS.Timeout;
     let timeout = setTimeout(() => {
       updateFact();
       interval = setInterval(() => {

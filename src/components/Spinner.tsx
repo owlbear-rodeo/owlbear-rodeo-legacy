@@ -1,4 +1,3 @@
-import React from "react";
 import { Box } from "theme-ui";
 
 import "./Spinner.css";

@@ -1,9 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { Progress } from "theme-ui";
 
-function LoadingBar({ isLoading, loadingProgressRef }) {
-  const requestRef = useRef();
-  const progressBarRef = useRef();
+type LoadingBarProps = {
+  isLoading: boolean;
+  loadingProgressRef: React.MutableRefObject<number>;
+};
+
+function LoadingBar({ isLoading, loadingProgressRef }: LoadingBarProps) {
+  const requestRef = useRef<number>();
+  const progressBarRef = useRef<HTMLProgressElement>(null);
 
   // Use an animation frame to update the progress bar
   // This bypasses react allowing the animation to be smooth
@@ -21,7 +26,9 @@ function LoadingBar({ isLoading, loadingProgressRef }) {
     requestRef.current = requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(requestRef.current);
+      if (requestRef.current !== undefined) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);

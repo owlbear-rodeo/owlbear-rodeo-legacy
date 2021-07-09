@@ -1,7 +1,17 @@
-import React from "react";
-import { IconButton } from "theme-ui";
+import { IconButton, IconButtonProps } from "theme-ui";
 
-function RadioIconButton({ title, onClick, isSelected, disabled, children }) {
+type RadioButttonProps = {
+  isSelected: boolean;
+} & IconButtonProps;
+
+function RadioIconButton({
+  title,
+  onClick,
+  isSelected,
+  disabled,
+  children,
+  ...props
+}: RadioButttonProps) {
   return (
     <IconButton
       aria-label={title}
@@ -9,6 +19,7 @@ function RadioIconButton({ title, onClick, isSelected, disabled, children }) {
       onClick={onClick}
       sx={{ color: isSelected ? "primary" : "text" }}
       disabled={disabled}
+      {...props}
     >
       {children}
     </IconButton>

@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Text } from "theme-ui";
 import { ToastProvider as DefaultToastProvider } from "react-toast-notifications";
 
-function CustomToast({ children }) {
+function CustomToast({ children }: { children?: React.ReactNode }) {
   return (
     <Box
       m={2}
@@ -17,7 +17,7 @@ function CustomToast({ children }) {
   );
 }
 
-export function ToastProvider({ children }) {
+export function ToastProvider({ children }: { children?: React.ReactNode }) {
   return (
     <DefaultToastProvider
       components={{ Toast: CustomToast }}

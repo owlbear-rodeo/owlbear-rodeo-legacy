@@ -1,7 +1,16 @@
-import React from "react";
-import { Divider } from "theme-ui";
+import { Divider, DividerProps } from "theme-ui";
 
-function StyledDivider({ vertical, color, fill }) {
+type StyledDividerProps = {
+  vertical: boolean;
+  fill: boolean;
+} & DividerProps;
+
+function StyledDivider({
+  vertical,
+  color,
+  fill,
+  ...props
+}: StyledDividerProps) {
   return (
     <Divider
       my={vertical ? 0 : 2}
@@ -13,6 +22,7 @@ function StyledDivider({ vertical, color, fill }) {
         borderRadius: "2px",
         opacity: 0.5,
       }}
+      {...props}
     />
   );
 }

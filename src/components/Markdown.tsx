@@ -1,24 +1,26 @@
 import React from "react";
 import {
   Text,
+  TextProps,
   Image as UIImage,
+  ImageProps,
   Link as UILink,
   Message,
   Embed,
 } from "theme-ui";
 import ReactMarkdown from "react-markdown";
 
-function Paragraph(props) {
+function Paragraph(props: TextProps) {
   return <Text as="p" my={2} variant="body2" {...props} />;
 }
 
-function Heading({ level, ...props }) {
+function Heading({ level, ...props }: { level: number } & TextProps) {
   const fontSize = level === 1 ? 5 : level === 2 ? 3 : 1;
   return (
     <Text
       mt={2}
       mb={1}
-      as={`h${level}`}
+      as={`h${level}` as React.ElementType}
       sx={{ fontSize }}
       variant="heading"
       {...props}
@@ -26,11 +28,11 @@ function Heading({ level, ...props }) {
   );
 }
 
-function Image(props) {
+function Image(props: ImageProps) {
   if (props.alt === "embed:") {
     return <Embed as="span" sx={{ display: "block" }} src={props.src} my={2} />;
   }
-  if (props.src.endsWith(".mp4")) {
+  if (props.src?.endsWith(".mp4")) {
     return (
       <video
         style={{ width: "100%", margin: "8px 0" }}
@@ -39,7 +41,7 @@ function Image(props) {
         playsInline
         loop
         controls
-        {...props}
+        src={props.src}
       />
     );
   }
@@ -47,11 +49,17 @@ function Image(props) {
   return <UIImage mt={2} sx={{ borderRadius: "4px" }} {...props} />;
 }
 
-function ListItem(props) {
+function ListItem(props: TextProps) {
   return <Text as="li" variant="body2" my={1} {...props} />;
 }
 
-function Code({ children, value }) {
+function Code({
+  children,
+  value,
+}: {
+  value: string;
+  children: React.ReactNode;
+}) {
   let variant = "";
   if (value.startsWith("Warning:")) {
     variant = "warning";
@@ -71,7 +79,7 @@ function Code({ children, value }) {
   );
 }
 
-function Table({ children }) {
+function Table({ children }: { children: React.ReactNode }) {
   return (
     <Text
       as="table"
@@ -83,7 +91,7 @@ function Table({ children }) {
   );
 }
 
-function TableHead(props) {
+function TableHead(props: TextProps) {
   return (
     <Text
       as="thead"
@@ -94,7 +102,7 @@ function TableHead(props) {
   );
 }
 
-function TableBody(props) {
+function TableBody(props: TextProps) {
   return (
     <Text
       as="tbody"
@@ -105,7 +113,7 @@ function TableBody(props) {
   );
 }
 
-function TableRow({ children }) {
+function TableRow({ children }: { children: React.ReactNode }) {
   return (
     <Text
       as="tr"
@@ -119,7 +127,7 @@ function TableRow({ children }) {
   );
 }
 
-function TableCell({ children }) {
+function TableCell({ children }: { children: React.ReactNode }) {
   return (
     <Text as="td" p={2}>
       {children}
@@ -127,11 +135,17 @@ function TableCell({ children }) {
   );
 }
 
-function Link({ href, children }) {
+function Link({ href, children }: { href: string; children: React.ReactNode }) {
   return <UILink href={href}>{children}</UILink>;
 }
 
-function Markdown({ source, assets }) {
+function Markdown({
+  source,
+  assets,
+}: {
+  source: string;
+  assets: Record<string, string>;
+}) {
   const renderers = {
     paragraph: Paragraph,
     heading: Heading,
