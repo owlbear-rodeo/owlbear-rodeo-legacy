@@ -1,9 +1,18 @@
-import React from "react";
 import { Flex } from "theme-ui";
 
 import ColorControl from "./ColorControl";
 
-function PointerToolSettings({ settings, onSettingChange }) {
+import { PointerToolSettings } from "../../../types/Pointer";
+
+type PointerToolSettingsProps = {
+  settings: PointerToolSettings;
+  onSettingChange: (change: Partial<PointerToolSettings>) => void;
+};
+
+function PointerToolSettings({
+  settings,
+  onSettingChange,
+}: PointerToolSettingsProps) {
   return (
     <Flex sx={{ alignItems: "center" }}>
       <ColorControl

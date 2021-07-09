@@ -1,4 +1,5 @@
 import Vector2 from "../helpers/Vector2";
+import { Color } from "../helpers/colors";
 
 export type FogToolType =
   | "polygon"
@@ -20,7 +21,7 @@ export type FogData = {
 };
 
 export type Fog = {
-  color: string;
+  color: Color;
   data: FogData;
   id: string;
   strokeWidth: number;

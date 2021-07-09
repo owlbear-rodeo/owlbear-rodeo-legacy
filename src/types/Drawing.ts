@@ -1,4 +1,5 @@
 import Vector2 from "../helpers/Vector2";
+import { Color } from "../helpers/colors";
 
 export type DrawingToolType =
   | "brush"
@@ -11,7 +12,7 @@ export type DrawingToolType =
 
 export type DrawingToolSettings = {
   type: DrawingToolType;
-  color: string;
+  color: Color;
   useBlending: boolean;
 };
 

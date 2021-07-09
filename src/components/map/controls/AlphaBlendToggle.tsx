@@ -1,10 +1,17 @@
-import React from "react";
 import { IconButton } from "theme-ui";
 
 import BlendOnIcon from "../../../icons/BlendOnIcon";
 import BlendOffIcon from "../../../icons/BlendOffIcon";
 
-function AlphaBlendToggle({ useBlending, onBlendingChange }) {
+type AlphaBlendToggleProps = {
+  useBlending: boolean;
+  onBlendingChange: (useBlending: boolean) => void;
+};
+
+function AlphaBlendToggle({
+  useBlending,
+  onBlendingChange,
+}: AlphaBlendToggleProps) {
   return (
     <IconButton
       aria-label={useBlending ? "Disable Blending (O)" : "Enable Blending (O)"}

@@ -30,12 +30,15 @@ import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
 
+import { Map } from "../types/Map";
+import { MapState } from "../types/MapState";
+
 type SelectMapProps = {
   isOpen: boolean;
-  onDone: any;
-  onMapChange: any;
-  onMapReset: any;
-  currentMap: any;
+  onDone: () => void;
+  onMapChange: (map?: Map, mapState?: MapState) => void;
+  onMapReset: (newState: MapState) => void;
+  currentMap?: Map;
 };
 
 function SelectMapModal({
@@ -79,9 +82,9 @@ function SelectMapModal({
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =
     useState(false);
-  const largeImageWarningFiles = useRef<any>();
+  const largeImageWarningFiles = useRef<File[]>();
 
-  async function handleImagesUpload(files: any) {
+  async function handleImagesUpload(files: File[]) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
@@ -132,8 +135,10 @@ function SelectMapModal({
   async function handleLargeImageWarningConfirm() {
     setShowLargeImageWarning(false);
     const files = largeImageWarningFiles.current;
-    for (let file of files) {
-      await handleImageUpload(file);
+    if (files) {
+      for (let file of files) {
+        await handleImageUpload(file);
+      }
     }
     largeImageWarningFiles.current = undefined;
     clearFileInput();
@@ -171,7 +176,7 @@ function SelectMapModal({
       onMapChange(map, mapState);
       setIsLoading(false);
     } else {
-      onMapChange(null, null);
+      onMapChange(undefined, undefined);
     }
     onDone();
   }
@@ -220,9 +225,15 @@ function SelectMapModal({
       }}
       shouldCloseOnEsc={!isDraggingMap}
     >
-      <ImageDrop onDrop={handleImagesUpload} dropText="Drop map to import">
+      <ImageDrop
+        onDrop={({ files }) => handleImagesUpload(files)}
+        dropText="Drop map to import"
+      >
         <input
-          onChange={(event) => handleImagesUpload(event.target.files)}
+          onChange={(event) =>
+            event.target.files &&
+            handleImagesUpload(Array.from(event.target.files))
+          }
           type="file"
           accept="image/jpeg, image/gif, image/png, image/webp"
           style={{ display: "none" }}

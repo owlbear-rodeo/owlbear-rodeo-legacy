@@ -5,7 +5,12 @@ import UndoIcon from "../../../icons/UndoIcon";
 
 import { isMacLike } from "../../../helpers/shared";
 
-function UndoButton({ onClick, disabled }) {
+type UndoButtonProps = {
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+};
+
+function UndoButton({ onClick, disabled }: UndoButtonProps) {
   return (
     <IconButton
       title={`Undo (${isMacLike ? "Cmd" : "Ctrl"} + Z)`}

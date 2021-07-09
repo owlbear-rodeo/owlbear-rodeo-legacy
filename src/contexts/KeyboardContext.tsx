@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 
 const KeyboardContext = React.createContext({ keyEmitter: new EventEmitter() });
 
-export function KeyboardProvider({ children }: { children: any}) {
+export function KeyboardProvider({ children }: { children: React.ReactNode }) {
   const [keyEmitter] = useState(new EventEmitter());
   useEffect(() => {
     function handleKeyDown(event: Event) {
@@ -45,11 +45,10 @@ export function KeyboardProvider({ children }: { children: any}) {
   );
 }
 
-/**
- * @param {KeyboardEvent} onKeyDown
- * @param {KeyboardEvent} onKeyUp
- */
-export function useKeyboard(onKeyDown: (...args: any[]) => void, onKeyUp: (...args: any[]) => void) {
+export function useKeyboard(
+  onKeyDown?: (event: KeyboardEvent) => void,
+  onKeyUp?: (event: KeyboardEvent) => void
+) {
   const context = useContext(KeyboardContext);
   if (context === undefined) {
     throw new Error("useKeyboard must be used within a KeyboardProvider");

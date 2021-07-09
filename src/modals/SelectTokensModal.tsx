@@ -79,7 +79,7 @@ function SelectTokensModal({
     useState(false);
   const largeImageWarningFiles = useRef<File[]>();
 
-  async function handleImagesUpload(files: FileList) {
+  async function handleImagesUpload(files: File[]) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
@@ -231,10 +231,14 @@ function SelectTokensModal({
       }}
       shouldCloseOnEsc={!isDraggingToken}
     >
-      <ImageDrop onDrop={handleImagesUpload} dropText="Drop token to import">
+      <ImageDrop
+        onDrop={({ files }) => handleImagesUpload(files)}
+        dropText="Drop token to import"
+      >
         <input
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            event.target.files && handleImagesUpload(event.target.files)
+          onChange={(event) =>
+            event.target.files &&
+            handleImagesUpload(Array.from(event.target.files))
           }
           type="file"
           accept="image/jpeg, image/gif, image/png, image/webp"

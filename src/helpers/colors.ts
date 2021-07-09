@@ -1,20 +1,5 @@
-export type Colors = {
-  blue: string;
-  orange: string;
-  red: string;
-  yellow: string;
-  purple: string;
-  green: string;
-  pink: string;
-  teal: string;
-  black: string;
-  darkGray: string;
-  lightGray: string;
-  white: string;
-}
-
 // Colors used for the game for theme general UI colors look at theme.js
-const colors: Colors = {
+const colors = {
   blue: "rgb(26, 106, 255)",
   orange: "rgb(255, 116, 51)",
   red: "rgb(255, 77, 77)",
@@ -29,6 +14,10 @@ const colors: Colors = {
   white: "rgb(255, 255, 255)",
 };
 
-export const colorOptions = Object.keys(colors);
+export type Colors = typeof colors;
+
+export type Color = keyof Colors;
+
+export const colorOptions = Object.keys(colors) as Color[];
 
 export default colors;

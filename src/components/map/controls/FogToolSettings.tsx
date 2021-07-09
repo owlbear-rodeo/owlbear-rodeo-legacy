@@ -1,4 +1,3 @@
-import React from "react";
 import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
@@ -24,14 +23,23 @@ import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 import shortcuts from "../../../shortcuts";
 
-function BrushToolSettings({
+import { FogToolSettings, FogToolType } from "../../../types/Fog";
+
+type FogToolSettingsProps = {
+  settings: FogToolSettings;
+  onSettingChange: (change: Partial<FogToolSettings>) => void;
+  onToolAction: (action: string) => void;
+  disabledActions: string[];
+};
+
+function FogToolSettings({
   settings,
   onSettingChange,
   onToolAction,
   disabledActions,
-}) {
+}: FogToolSettingsProps) {
   // Keyboard shortcuts
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (shortcuts.fogPolygon(event)) {
       onSettingChange({ type: "polygon" });
     } else if (shortcuts.fogBrush(event)) {
@@ -86,7 +94,9 @@ function BrushToolSettings({
     <Flex sx={{ alignItems: "center" }}>
       <ToolSection
         tools={drawTools}
-        onToolClick={(tool) => onSettingChange({ type: tool.id })}
+        onToolClick={(tool) =>
+          onSettingChange({ type: tool.id as FogToolType })
+        }
         collapse={isSmallScreen}
       />
       <Divider vertical />
@@ -134,4 +144,4 @@ function BrushToolSettings({
   );
 }
 
-export default BrushToolSettings;
+export default FogToolSettings;

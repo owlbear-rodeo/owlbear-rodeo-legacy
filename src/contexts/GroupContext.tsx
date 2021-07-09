@@ -206,7 +206,7 @@ export function GroupProvider({
   /**
    * Shortcuts
    */
-  function handleKeyDown(event: React.KeyboardEvent) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (disabled) {
       return;
     }
@@ -218,7 +218,7 @@ export function GroupProvider({
     }
   }
 
-  function handleKeyUp(event: React.KeyboardEvent) {
+  function handleKeyUp(event: KeyboardEvent) {
     if (disabled) {
       return;
     }

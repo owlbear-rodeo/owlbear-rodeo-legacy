@@ -3,10 +3,24 @@ import { Box, Flex } from "theme-ui";
 
 import RadioIconButton from "../../RadioIconButton";
 
+export type Tool = {
+  id: string;
+  title: string;
+  isSelected: boolean;
+  icon: React.ReactNode;
+  disabled?: boolean;
+};
+
+type ToolSectionProps = {
+  collapse: boolean;
+  tools: Tool[];
+  onToolClick: (tool: Tool) => void;
+};
+
 // Section of map tools with the option to collapse into a vertical list
-function ToolSection({ collapse, tools, onToolClick }) {
+function ToolSection({ collapse, tools, onToolClick }: ToolSectionProps) {
   const [showMore, setShowMore] = useState(false);
-  const [collapsedTool, setCollapsedTool] = useState();
+  const [collapsedTool, setCollapsedTool] = useState<Tool>();
 
   useEffect(() => {
     const selectedTool = tools.find((tool) => tool.isSelected);
@@ -20,7 +34,7 @@ function ToolSection({ collapse, tools, onToolClick }) {
     }
   }, [tools]);
 
-  function handleToolClick(tool) {
+  function handleToolClick(tool: Tool) {
     if (collapse && tool.isSelected) {
       setShowMore(!showMore);
     } else if (collapse && !tool.isSelected) {
@@ -29,7 +43,7 @@ function ToolSection({ collapse, tools, onToolClick }) {
     onToolClick(tool);
   }
 
-  function renderTool(tool) {
+  function renderTool(tool: Tool) {
     return (
       <RadioIconButton
         title={tool.title}
@@ -85,17 +99,21 @@ function ToolSection({ collapse, tools, onToolClick }) {
       </Box>
     );
   } else {
-    return tools.map((tool) => (
-      <RadioIconButton
-        title={tool.title}
-        onClick={() => handleToolClick(tool)}
-        key={tool.id}
-        isSelected={tool.isSelected}
-        disabled={tool.disabled}
-      >
-        {tool.icon}
-      </RadioIconButton>
-    ));
+    return (
+      <>
+        {tools.map((tool) => (
+          <RadioIconButton
+            title={tool.title}
+            onClick={() => handleToolClick(tool)}
+            key={tool.id}
+            isSelected={tool.isSelected}
+            disabled={tool.disabled}
+          >
+            {tool.icon}
+          </RadioIconButton>
+        ))}
+      </>
+    );
   }
 }
 

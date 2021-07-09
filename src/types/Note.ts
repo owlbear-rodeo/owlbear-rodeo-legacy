@@ -1,6 +1,8 @@
+import { Color } from "../helpers/colors";
+
 export type Note = {
   id: string;
-  color: string;
+  color: Color;
   lastModified: number;
   lastModifiedBy: string;
   locked: boolean;

@@ -1,10 +1,19 @@
-import React from "react";
 import { IconButton } from "theme-ui";
 
 import CutOnIcon from "../../../icons/FogCutOnIcon";
 import CutOffIcon from "../../../icons/FogCutOffIcon";
 
-function FogCutToggle({ useFogCut, onFogCutChange, disabled }) {
+type FogCutToggleProps = {
+  useFogCut: boolean;
+  onFogCutChange: (useFogCut: boolean) => void;
+  disabled?: boolean;
+};
+
+function FogCutToggle({
+  useFogCut,
+  onFogCutChange,
+  disabled,
+}: FogCutToggleProps) {
   return (
     <IconButton
       aria-label={

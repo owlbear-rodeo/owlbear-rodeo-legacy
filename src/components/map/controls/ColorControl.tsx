@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { Box } from "theme-ui";
+import { Box, SxProp } from "theme-ui";
 
-import colors, { colorOptions } from "../../../helpers/colors";
+import colors, { colorOptions, Color } from "../../../helpers/colors";
 import MapMenu from "../MapMenu";
 
-function ColorCircle({ color, selected, onClick, sx }) {
+type ColorCircleProps = {
+  color: Color;
+  selected: boolean;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+} & SxProp;
+
+function ColorCircle({ color, selected, onClick, sx }: ColorCircleProps) {
   return (
     <Box
       key={color}
@@ -34,24 +40,30 @@ function ColorCircle({ color, selected, onClick, sx }) {
   );
 }
 
-function ColorControl({ color, onColorChange, exclude }) {
+type ColorControlProps = {
+  color: Color;
+  onColorChange: (newColor: Color) => void;
+  exclude: Color[];
+};
+
+function ColorControl({ color, onColorChange, exclude }: ColorControlProps) {
   const [showColorMenu, setShowColorMenu] = useState(false);
   const [colorMenuOptions, setColorMenuOptions] = useState({});
 
-  function handleControlClick(event) {
+  function handleControlClick(event: React.MouseEvent<HTMLDivElement>) {
     if (showColorMenu) {
       setShowColorMenu(false);
       setColorMenuOptions({});
     } else {
       setShowColorMenu(true);
-      const rect = event.target.getBoundingClientRect();
+      const rect = event.currentTarget.getBoundingClientRect();
       setColorMenuOptions({
         // Align the right of the submenu to the left of the tool and center vertically
         left: `${rect.left + rect.width / 2}px`,
         top: `${rect.bottom + 16}px`,
         style: { transform: "translateX(-50%)" },
         // Exclude this node from the sub menus auto close
-        excludeNode: event.target,
+        excludeNode: event.currentTarget,
       });
     }
   }

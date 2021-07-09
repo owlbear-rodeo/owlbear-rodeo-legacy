@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 import { useMedia } from "react-media";
 
@@ -26,14 +26,23 @@ import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 import shortcuts from "../../../shortcuts";
 
+import { DrawingToolSettings, DrawingToolType } from "../../../types/Drawing";
+
+type DrawingToolSettingsProps = {
+  settings: DrawingToolSettings;
+  onSettingChange: (change: Partial<DrawingToolSettings>) => void;
+  onToolAction: (action: string) => void;
+  disabledActions: string[];
+};
+
 function DrawingToolSettings({
   settings,
   onSettingChange,
   onToolAction,
   disabledActions,
-}) {
+}: DrawingToolSettingsProps) {
   // Keyboard shotcuts
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (shortcuts.drawBrush(event)) {
       onSettingChange({ type: "brush" });
     } else if (shortcuts.drawPaint(event)) {
@@ -115,7 +124,9 @@ function DrawingToolSettings({
       <Divider vertical />
       <ToolSection
         tools={tools}
-        onToolClick={(tool) => onSettingChange({ type: tool.id })}
+        onToolClick={(tool) =>
+          onSettingChange({ type: tool.id as DrawingToolType })
+        }
         collapse={isSmallScreen}
       />
       <Divider vertical />

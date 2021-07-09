@@ -1,10 +1,19 @@
-import React from "react";
 import { IconButton } from "theme-ui";
 
 import MultilayerOnIcon from "../../../icons/FogMultilayerOnIcon";
 import MultilayerOffIcon from "../../../icons/FogMultilayerOffIcon";
 
-function MultilayerToggle({ multilayer, onMultilayerChange, disabled }) {
+type MultilayerToggleProps = {
+  multilayer: boolean;
+  onMultilayerChange: (multilayer: boolean) => void;
+  disabled?: boolean;
+};
+
+function MultilayerToggle({
+  multilayer,
+  onMultilayerChange,
+  disabled,
+}: MultilayerToggleProps) {
   return (
     <IconButton
       aria-label={

@@ -1,10 +1,17 @@
-import React from "react";
 import { IconButton } from "theme-ui";
 
 import PreviewOnIcon from "../../../icons/FogPreviewOnIcon";
 import PreviewOffIcon from "../../../icons/FogPreviewOffIcon";
 
-function FogPreviewToggle({ useFogPreview, onFogPreviewChange }) {
+type FogPreviewToggleProps = {
+  useFogPreview: boolean;
+  onFogPreviewChange: (useFogCut: boolean) => void;
+};
+
+function FogPreviewToggle({
+  useFogPreview,
+  onFogPreviewChange,
+}: FogPreviewToggleProps) {
   return (
     <IconButton
       aria-label={

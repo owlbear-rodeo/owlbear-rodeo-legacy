@@ -5,7 +5,12 @@ import RedoIcon from "../../../icons/RedoIcon";
 
 import { isMacLike } from "../../../helpers/shared";
 
-function RedoButton({ onClick, disabled }) {
+type RedoButtonProps = {
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+};
+
+function RedoButton({ onClick, disabled }: RedoButtonProps) {
   return (
     <IconButton
       title={`Redo (${isMacLike ? "Cmd" : "Ctrl"} + Shift + Z)`}
