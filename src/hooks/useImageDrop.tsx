@@ -3,41 +3,51 @@ import { useToasts } from "react-toast-notifications";
 
 import Vector2 from "../helpers/Vector2";
 
+export type ImageDropEvent = {
+  files: File[];
+  dropPosition: Vector2;
+};
+
 function useImageDrop(
-  onImageDrop,
+  onImageDrop: (event: ImageDropEvent) => void,
   supportFileTypes = ["image/jpeg", "image/gif", "image/png", "image/webp"]
 ) {
   const { addToast } = useToasts();
 
   const [dragging, setDragging] = useState(false);
-  function onDragEnter(event) {
+  function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     event.stopPropagation();
     setDragging(true);
   }
 
-  function onDragLeave(event) {
+  function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     event.stopPropagation();
     setDragging(false);
   }
 
-  function onDragOver(event) {
+  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     event.stopPropagation();
-    event.dataTransfer.dropEffect = "copy";
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "copy";
+    }
   }
 
-  async function onDrop(event) {
+  async function onDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     event.stopPropagation();
     let imageFiles = [];
 
     // Check if the dropped image is from a URL
-    const html = event.dataTransfer.getData("text/html");
+    const html = event.dataTransfer?.getData("text/html");
     if (html) {
       try {
         const urlMatch = html.match(/src="?([^"\s]+)"?\s*/);
+        if (!urlMatch) {
+          throw new Error("Unable to find image source");
+        }
         const url = urlMatch[1].replace("&amp;", "&"); // Reverse html encoding of url parameters
         let name = "";
         const altMatch = html.match(/alt="?([^"]+)"?\s*/);
@@ -46,8 +56,7 @@ function useImageDrop(
         }
         const response = await fetch(url);
         if (response.ok) {
-          const file = await response.blob();
-          file.name = name;
+          const file = new File([await response.blob()], name);
           if (supportFileTypes.includes(file.type)) {
             imageFiles.push(file);
           } else {
@@ -63,7 +72,7 @@ function useImageDrop(
       }
     }
 
-    const files = event.dataTransfer.files;
+    const files = event.dataTransfer?.files || [];
     for (let file of files) {
       if (supportFileTypes.includes(file.type)) {
         imageFiles.push(file);
@@ -72,7 +81,7 @@ function useImageDrop(
       }
     }
     const dropPosition = new Vector2(event.clientX, event.clientY);
-    onImageDrop(imageFiles, dropPosition);
+    onImageDrop({ files: imageFiles, dropPosition });
     setDragging(false);
   }
 

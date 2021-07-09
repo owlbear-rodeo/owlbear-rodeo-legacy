@@ -1,12 +1,17 @@
 import React from "react";
 import { Box, Flex, Text } from "theme-ui";
 
-import useImageDrop from "../../hooks/useImageDrop";
+import useImageDrop, { ImageDropEvent } from "../../hooks/useImageDrop";
 
-function ImageDrop({ onDrop, dropText, children }) {
-  const { dragging, containerListeners, overlayListeners } = useImageDrop(
-    onDrop
-  );
+type ImageDropProps = {
+  onDrop: (event: ImageDropEvent) => void;
+  dropText: string;
+  children?: React.ReactNode;
+};
+
+function ImageDrop({ onDrop, dropText, children }: ImageDropProps) {
+  const { dragging, containerListeners, overlayListeners } =
+    useImageDrop(onDrop);
   return (
     <Box {...containerListeners}>
       {children}

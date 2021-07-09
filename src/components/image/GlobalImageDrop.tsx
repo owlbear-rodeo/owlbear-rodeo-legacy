@@ -20,9 +20,23 @@ import { useTokenData } from "../../contexts/TokenDataContext";
 import { useAssets } from "../../contexts/AssetsContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 
-import useImageDrop from "../../hooks/useImageDrop";
+import useImageDrop, { ImageDropEvent } from "../../hooks/useImageDrop";
 
-function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
+import { Map } from "../../types/Map";
+import { MapState } from "../../types/MapState";
+import { TokenState } from "../../types/TokenState";
+
+type GlobalImageDropProps = {
+  children?: React.ReactNode;
+  onMapChange: (map: Map, mapState: MapState) => void;
+  onMapTokensStateCreate: (states: TokenState[]) => void;
+};
+
+function GlobalImageDrop({
+  children,
+  onMapChange,
+  onMapTokensStateCreate,
+}: GlobalImageDropProps) {
   const { addToast } = useToasts();
 
   const userId = useUserId();
@@ -32,17 +46,15 @@ function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
 
   const mapStageRef = useMapStage();
 
-  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] = useState(
-    false
-  );
+  const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =
+    useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const droppedImagesRef = useRef();
-  const dropPositionRef = useRef();
-  // maps or tokens
-  const [droppingType, setDroppingType] = useState("maps");
+  const droppedImagesRef = useRef<File[]>();
+  const dropPositionRef = useRef<Vector2>();
+  const [droppingType, setDroppingType] = useState<"maps" | "tokens">("maps");
 
-  async function handleDrop(files, dropPosition) {
+  async function handleDrop({ files, dropPosition }: ImageDropEvent) {
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
@@ -87,55 +99,63 @@ function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
   }
 
   async function handleMaps() {
-    setIsLoading(true);
-    let maps = [];
-    for (let file of droppedImagesRef.current) {
-      const { map, assets } = await createMapFromFile(file, userId);
-      await addMap(map);
-      await addAssets(assets);
-      maps.push(map);
-    }
+    if (droppedImagesRef.current && userId) {
+      setIsLoading(true);
+      let maps = [];
+      for (let file of droppedImagesRef.current) {
+        const { map, assets } = await createMapFromFile(file, userId);
+        await addMap(map);
+        await addAssets(assets);
+        maps.push(map);
+      }
 
-    // Change map if only 1 dropped
-    if (maps.length === 1) {
-      const mapState = await getMapState(maps[0].id);
-      onMapChange(maps[0], mapState);
-    }
+      // Change map if only 1 dropped
+      if (maps.length === 1) {
+        const mapState = await getMapState(maps[0].id);
+        onMapChange(maps[0], mapState);
+      }
 
-    setIsLoading(false);
-    droppedImagesRef.current = undefined;
+      setIsLoading(false);
+      droppedImagesRef.current = undefined;
+    }
   }
 
   async function handleTokens() {
-    setIsLoading(true);
-    // Keep track of tokens so we can add them to the map
-    let tokens = [];
-    for (let file of droppedImagesRef.current) {
-      const { token, assets } = await createTokenFromFile(file, userId);
-      await addToken(token);
-      await addAssets(assets);
-      tokens.push(token);
-    }
-    setIsLoading(false);
-    droppedImagesRef.current = undefined;
+    if (droppedImagesRef.current && userId) {
+      setIsLoading(true);
+      // Keep track of tokens so we can add them to the map
+      let tokens = [];
+      for (let file of droppedImagesRef.current) {
+        const { token, assets } = await createTokenFromFile(file, userId);
+        await addToken(token);
+        await addAssets(assets);
+        tokens.push(token);
+      }
+      setIsLoading(false);
+      droppedImagesRef.current = undefined;
 
-    const dropPosition = dropPositionRef.current;
-    const mapStage = mapStageRef.current;
-    if (mapStage && dropPosition) {
-      const mapPosition = clientPositionToMapPosition(mapStage, dropPosition);
-      if (mapPosition) {
-        let tokenStates = [];
-        let offset = new Vector2(0, 0);
-        for (let token of tokens) {
-          if (token) {
-            tokenStates.push(
-              createTokenState(token, Vector2.add(mapPosition, offset), userId)
-            );
-            offset = Vector2.add(offset, 0.01);
+      const dropPosition = dropPositionRef.current;
+      const mapStage = mapStageRef.current;
+      if (mapStage && dropPosition) {
+        const mapPosition = clientPositionToMapPosition(mapStage, dropPosition);
+        if (mapPosition) {
+          let tokenStates = [];
+          let offset = new Vector2(0, 0);
+          for (let token of tokens) {
+            if (token) {
+              tokenStates.push(
+                createTokenState(
+                  token,
+                  Vector2.add(mapPosition, offset),
+                  userId
+                )
+              );
+              offset = Vector2.add(offset, 0.01);
+            }
           }
-        }
-        if (tokenStates.length > 0) {
-          onMapTokensStateCreate(tokenStates);
+          if (tokenStates.length > 0) {
+            onMapTokensStateCreate(tokenStates);
+          }
         }
       }
     }
@@ -149,9 +169,8 @@ function GlobalImageDrop({ children, onMapChange, onMapTokensStateCreate }) {
     setDroppingType("tokens");
   }
 
-  const { dragging, containerListeners, overlayListeners } = useImageDrop(
-    handleDrop
-  );
+  const { dragging, containerListeners, overlayListeners } =
+    useImageDrop(handleDrop);
 
   return (
     <Flex sx={{ height: "100%", flexGrow: 1 }} {...containerListeners}>
