@@ -36,11 +36,15 @@ import { TileDragProvider } from "../contexts/TileDragContext";
 import { useMapStage } from "../contexts/MapStageContext";
 
 import { TokenState } from "../types/TokenState";
+import {
+  MapTokensStateCreateHandler,
+  RequestCloseEventHandler,
+} from "../types/Events";
 
 type SelectTokensModalProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
-  onMapTokensStateCreate: (states: TokenState[]) => void;
+  onRequestClose: RequestCloseEventHandler;
+  onMapTokensStateCreate: MapTokensStateCreateHandler;
 };
 
 function SelectTokensModal({

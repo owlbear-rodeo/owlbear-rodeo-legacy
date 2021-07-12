@@ -1,26 +1,38 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, IconButton } from "theme-ui";
+import { Node } from "konva/types/Node";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 
-function DragOverlay({ dragging, node, onRemove }) {
+type DragOverlayProps = {
+  dragging: boolean;
+  node: Node;
+  onRemove: () => void;
+};
+
+function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
   const [isRemoveHovered, setIsRemoveHovered] = useState(false);
-  const removeTokenRef = useRef();
+  const removeTokenRef = useRef<HTMLDivElement>(null);
 
   // Detect token hover on remove icon manually to support touch devices
   useEffect(() => {
-    const map = document.querySelector(".map");
-    const mapRect = map.getBoundingClientRect();
-
     function detectRemoveHover() {
       if (!node || !dragging || !removeTokenRef.current) {
         return;
       }
+      const map = document.querySelector(".map");
+      if (!map) {
+        return;
+      }
+      const mapRect = map.getBoundingClientRect();
       const stage = node.getStage();
       if (!stage) {
         return;
       }
       const pointerPosition = stage.getPointerPosition();
+      if (!pointerPosition) {
+        return;
+      }
       const screenSpacePointerPosition = {
         x: pointerPosition.x + mapRect.left,
         y: pointerPosition.y + mapRect.top,
@@ -41,7 +53,7 @@ function DragOverlay({ dragging, node, onRemove }) {
       }
     }
 
-    let handler;
+    let handler: NodeJS.Timeout;
     if (node && dragging) {
       handler = setInterval(detectRemoveHover, 100);
     }

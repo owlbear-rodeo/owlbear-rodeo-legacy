@@ -12,27 +12,30 @@ import { Map } from "../types/Map";
 import { Group, GroupContainer } from "../types/Group";
 import { MapState } from "../types/MapState";
 import { Token } from "../types/Token";
-
-type SelectDataProps = {
-  isOpen: boolean;
-  onRequestClose: () => void;
-  onConfirm: (
-    checkedMaps: SelectData[],
-    checkedTokens: SelectData[],
-    checkedMapGroups: Group[],
-    checkedTokenGroups: Group[]
-  ) => void;
-  confirmText: string;
-  label: string;
-  databaseName: string;
-  filter: (table: string, data: Map | MapState | Token, id: string) => boolean;
-};
+import { RequestCloseEventHandler } from "../types/Events";
 
 export type SelectData = {
   name: string;
   id: string;
   type: "default" | "file";
   checked: boolean;
+};
+
+export type ConfirmDataEventHandler = (
+  checkedMaps: SelectData[],
+  checkedTokens: SelectData[],
+  checkedMapGroups: Group[],
+  checkedTokenGroups: Group[]
+) => void;
+
+type SelectDataProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  onConfirm: ConfirmDataEventHandler;
+  confirmText: string;
+  label: string;
+  databaseName: string;
+  filter: (table: string, data: Map | MapState | Token, id: string) => boolean;
 };
 
 type DataRecord = Record<string, SelectData>;

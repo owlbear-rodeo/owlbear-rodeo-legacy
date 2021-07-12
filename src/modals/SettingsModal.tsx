@@ -21,24 +21,27 @@ import useSetting from "../hooks/useSetting";
 
 import ConfirmModal from "./ConfirmModal";
 import ImportExportModal from "./ImportExportModal";
-import { MapState } from "../components/map/Map";
+
+import { MapState } from "../types/MapState";
+import { RequestCloseEventHandler } from "../types/Events";
 
 function SettingsModal({
   isOpen,
   onRequestClose,
 }: {
   isOpen: boolean;
-  onRequestClose: () => void;
+  onRequestClose: RequestCloseEventHandler;
 }) {
   const { database, databaseStatus } = useDatabase();
   const userId = useUserId();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [labelSize, setLabelSize] = useSetting("map.labelSize");
-  const [gridSnappingSensitivity, setGridSnappingSensitivity] = useSetting(
-    "map.gridSnappingSensitivity"
-  );
-  const [showFogGuides, setShowFogGuides] = useSetting("fog.showGuides");
-  const [fogEditOpacity, setFogEditOpacity] = useSetting("fog.editOpacity");
+  const [labelSize, setLabelSize] = useSetting<number>("map.labelSize");
+  const [gridSnappingSensitivity, setGridSnappingSensitivity] =
+    useSetting<number>("map.gridSnappingSensitivity");
+  const [showFogGuides, setShowFogGuides] =
+    useSetting<boolean>("fog.showGuides");
+  const [fogEditOpacity, setFogEditOpacity] =
+    useSetting<number>("fog.editOpacity");
   const [storageEstimate, setStorageEstimate] = useState<StorageEstimate>();
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

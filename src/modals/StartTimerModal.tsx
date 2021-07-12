@@ -7,13 +7,19 @@ import { getHMSDuration, getDurationHMS } from "../helpers/timer";
 
 import useSetting from "../hooks/useSetting";
 
+import { RequestCloseEventHandler } from "../types/Events";
+import { Timer } from "../types/Timer";
+
+export type TimerStartEventHandler = (event: Timer) => void;
+export type TimerStopEventHandler = () => void;
+
 type StartTimerProps = {
-  isOpen: boolean,
-  onRequestClose: () => void,
-  onTimerStart: any,
-  onTimerStop: any,
-  timer: any,
-}
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  onTimerStart: TimerStartEventHandler;
+  onTimerStop: TimerStopEventHandler;
+  timer?: Timer;
+};
 
 function StartTimerModal({
   isOpen,
@@ -27,9 +33,9 @@ function StartTimerModal({
     inputRef.current && inputRef.current.focus();
   }
 
-  const [hour, setHour] = useSetting("timer.hour");
-  const [minute, setMinute] = useSetting("timer.minute");
-  const [second, setSecond] = useSetting("timer.second");
+  const [hour, setHour] = useSetting<number>("timer.hour");
+  const [minute, setMinute] = useSetting<number>("timer.minute");
+  const [second, setSecond] = useSetting<number>("timer.second");
 
   function handleSubmit(event: ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
@@ -85,10 +91,10 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timerHMS.hour : hour}`}
+              value={`${timerHMS ? timerHMS.hour : hour}`}
               onChange={(e) => setHour(parseValue(e.target.value, 24))}
               type="number"
-              disabled={timer}
+              disabled={!!timer}
               min={0}
               max={24}
             />
@@ -97,11 +103,11 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timerHMS.minute : minute}`}
+              value={`${timerHMS ? timerHMS.minute : minute}`}
               onChange={(e) => setMinute(parseValue(e.target.value, 59))}
               type="number"
               ref={inputRef}
-              disabled={timer}
+              disabled={!!timer}
               min={0}
               max={59}
             />
@@ -110,10 +116,10 @@ function StartTimerModal({
             </Text>
             <Input
               sx={inputStyle}
-              value={`${timer ? timerHMS.second : second}`}
+              value={`${timerHMS ? timerHMS.second : second}`}
               onChange={(e) => setSecond(parseValue(e.target.value, 59))}
               type="number"
-              disabled={timer}
+              disabled={!!timer}
               min={0}
               max={59}
             />

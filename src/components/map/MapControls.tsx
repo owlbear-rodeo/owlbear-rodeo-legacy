@@ -21,6 +21,22 @@ import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
 
 import useSetting from "../../hooks/useSetting";
+import { Map } from "../../types/Map";
+import { MapState } from "../../types/MapState";
+
+type MapControlsProps = {
+  onMapChange: () => void;
+  onMapReset: () => void;
+  currentMap?: Map;
+  currentMapState?: MapState;
+  selectedToolId: string;
+  onSelectedToolChange: () => void;
+  toolSettings: any;
+  onToolSettingChange: () => void;
+  onToolAction: () => void;
+  disabledControls: string[];
+  disabledSettings: string[];
+};
 
 function MapContols({
   onMapChange,
@@ -34,7 +50,7 @@ function MapContols({
   onToolAction,
   disabledControls,
   disabledSettings,
-}) {
+}: MapControlsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
 

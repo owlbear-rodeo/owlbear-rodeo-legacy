@@ -2,21 +2,26 @@ import React, { useState, useEffect, useContext } from "react";
 
 import { getSettings } from "../settings";
 
-const SettingsContext = React.createContext({
-  settings: {},
-  setSettings: () => {},
-});
+import { Settings } from "../types/Settings";
+
+type SettingsContext = {
+  settings: Settings;
+  setSettings: React.Dispatch<React.SetStateAction<Settings>>;
+};
+
+const SettingsContext =
+  React.createContext<SettingsContext | undefined>(undefined);
 
 const settingsProvider = getSettings();
 
 export function SettingsProvider({ children }: { children: any }) {
-  const [settings, setSettings] = useState(settingsProvider.getAll());
+  const [settings, setSettings] = useState<Settings>(settingsProvider.getAll());
 
   useEffect(() => {
     settingsProvider.setAll(settings);
   }, [settings]);
 
-  const value: { settings: any, setSettings: any} = {
+  const value = {
     settings,
     setSettings,
   };

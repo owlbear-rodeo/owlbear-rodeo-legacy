@@ -3,11 +3,15 @@ import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
+export type GroupNameEventHandler = (name: string) => void;
+
 type GroupNameModalProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
+  onRequestClose: RequestCloseEventHandler;
   name: string;
-  onSubmit: (name: string) => void;
+  onSubmit: GroupNameEventHandler;
 };
 
 function GroupNameModal({

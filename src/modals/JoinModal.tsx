@@ -4,9 +4,11 @@ import { useHistory } from "react-router-dom";
 
 import Modal from "../components/Modal";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
 type JoinModalProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
+  onRequestClose: RequestCloseEventHandler;
 };
 
 function JoinModal({ isOpen, onRequestClose }: JoinModalProps) {

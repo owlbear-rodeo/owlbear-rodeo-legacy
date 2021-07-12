@@ -5,12 +5,13 @@ import DiceTile from "./DiceTile";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 import { DefaultDice } from "../../types/Dice";
+import { DiceSelectEventHandler } from "../../types/Events";
 
 type DiceTileProps = {
   dice: DefaultDice[];
-  onDiceSelect: (dice: DefaultDice) => void;
+  onDiceSelect: DiceSelectEventHandler;
   selectedDice: DefaultDice;
-  onDone: (dice: DefaultDice) => void;
+  onDone: DiceSelectEventHandler;
 };
 
 function DiceTiles({

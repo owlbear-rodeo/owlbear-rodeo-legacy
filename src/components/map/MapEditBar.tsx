@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Flex, Close, IconButton } from "theme-ui";
 
 import { groupsFromIds, itemsFromGroups } from "../../helpers/group";
@@ -13,8 +13,27 @@ import { useMapData } from "../../contexts/MapDataContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import shortcuts from "../../shortcuts";
+import { Map } from "../../types/Map";
+import {
+  MapChangeEventHandler,
+  MapResetEventHandler,
+} from "../../types/Events";
 
-function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
+type MapEditBarProps = {
+  currentMap?: Map;
+  disabled: boolean;
+  onMapChange: MapChangeEventHandler;
+  onMapReset: MapResetEventHandler;
+  onLoad: (loading: boolean) => void;
+};
+
+function MapEditBar({
+  currentMap,
+  disabled,
+  onMapChange,
+  onMapReset,
+  onLoad,
+}: MapEditBarProps) {
   const [hasMapState, setHasMapState] = useState(false);
 
   const { maps, mapStates, removeMaps, resetMap } = useMapData();
@@ -56,11 +75,11 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
     setIsMapsRemoveModalOpen(false);
     const selectedMaps = getSelectedMaps();
     const selectedMapIds = selectedMaps.map((map) => map.id);
-    onGroupSelect();
+    onGroupSelect(undefined);
     await removeMaps(selectedMapIds);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
-      onMapChange(null, null);
+      onMapChange(undefined, undefined);
     }
     onLoad(false);
   }
@@ -84,7 +103,7 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
   /**
    * Shortcuts
    */
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (disabled) {
       return;
     }
@@ -117,7 +136,7 @@ function MapEditBar({ currentMap, disabled, onMapChange, onMapReset, onLoad }) {
       <Close
         title="Clear Selection"
         aria-label="Clear Selection"
-        onClick={() => onGroupSelect()}
+        onClick={() => onGroupSelect(undefined)}
       />
       <Flex>
         <IconButton

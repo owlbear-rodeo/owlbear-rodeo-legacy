@@ -9,13 +9,16 @@ import TokenPreview from "../components/token/TokenPreview";
 import { isEmpty } from "../helpers/shared";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
 import { Token } from "../types/Token";
+
+import { UpdateTokenEventHandler } from "../contexts/TokenDataContext";
 
 type EditModalProps = {
   isOpen: boolean;
   onDone: () => void;
   token: Token;
-  onUpdateToken: (id: string, update: Partial<Token>) => void;
+  onUpdateToken: UpdateTokenEventHandler;
 };
 
 function EditTokenModal({

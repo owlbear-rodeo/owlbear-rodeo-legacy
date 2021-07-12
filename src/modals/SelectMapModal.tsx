@@ -31,13 +31,17 @@ import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
 
 import { Map } from "../types/Map";
-import { MapState } from "../types/MapState";
+import {
+  MapChangeEventHandler,
+  MapResetEventHandler,
+  RequestCloseEventHandler,
+} from "../types/Events";
 
 type SelectMapProps = {
   isOpen: boolean;
-  onDone: () => void;
-  onMapChange: (map?: Map, mapState?: MapState) => void;
-  onMapReset: (newState: MapState) => void;
+  onDone: RequestCloseEventHandler;
+  onMapChange: MapChangeEventHandler;
+  onMapReset: MapResetEventHandler;
   currentMap?: Map;
 };
 
@@ -294,7 +298,7 @@ function SelectMapModal({
                 </TileDragProvider>
                 <MapEditBar
                   currentMap={currentMap}
-                  disabled={isLoading || editingMapId}
+                  disabled={isLoading || !!editingMapId}
                   onMapChange={onMapChange}
                   onMapReset={onMapReset}
                   onLoad={setIsLoading}

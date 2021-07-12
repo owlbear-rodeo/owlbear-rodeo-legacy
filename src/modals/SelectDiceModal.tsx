@@ -8,12 +8,16 @@ import { dice } from "../dice";
 
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
+import {
+  DiceSelectEventHandler,
+  RequestCloseEventHandler,
+} from "../types/Events";
 import { DefaultDice } from "../types/Dice";
 
 type SelectDiceProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
-  onDone: (dice: DefaultDice) => void;
+  onRequestClose: RequestCloseEventHandler;
+  onDone: DiceSelectEventHandler;
   defaultDice: DefaultDice;
 };
 

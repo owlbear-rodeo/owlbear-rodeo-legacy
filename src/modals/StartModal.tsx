@@ -9,7 +9,15 @@ import useSetting from "../hooks/useSetting";
 
 import Modal from "../components/Modal";
 
-function StartModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClose: () => void}) {
+import { RequestCloseEventHandler } from "../types/Events";
+
+function StartModal({
+  isOpen,
+  onRequestClose,
+}: {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+}) {
   let history = useHistory();
   const { password, setPassword } = useAuth();
 
@@ -17,7 +25,7 @@ function StartModal({ isOpen, onRequestClose }: { isOpen: boolean, onRequestClos
     setPassword(event.target.value);
   }
 
-  const [usePassword, setUsePassword] = useSetting("game.usePassword");
+  const [usePassword, setUsePassword] = useSetting<boolean>("game.usePassword");
   function handleUsePasswordChange(event: ChangeEvent<HTMLInputElement>) {
     setUsePassword(event.target.checked);
   }

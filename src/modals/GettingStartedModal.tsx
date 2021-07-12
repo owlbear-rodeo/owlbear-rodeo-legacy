@@ -5,11 +5,13 @@ import Modal from "../components/Modal";
 import Markdown from "../components/Markdown";
 import Link from "../components/Link";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
 const gettingStarted = raw("../docs/howTo/gettingStarted.md");
 
 type GettingStartedModalProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
+  onRequestClose: RequestCloseEventHandler;
 };
 
 function GettingStartedModal({

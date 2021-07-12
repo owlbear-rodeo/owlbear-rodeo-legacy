@@ -21,6 +21,7 @@ import { Map } from "../types/Map";
 import { MapState } from "../types/MapState";
 import { Token } from "../types/Token";
 import { Group } from "../types/Group";
+import { RequestCloseEventHandler } from "../types/Events";
 
 const importDBName = "OwlbearRodeoImportDB";
 
@@ -36,7 +37,7 @@ function ImportExportModal({
   onRequestClose,
 }: {
   isOpen: boolean;
-  onRequestClose: () => void;
+  onRequestClose: RequestCloseEventHandler;
 }) {
   const { worker } = useDatabase();
   const userId = useUserId();

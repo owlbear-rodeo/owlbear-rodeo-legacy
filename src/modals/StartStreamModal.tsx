@@ -2,17 +2,22 @@ import { Box, Text, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
+export type StreamStartEventHandler = () => void;
+export type StreamEndEventHandler = (stream: MediaStream) => void;
+
 type StartStreamProps = {
-  isOpen: boolean,
-  onRequestClose: () => void,
-  isSupported: boolean,
-  unavailableMessage: JSX.Element,
-  stream: MediaStream,
-  noAudioTrack: boolean,
-  noAudioMessage: JSX.Element,
-  onStreamStart: any,
-  onStreamEnd: any,
-}
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  isSupported: boolean;
+  unavailableMessage: JSX.Element;
+  stream: MediaStream;
+  noAudioTrack: boolean;
+  noAudioMessage: JSX.Element;
+  onStreamStart: StreamStartEventHandler;
+  onStreamEnd: StreamEndEventHandler;
+};
 
 function StartStreamModal({
   isOpen,

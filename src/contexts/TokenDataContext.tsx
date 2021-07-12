@@ -9,20 +9,37 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { useDatabase } from "./DatabaseContext";
 
-import { Token } from "../tokens";
 import { removeGroupsItems } from "../helpers/group";
+
+import { Token } from "../types/Token";
+import { Group } from "../types/Group";
+
+export type AddTokenEventHandler = (token: Token) => Promise<void>;
+export type RemoveTokensEventHandler = (ids: string[]) => Promise<void>;
+export type UpdateTokenEventHandler = (
+  id: string,
+  update: Partial<Token>
+) => Promise<void>;
+export type GetTokenEventHandler = (
+  tokenId: string
+) => Promise<Token | undefined>;
+export type UpdateTokenGroupsEventHandler = (groups: any[]) => Promise<void>;
+export type UpdateTokensHiddenEventHandler = (
+  ids: string[],
+  hideInSidebar: boolean
+) => Promise<void>;
 
 type TokenDataContext = {
   tokens: Token[];
-  addToken: (token: Token) => Promise<void>;
-  tokenGroups: any[];
-  removeTokens: (ids: string[]) => Promise<void>;
-  updateToken: (id: string, update: Partial<Token>) => Promise<void>;
-  getToken: (tokenId: string) => Promise<Token | undefined>;
+  addToken: AddTokenEventHandler;
+  tokenGroups: Group[];
+  removeTokens: RemoveTokensEventHandler;
+  updateToken: UpdateTokenEventHandler;
+  getToken: GetTokenEventHandler;
   tokensById: Record<string, Token>;
   tokensLoading: boolean;
-  updateTokenGroups: (groups: any[]) => void;
-  updateTokensHidden: (ids: string[], hideInSidebar: boolean) => void;
+  updateTokenGroups: UpdateTokenGroupsEventHandler;
+  updateTokensHidden: UpdateTokensHiddenEventHandler;
 };
 
 const TokenDataContext =
@@ -44,7 +61,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const [tokenGroups, setTokenGroups] = useState([]);
+  const [tokenGroups, setTokenGroups] = useState<Group[]>([]);
   useEffect(() => {
     async function updateTokenGroups() {
       const group = await database?.table("groups").get("tokens");
@@ -55,7 +72,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [tokenGroupQuery, database]);
 
-  const getToken = useCallback(
+  const getToken = useCallback<GetTokenEventHandler>(
     async (tokenId) => {
       let token = await database?.table("tokens").get(tokenId);
       return token;
@@ -64,7 +81,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
   );
 
   // Add token and add it to the token group
-  const addToken = useCallback(
+  const addToken = useCallback<AddTokenEventHandler>(
     async (token) => {
       if (database) {
         await database.table("tokens").add(token);
@@ -77,7 +94,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const removeTokens = useCallback(
+  const removeTokens = useCallback<RemoveTokensEventHandler>(
     async (ids) => {
       if (database) {
         const tokens = await database.table("tokens").bulkGet(ids);
@@ -100,14 +117,14 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const updateToken = useCallback(
+  const updateToken = useCallback<UpdateTokenEventHandler>(
     async (id, update) => {
       await database?.table("tokens").update(id, update);
     },
     [database]
   );
 
-  const updateTokensHidden = useCallback(
+  const updateTokensHidden = useCallback<UpdateTokensHiddenEventHandler>(
     async (ids: string[], hideInSidebar: boolean) => {
       await Promise.all(
         ids.map((id) => database?.table("tokens").update(id, { hideInSidebar }))
@@ -116,8 +133,8 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const updateTokenGroups = useCallback(
-    async (groups) => {
+  const updateTokenGroups = useCallback<UpdateTokenGroupsEventHandler>(
+    async (groups: Group[]) => {
       // Update group state immediately to avoid animation delay
       setTokenGroups(groups);
       await database?.table("groups").update("tokens", { items: groups });

@@ -11,37 +11,58 @@ import { useDatabase } from "./DatabaseContext";
 
 import { Map } from "../types/Map";
 import { MapState } from "../types/MapState";
-import { Note } from "../types/Note";
 
 import { removeGroupsItems } from "../helpers/group";
 
-// TODO: fix differences in types between default maps and imported maps
+import { Group } from "../types/Group";
+
+export type AddMapEventHandler = (map: Map) => Promise<void>;
+export type RemoveMapsEventHandler = (ids: string[]) => Promise<void>;
+export type ResetMapEventHandler = (id: string) => Promise<MapState>;
+export type UpdateMapEventHanlder = (
+  id: string,
+  update: Partial<Map>
+) => Promise<void>;
+export type UpdateMapStateEventHandler = (
+  id: string,
+  update: Partial<MapState>
+) => Promise<void>;
+export type GetMapStateEventHandler = (
+  id: string
+) => Promise<MapState | undefined>;
+export type GetMapEventHandler = (id: string) => Promise<Map | undefined>;
+export type UpdateMapGroupsEventHandler = (groups: Group[]) => Promise<void>;
+
 type MapDataContext = {
   maps: Array<Map>;
   mapStates: MapState[];
-  addMap: (map: Map) => void;
-  removeMaps: (ids: string[]) => void;
-  resetMap: (id: string) => void;
-  updateMap: (id: string, update: Partial<Map>) => void;
-  updateMapState: (id: string, update: Partial<MapState>) => void;
-  getMapState: (id: string) => Promise<MapState>;
-  getMap: (id: string) => Promise<Map | undefined>;
+  /** Adds a map to the database, also adds an assosiated state and group for that map */
+  addMap: AddMapEventHandler;
+  removeMaps: RemoveMapsEventHandler;
+  resetMap: ResetMapEventHandler;
+  updateMap: UpdateMapEventHanlder;
+  updateMapState: UpdateMapStateEventHandler;
+  getMapState: GetMapStateEventHandler;
+  getMap: GetMapEventHandler;
   mapsLoading: boolean;
-  updateMapGroups: (groups: any) => void;
+  updateMapGroups: UpdateMapGroupsEventHandler;
   mapsById: Record<string, Map>;
-  mapGroups: any[];
+  mapGroups: Group[];
 };
 
 const MapDataContext =
   React.createContext<MapDataContext | undefined>(undefined);
 
-const defaultMapState = {
+const defaultMapState: Pick<
+  MapState,
+  "tokens" | "drawShapes" | "fogShapes" | "editFlags" | "notes"
+> = {
   tokens: {},
   drawShapes: {},
   fogShapes: {},
   // Flags to determine what other people can edit
   editFlags: ["drawing", "tokens", "notes", "fog"],
-  notes: {} as Note[],
+  notes: {},
 };
 
 export function MapDataProvider({ children }: { children: React.ReactNode }) {
@@ -68,7 +89,7 @@ export function MapDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const [mapGroups, setMapGroups] = useState([]);
+  const [mapGroups, setMapGroups] = useState<Group[]>([]);
   useEffect(() => {
     async function updateMapGroups() {
       const group = await database?.table("groups").get("maps");
@@ -79,27 +100,23 @@ export function MapDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [mapGroupQuery, database]);
 
-  const getMap = useCallback(
-    async (mapId: string) => {
-      let map = (await database?.table("maps").get(mapId)) as Map;
+  const getMap = useCallback<GetMapEventHandler>(
+    async (mapId) => {
+      let map = await database?.table("maps").get(mapId);
       return map;
     },
     [database]
   );
 
-  const getMapState = useCallback(
+  const getMapState = useCallback<GetMapStateEventHandler>(
     async (mapId) => {
-      let mapState = (await database?.table("states").get(mapId)) as MapState;
+      let mapState = await database?.table("states").get(mapId);
       return mapState;
     },
     [database]
   );
 
-  /**
-   * Adds a map to the database, also adds an assosiated state and group for that map
-   * @param {Object} map map to add
-   */
-  const addMap = useCallback(
+  const addMap = useCallback<AddMapEventHandler>(
     async (map) => {
       if (database) {
         // Just update map database as react state will be updated with an Observable
@@ -115,7 +132,7 @@ export function MapDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const removeMaps = useCallback(
+  const removeMaps = useCallback<RemoveMapsEventHandler>(
     async (ids) => {
       if (database) {
         const maps = await database.table("maps").bulkGet(ids);
@@ -143,30 +160,30 @@ export function MapDataProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const resetMap = useCallback(
+  const resetMap = useCallback<ResetMapEventHandler>(
     async (id) => {
-      const state = { ...defaultMapState, mapId: id };
+      const state: MapState = { ...defaultMapState, mapId: id };
       await database?.table("states").put(state);
       return state;
     },
     [database]
   );
 
-  const updateMap = useCallback(
+  const updateMap = useCallback<UpdateMapEventHanlder>(
     async (id, update) => {
       await database?.table("maps").update(id, update);
     },
     [database]
   );
 
-  const updateMapState = useCallback(
+  const updateMapState = useCallback<UpdateMapStateEventHandler>(
     async (id, update) => {
       await database?.table("states").update(id, update);
     },
     [database]
   );
 
-  const updateMapGroups = useCallback(
+  const updateMapGroups = useCallback<UpdateMapGroupsEventHandler>(
     async (groups) => {
       // Update group state immediately to avoid animation delay
       setMapGroups(groups);
