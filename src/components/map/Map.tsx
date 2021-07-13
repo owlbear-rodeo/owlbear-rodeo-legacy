@@ -255,9 +255,9 @@ function Map({
   const mapDrawing = (
     <MapDrawing
       map={map}
-      shapes={drawShapes}
-      onShapeAdd={handleMapShapeAdd}
-      onShapesRemove={handleMapShapesRemove}
+      drawings={drawShapes}
+      onDrawingAdd={handleMapShapeAdd}
+      onDrawingsRemove={handleMapShapesRemove}
       active={selectedToolId === "drawing"}
       toolSettings={settings.drawing}
     />

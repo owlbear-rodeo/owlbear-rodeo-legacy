@@ -331,10 +331,8 @@ export function getRelativePointerPosition(
 ): { x: number; y: number } | undefined {
   let transform = node.getAbsoluteTransform().copy();
   transform.invert();
-  // TODO: handle possible null value
   let position = node.getStage()?.getPointerPosition();
   if (!position) {
-    // TODO: handle possible null value
     return;
   }
   return transform.point(position);

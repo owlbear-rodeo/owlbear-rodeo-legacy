@@ -37,7 +37,7 @@ export type ShapeData = PointsData | RectData | CircleData;
 
 export type BaseDrawing = {
   blend: boolean;
-  color: string;
+  color: Color;
   id: string;
   strokeWidth: number;
 };
@@ -45,8 +45,6 @@ export type BaseDrawing = {
 export type BaseShape = BaseDrawing & {
   type: "shape";
 };
-
-export type ShapeType = "line" | "rectangle" | "circle" | "triangle";
 
 export type Line = BaseShape & {
   shapeType: "line";
@@ -68,6 +66,12 @@ export type Triangle = BaseShape & {
   data: PointsData;
 };
 
+export type ShapeType =
+  | Line["shapeType"]
+  | Rectangle["shapeType"]
+  | Circle["shapeType"]
+  | Triangle["shapeType"];
+
 export type Shape = Line | Rectangle | Circle | Triangle;
 
 export type Path = BaseDrawing & {
@@ -77,3 +81,12 @@ export type Path = BaseDrawing & {
 };
 
 export type Drawing = Shape | Path;
+
+export function drawingToolIsShape(type: DrawingToolType): type is ShapeType {
+  return (
+    type === "line" ||
+    type === "rectangle" ||
+    type === "circle" ||
+    type === "triangle"
+  );
+}

@@ -12,6 +12,7 @@ const colors = {
   darkGray: "rgb(90, 90, 90)",
   lightGray: "rgb(179, 179, 179)",
   white: "rgb(255, 255, 255)",
+  primary: "hsl(260, 100%, 80%)",
 };
 
 export type Colors = typeof colors;

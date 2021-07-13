@@ -1,16 +1,45 @@
-import React, { ReactChild, useContext } from "react";
+import React, { useContext } from "react";
+import { EventEmitter } from "stream";
 import useDebounce from "../hooks/useDebounce";
 
-export const StageScaleContext = React.createContext(undefined) as any;
-export const DebouncedStageScaleContext = React.createContext(undefined) as any;
-export const StageWidthContext = React.createContext(undefined) as any;
-export const StageHeightContext = React.createContext(undefined) as any;
-export const SetPreventMapInteractionContext = React.createContext(undefined) as any;
-export const MapWidthContext = React.createContext(undefined) as any;
-export const MapHeightContext = React.createContext(undefined) as any;
-export const InteractionEmitterContext = React.createContext(undefined) as any;
+type MapInteraction = {
+  stageScale: number;
+  stageWidth: number;
+  stageHeight: number;
+  setPreventMapInteraction: React.Dispatch<React.SetStateAction<boolean>>;
+  mapWidth: number;
+  mapHeight: number;
+  interactionEmitter: EventEmitter | null;
+};
 
-export function MapInteractionProvider({ value, children }: { value: any, children: ReactChild[]}) {
+export const StageScaleContext =
+  React.createContext<MapInteraction["stageScale"] | undefined>(undefined);
+export const DebouncedStageScaleContext =
+  React.createContext<MapInteraction["stageScale"] | undefined>(undefined);
+export const StageWidthContext =
+  React.createContext<MapInteraction["stageWidth"] | undefined>(undefined);
+export const StageHeightContext =
+  React.createContext<MapInteraction["stageHeight"] | undefined>(undefined);
+export const SetPreventMapInteractionContext =
+  React.createContext<MapInteraction["setPreventMapInteraction"] | undefined>(
+    undefined
+  );
+export const MapWidthContext =
+  React.createContext<MapInteraction["mapWidth"] | undefined>(undefined);
+export const MapHeightContext =
+  React.createContext<MapInteraction["mapHeight"] | undefined>(undefined);
+export const InteractionEmitterContext =
+  React.createContext<MapInteraction["interactionEmitter"] | undefined>(
+    undefined
+  );
+
+export function MapInteractionProvider({
+  value,
+  children,
+}: {
+  value: MapInteraction;
+  children: React.ReactNode;
+}) {
   const {
     stageScale,
     stageWidth,

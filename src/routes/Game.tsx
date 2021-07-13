@@ -28,6 +28,7 @@ import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
 import Session from "../network/Session";
+import { Stage } from "konva/types/Stage";
 
 function Game() {
   const { id: gameId }: { id: string } = useParams();
@@ -110,7 +111,7 @@ function Game() {
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
-  const mapStageRef: React.MutableRefObject<any> = useRef();
+  const mapStageRef = useRef<Stage | null>(null);
 
   return (
     <AssetsProvider>

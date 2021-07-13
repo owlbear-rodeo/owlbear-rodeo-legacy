@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import shortid from "shortid";
 import { Group, Line, Rect, Circle } from "react-konva";
 
@@ -25,14 +25,34 @@ import { getRelativePointerPosition } from "../../helpers/konva";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 
+import { Map } from "../../types/Map";
+import {
+  Drawing,
+  DrawingToolSettings,
+  drawingToolIsShape,
+  Shape,
+} from "../../types/Drawing";
+
+export type DrawingAddEventHanlder = (drawing: Drawing) => void;
+export type DrawingsRemoveEventHandler = (drawingIds: string[]) => void;
+
+type MapDrawingProps = {
+  map: Map;
+  drawings: Drawing[];
+  onDrawingAdd: DrawingAddEventHanlder;
+  onDrawingsRemove: DrawingsRemoveEventHandler;
+  active: boolean;
+  toolSettings: DrawingToolSettings;
+};
+
 function MapDrawing({
   map,
-  shapes,
-  onShapeAdd,
-  onShapesRemove,
+  drawings,
+  onDrawingAdd: onShapeAdd,
+  onDrawingsRemove: onShapesRemove,
   active,
   toolSettings,
-}) {
+}: MapDrawingProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -42,11 +62,12 @@ function MapDrawing({
   const gridStrokeWidth = useGridStrokeWidth();
 
   const mapStageRef = useMapStage();
-  const [drawingShape, setDrawingShape] = useState(null);
+  const [drawing, setDrawing] = useState<Drawing | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
-  const [erasingShapes, setErasingShapes] = useState([]);
+  const [erasingDrawings, setErasingDrawings] = useState<Drawing[]>([]);
 
   const shouldHover = toolSettings.type === "erase" && active;
+
   const isBrush =
     toolSettings.type === "brush" || toolSettings.type === "paint";
   const isShape =
@@ -64,8 +85,14 @@ function MapDrawing({
     const mapStage = mapStageRef.current;
 
     function getBrushPosition() {
+      if (!mapStage) {
+        return;
+      }
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
+      if (!position) {
+        return;
+      }
       if (map.snapToGrid && isShape) {
         position = snapPositionToGrid(position);
       }
@@ -77,36 +104,46 @@ function MapDrawing({
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
+      if (!brushPosition) {
+        return;
+      }
       const commonShapeData = {
         color: toolSettings.color,
         blend: toolSettings.useBlending,
         id: shortid.generate(),
       };
+      const type = toolSettings.type;
       if (isBrush) {
-        setDrawingShape({
+        setDrawing({
           type: "path",
-          pathType: toolSettings.type === "brush" ? "stroke" : "fill",
+          pathType: type === "brush" ? "stroke" : "fill",
           data: { points: [brushPosition] },
-          strokeWidth: toolSettings.type === "brush" ? 1 : 0,
+          strokeWidth: type === "brush" ? 1 : 0,
           ...commonShapeData,
         });
-      } else if (isShape) {
-        setDrawingShape({
+      } else if (isShape && drawingToolIsShape(type)) {
+        setDrawing({
           type: "shape",
-          shapeType: toolSettings.type,
-          data: getDefaultShapeData(toolSettings.type, brushPosition),
+          shapeType: type,
+          data: getDefaultShapeData(type, brushPosition),
           strokeWidth: toolSettings.type === "line" ? 1 : 0,
           ...commonShapeData,
-        });
+        } as Shape);
       }
       setIsBrushDown(true);
     }
 
     function handleBrushMove() {
       const brushPosition = getBrushPosition();
-      if (isBrushDown && drawingShape) {
+      if (!brushPosition) {
+        return;
+      }
+      if (isBrushDown && drawing) {
         if (isBrush) {
-          setDrawingShape((prevShape) => {
+          setDrawing((prevShape) => {
+            if (prevShape?.type !== "path") {
+              return prevShape;
+            }
             const prevPoints = prevShape.data.points;
             if (
               Vector2.compare(
@@ -127,63 +164,68 @@ function MapDrawing({
             };
           });
         } else if (isShape) {
-          setDrawingShape((prevShape) => ({
-            ...prevShape,
-            data: getUpdatedShapeData(
-              prevShape.shapeType,
-              prevShape.data,
-              brushPosition,
-              gridCellNormalizedSize,
-              mapWidth,
-              mapHeight
-            ),
-          }));
+          setDrawing((prevShape) => {
+            if (prevShape?.type !== "shape") {
+              return prevShape;
+            }
+            return {
+              ...prevShape,
+              data: getUpdatedShapeData(
+                prevShape.shapeType,
+                prevShape.data,
+                brushPosition,
+                gridCellNormalizedSize,
+                mapWidth,
+                mapHeight
+              ),
+            } as Shape;
+          });
         }
       }
     }
 
     function handleBrushUp() {
-      if (isBrush && drawingShape) {
-        if (drawingShape.data.points.length > 1) {
-          onShapeAdd(drawingShape);
+      if (isBrush && drawing && drawing.type === "path") {
+        if (drawing.data.points.length > 1) {
+          onShapeAdd(drawing);
         }
-      } else if (isShape && drawingShape) {
-        onShapeAdd(drawingShape);
+      } else if (isShape && drawing) {
+        onShapeAdd(drawing);
       }
 
       eraseHoveredShapes();
 
-      setDrawingShape(null);
+      setDrawing(null);
       setIsBrushDown(false);
     }
 
-    interactionEmitter.on("dragStart", handleBrushDown);
-    interactionEmitter.on("drag", handleBrushMove);
-    interactionEmitter.on("dragEnd", handleBrushUp);
+    interactionEmitter?.on("dragStart", handleBrushDown);
+    interactionEmitter?.on("drag", handleBrushMove);
+    interactionEmitter?.on("dragEnd", handleBrushUp);
 
     return () => {
-      interactionEmitter.off("dragStart", handleBrushDown);
-      interactionEmitter.off("drag", handleBrushMove);
-      interactionEmitter.off("dragEnd", handleBrushUp);
+      interactionEmitter?.off("dragStart", handleBrushDown);
+      interactionEmitter?.off("drag", handleBrushMove);
+      interactionEmitter?.off("dragEnd", handleBrushUp);
     };
   });
 
-  function handleShapeOver(shape, isDown) {
+  function handleShapeOver(shape: Drawing, isDown: boolean) {
     if (shouldHover && isDown) {
-      if (erasingShapes.findIndex((s) => s.id === shape.id) === -1) {
-        setErasingShapes((prevShapes) => [...prevShapes, shape]);
+      if (erasingDrawings.findIndex((s) => s.id === shape.id) === -1) {
+        setErasingDrawings((prevShapes) => [...prevShapes, shape]);
       }
     }
   }
 
   function eraseHoveredShapes() {
-    if (erasingShapes.length > 0) {
-      onShapesRemove(erasingShapes.map((shape) => shape.id));
-      setErasingShapes([]);
+    if (erasingDrawings.length > 0) {
+      onShapesRemove(erasingDrawings.map((shape) => shape.id));
+      setErasingDrawings([]);
     }
   }
 
-  function renderShape(shape) {
+  function renderDrawing(shape: Drawing) {
     const defaultProps = {
       key: shape.id,
       onMouseMove: () => handleShapeOver(shape, isBrushDown),
@@ -200,7 +242,11 @@ function MapDrawing({
       return (
         <Line
           points={shape.data.points.reduce(
-            (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+            (acc: number[], point) => [
+              ...acc,
+              point.x * mapWidth,
+              point.y * mapHeight,
+            ],
             []
           )}
           stroke={colors[shape.color] || shape.color}
@@ -238,7 +284,11 @@ function MapDrawing({
         return (
           <Line
             points={shape.data.points.reduce(
-              (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+              (acc: number[], point) => [
+                ...acc,
+                point.x * mapWidth,
+                point.y * mapHeight,
+              ],
               []
             )}
             closed={true}
@@ -249,7 +299,11 @@ function MapDrawing({
         return (
           <Line
             points={shape.data.points.reduce(
-              (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+              (acc: number[], point) => [
+                ...acc,
+                point.x * mapWidth,
+                point.y * mapHeight,
+              ],
               []
             )}
             strokeWidth={gridStrokeWidth * shape.strokeWidth}
@@ -262,19 +316,19 @@ function MapDrawing({
     }
   }
 
-  function renderErasingShape(shape) {
-    const eraseShape = {
-      ...shape,
-      color: "#BB99FF",
+  function renderErasingDrawing(drawing: Drawing) {
+    const eraseShape: Drawing = {
+      ...drawing,
+      color: "primary",
     };
-    return renderShape(eraseShape);
+    return renderDrawing(eraseShape);
   }
 
   return (
     <Group>
-      {shapes.map(renderShape)}
-      {drawingShape && renderShape(drawingShape)}
-      {erasingShapes.length > 0 && erasingShapes.map(renderErasingShape)}
+      {drawings.map(renderDrawing)}
+      {drawing && renderDrawing(drawing)}
+      {erasingDrawings.length > 0 && erasingDrawings.map(renderErasingDrawing)}
     </Group>
   );
 }

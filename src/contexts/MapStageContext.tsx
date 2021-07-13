@@ -1,7 +1,10 @@
 import React, { useContext } from "react";
+import { Stage } from "konva/types/Stage";
 
-const MapStageContext = React.createContext({ current: null });
-export const MapStageProvider: any = MapStageContext.Provider;
+type MapStage = React.MutableRefObject<Stage | null>;
+
+const MapStageContext = React.createContext<MapStage | undefined>(undefined);
+export const MapStageProvider = MapStageContext.Provider;
 
 export function useMapStage() {
   const context = useContext(MapStageContext);
