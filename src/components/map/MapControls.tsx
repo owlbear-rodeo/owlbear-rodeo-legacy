@@ -208,7 +208,9 @@ function MapContols({
       >
         <Settings
           settings={toolSettings[selectedToolId]}
-          onSettingChange={(change) =>
+          onSettingChange={(
+            change: Partial<Settings["fog" | "drawing" | "pointer"]>
+          ) =>
             onToolSettingChange({
               [selectedToolId]: {
                 ...toolSettings[selectedToolId],

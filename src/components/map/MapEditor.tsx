@@ -73,11 +73,11 @@ function MapEditor({ map, onSettingsChange }: MapEditorProps) {
   );
 
   useStageInteraction(
-    mapStageRef.current,
+    mapStageRef,
     stageScale,
     setStageScale,
     stageTranslateRef,
-    mapLayerRef.current,
+    mapLayerRef,
     getGridMaxZoom(map.grid),
     "move",
     preventMapInteraction

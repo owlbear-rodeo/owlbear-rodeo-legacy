@@ -24,16 +24,16 @@ import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 
 const diceThrowSpeed = 2;
 
+type SceneMountEvent = {
+  scene: Scene;
+  engine: Engine;
+  canvas: HTMLCanvasElement;
+};
+
+type SceneMountEventHandler = (event: SceneMountEvent) => void;
+
 type DiceInteractionProps = {
-  onSceneMount?: ({
-    scene,
-    engine,
-    canvas,
-  }: {
-    scene: Scene;
-    engine: Engine;
-    canvas: HTMLCanvasElement | WebGLRenderingContext;
-  }) => void;
+  onSceneMount?: SceneMountEventHandler;
   onPointerDown: () => void;
   onPointerUp: () => void;
 };

@@ -3,19 +3,21 @@ import { useThemeUI, Close } from "theme-ui";
 import { RequestCloseEventHandler } from "../../types/Events";
 import CSS from "csstype";
 
+type BannerProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  children: React.ReactNode;
+  allowClose: boolean;
+  backgroundColor?: CSS.Property.Color;
+};
+
 function Banner({
   isOpen,
   onRequestClose,
   children,
   allowClose,
   backgroundColor,
-}: {
-  isOpen: boolean;
-  onRequestClose: RequestCloseEventHandler;
-  children: React.ReactNode;
-  allowClose: boolean;
-  backgroundColor?: CSS.Property.Color;
-}) {
+}: BannerProps) {
   const { theme } = useThemeUI();
 
   return (

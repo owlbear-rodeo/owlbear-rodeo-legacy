@@ -18,6 +18,22 @@ import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import shortcuts from "../../shortcuts";
+import { Layer as LayerType } from "konva/types/Layer";
+import { Image as ImageType } from "konva/types/shapes/Image";
+import { Map, MapToolId } from "../../types/Map";
+import { MapState } from "../../types/MapState";
+
+type SelectedToolChangeEventHanlder = (tool: MapToolId) => void;
+
+type MapInteractionProps = {
+  map: Map;
+  mapState: MapState;
+  children?: React.ReactNode;
+  controls: React.ReactNode;
+  selectedToolId: MapToolId;
+  onSelectedToolChange: SelectedToolChangeEventHanlder;
+  disabledControls: MapToolId[];
+};
 
 function MapInteraction({
   map,
@@ -27,7 +43,7 @@ function MapInteraction({
   selectedToolId,
   onSelectedToolChange,
   disabledControls,
-}) {
+}: MapInteractionProps) {
   const [mapImage, mapImageStatus] = useMapImage(map);
 
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -47,17 +63,17 @@ function MapInteraction({
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapStageRef = useMapStage();
-  const mapLayerRef = useRef();
-  const mapImageRef = useRef();
+  const mapLayerRef = useRef<LayerType>(null);
+  const mapImageRef = useRef<ImageType>(null);
 
-  function handleResize(width, height) {
-    if (width > 0 && height > 0) {
+  function handleResize(width?: number, height?: number) {
+    if (width && height && width > 0 && height > 0) {
       setStageWidth(width);
       setStageHeight(height);
     }
   }
 
-  const containerRef = useRef();
+  const containerRef = useRef<HTMLDivElement>(null);
   usePreventOverscroll(containerRef);
 
   const [mapWidth, mapHeight] = useImageCenter(
@@ -76,11 +92,11 @@ function MapInteraction({
   const [interactionEmitter] = useState(new EventEmitter());
 
   useStageInteraction(
-    mapStageRef.current,
+    mapStageRef,
     stageScale,
     setStageScale,
     stageTranslateRef,
-    mapLayerRef.current,
+    mapLayerRef,
     getGridMaxZoom(map?.grid),
     selectedToolId,
     preventMapInteraction,
@@ -105,7 +121,7 @@ function MapInteraction({
     }
   );
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     // Change to move tool when pressing space
     if (shortcuts.move(event) && selectedToolId === "move") {
       // Stop active state on move icon from being selected
@@ -142,7 +158,7 @@ function MapInteraction({
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: KeyboardEvent) {
     if (shortcuts.move(event) && selectedToolId === "move") {
       onSelectedToolChange(previousSelectedToolRef.current);
     }
@@ -150,7 +166,7 @@ function MapInteraction({
 
   useKeyboard(handleKeyDown, handleKeyUp);
 
-  function getCursorForTool(tool) {
+  function getCursorForTool(tool: MapToolId) {
     switch (tool) {
       case "move":
         return "move";
@@ -195,6 +211,7 @@ function MapInteraction({
             <KonvaBridge
               stageRender={(children) => (
                 <Stage
+                  // @ts-ignore
                   width={stageWidth}
                   height={stageHeight}
                   scale={{ x: stageScale, y: stageScale }}

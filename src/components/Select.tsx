@@ -9,7 +9,7 @@ type SelectProps = {
 function Select({ creatable, ...props }: SelectProps) {
   const { theme } = useThemeUI();
 
-  const Component = creatable ? Creatable : (ReactSelect as any);
+  const Component: any = creatable ? Creatable : ReactSelect;
 
   return (
     <Component

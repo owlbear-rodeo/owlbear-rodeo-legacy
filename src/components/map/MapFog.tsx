@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import shortid from "shortid";
 import { Group, Line } from "react-konva";
 import useImage from "use-image";
@@ -23,7 +23,7 @@ import {
 } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
-import Vector2 from "../../helpers/Vector2";
+import Vector2, { BoundingBox } from "../../helpers/Vector2";
 import {
   simplifyPoints,
   mergeFogShapes,
@@ -94,19 +94,23 @@ function MapFog({
   const gridCellPixelOffset = useGridCellPixelOffset();
   const gridOffset = useGridOffset();
 
-  const [gridSnappingSensitivity] = useSetting("map.gridSnappingSensitivity");
-  const [showFogGuides] = useSetting("fog.showGuides");
-  const [editOpacity] = useSetting("fog.editOpacity");
+  const [gridSnappingSensitivity] = useSetting<number>(
+    "map.gridSnappingSensitivity"
+  );
+  const [showFogGuides] = useSetting<boolean>("fog.showGuides");
+  const [editOpacity] = useSetting<number>("fog.editOpacity");
   const mapStageRef = useMapStage();
 
   const [drawingShape, setDrawingShape] = useState<Fog | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
-  const [editingShapes, setEditingShapes] = useState([]);
+  const [editingShapes, setEditingShapes] = useState<Fog[]>([]);
 
   // Shapes that have been merged for fog
   const [fogShapes, setFogShapes] = useState(shapes);
   // Bounding boxes for guides
-  const [fogShapeBoundingBoxes, setFogShapeBoundingBoxes] = useState([]);
+  const [fogShapeBoundingBoxes, setFogShapeBoundingBoxes] = useState<
+    BoundingBox[]
+  >([]);
   const [guides, setGuides] = useState<Guide[]>([]);
 
   const shouldHover =
@@ -288,13 +292,7 @@ function MapFog({
             if (Object.keys(state).length === shapes.length) {
               onShapeError("No fog to cut");
             } else {
-              onShapesCut(
-                drawingShapes.map((shape) => ({
-                  id: shape.id,
-                  type: shape.type,
-                  data: shape.data,
-                }))
-              );
+              onShapesCut(drawingShapes);
             }
           } else {
             onShapesAdd(
@@ -319,29 +317,31 @@ function MapFog({
     function handlePointerClick() {
       if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
-        setDrawingShape((prevDrawingShape) => {
-          if (prevDrawingShape) {
-            return {
-              ...prevDrawingShape,
-              data: {
-                ...prevDrawingShape.data,
-                points: [...prevDrawingShape.data.points, brushPosition],
-              },
-            };
-          } else {
-            return {
-              type: "fog",
-              data: {
-                points: [brushPosition, brushPosition],
-                holes: [],
-              },
-              strokeWidth: 0.5,
-              color: toolSettings.useFogCut ? "red" : "black",
-              id: shortid.generate(),
-              visible: true,
-            };
-          }
-        });
+        if (brushPosition) {
+          setDrawingShape((prevDrawingShape) => {
+            if (prevDrawingShape) {
+              return {
+                ...prevDrawingShape,
+                data: {
+                  ...prevDrawingShape.data,
+                  points: [...prevDrawingShape.data.points, brushPosition],
+                },
+              };
+            } else {
+              return {
+                type: "fog",
+                data: {
+                  points: [brushPosition, brushPosition],
+                  holes: [],
+                },
+                strokeWidth: 0.5,
+                color: toolSettings.useFogCut ? "red" : "black",
+                id: shortid.generate(),
+                visible: true,
+              };
+            }
+          });
+        }
       }
     }
 
@@ -349,41 +349,43 @@ function MapFog({
       if (shouldUseGuides) {
         let guides: Guide[] = [];
         const brushPosition = getBrushPosition(false);
-        const absoluteBrushPosition = Vector2.multiply(brushPosition, {
-          x: mapWidth,
-          y: mapHeight,
-        });
-        if (map.snapToGrid) {
+        if (brushPosition) {
+          const absoluteBrushPosition = Vector2.multiply(brushPosition, {
+            x: mapWidth,
+            y: mapHeight,
+          });
+          if (map.snapToGrid) {
+            guides.push(
+              ...getGuidesFromGridCell(
+                absoluteBrushPosition,
+                grid,
+                gridCellPixelSize,
+                gridOffset,
+                gridCellPixelOffset,
+                gridSnappingSensitivity,
+                { x: mapWidth, y: mapHeight }
+              )
+            );
+          }
+
           guides.push(
-            ...getGuidesFromGridCell(
-              absoluteBrushPosition,
-              grid,
-              gridCellPixelSize,
-              gridOffset,
-              gridCellPixelOffset,
-              gridSnappingSensitivity,
-              { x: mapWidth, y: mapHeight }
+            ...getGuidesFromBoundingBoxes(
+              brushPosition,
+              fogShapeBoundingBoxes,
+              gridCellNormalizedSize,
+              gridSnappingSensitivity
             )
           );
+
+          setGuides(findBestGuides(brushPosition, guides));
         }
-
-        guides.push(
-          ...getGuidesFromBoundingBoxes(
-            brushPosition,
-            fogShapeBoundingBoxes,
-            gridCellNormalizedSize,
-            gridSnappingSensitivity
-          )
-        );
-
-        setGuides(findBestGuides(brushPosition, guides));
       }
       if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
-        if (toolSettings.type === "polygon" && drawingShape) {
+        if (toolSettings.type === "polygon" && drawingShape && brushPosition) {
           setDrawingShape((prevShape) => {
             if (!prevShape) {
-              return;
+              return prevShape;
             }
             return {
               ...prevShape,
@@ -401,32 +403,33 @@ function MapFog({
       setGuides([]);
     }
 
-    interactionEmitter.on("dragStart", handleBrushDown);
-    interactionEmitter.on("drag", handleBrushMove);
-    interactionEmitter.on("dragEnd", handleBrushUp);
+    interactionEmitter?.on("dragStart", handleBrushDown);
+    interactionEmitter?.on("drag", handleBrushMove);
+    interactionEmitter?.on("dragEnd", handleBrushUp);
     // Use mouse events for polygon and erase to allow for single clicks
-    mapStage.on("mousedown touchstart", handlePointerMove);
-    mapStage.on("mousemove touchmove", handlePointerMove);
-    mapStage.on("click tap", handlePointerClick);
-    mapStage.on("touchend", handelTouchEnd);
+    mapStage?.on("mousedown touchstart", handlePointerMove);
+    mapStage?.on("mousemove touchmove", handlePointerMove);
+    mapStage?.on("click tap", handlePointerClick);
+    mapStage?.on("touchend", handelTouchEnd);
 
     return () => {
-      interactionEmitter.off("dragStart", handleBrushDown);
-      interactionEmitter.off("drag", handleBrushMove);
-      interactionEmitter.off("dragEnd", handleBrushUp);
-      mapStage.off("mousedown touchstart", handlePointerMove);
-      mapStage.off("mousemove touchmove", handlePointerMove);
-      mapStage.off("click tap", handlePointerClick);
-      mapStage.off("touchend", handelTouchEnd);
+      interactionEmitter?.off("dragStart", handleBrushDown);
+      interactionEmitter?.off("drag", handleBrushMove);
+      interactionEmitter?.off("dragEnd", handleBrushUp);
+      mapStage?.off("mousedown touchstart", handlePointerMove);
+      mapStage?.off("mousemove touchmove", handlePointerMove);
+      mapStage?.off("click tap", handlePointerClick);
+      mapStage?.off("touchend", handelTouchEnd);
     };
   });
 
   const finishDrawingPolygon = useCallback(() => {
     const cut = toolSettings.useFogCut;
-
+    if (!drawingShape) {
+      return;
+    }
     let polygonShape = {
-      id: drawingShape.id,
-      type: drawingShape.type,
+      ...drawingShape,
       data: {
         ...drawingShape.data,
         // Remove the last point as it hasn't been placed yet
@@ -489,7 +492,7 @@ function MapFog({
   ]);
 
   // Add keyboard shortcuts
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (
       shortcuts.fogFinishPolygon(event) &&
       toolSettings.type === "polygon" &&
@@ -507,17 +510,22 @@ function MapFog({
       toolSettings.type === "polygon"
     ) {
       if (drawingShape.data.points.length > 2) {
-        setDrawingShape((drawingShape) => ({
-          ...drawingShape,
-          data: {
-            ...drawingShape.data,
-            points: [
-              // Shift last point to previous point
-              ...drawingShape.data.points.slice(0, -2),
-              ...drawingShape.data.points.slice(-1),
-            ],
-          },
-        }));
+        setDrawingShape((prevShape) => {
+          if (!prevShape) {
+            return prevShape;
+          }
+          return {
+            ...prevShape,
+            data: {
+              ...prevShape.data,
+              points: [
+                // Shift last point to previous point
+                ...prevShape.data.points.slice(0, -2),
+                ...prevShape.data.points.slice(-1),
+              ],
+            },
+          };
+        });
       } else {
         setDrawingShape(null);
       }
@@ -530,7 +538,7 @@ function MapFog({
   useEffect(() => {
     setDrawingShape((prevShape) => {
       if (!prevShape) {
-        return;
+        return prevShape;
       }
       return {
         ...prevShape,
@@ -556,7 +564,7 @@ function MapFog({
     }
   }
 
-  function handleShapeOver(shape, isDown) {
+  function handleShapeOver(shape: Fog, isDown: boolean) {
     if (shouldHover && isDown) {
       if (editingShapes.findIndex((s) => s.id === shape.id) === -1) {
         setEditingShapes((prevShapes) => [...prevShapes, shape]);
@@ -564,11 +572,11 @@ function MapFog({
     }
   }
 
-  function reducePoints(acc, point) {
+  function reducePoints(acc: number[], point: Vector2) {
     return [...acc, point.x * mapWidth, point.y * mapHeight];
   }
 
-  function renderShape(shape) {
+  function renderShape(shape: Fog) {
     const points = shape.data.points.reduce(reducePoints, []);
     const holes =
       shape.data.holes &&
@@ -608,15 +616,15 @@ function MapFog({
     );
   }
 
-  function renderEditingShape(shape) {
-    const editingShape = {
+  function renderEditingShape(shape: Fog) {
+    const editingShape: Fog = {
       ...shape,
-      color: "#BB99FF",
+      color: "primary",
     };
     return renderShape(editingShape);
   }
 
-  function renderPolygonAcceptTick(shape) {
+  function renderPolygonAcceptTick(shape: Fog) {
     if (shape.data.points.length === 0) {
       return null;
     }
@@ -658,7 +666,7 @@ function MapFog({
   }
 
   useEffect(() => {
-    function shapeVisible(shape) {
+    function shapeVisible(shape: Fog) {
       return (active && !toolSettings.preview) || shape.visible;
     }
 

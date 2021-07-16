@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import { useThemeUI } from "theme-ui";
+import CSS from "csstype";
+
+import { RequestCloseEventHandler } from "../../types/Events";
+
+type MapMenuProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  onModalContent: (instance: HTMLDivElement) => void;
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+  children: React.ReactNode;
+  style: React.CSSProperties;
+  excludeNode: Node | null;
+};
 
 function MapMenu({
   isOpen,
@@ -14,17 +30,18 @@ function MapMenu({
   style,
   // A node to exclude from the pointer event for closing
   excludeNode,
-}) {
+}: MapMenuProps) {
   // Save modal node in state to ensure that the pointer listeners
   // are removed if the open state changed not from the onRequestClose
   // callback
-  const [modalContentNode, setModalContentNode] = useState(null);
+  const [modalContentNode, setModalContentNode] = useState<Node | null>(null);
 
   useEffect(() => {
     // Close modal if interacting with any other element
-    function handleInteraction(event) {
+    function handleInteraction(event: Event) {
       const path = event.composedPath();
       if (
+        modalContentNode &&
         !path.includes(modalContentNode) &&
         !(excludeNode && path.includes(excludeNode)) &&
         !(event.target instanceof HTMLTextAreaElement)
@@ -48,7 +65,7 @@ function MapMenu({
     };
   }, [modalContentNode, excludeNode, onRequestClose]);
 
-  function handleModalContent(node) {
+  function handleModalContent(node: HTMLDivElement) {
     setModalContentNode(node);
     onModalContent(node);
   }
@@ -62,7 +79,7 @@ function MapMenu({
       style={{
         overlay: { top: "0", bottom: "initial" },
         content: {
-          backgroundColor: theme.colors.overlay,
+          backgroundColor: theme.colors?.overlay as CSS.Property.Color,
           top,
           left,
           right,

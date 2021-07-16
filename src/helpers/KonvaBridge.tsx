@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 
 import {
   InteractionEmitterContext,
@@ -45,10 +45,20 @@ import {
 } from "../contexts/GridContext";
 import DatabaseContext, { useDatabase } from "../contexts/DatabaseContext";
 
+type StageRender = (wrapped: React.ReactNode) => React.ReactElement;
+
+type KonvaBridgeProps = {
+  stageRender: StageRender;
+  children: React.ReactNode;
+};
+
 /**
  * Provide a bridge for konva that forwards our contexts
  */
-function KonvaBridge({ stageRender, children }: { stageRender: any, children: any}) {
+function KonvaBridge({
+  stageRender,
+  children,
+}: KonvaBridgeProps): React.ReactElement {
   const mapStageRef = useMapStage();
   const userId = useUserId();
   const settings = useSettings();

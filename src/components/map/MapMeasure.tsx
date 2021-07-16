@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Group, Line, Text, Label, Tag } from "react-konva";
 
 import {
@@ -25,8 +25,17 @@ import { getRelativePointerPosition } from "../../helpers/konva";
 import { parseGridScale, gridDistance } from "../../helpers/grid";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
+import { Map } from "../../types/Map";
+import { PointsData } from "../../types/Drawing";
 
-function MapMeasure({ map, active }) {
+type MapMeasureProps = {
+  map: Map;
+  active: boolean;
+};
+
+type MeasureData = { length: number; points: Vector2[] };
+
+function MapMeasure({ map, active }: MapMeasureProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -39,7 +48,8 @@ function MapMeasure({ map, active }) {
   const gridOffset = useGridOffset();
 
   const mapStageRef = useMapStage();
-  const [drawingShapeData, setDrawingShapeData] = useState(null);
+  const [drawingShapeData, setDrawingShapeData] =
+    useState<MeasureData | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
   const gridScale = parseGridScale(active && grid.measurement.scale);
@@ -57,8 +67,13 @@ function MapMeasure({ map, active }) {
     const mapImage = mapStage?.findOne("#mapImage");
 
     function getBrushPosition() {
-      const mapImage = mapStage.findOne("#mapImage");
+      if (!mapImage) {
+        return;
+      }
       let position = getRelativePointerPosition(mapImage);
+      if (!position) {
+        return;
+      }
       if (map.snapToGrid) {
         position = snapPositionToGrid(position);
       }
@@ -70,7 +85,13 @@ function MapMeasure({ map, active }) {
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
-      const { points } = getDefaultShapeData("line", brushPosition);
+      if (!brushPosition) {
+        return;
+      }
+      const { points } = getDefaultShapeData(
+        "line",
+        brushPosition
+      ) as PointsData;
       const length = 0;
       setDrawingShapeData({ length, points });
       setIsBrushDown(true);
@@ -78,13 +99,15 @@ function MapMeasure({ map, active }) {
 
     function handleBrushMove() {
       const brushPosition = getBrushPosition();
-      if (isBrushDown && drawingShapeData) {
+      if (isBrushDown && drawingShapeData && brushPosition && mapImage) {
         const { points } = getUpdatedShapeData(
           "line",
           drawingShapeData,
           brushPosition,
-          gridCellNormalizedSize
-        );
+          gridCellNormalizedSize,
+          1,
+          1
+        ) as PointsData;
         // Convert back to pixel values
         const a = Vector2.subtract(
           Vector2.multiply(points[0], {
@@ -113,20 +136,24 @@ function MapMeasure({ map, active }) {
       setIsBrushDown(false);
     }
 
-    interactionEmitter.on("dragStart", handleBrushDown);
-    interactionEmitter.on("drag", handleBrushMove);
-    interactionEmitter.on("dragEnd", handleBrushUp);
+    interactionEmitter?.on("dragStart", handleBrushDown);
+    interactionEmitter?.on("drag", handleBrushMove);
+    interactionEmitter?.on("dragEnd", handleBrushUp);
 
     return () => {
-      interactionEmitter.off("dragStart", handleBrushDown);
-      interactionEmitter.off("drag", handleBrushMove);
-      interactionEmitter.off("dragEnd", handleBrushUp);
+      interactionEmitter?.off("dragStart", handleBrushDown);
+      interactionEmitter?.off("drag", handleBrushMove);
+      interactionEmitter?.off("dragEnd", handleBrushUp);
     };
   });
 
-  function renderShape(shapeData) {
+  function renderShape(shapeData: MeasureData) {
     const linePoints = shapeData.points.reduce(
-      (acc, point) => [...acc, point.x * mapWidth, point.y * mapHeight],
+      (acc: number[], point) => [
+        ...acc,
+        point.x * mapWidth,
+        point.y * mapHeight,
+      ],
       []
     );
 

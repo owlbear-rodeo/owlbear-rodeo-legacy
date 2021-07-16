@@ -2,6 +2,7 @@ import React, { ReactChild } from "react";
 import Modal, { Props } from "react-modal";
 import { useThemeUI, Close } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
+import CSS from "csstype";
 
 type ModalProps = Props & {
   children: ReactChild | ReactChild[];
@@ -38,7 +39,7 @@ function StyledModal({
           ...(style?.overlay || {}),
         },
         content: {
-          backgroundColor: theme.colors.background,
+          backgroundColor: theme.colors?.background as CSS.Property.Color,
           top: "initial",
           left: "initial",
           bottom: "initial",

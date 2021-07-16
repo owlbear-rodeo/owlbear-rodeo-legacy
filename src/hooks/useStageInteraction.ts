@@ -2,10 +2,10 @@ import { useRef, useEffect, useState } from "react";
 import { useGesture } from "react-use-gesture";
 import { Handlers } from "react-use-gesture/dist/types";
 import normalizeWheel from "normalize-wheel";
-import { Stage } from "konva/types/Stage";
 import { Layer } from "konva/types/Layer";
 
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
+import { MapStage } from "../contexts/MapStageContext";
 
 import shortcuts from "../shortcuts";
 
@@ -18,11 +18,11 @@ const minZoom = 0.1;
 type StageScaleChangeEventHandler = (newScale: number) => void;
 
 function useStageInteraction(
-  stage: Stage,
+  stageRef: MapStage,
   stageScale: number,
   onStageScaleChange: StageScaleChangeEventHandler,
   stageTranslateRef: React.MutableRefObject<Vector2>,
-  layer: Layer,
+  layerRef: React.RefObject<Layer>,
   maxZoom = 10,
   tool = "move",
   preventInteraction = false,
@@ -52,12 +52,18 @@ function useStageInteraction(
       ...gesture,
       onWheelStart: (props) => {
         const { event } = props;
+        const layer = layerRef.current;
         isInteractingWithCanvas.current =
-          layer && event.target === layer.getCanvas()._canvas;
+          layer !== null && event.target === layer.getCanvas()._canvas;
         gesture.onWheelStart && gesture.onWheelStart(props);
       },
       onWheel: (props) => {
-        if (preventInteraction || !isInteractingWithCanvas.current) {
+        const stage = stageRef.current;
+        if (
+          preventInteraction ||
+          !isInteractingWithCanvas.current ||
+          stage === null
+        ) {
           return;
         }
         const { event, last } = props;
@@ -94,8 +100,9 @@ function useStageInteraction(
       },
       onPinchStart: (props) => {
         const { event } = props;
+        const layer = layerRef.current;
         isInteractingWithCanvas.current =
-          layer && event.target === layer.getCanvas()._canvas;
+          layer !== null && event.target === layer.getCanvas()._canvas;
         const { da, origin } = props;
         const [distance] = da;
         const [originX, originY] = origin;
@@ -104,9 +111,17 @@ function useStageInteraction(
         gesture.onPinchStart && gesture.onPinchStart(props);
       },
       onPinch: (props) => {
-        if (preventInteraction || !isInteractingWithCanvas.current) {
+        const layer = layerRef.current;
+        const stage = stageRef.current;
+        if (
+          preventInteraction ||
+          !isInteractingWithCanvas.current ||
+          layer === null ||
+          stage === null
+        ) {
           return;
         }
+
         const { da, origin } = props;
         const [distance] = da;
         const [originX, originY] = origin;
@@ -157,16 +172,19 @@ function useStageInteraction(
       },
       onDragStart: (props) => {
         const { event } = props;
+        const layer = layerRef.current;
         isInteractingWithCanvas.current =
-          layer && event.target === layer.getCanvas()._canvas;
+          layer !== null && event.target === layer.getCanvas()._canvas;
         gesture.onDragStart && gesture.onDragStart(props);
       },
       onDrag: (props) => {
         const { delta, pinching } = props;
+        const stage = stageRef.current;
         if (
           preventInteraction ||
           pinching ||
-          !isInteractingWithCanvas.current
+          !isInteractingWithCanvas.current ||
+          stage === null
         ) {
           return;
         }
@@ -198,7 +216,8 @@ function useStageInteraction(
   function handleKeyDown(event: KeyboardEvent) {
     // TODO: Find better way to detect whether keyboard event should fire.
     // This one fires on all open stages
-    if (preventInteraction) {
+    const stage = stageRef.current;
+    if (preventInteraction || stage === null) {
       return;
     }
     if (shortcuts.stageZoomIn(event) || shortcuts.stageZoomOut(event)) {

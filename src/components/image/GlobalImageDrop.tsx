@@ -112,7 +112,9 @@ function GlobalImageDrop({
       // Change map if only 1 dropped
       if (maps.length === 1) {
         const mapState = await getMapState(maps[0].id);
-        onMapChange(maps[0], mapState);
+        if (mapState) {
+          onMapChange(maps[0], mapState);
+        }
       }
 
       setIsLoading(false);

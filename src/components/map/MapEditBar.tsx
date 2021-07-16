@@ -38,7 +38,7 @@ function MapEditBar({
 
   const { maps, mapStates, removeMaps, resetMap } = useMapData();
 
-  const { activeGroups, selectedGroupIds, onGroupSelect } = useGroup();
+  const { activeGroups, selectedGroupIds, onClearSelection } = useGroup();
 
   useEffect(() => {
     const selectedGroups = groupsFromIds(selectedGroupIds, activeGroups);
@@ -75,7 +75,7 @@ function MapEditBar({
     setIsMapsRemoveModalOpen(false);
     const selectedMaps = getSelectedMaps();
     const selectedMapIds = selectedMaps.map((map) => map.id);
-    onGroupSelect(undefined);
+    onClearSelection();
     await removeMaps(selectedMapIds);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
@@ -136,7 +136,7 @@ function MapEditBar({
       <Close
         title="Clear Selection"
         aria-label="Clear Selection"
-        onClick={() => onGroupSelect(undefined)}
+        onClick={() => onClearSelection()}
       />
       <Flex>
         <IconButton

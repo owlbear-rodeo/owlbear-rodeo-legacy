@@ -3,13 +3,12 @@ import { Box } from "theme-ui";
 
 import Spinner from "./Spinner";
 
-function LoadingOverlay({
-  bg,
-  children,
-}: {
+type LoadingOverlayProps = {
   bg: string;
   children?: React.ReactNode;
-}) {
+};
+
+function LoadingOverlay({ bg, children }: LoadingOverlayProps) {
   return (
     <Box
       sx={{

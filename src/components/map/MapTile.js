@@ -1,7 +1,7 @@
 import React from "react";
 
 import Tile from "../tile/Tile";
-import MapImage from "./MapImage";
+import MapImage from "./MapTileImage";
 
 function MapTile({
   map,

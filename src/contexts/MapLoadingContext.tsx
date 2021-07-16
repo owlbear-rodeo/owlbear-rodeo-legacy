@@ -13,7 +13,7 @@ type MapLoadingContext = {
   isLoading: boolean;
   assetLoadStart: (id: string) => void;
   assetProgressUpdate: (update: MapLoadingProgressUpdate) => void;
-  loadingProgressRef: React.MutableRefObject<number | null>;
+  loadingProgressRef: React.MutableRefObject<number>;
 };
 
 const MapLoadingContext =
@@ -28,7 +28,7 @@ export function MapLoadingProvider({
   // Mapping from asset id to the count and total number of pieces loaded
   const assetProgressRef = useRef<Record<string, MapLoadingProgress>>({});
   // Loading progress of all assets between 0 and 1
-  const loadingProgressRef = useRef<number | null>(null);
+  const loadingProgressRef = useRef<number>(0);
 
   const assetLoadStart = useCallback((id) => {
     setIsLoading(true);

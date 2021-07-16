@@ -2,13 +2,14 @@ import { Box, Text } from "theme-ui";
 
 import Banner from "./Banner";
 
-function ErrorBanner({
-  error,
-  onRequestClose,
-}: {
+import { RequestCloseEventHandler } from "../../types/Events";
+
+type ErrorBannerProps = {
   error: Error | undefined;
-  onRequestClose;
-}) {
+  onRequestClose: RequestCloseEventHandler;
+};
+
+function ErrorBanner({ error, onRequestClose }: ErrorBannerProps) {
   return (
     <Banner isOpen={!!error} onRequestClose={onRequestClose}>
       <Box p={1}>

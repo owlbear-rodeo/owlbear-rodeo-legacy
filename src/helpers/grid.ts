@@ -350,6 +350,7 @@ export function gridDistance(
       );
     }
   }
+  return 0;
 }
 
 /**

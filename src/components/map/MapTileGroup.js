@@ -2,7 +2,7 @@ import React from "react";
 import { Grid } from "theme-ui";
 
 import Tile from "../tile/Tile";
-import MapImage from "./MapImage";
+import MapImage from "./MapTileImage";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
