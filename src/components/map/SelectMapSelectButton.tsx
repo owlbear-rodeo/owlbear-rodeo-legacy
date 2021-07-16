@@ -1,11 +1,18 @@
-import React from "react";
 import { Button } from "theme-ui";
 
 import { useGroup } from "../../contexts/GroupContext";
 
 import { findGroup } from "../../helpers/group";
 
-function SelectMapSelectButton({ onMapSelect, disabled }) {
+type SelectMapSelectButtonProps = {
+  onMapSelect: (mapId: string) => void;
+  disabled: boolean;
+};
+
+function SelectMapSelectButton({
+  onMapSelect,
+  disabled,
+}: SelectMapSelectButtonProps) {
   const { activeGroups, selectedGroupIds } = useGroup();
 
   function handleSelectClick() {
