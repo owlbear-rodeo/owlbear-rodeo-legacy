@@ -293,7 +293,7 @@ export function useAssetURL(
 type FileData = {
   file: string;
   type: "file";
-  thumbnail: string;
+  thumbnail?: string;
   quality?: string;
   resolutions?: Record<string, string>;
 };

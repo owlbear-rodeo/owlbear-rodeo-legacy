@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Group, Circle, Rect } from "react-konva";
-import { KonvaEventObject, Node } from "konva/types/Node";
+import Konva from "konva";
 
 import {
   useDebouncedStageScale,
@@ -49,19 +49,23 @@ function MapGridEditor({ map, onGridChange }: MapGridEditorProps) {
 
   const handlePreviousPositionRef = useRef<Vector2>();
 
-  function handleScaleCircleDragStart(event: KonvaEventObject<MouseEvent>) {
+  function handleScaleCircleDragStart(
+    event: Konva.KonvaEventObject<MouseEvent>
+  ) {
     const handle = event.target;
     const position = getHandleNormalizedPosition(handle);
     handlePreviousPositionRef.current = position;
   }
 
-  function handleScaleCircleDragMove(event: KonvaEventObject<MouseEvent>) {
+  function handleScaleCircleDragMove(
+    event: Konva.KonvaEventObject<MouseEvent>
+  ) {
     const handle = event.target;
     onGridChange(getHandleInset(handle));
     handlePreviousPositionRef.current = getHandleNormalizedPosition(handle);
   }
 
-  function handleScaleCircleDragEnd(event: KonvaEventObject<MouseEvent>) {
+  function handleScaleCircleDragEnd(event: Konva.KonvaEventObject<MouseEvent>) {
     onGridChange(getHandleInset(event.target));
     setPreventMapInteraction(false);
   }
@@ -74,7 +78,7 @@ function MapGridEditor({ map, onGridChange }: MapGridEditorProps) {
     setPreventMapInteraction(false);
   }
 
-  function getHandleInset(handle: Node): GridInset {
+  function getHandleInset(handle: Konva.Node): GridInset {
     const name = handle.name();
 
     // Find distance and direction of dragging
@@ -202,7 +206,7 @@ function MapGridEditor({ map, onGridChange }: MapGridEditorProps) {
 
   useKeyboard(handleKeyDown);
 
-  function getHandleNormalizedPosition(handle: Node) {
+  function getHandleNormalizedPosition(handle: Konva.Node) {
     return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
   }
 

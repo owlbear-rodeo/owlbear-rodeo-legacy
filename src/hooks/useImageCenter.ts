@@ -1,4 +1,4 @@
-import { Layer } from "konva/types/Layer";
+import Konva from "konva";
 import { useEffect, useRef } from "react";
 
 import { MapStage } from "../contexts/MapStageContext";
@@ -17,7 +17,7 @@ function useImageCenter(
   stageHeight: number,
   stageTranslateRef: React.MutableRefObject<Vector2>,
   setStageScale: React.Dispatch<React.SetStateAction<number>>,
-  imageLayerRef: React.RefObject<Layer>,
+  imageLayerRef: React.RefObject<Konva.Layer>,
   containerRef: React.RefObject<HTMLDivElement>,
   responsive = false
 ) {

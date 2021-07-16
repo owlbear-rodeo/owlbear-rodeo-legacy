@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import Konva from "konva";
 import { Line, Group, Path, Circle } from "react-konva";
-import { LineConfig } from "konva/types/shapes/Line";
 import Color from "color";
 
 import Vector2 from "./Vector2";
 
 type HoleyLineProps = {
   holes: number[][];
-} & LineConfig;
+} & Konva.LineConfig;
 
 // Holes should be wound in the opposite direction as the containing points array
 export function HoleyLine({ holes, ...props }: HoleyLineProps) {
@@ -115,7 +114,7 @@ export function HoleyLine({ holes, ...props }: HoleyLineProps) {
     }
   }
 
-  return <Line {...props} sceneFunc={sceneFunc} />;
+  return <Line {...props} sceneFunc={sceneFunc as any} />;
 }
 
 type TickProps = {
@@ -180,11 +179,11 @@ export function Trail({
   segments,
   color,
 }: TrailProps) {
-  const trailRef: React.MutableRefObject<Konva.Line | undefined> = useRef();
-  const pointsRef: React.MutableRefObject<TrailPoint[]> = useRef([]);
+  const trailRef = useRef<Konva.Line>(null);
+  const pointsRef = useRef<TrailPoint[]>([]);
   const prevPositionRef = useRef(position);
   const positionRef = useRef(position);
-  const circleRef: React.MutableRefObject<Konva.Circle | undefined> = useRef();
+  const circleRef = useRef<Konva.Circle>(null);
   // Color of the end of the trail
   const transparentColorRef = useRef(
     Color(color).lighten(0.5).alpha(0).string()
@@ -250,7 +249,7 @@ export function Trail({
   }, []);
 
   // Custom scene function for drawing a trail from a line
-  function sceneFunc(context: CanvasRenderingContext2D) {
+  function sceneFunc(context: Konva.Context) {
     // Resample points to ensure a smooth trail
     const resampledPoints = Vector2.resample(pointsRef.current, segments);
     if (resampledPoints.length === 0) {
@@ -302,6 +301,7 @@ export function Trail({
     );
     gradient.addColorStop(0, color);
     gradient.addColorStop(1, transparentColorRef.current);
+    // @ts-ignore
     context.fillStyle = gradient;
     context.fill();
   }

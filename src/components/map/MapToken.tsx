@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "@react-spring/konva";
+import Konva from "konva";
 import useImage from "use-image";
 
 import usePrevious from "../../hooks/usePrevious";
@@ -23,6 +24,23 @@ import { Intersection, getScaledOutline } from "../../helpers/token";
 import Vector2 from "../../helpers/Vector2";
 
 import { tokenSources } from "../../tokens";
+import { TokenState } from "../../types/TokenState";
+import { Map } from "../../types/Map";
+import {
+  TokenMenuOpenChangeEventHandler,
+  TokenStateChangeEventHandler,
+} from "../../types/Events";
+
+type MapTokenStateProps = {
+  tokenState: TokenState;
+  onTokenStateChange: TokenStateChangeEventHandler;
+  onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
+  onTokenDragStart: (event: Konva.KonvaEventObject<DragEvent>) => void;
+  onTokenDragEnd: (event: Konva.KonvaEventObject<DragEvent>) => void;
+  draggable: boolean;
+  fadeOnHover: boolean;
+  map: Map;
+};
 
 function MapToken({
   tokenState,
@@ -33,7 +51,7 @@ function MapToken({
   draggable,
   fadeOnHover,
   map,
-}) {
+}: MapTokenStateProps) {
   const userId = useUserId();
 
   const mapWidth = useMapWidth();
@@ -43,16 +61,16 @@ function MapToken({
   const gridCellPixelSize = useGridCellPixelSize();
 
   const tokenURL = useDataURL(tokenState, tokenSources);
-  const [tokenImage] = useImage(tokenURL);
+  const [tokenImage] = useImage(tokenURL || "");
 
   const tokenAspectRatio = tokenState.width / tokenState.height;
 
   const snapPositionToGrid = useGridSnapping();
 
-  const intersectingTokensRef = useRef([]);
+  const intersectingTokensRef = useRef<Konva.Node[]>([]);
   const previousDragPositionRef = useRef({ x: 0, y: 0 });
 
-  function handleDragStart(event) {
+  function handleDragStart(event: Konva.KonvaEventObject<DragEvent>) {
     const tokenGroup = event.target;
 
     if (tokenState.category === "vehicle") {
@@ -65,7 +83,7 @@ function MapToken({
       );
 
       // Find all other tokens on the map
-      const layer = tokenGroup.getLayer();
+      const layer = tokenGroup.getLayer() as Konva.Layer;
       const tokens = layer.find(".character");
       for (let other of tokens) {
         if (other === tokenGroup) {
@@ -80,7 +98,7 @@ function MapToken({
     onTokenDragStart(event);
   }
 
-  function handleDragMove(event) {
+  function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
     const tokenGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
@@ -98,10 +116,10 @@ function MapToken({
     }
   }
 
-  function handleDragEnd(event) {
+  function handleDragEnd(event: Konva.KonvaEventObject<DragEvent>) {
     const tokenGroup = event.target;
 
-    const mountChanges = {};
+    const mountChanges: Record<string, Partial<TokenState>> = {};
     if (tokenState.category === "vehicle") {
       for (let other of intersectingTokensRef.current) {
         mountChanges[other.id()] = {
@@ -127,7 +145,7 @@ function MapToken({
     onTokenDragEnd(event);
   }
 
-  function handleClick(event) {
+  function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
     if (draggable) {
       const tokenImage = event.target;
       onTokenMenuOpen(tokenState.id, tokenImage);
@@ -136,8 +154,8 @@ function MapToken({
 
   const [tokenOpacity, setTokenOpacity] = useState(1);
   // Store token pointer down time to check for a click when token is locked
-  const tokenPointerDownTimeRef = useRef();
-  function handlePointerDown(event) {
+  const tokenPointerDownTimeRef = useRef<number>(0);
+  function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
     if (draggable) {
       setPreventMapInteraction(true);
     }
@@ -146,7 +164,7 @@ function MapToken({
     }
   }
 
-  function handlePointerUp(event) {
+  function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
     if (draggable) {
       setPreventMapInteraction(false);
     }

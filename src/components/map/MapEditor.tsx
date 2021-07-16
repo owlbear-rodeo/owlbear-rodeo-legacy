@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image } from "react-konva";
+import Konva from "konva";
 import ReactResizeDetector from "react-resize-detector";
 
 import useMapImage from "../../hooks/useMapImage";
@@ -23,8 +24,6 @@ import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
 import { Map } from "../../types/Map";
 import { GridInset } from "../../types/Grid";
-import { Stage as StageType } from "konva/types/Stage";
-import { Layer as LayerType } from "konva/types/Layer";
 
 type MapSettingsChangeEventHandler = (change: Partial<Map>) => void;
 
@@ -43,8 +42,8 @@ function MapEditor({ map, onSettingsChange }: MapEditorProps) {
   const defaultInset = getGridDefaultInset(map.grid, map.width, map.height);
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapStageRef = useRef<StageType>(null);
-  const mapLayerRef = useRef<LayerType>(null);
+  const mapStageRef = useRef<Konva.Stage>(null);
+  const mapLayerRef = useRef<Konva.Layer>(null);
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
   function handleResize(width?: number, height?: number): void {

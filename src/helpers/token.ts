@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import Case from "case";
-import { Stage } from "konva/types/Stage";
+import Konva from "konva";
 
 import blobToBuffer from "./blobToBuffer";
 import { createThumbnail, getImageOutline } from "./image";
@@ -143,7 +143,7 @@ export async function createTokenFromFile(
 }
 
 export function clientPositionToMapPosition(
-  mapStage: Stage,
+  mapStage: Konva.Stage,
   clientPosition: Vector2,
   checkMapBounds = true
 ): Vector2 | undefined {

@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useGesture } from "react-use-gesture";
 import { Handlers } from "react-use-gesture/dist/types";
 import normalizeWheel from "normalize-wheel";
-import { Layer } from "konva/types/Layer";
+import Konva from "konva";
 
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 import { MapStage } from "../contexts/MapStageContext";
@@ -22,7 +22,7 @@ function useStageInteraction(
   stageScale: number,
   onStageScaleChange: StageScaleChangeEventHandler,
   stageTranslateRef: React.MutableRefObject<Vector2>,
-  layerRef: React.RefObject<Layer>,
+  layerRef: React.RefObject<Konva.Layer>,
   maxZoom = 10,
   tool = "move",
   preventInteraction = false,

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
-import { Stage } from "konva/types/Stage";
+import Konva from "konva";
 
-export type MapStage = React.MutableRefObject<Stage | null>;
+export type MapStage = React.MutableRefObject<Konva.Stage | null>;
 
 const MapStageContext = React.createContext<MapStage | undefined>(undefined);
 export const MapStageProvider = MapStageContext.Provider;

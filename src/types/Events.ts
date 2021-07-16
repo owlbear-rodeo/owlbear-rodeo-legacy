@@ -1,3 +1,4 @@
+import Konva from "konva";
 import { DefaultDice } from "./Dice";
 import { Map } from "./Map";
 import { MapState } from "./MapState";
@@ -12,3 +13,11 @@ export type DiceSelectEventHandler = (dice: DefaultDice) => void;
 export type RequestCloseEventHandler = () => void;
 
 export type MapTokensStateCreateHandler = (states: TokenState[]) => void;
+
+export type TokenStateChangeEventHandler = (
+  change: Partial<Record<string, Partial<TokenState>>>
+) => void;
+export type TokenMenuOpenChangeEventHandler = (
+  tokenStateId: string,
+  tokenImage: Konva.Node
+) => void;

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import { useParams } from "react-router-dom";
+import Konva from "konva";
 
 import Banner from "../components/banner/Banner";
 import ReconnectBanner from "../components/banner/ReconnectBanner";
@@ -28,7 +29,6 @@ import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
 import Session from "../network/Session";
-import { Stage } from "konva/types/Stage";
 
 function Game() {
   const { id: gameId }: { id: string } = useParams();
@@ -108,7 +108,7 @@ function Game() {
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
-  const mapStageRef = useRef<Stage | null>(null);
+  const mapStageRef = useRef<Konva.Stage | null>(null);
 
   return (
     <AssetsProvider>

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, IconButton } from "theme-ui";
-import { Node } from "konva/types/Node";
+import Konva from "konva";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
 
 type DragOverlayProps = {
   dragging: boolean;
-  node: Node;
+  node: Konva.Node;
   onRemove: () => void;
 };
 

@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Box } from "theme-ui";
 import ReactResizeDetector from "react-resize-detector";
 import { Stage, Layer, Image } from "react-konva";
+import Konva from "konva";
 import { EventEmitter } from "events";
 
 import useMapImage from "../../hooks/useMapImage";
@@ -18,8 +19,6 @@ import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import shortcuts from "../../shortcuts";
-import { Layer as LayerType } from "konva/types/Layer";
-import { Image as ImageType } from "konva/types/shapes/Image";
 import { Map, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
 
@@ -63,8 +62,8 @@ function MapInteraction({
   // Avoid state udpates when panning the map by using a ref and updating the konva element directly
   const stageTranslateRef = useRef({ x: 0, y: 0 });
   const mapStageRef = useMapStage();
-  const mapLayerRef = useRef<LayerType>(null);
-  const mapImageRef = useRef<ImageType>(null);
+  const mapLayerRef = useRef<Konva.Layer>(null);
+  const mapImageRef = useRef<Konva.Image>(null);
 
   function handleResize(width?: number, height?: number) {
     if (width && height && width > 0 && height > 0) {
@@ -223,7 +222,7 @@ function MapInteraction({
             >
               <Layer ref={mapLayerRef}>
                 <Image
-                  image={mapLoaded && mapImage}
+                  image={(mapLoaded && mapImage) || undefined}
                   width={mapWidth}
                   height={mapHeight}
                   id="mapImage"
