@@ -101,11 +101,13 @@ function EditMapModal({
     }
   }
 
-  const selectedMapWithChanges = map && {
-    ...map,
-    ...mapSettingChanges,
-  };
-  const selectedMapStateWithChanges = mapState && {
+  const selectedMapWithChanges =
+    map &&
+    ({
+      ...map,
+      ...mapSettingChanges,
+    } as Map);
+  const selectedMapStateWithChanges: MapState = mapState && {
     ...mapState,
     ...mapStateSettingChanges,
   };

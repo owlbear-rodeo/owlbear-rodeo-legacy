@@ -9,8 +9,7 @@ class GridSizeModel extends Model {
   // Store model as static to prevent extra network requests
   static model: LayersModel;
   // Load tensorflow dynamically
-
-  static tf;
+  static tf: any;
   constructor() {
     super(config as ModelJSON, { "group1-shard1of1.bin": weights });
   }

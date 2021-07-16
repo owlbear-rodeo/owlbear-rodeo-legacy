@@ -11,13 +11,12 @@ import Modal from "../components/Modal";
 
 import { RequestCloseEventHandler } from "../types/Events";
 
-function StartModal({
-  isOpen,
-  onRequestClose,
-}: {
+type StartModalProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
-}) {
+};
+
+function StartModal({ isOpen, onRequestClose }: StartModalProps) {
   let history = useHistory();
   const { password, setPassword } = useAuth();
 
@@ -38,7 +37,7 @@ function StartModal({
     history.push(`/game/${shortid.generate()}`);
   }
 
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement>(null);
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }

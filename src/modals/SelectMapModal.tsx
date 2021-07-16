@@ -81,7 +81,7 @@ function SelectMapModal({
    * Image Upload
    */
 
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =
@@ -120,7 +120,7 @@ function SelectMapModal({
   function clearFileInput() {
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
-      fileInputRef.current.value = null;
+      fileInputRef.current.value = "";
     }
   }
 

@@ -22,6 +22,7 @@ import { MapState } from "../types/MapState";
 import { Token } from "../types/Token";
 import { Group } from "../types/Group";
 import { RequestCloseEventHandler } from "../types/Events";
+import { Asset } from "../types/Asset";
 
 const importDBName = "OwlbearRodeoImportDB";
 
@@ -46,7 +47,7 @@ function ImportExportModal({
   const [error, setError] = useState<Error>();
 
   const backgroundTaskRunningRef = useRef(false);
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [showImportSelector, setShowImportSelector] = useState(false);
   const [showExportSelector, setShowExportSelector] = useState(false);
@@ -115,7 +116,7 @@ function ImportExportModal({
     }
     // Set file input to null to allow adding the same data 2 times in a row
     if (fileInputRef.current) {
-      fileInputRef.current.value = null;
+      fileInputRef.current.value = "";
     }
   }
 
@@ -124,7 +125,7 @@ function ImportExportModal({
   }
 
   useEffect(() => {
-    function handleBeforeUnload(event) {
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
       if (backgroundTaskRunningRef.current) {
         event.returnValue =
           "Database is still processing, are you sure you want to leave?";
@@ -257,7 +258,7 @@ function ImportExportModal({
       const assetsToAdd = await importDB
         .table("assets")
         .bulkGet(Object.keys(newAssetIds));
-      let newAssets = [];
+      let newAssets: Asset[] = [];
       for (let asset of assetsToAdd) {
         if (asset) {
           newAssets.push({
@@ -271,7 +272,7 @@ function ImportExportModal({
       }
 
       // Add map groups with new ids
-      let newMapGroups = [];
+      let newMapGroups: Group[] = [];
       if (checkedMapGroups.length > 0) {
         for (let group of checkedMapGroups) {
           if (group.type === "item") {
@@ -290,7 +291,7 @@ function ImportExportModal({
       }
 
       // Add token groups with new ids
-      let newTokenGroups = [];
+      let newTokenGroups: Group[] = [];
       if (checkedTokenGroups.length > 0) {
         for (let group of checkedTokenGroups) {
           if (group.type === "item") {

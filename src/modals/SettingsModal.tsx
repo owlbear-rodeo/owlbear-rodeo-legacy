@@ -25,13 +25,12 @@ import ImportExportModal from "./ImportExportModal";
 import { MapState } from "../types/MapState";
 import { RequestCloseEventHandler } from "../types/Events";
 
-function SettingsModal({
-  isOpen,
-  onRequestClose,
-}: {
+type SettingsModalProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
-}) {
+};
+
+function SettingsModal({ isOpen, onRequestClose }: SettingsModalProps) {
   const { database, databaseStatus } = useDatabase();
   const userId = useUserId();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

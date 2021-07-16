@@ -2,15 +2,19 @@ import { Box, Label, Text } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
+type AddPartyMemberModalProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  gameId: string;
+};
+
 function AddPartyMemberModal({
   isOpen,
   onRequestClose,
   gameId,
-}: {
-  isOpen: boolean;
-  onRequestClose;
-  gameId: string;
-}) {
+}: AddPartyMemberModalProps) {
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
       <Box>

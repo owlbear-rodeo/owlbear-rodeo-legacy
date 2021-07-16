@@ -3,12 +3,14 @@ import { Box, Input, Button, Label, Flex } from "theme-ui";
 
 import Modal from "../components/Modal";
 
+import { RequestCloseEventHandler } from "../types/Events";
+
 type ChangeNicknameModalProps = {
   isOpen: boolean;
-  onRequestClose;
-  onChangeSubmit;
+  onRequestClose: RequestCloseEventHandler;
+  onChangeSubmit: React.FormEventHandler<HTMLDivElement>;
   nickname: string;
-  onChange;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
 };
 
 function ChangeNicknameModal({

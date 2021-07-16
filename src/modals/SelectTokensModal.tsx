@@ -76,7 +76,7 @@ function SelectTokensModal({
    * Image Upload
    */
 
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =
@@ -87,11 +87,6 @@ function SelectTokensModal({
     if (navigator.storage) {
       // Attempt to enable persistant storage
       await navigator.storage.persist();
-    }
-
-    // TODO: handle null files
-    if (files === null) {
-      return;
     }
 
     let tokenFiles = [];
@@ -120,7 +115,7 @@ function SelectTokensModal({
   function clearFileInput() {
     // Set file input to null to allow adding the same image 2 times in a row
     if (fileInputRef.current) {
-      fileInputRef.current.value = null;
+      fileInputRef.current.value = "";
     }
   }
 
