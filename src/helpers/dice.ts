@@ -21,10 +21,11 @@ export function getDiceInstanceRoll(instance: InstancedMesh) {
       highestLocator = locator;
     }
   }
-  if (!highestLocator) {
+  if (highestLocator) {
+    return parseInt(highestLocator.name.slice(12));
+  } else {
     return 0;
   }
-  return parseInt(highestLocator.name.slice(12));
 }
 
 /**

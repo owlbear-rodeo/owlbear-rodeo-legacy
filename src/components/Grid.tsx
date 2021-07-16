@@ -50,19 +50,19 @@ function Grid({ stroke }: { stroke: "black" | "white" }) {
     const scale = gridCellPixelSize.width / 300;
     patternProps.fillPatternScaleX = scale;
     patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetX = gridCellPixelSize.width / 2;
-    patternProps.fillPatternOffsetY = gridCellPixelSize.height / 2;
+    patternProps.fillPatternOffsetX = gridCellPixelSize.width / scale / 2;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.height / scale / 2;
   } else if (grid.type === "hexVertical") {
     // Hex tile pattern is 153 DPI to better fit hex tiles
     const scale = gridCellPixelSize.width / 153;
     patternProps.fillPatternScaleX = scale;
     patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetY = gridCellPixelSize.radius / 2;
+    patternProps.fillPatternOffsetY = gridCellPixelSize.radius / scale / 2;
   } else if (grid.type === "hexHorizontal") {
     const scale = gridCellPixelSize.height / 153;
     patternProps.fillPatternScaleX = scale;
     patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / 2;
+    patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / scale / 2;
     patternProps.fillPatternRotation = 90;
   }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Rect, Text } from "react-konva";
-import { useSpring, animated } from "react-spring/konva";
+import { useSpring, animated } from "@react-spring/konva";
 
 import { useUserId } from "../../contexts/UserIdContext";
 import {

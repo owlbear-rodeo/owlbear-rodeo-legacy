@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
-import { useSpring, animated } from "react-spring/konva";
+import { useSpring, animated } from "@react-spring/konva";
 import useImage from "use-image";
 
 import usePrevious from "../../hooks/usePrevious";
@@ -20,6 +20,7 @@ import TokenLabel from "../token/TokenLabel";
 import TokenOutline from "../token/TokenOutline";
 
 import { Intersection, getScaledOutline } from "../../helpers/token";
+import Vector2 from "../../helpers/Vector2";
 
 import { tokenSources } from "../../tokens";
 
@@ -48,10 +49,14 @@ function MapToken({
 
   const snapPositionToGrid = useGridSnapping();
 
+  const intersectingTokensRef = useRef([]);
+  const previousDragPositionRef = useRef({ x: 0, y: 0 });
+
   function handleDragStart(event) {
     const tokenGroup = event.target;
 
     if (tokenState.category === "vehicle") {
+      previousDragPositionRef.current = tokenGroup.position();
       const tokenIntersection = new Intersection(
         getScaledOutline(tokenState, tokenWidth, tokenHeight),
         { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
@@ -67,10 +72,7 @@ function MapToken({
           continue;
         }
         if (tokenIntersection.intersects(other.position())) {
-          // Save and restore token position after moving layer
-          const position = other.absolutePosition();
-          other.moveTo(tokenGroup);
-          other.absolutePosition(position);
+          intersectingTokensRef.current.push(other);
         }
       }
     }
@@ -84,6 +86,16 @@ function MapToken({
     if (map.snapToGrid) {
       tokenGroup.position(snapPositionToGrid(tokenGroup.position()));
     }
+    if (tokenState.category === "vehicle") {
+      const deltaPosition = Vector2.subtract(
+        tokenGroup.position(),
+        previousDragPositionRef.current
+      );
+      for (let other of intersectingTokensRef.current) {
+        other.position(Vector2.add(other.position(), deltaPosition));
+      }
+      previousDragPositionRef.current = tokenGroup.position();
+    }
   }
 
   function handleDragEnd(event) {
@@ -91,20 +103,15 @@ function MapToken({
 
     const mountChanges = {};
     if (tokenState.category === "vehicle") {
-      const parent = tokenGroup.getParent();
-      const mountedTokens = tokenGroup.find(".character");
-      for (let mountedToken of mountedTokens) {
-        // Save and restore token position after moving layer
-        const position = mountedToken.absolutePosition();
-        mountedToken.moveTo(parent);
-        mountedToken.absolutePosition(position);
-        mountChanges[mountedToken.id()] = {
-          x: mountedToken.x() / mapWidth,
-          y: mountedToken.y() / mapHeight,
+      for (let other of intersectingTokensRef.current) {
+        mountChanges[other.id()] = {
+          x: other.x() / mapWidth,
+          y: other.y() / mapHeight,
           lastModifiedBy: userId,
           lastModified: Date.now(),
         };
       }
+      intersectingTokensRef.current = [];
     }
 
     setPreventMapInteraction(false);
