@@ -4,11 +4,14 @@ import {
   exportDB,
   peakImportFile,
 } from "@mitchemmc/dexie-export-import";
+import { ExportProgress } from "@mitchemmc/dexie-export-import/dist/export";
 import { encode, decode } from "@msgpack/msgpack";
 
 import { getDatabase } from "../database";
 import blobToBuffer from "../helpers/blobToBuffer";
-import { ExportProgress } from "@mitchemmc/dexie-export-import/dist/export";
+
+import { Map } from "../types/Map";
+import { Token } from "../types/Token";
 
 type ProgressCallback = (progress: ExportProgress) => boolean;
 
@@ -19,7 +22,7 @@ let service = {
    * @param {string} table Table to load from
    * @param {string=} key Optional database key to load, if undefined whole table will be loaded
    */
-  async loadData(table: string, key?: string) {
+  async loadData<T>(table: string, key?: string): Promise<Uint8Array> {
     try {
       let db = getDatabase({});
       if (key) {
@@ -29,7 +32,7 @@ let service = {
         return Comlink.transfer(packed, [packed.buffer]);
       } else {
         // Load entire table
-        let items = [];
+        let items: T[] = [];
         // Use a cursor instead of toArray to prevent IPC max size error
         await db.table(table).each((item) => {
           items.push(item);
@@ -40,7 +43,7 @@ let service = {
         return Comlink.transfer(packed, [packed.buffer]);
       }
     } catch {
-      // TODO: throw error in empty catch?
+      throw new Error("Unable to load database");
     }
   },
 
@@ -66,17 +69,25 @@ let service = {
    * @param {string[]} mapIds An array of map ids to export
    * @param {string[]} tokenIds An array of token ids to export
    */
-  async exportData(progressCallback, mapIds: string[], tokenIds: string[]) {
+  async exportData(
+    progressCallback: ProgressCallback,
+    mapIds: string[],
+    tokenIds: string[]
+  ) {
     let db = getDatabase({});
 
     // Add assets for selected maps and tokens
-    const maps = await db.table("maps").where("id").anyOf(mapIds).toArray();
+    const maps = await db
+      .table<Map>("maps")
+      .where("id")
+      .anyOf(mapIds)
+      .toArray();
     const tokens = await db
-      .table("tokens")
+      .table<Token>("tokens")
       .where("id")
       .anyOf(tokenIds)
       .toArray();
-    const assetIds = [];
+    const assetIds: string[] = [];
     for (let map of maps) {
       if (map.type === "file") {
         assetIds.push(map.file);
@@ -93,7 +104,7 @@ let service = {
       }
     }
 
-    const filter = (table, value) => {
+    const filter = (table: string, value: any) => {
       if (table === "maps") {
         return mapIds.includes(value.id);
       }
@@ -114,7 +125,7 @@ let service = {
       return false;
     };
 
-    const data = await exportDB(db, {
+    const data = await exportDB(db as any, {
       progressCallback,
       filter,
       numRowsPerChunk: 1,
@@ -165,7 +176,7 @@ let service = {
       importMeta.data.databaseVersion,
       false
     );
-    await importInto(importDB, data, {
+    await importInto(importDB as any, data, {
       progressCallback,
       acceptNameDiff: true,
       overwriteValues: true,
@@ -189,12 +200,12 @@ let service = {
    * Removes largest assets first
    * @param {number} maxCacheSize Max size of cache in bytes
    */
-  async cleanAssetCache(maxCacheSize) {
+  async cleanAssetCache(maxCacheSize: number) {
     try {
       let db = getDatabase({});
       const userId = (await db.table("user").get("userId")).value;
 
-      const assetSizes = [];
+      const assetSizes: { id: string; size: number }[] = [];
       await db
         .table("assets")
         .where("owner")

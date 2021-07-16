@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Flex, Label, Button, Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 import ReactResizeDetector from "react-resize-detector";
