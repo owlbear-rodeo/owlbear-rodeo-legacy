@@ -7,7 +7,7 @@ import { useKeyboard, useBlur } from "./KeyboardContext";
 import { getGroupItems, groupsFromIds } from "../helpers/group";
 
 import shortcuts from "../shortcuts";
-import { Group, GroupContainer, GroupItem } from "../types/Group";
+import { Group, GroupItem } from "../types/Group";
 
 export type GroupSelectMode = "single" | "multiple" | "range";
 export type GroupSelectModeChangeEventHandler = (

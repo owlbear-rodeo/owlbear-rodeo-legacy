@@ -1,35 +1,42 @@
 import { useRef, useEffect, useState } from "react";
 import { useGesture } from "react-use-gesture";
+import { Handlers } from "react-use-gesture/dist/types";
 import normalizeWheel from "normalize-wheel";
+import { Stage } from "konva/types/Stage";
+import { Layer } from "konva/types/Layer";
 
 import { useKeyboard, useBlur } from "../contexts/KeyboardContext";
 
 import shortcuts from "../shortcuts";
 
+import Vector2 from "../helpers/Vector2";
+
 const wheelZoomSpeed = -1;
 const touchZoomSpeed = 0.005;
 const minZoom = 0.1;
 
+type StageScaleChangeEventHandler = (newScale: number) => void;
+
 function useStageInteraction(
-  stage,
-  stageScale,
-  onStageScaleChange,
-  stageTranslateRef,
-  layer,
+  stage: Stage,
+  stageScale: number,
+  onStageScaleChange: StageScaleChangeEventHandler,
+  stageTranslateRef: React.MutableRefObject<Vector2>,
+  layer: Layer,
   maxZoom = 10,
   tool = "move",
   preventInteraction = false,
-  gesture = {}
+  gesture: Handlers = {}
 ) {
   const isInteractingWithCanvas = useRef(false);
-  const pinchPreviousDistanceRef = useRef();
-  const pinchPreviousOriginRef = useRef();
+  const pinchPreviousDistanceRef = useRef<number>(0);
+  const pinchPreviousOriginRef = useRef<Vector2>({ x: 0, y: 0 });
 
   const [zoomSpeed, setZoomSpeed] = useState(1);
 
   // Prevent accessibility pinch to zoom on Mac
   useEffect(() => {
-    function handleGesture(e) {
+    function handleGesture(e: Event) {
       e.preventDefault();
     }
     window.addEventListener("gesturestart", handleGesture);
@@ -69,16 +76,18 @@ function useStageInteraction(
 
           // Center on pointer
           const pointer = stage.getPointerPosition();
-          const newTranslate = {
-            x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
-            y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
-          };
+          if (pointer) {
+            const newTranslate = {
+              x: pointer.x - ((pointer.x - stage.x()) / stageScale) * newScale,
+              y: pointer.y - ((pointer.y - stage.y()) / stageScale) * newScale,
+            };
 
-          stage.position(newTranslate);
+            stage.position(newTranslate);
 
-          stageTranslateRef.current = newTranslate;
+            stageTranslateRef.current = newTranslate;
 
-          onStageScaleChange(newScale);
+            onStageScaleChange(newScale);
+          }
         }
 
         gesture.onWheel && gesture.onWheel(props);
@@ -186,7 +195,7 @@ function useStageInteraction(
     }
   );
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     // TODO: Find better way to detect whether keyboard event should fire.
     // This one fires on all open stages
     if (preventInteraction) {
@@ -222,7 +231,7 @@ function useStageInteraction(
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: KeyboardEvent) {
     if (shortcuts.stagePrecisionZoom(event)) {
       setZoomSpeed(1);
     }

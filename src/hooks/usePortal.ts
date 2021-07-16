@@ -6,7 +6,7 @@ import { useRef, useEffect } from "react";
  * Creates DOM element to be used as React root.
  * @returns {HTMLElement}
  */
-function createRootElement(id) {
+function createRootElement(id: string) {
   const rootContainer = document.createElement("div");
   rootContainer.setAttribute("id", id);
   return rootContainer;
@@ -16,11 +16,13 @@ function createRootElement(id) {
  * Appends element as last child of body.
  * @param {HTMLElement} rootElem
  */
-function addRootElement(rootElem) {
-  document.body.insertBefore(
-    rootElem,
-    document.body.lastElementChild.nextElementSibling
-  );
+function addRootElement(rootElem: HTMLElement) {
+  if (document.body.lastElementChild) {
+    document.body.insertBefore(
+      rootElem,
+      document.body.lastElementChild?.nextElementSibling
+    );
+  }
 }
 
 /**
@@ -34,13 +36,15 @@ function addRootElement(rootElem) {
  * @param {String} id The id of the target container, e.g 'modal' or 'spotlight'
  * @returns {HTMLElement} The DOM node to use as the Portal target.
  */
-function usePortal(id) {
-  const rootElemRef = useRef(null);
+function usePortal(id: string): HTMLElement {
+  const rootElemRef = useRef<HTMLElement | null>(null);
 
   useEffect(
     function setupElement() {
       // Look for existing target dom element to append to
-      const existingParent = document.querySelector(`#${id}`);
+      const existingParent: HTMLElement | null = document.querySelector(
+        `#${id}`
+      );
       // Parent is either a new root or the existing dom element
       const parentElem = existingParent || createRootElement(id);
 
@@ -50,10 +54,10 @@ function usePortal(id) {
       }
 
       // Add the detached element to the parent
-      parentElem.appendChild(rootElemRef.current);
+      rootElemRef.current && parentElem.appendChild(rootElemRef.current);
 
       return function removeElement() {
-        rootElemRef.current.remove();
+        rootElemRef.current && rootElemRef.current.remove();
         if (parentElem.childNodes.length === -1) {
           parentElem.remove();
         }

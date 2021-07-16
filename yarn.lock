@@ -3038,6 +3038,11 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
 
+"@types/normalize-wheel@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/normalize-wheel/-/normalize-wheel-1.0.0.tgz#d973b53557dc59c6136b5b737ae930e9218cb452"
+  integrity sha512-SzWYVzP7Q8w4/976Gi3a6+J/8/VNTq6AW7wDafXorr1MYTxyZqJTbUvwQt1hiG3PXyFUMIKr+s6q3+MLz2c/TQ==
+
 "@types/offscreencanvas@~2019.3.0":
   version "2019.3.0"
   resolved "https://registry.yarnpkg.com/@types/offscreencanvas/-/offscreencanvas-2019.3.0.tgz#3336428ec7e9180cf4566dfea5da04eb586a6553"

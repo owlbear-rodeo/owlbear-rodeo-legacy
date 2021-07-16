@@ -309,7 +309,7 @@ type DefaultData = {
 export function useDataURL(
   data: FileData | DefaultData,
   defaultSources: Record<string, string>,
-  unknownSource: string | undefined,
+  unknownSource: string | undefined = undefined,
   thumbnail = false
 ) {
   const [assetId, setAssetId] = useState<string>();

@@ -23,6 +23,8 @@ import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
 import { Map } from "../../types/Map";
 import { GridInset } from "../../types/Grid";
+import { Stage as StageType } from "konva/types/Stage";
+import { Layer as LayerType } from "konva/types/Layer";
 
 type MapSettingsChangeEventHandler = (change: Partial<Map>) => void;
 
@@ -41,8 +43,8 @@ function MapEditor({ map, onSettingsChange }: MapEditorProps) {
   const defaultInset = getGridDefaultInset(map.grid, map.width, map.height);
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const mapStageRef = useRef();
-  const mapLayerRef = useRef();
+  const mapStageRef = useRef<StageType>(null);
+  const mapLayerRef = useRef<LayerType>(null);
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
   function handleResize(width?: number, height?: number): void {
@@ -55,7 +57,7 @@ function MapEditor({ map, onSettingsChange }: MapEditorProps) {
     }
   }
 
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   usePreventOverscroll(containerRef);
 
   const [mapWidth, mapHeight] = useImageCenter(

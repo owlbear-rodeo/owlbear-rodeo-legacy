@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
-function usePreventTouch(elementRef) {
+function usePreventTouch(elementRef: React.RefObject<HTMLElement>) {
   useEffect(() => {
     // Stop 3d touch
-    function prevent3DTouch(event) {
+    function prevent3DTouch(event: TouchEvent) {
       event.preventDefault();
     }
     const element = elementRef.current;

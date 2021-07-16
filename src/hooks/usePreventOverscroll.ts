@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
-function usePreventOverscroll(elementRef) {
+function usePreventOverscroll(elementRef: React.RefObject<HTMLElement>) {
   useEffect(() => {
     // Stop overscroll on chrome and safari
     // also stop pinch to zoom on chrome
-    function preventOverscroll(event) {
+    function preventOverscroll(event: WheelEvent) {
       event.preventDefault();
     }
     const element = elementRef.current;

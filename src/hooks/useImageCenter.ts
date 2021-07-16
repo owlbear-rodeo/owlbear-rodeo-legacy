@@ -1,26 +1,24 @@
+import { Layer } from "konva/types/Layer";
 import { useEffect, useRef } from "react";
 
-type useImageCenterProps = {
-  data: 
-  stageRef: 
-  stageWidth: number;
-  stageHeight: number;
-  stageTranslateRef:
-  setStageScale:
-  imageLayerRef:
-  containerRef: 
-  responsive?: boolean
-}
+import { MapStage } from "../contexts/MapStageContext";
+import Vector2 from "../helpers/Vector2";
+
+type ImageData = {
+  id: string;
+  width: number;
+  height: number;
+};
 
 function useImageCenter(
-  data,
-  stageRef,
-  stageWidth,
-  stageHeight,
-  stageTranslateRef,
-  setStageScale,
-  imageLayerRef,
-  containerRef,
+  data: ImageData,
+  stageRef: MapStage,
+  stageWidth: number,
+  stageHeight: number,
+  stageTranslateRef: React.MutableRefObject<Vector2>,
+  setStageScale: React.Dispatch<React.SetStateAction<number>>,
+  imageLayerRef: React.RefObject<Layer>,
+  containerRef: React.RefObject<HTMLDivElement>,
   responsive = false
 ) {
   const stageRatio = stageWidth / stageHeight;
@@ -37,7 +35,7 @@ function useImageCenter(
   }
 
   // Reset image translate and stage scale
-  const previousDataIdRef = useRef();
+  const previousDataIdRef = useRef<string>();
   const previousStageRatioRef = useRef(stageRatio);
   useEffect(() => {
     if (!data) {
@@ -45,7 +43,12 @@ function useImageCenter(
     }
 
     const layer = imageLayerRef.current;
-    const containerRect = containerRef.current.getBoundingClientRect();
+    const container = containerRef.current;
+    const stage = stageRef.current;
+    if (!container || !stage) {
+      return;
+    }
+    const containerRect = container.getBoundingClientRect();
     const previousDataId = previousDataIdRef.current;
     const previousStageRatio = previousStageRatioRef.current;
 
@@ -68,7 +71,7 @@ function useImageCenter(
         };
       }
       layer.position(newTranslate);
-      stageRef.current.position({ x: 0, y: 0 });
+      stage.position({ x: 0, y: 0 });
       stageTranslateRef.current = { x: 0, y: 0 };
 
       setStageScale(1);
