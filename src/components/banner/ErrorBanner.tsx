@@ -2,7 +2,13 @@ import { Box, Text } from "theme-ui";
 
 import Banner from "./Banner";
 
-function ErrorBanner({ error, onRequestClose }: { error: Error | undefined, onRequestClose: any }) {
+function ErrorBanner({
+  error,
+  onRequestClose,
+}: {
+  error: Error | undefined;
+  onRequestClose;
+}) {
   return (
     <Banner isOpen={!!error} onRequestClose={onRequestClose}>
       <Box p={1}>

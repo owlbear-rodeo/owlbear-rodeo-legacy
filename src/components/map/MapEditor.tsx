@@ -21,8 +21,17 @@ import GridOffIcon from "../../icons/GridOffIcon";
 
 import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
+import { Map } from "../../types/Map";
+import { GridInset } from "../../types/Grid";
 
-function MapEditor({ map, onSettingsChange }) {
+type MapSettingsChangeEventHandler = (change: Partial<Map>) => void;
+
+type MapEditorProps = {
+  map: Map;
+  onSettingsChange: MapSettingsChangeEventHandler;
+};
+
+function MapEditor({ map, onSettingsChange }: MapEditorProps) {
   const [mapImage] = useMapImage(map);
 
   const [stageWidth, setStageWidth] = useState(1);
@@ -36,12 +45,17 @@ function MapEditor({ map, onSettingsChange }) {
   const mapLayerRef = useRef();
   const [preventMapInteraction, setPreventMapInteraction] = useState(false);
 
-  function handleResize(width, height) {
-    setStageWidth(width);
-    setStageHeight(height);
+  function handleResize(width?: number, height?: number): void {
+    if (width) {
+      setStageWidth(width);
+    }
+
+    if (height) {
+      setStageHeight(height);
+    }
   }
 
-  const containerRef = useRef();
+  const containerRef = useRef(null);
   usePreventOverscroll(containerRef);
 
   const [mapWidth, mapHeight] = useImageCenter(
@@ -67,17 +81,21 @@ function MapEditor({ map, onSettingsChange }) {
     preventMapInteraction
   );
 
-  function handleGridChange(inset) {
-    onSettingsChange("grid", {
-      ...map.grid,
-      inset,
+  function handleGridChange(inset: GridInset) {
+    onSettingsChange({
+      grid: {
+        ...map.grid,
+        inset,
+      },
     });
   }
 
   function handleMapReset() {
-    onSettingsChange("grid", {
-      ...map.grid,
-      inset: defaultInset,
+    onSettingsChange({
+      grid: {
+        ...map.grid,
+        inset: defaultInset,
+      },
     });
   }
 
@@ -120,8 +138,9 @@ function MapEditor({ map, onSettingsChange }) {
         >
           <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
             <KonvaBridge
-              stageRender={(children) => (
+              stageRender={(children: React.ReactNode) => (
                 <Stage
+                  // @ts-ignore https://github.com/konvajs/react-konva/issues/342
                   width={stageWidth}
                   height={stageHeight}
                   scale={{ x: stageScale, y: stageScale }}

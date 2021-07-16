@@ -50,12 +50,9 @@ function Game() {
   }, [session]);
 
   // Handle session errors
-  const [peerError, setPeerError]: [
-    peerError: any,
-    setPeerError: React.Dispatch<any>
-  ] = useState(null);
+  const [peerError, setPeerError] = useState(null);
   useEffect(() => {
-    function handlePeerError({ error }: { error: any }) {
+    function handlePeerError({ error }) {
       if (error.code === "ERR_WEBRTC_SUPPORT") {
         setPeerError("WebRTC not supported.");
       } else if (error.code === "ERR_CREATE_OFFER") {

@@ -239,17 +239,6 @@ export function getFogShapesBoundingBoxes(
 }
 
 /**
- * @typedef Edge
- * @property {Vector2} start
- * @property {Vector2} end
- */
-
-// type Edge = {
-//   start: Vector2,
-//   end: Vector2
-// }
-
-/**
  * @typedef Guide
  * @property {Vector2} start
  * @property {Vector2} end
@@ -257,7 +246,7 @@ export function getFogShapesBoundingBoxes(
  * @property {number} distance
  */
 
-type Guide = {
+export type Guide = {
   start: Vector2;
   end: Vector2;
   orientation: "horizontal" | "vertical";

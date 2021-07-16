@@ -19,6 +19,7 @@ import { moveGroupsInto, moveGroups, ungroup } from "../helpers/group";
 import Vector2 from "../helpers/Vector2";
 
 import usePreventSelect from "../hooks/usePreventSelect";
+import { GroupItem } from "../types/Group";
 
 const TileDragIdContext =
   React.createContext<string | undefined | null>(undefined);
@@ -72,7 +73,9 @@ export function TileDragProvider({
     openGroupId,
     selectedGroupIds,
     onGroupsChange,
+    onSubgroupChange,
     onGroupSelect,
+    onClearSelection,
     filter,
   } = useGroup();
 
@@ -145,24 +148,28 @@ export function TileDragProvider({
       selectedIndices = selectedIndices.sort((a, b) => a - b);
 
       if (over.id.startsWith(GROUP_ID_PREFIX)) {
-        onGroupSelect(undefined);
+        onClearSelection();
         // Handle tile group
         const overId = over.id.slice(9);
         if (overId !== active.id) {
           const overGroupIndex = activeGroups.findIndex(
             (group) => group.id === overId
           );
-          onGroupsChange(
-            moveGroupsInto(activeGroups, overGroupIndex, selectedIndices),
-            openGroupId
+          const newGroups = moveGroupsInto(
+            activeGroups,
+            overGroupIndex,
+            selectedIndices
           );
+          if (!openGroupId) {
+            onGroupsChange(newGroups);
+          }
         }
       } else if (over.id === UNGROUP_ID) {
         if (openGroupId) {
-          onGroupSelect(undefined);
+          onClearSelection();
           // Handle tile ungroup
           const newGroups = ungroup(groups, openGroupId, selectedIndices);
-          onGroupsChange(newGroups, undefined);
+          onGroupsChange(newGroups);
         }
       } else if (over.id === ADD_TO_MAP_ID) {
         onDragAdd &&
@@ -173,10 +180,16 @@ export function TileDragProvider({
         const overGroupIndex = activeGroups.findIndex(
           (group) => group.id === over.id
         );
-        onGroupsChange(
-          moveGroups(activeGroups, overGroupIndex, selectedIndices),
-          openGroupId
+        const newGroups = moveGroups(
+          activeGroups,
+          overGroupIndex,
+          selectedIndices
         );
+        if (openGroupId) {
+          onSubgroupChange(newGroups as GroupItem[], openGroupId);
+        } else {
+          onGroupsChange(newGroups);
+        }
       }
     }
 

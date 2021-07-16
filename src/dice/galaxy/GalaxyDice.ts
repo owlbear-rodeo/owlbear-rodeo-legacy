@@ -1,12 +1,14 @@
-import { InstancedMesh, Material, Mesh, Scene } from "@babylonjs/core";
+import { InstancedMesh, Material, Scene } from "@babylonjs/core";
 import Dice from "../Dice";
 
 import albedo from "./albedo.jpg";
 import metalRoughness from "./metalRoughness.jpg";
 import normal from "./normal.jpg";
 
+import { DiceMeshes, DiceType } from "../../types/Dice";
+
 class GalaxyDice extends Dice {
-  static meshes: Record<string, Mesh>;
+  static meshes: DiceMeshes;
   static material: Material;
 
   static async load(scene: Scene) {
@@ -22,8 +24,7 @@ class GalaxyDice extends Dice {
     }
   }
 
-  // TODO: check static -> rename function?
-  static createInstance(diceType: string, scene: Scene): InstancedMesh {
+  static createInstance(diceType: DiceType, scene: Scene): InstancedMesh {
     if (!this.material || !this.meshes) {
       throw Error("Dice not loaded, call load before creating an instance");
     }

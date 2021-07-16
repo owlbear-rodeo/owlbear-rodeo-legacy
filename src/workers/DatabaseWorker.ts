@@ -29,7 +29,7 @@ let service = {
         return Comlink.transfer(packed, [packed.buffer]);
       } else {
         // Load entire table
-        let items: any[] = [];
+        let items = [];
         // Use a cursor instead of toArray to prevent IPC max size error
         await db.table(table).each((item) => {
           items.push(item);
@@ -49,7 +49,7 @@ let service = {
    * @param {Uint8Array} data
    * @param {string} table
    */
-  async putData(data: Uint8Array, table: string) : Promise<boolean> {
+  async putData(data: Uint8Array, table: string): Promise<boolean> {
     try {
       let db = getDatabase({});
       const decoded = decode(data);
@@ -66,7 +66,7 @@ let service = {
    * @param {string[]} mapIds An array of map ids to export
    * @param {string[]} tokenIds An array of token ids to export
    */
-  async exportData(progressCallback: any, mapIds: string[], tokenIds: string[]) {
+  async exportData(progressCallback, mapIds: string[], tokenIds: string[]) {
     let db = getDatabase({});
 
     // Add assets for selected maps and tokens
@@ -132,7 +132,11 @@ let service = {
    * @param {string} databaseName The name of the database to import into
    * @param {ProgressCallback} progressCallback
    */
-  async importData(data: Blob, databaseName: string, progressCallback: ProgressCallback) {
+  async importData(
+    data: Blob,
+    databaseName: string,
+    progressCallback: ProgressCallback
+  ) {
     const importMeta = await peakImportFile(data);
     if (!importMeta.data) {
       throw new Error("Uanble to parse file");
@@ -216,5 +220,7 @@ let service = {
     } catch {}
   },
 };
+
+export type DatabaseWorkerService = typeof service;
 
 Comlink.expose(service);

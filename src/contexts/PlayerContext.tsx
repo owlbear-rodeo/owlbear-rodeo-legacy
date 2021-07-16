@@ -5,29 +5,32 @@ import { useUserId } from "./UserIdContext";
 
 import { getRandomMonster } from "../helpers/monsters";
 
-import useNetworkedState from "../hooks/useNetworkedState";
+import useNetworkedState, {
+  SetNetworkedState,
+} from "../hooks/useNetworkedState";
 import Session from "../network/Session";
-import { PlayerInfo } from "../components/party/PartyState";
+import { PlayerState } from "../types/PlayerState";
 
-export const PlayerStateContext = React.createContext<any>(undefined);
-export const PlayerUpdaterContext = React.createContext<any>(() => {});
+export const PlayerStateContext =
+  React.createContext<PlayerState | undefined>(undefined);
+export const PlayerUpdaterContext =
+  React.createContext<SetNetworkedState<PlayerState> | undefined>(undefined);
 
-export function PlayerProvider({
-  session,
-  children,
-}: {
+type PlayerProviderProps = {
   session: Session;
   children: React.ReactNode;
-}) {
+};
+
+export function PlayerProvider({ session, children }: PlayerProviderProps) {
   const userId = useUserId();
   const { database, databaseStatus } = useDatabase();
 
-  const [playerState, setPlayerState] = useNetworkedState(
+  const [playerState, setPlayerState] = useNetworkedState<PlayerState>(
     {
       nickname: "",
-      timer: null,
+      timer: undefined,
       dice: { share: false, rolls: [] },
-      sessionId: null,
+      sessionId: undefined,
       userId,
     },
     session,
@@ -43,13 +46,13 @@ export function PlayerProvider({
     async function loadNickname() {
       const storedNickname = await database?.table("user").get("nickname");
       if (storedNickname !== undefined) {
-        setPlayerState((prevState: PlayerInfo) => ({
+        setPlayerState((prevState) => ({
           ...prevState,
           nickname: storedNickname.value,
         }));
       } else {
         const name = getRandomMonster();
-        setPlayerState((prevState: any) => ({ ...prevState, nickname: name }));
+        setPlayerState((prevState) => ({ ...prevState, nickname: name }));
         database?.table("user").add({ key: "nickname", value: name });
       }
     }
@@ -71,7 +74,7 @@ export function PlayerProvider({
 
   useEffect(() => {
     if (userId) {
-      setPlayerState((prevState: PlayerInfo) => {
+      setPlayerState((prevState) => {
         if (prevState) {
           return {
             ...prevState,
@@ -85,8 +88,7 @@ export function PlayerProvider({
 
   useEffect(() => {
     function updateSessionId() {
-      setPlayerState((prevState: PlayerInfo) => {
-        // TODO: check useNetworkState requirements here
+      setPlayerState((prevState) => {
         if (prevState) {
           return {
             ...prevState,

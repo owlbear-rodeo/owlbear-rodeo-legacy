@@ -28,7 +28,7 @@ function StartTimerModal({
   onTimerStop,
   timer,
 }: StartTimerProps) {
-  const inputRef = useRef<any>();
+  const inputRef = useRef();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }

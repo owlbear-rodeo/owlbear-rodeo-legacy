@@ -1,5 +1,17 @@
 import { useEffect, useRef } from "react";
 
+type useImageCenterProps = {
+  data: 
+  stageRef: 
+  stageWidth: number;
+  stageHeight: number;
+  stageTranslateRef:
+  setStageScale:
+  imageLayerRef:
+  containerRef: 
+  responsive?: boolean
+}
+
 function useImageCenter(
   data,
   stageRef,
@@ -14,8 +26,8 @@ function useImageCenter(
   const stageRatio = stageWidth / stageHeight;
   const imageRatio = data ? data.width / data.height : 1;
 
-  let imageWidth;
-  let imageHeight;
+  let imageWidth: number;
+  let imageHeight: number;
   if (stageRatio > imageRatio) {
     imageWidth = data ? stageHeight / (data.height / data.width) : stageWidth;
     imageHeight = stageHeight;

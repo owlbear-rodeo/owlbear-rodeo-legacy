@@ -197,10 +197,12 @@ export function findGroup(groups: Group[], groupId: string): Group | undefined {
 /**
  * Transform and item array to a record of item ids to item names
  */
-export function getItemNames(items: any[], itemKey: string = "id") {
+export function getItemNames<Item extends { name: string; id: string }>(
+  items: Item[]
+) {
   let names: Record<string, string> = {};
   for (let item of items) {
-    names[item[itemKey]] = item.name;
+    names[item.id] = item.name;
   }
   return names;
 }

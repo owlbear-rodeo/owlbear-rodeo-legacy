@@ -16,15 +16,13 @@ import d100Source from "./shared/d100.glb";
 
 import { lerp } from "../helpers/shared";
 import { importTextureAsync } from "../helpers/babylon";
+import { InstancedMesh, Material, Mesh, Scene } from "@babylonjs/core";
 import {
-  BaseTexture,
-  InstancedMesh,
-  Material,
-  Mesh,
-  Scene,
-  Texture,
-} from "@babylonjs/core";
-import { DiceType } from "../types/Dice";
+  DiceType,
+  BaseDiceTextureSources,
+  isDiceMeshes,
+  DiceMeshes,
+} from "../types/Dice";
 
 const minDiceRollSpeed = 600;
 const maxDiceRollSpeed = 800;
@@ -35,13 +33,11 @@ class Dice {
   static async loadMeshes(
     material: Material,
     scene: Scene,
-    sourceOverrides?: any
-  ): Promise<Record<string, Mesh>> {
-    let meshes: any = {};
-    const addToMeshes = async (type: string | number, defaultSource: any) => {
-      let source: string = sourceOverrides
-        ? sourceOverrides[type]
-        : defaultSource;
+    sourceOverrides?: Record<DiceType, string>
+  ): Promise<DiceMeshes> {
+    let meshes: Partial<DiceMeshes> = {};
+    const addToMeshes = async (type: DiceType, defaultSource: string) => {
+      let source = sourceOverrides ? sourceOverrides[type] : defaultSource;
       const mesh = await this.loadMesh(source, material, scene);
       meshes[type] = mesh;
     };
@@ -54,12 +50,16 @@ class Dice {
       addToMeshes("d20", d20Source),
       addToMeshes("d100", d100Source),
     ]);
-    return meshes;
+    if (isDiceMeshes(meshes)) {
+      return meshes;
+    } else {
+      throw new Error("Dice meshes failed to load, missing mesh source");
+    }
   }
 
   static async loadMesh(source: string, material: Material, scene: Scene) {
     let mesh = (await SceneLoader.ImportMeshAsync("", source, "", scene))
-      .meshes[1];
+      .meshes[1] as Mesh;
     mesh.setParent(null);
 
     mesh.material = material;
@@ -69,19 +69,18 @@ class Dice {
     return mesh;
   }
 
-  static async loadMaterial(materialName: string, textures: any, scene: Scene) {
+  static async loadMaterial(
+    materialName: string,
+    textures: BaseDiceTextureSources,
+    scene: Scene
+  ) {
     let pbr = new PBRMaterial(materialName, scene);
-    let [albedo, normal, metalRoughness]: [
-      albedo: BaseTexture,
-      normal: Texture,
-      metalRoughness: Texture
-    ] = await Promise.all([
+    let [albedo, normal, metalRoughness] = await Promise.all([
       importTextureAsync(textures.albedo),
       importTextureAsync(textures.normal),
       importTextureAsync(textures.metalRoughness),
     ]);
     pbr.albedoTexture = albedo;
-    // pbr.normalTexture = normal;
     pbr.bumpTexture = normal;
     pbr.metallicTexture = metalRoughness;
     pbr.useRoughnessFromMetallicTextureAlpha = false;
@@ -98,12 +97,10 @@ class Dice {
   ) {
     let instance = mesh.createInstance(name);
     instance.position = mesh.position;
-    for (let child of mesh.getChildTransformNodes()) {
-      // TODO: type correctly another time -> should not be any
-      const locator: any = child.clone(child.name, instance);
-      // TODO: handle possible null value
+    for (let child of mesh.getChildMeshes()) {
+      const locator = child.clone(child.name, instance);
       if (!locator) {
-        throw Error;
+        throw new Error("Unable to clone dice locator");
       }
       locator.setAbsolutePosition(child.getAbsolutePosition());
       locator.name = child.name;
@@ -120,7 +117,7 @@ class Dice {
     return instance;
   }
 
-  static getDicePhysicalProperties(diceType: string) {
+  static getDicePhysicalProperties(diceType: DiceType) {
     switch (diceType) {
       case "d4":
         return { mass: 4, friction: 4 };
@@ -133,7 +130,7 @@ class Dice {
         return { mass: 7, friction: 4 };
       case "d12":
         return { mass: 8, friction: 4 };
-      case "20":
+      case "d20":
         return { mass: 10, friction: 4 };
       default:
         return { mass: 10, friction: 4 };
@@ -145,12 +142,14 @@ class Dice {
     instance.physicsImpostor?.setAngularVelocity(Vector3.Zero());
 
     const scene = instance.getScene();
-    // TODO: remove any typing in this function -> this is just to get it working
-    const diceTraySingle: any = scene.getNodeByID("dice_tray_single");
-    const diceTrayDouble = scene.getNodeByID("dice_tray_double");
-    const visibleDiceTray: any = diceTraySingle?.isVisible
+    const diceTraySingle = scene.getMeshByID("dice_tray_single");
+    const diceTrayDouble = scene.getMeshByID("dice_tray_double");
+    const visibleDiceTray = diceTraySingle?.isVisible
       ? diceTraySingle
       : diceTrayDouble;
+    if (!visibleDiceTray) {
+      throw new Error("No dice tray to roll in");
+    }
     const trayBounds = visibleDiceTray?.getBoundingInfo().boundingBox;
 
     const position = new Vector3(

@@ -4,7 +4,13 @@ import { IconButton } from "theme-ui";
 import ChangeNicknameModal from "../../modals/ChangeNicknameModal";
 import ChangeNicknameIcon from "../../icons/ChangeNicknameIcon";
 
-function ChangeNicknameButton({ nickname, onChange }: { nickname: string, onChange: any}) {
+function ChangeNicknameButton({
+  nickname,
+  onChange,
+}: {
+  nickname: string;
+  onChange;
+}) {
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   function openModal() {
     setIsChangeModalOpen(true);

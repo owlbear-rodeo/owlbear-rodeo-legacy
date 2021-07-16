@@ -46,7 +46,7 @@ function ImportExportModal({
   const [error, setError] = useState<Error>();
 
   const backgroundTaskRunningRef = useRef(false);
-  const fileInputRef = useRef<any>();
+  const fileInputRef = useRef();
 
   const [showImportSelector, setShowImportSelector] = useState(false);
   const [showExportSelector, setShowExportSelector] = useState(false);
@@ -124,7 +124,7 @@ function ImportExportModal({
   }
 
   useEffect(() => {
-    function handleBeforeUnload(event: any) {
+    function handleBeforeUnload(event) {
       if (backgroundTaskRunningRef.current) {
         event.returnValue =
           "Database is still processing, are you sure you want to leave?";
@@ -204,7 +204,7 @@ function ImportExportModal({
       let newMaps: Map[] = [];
       let newStates: MapState[] = [];
       if (checkedMaps.length > 0) {
-        const mapIds = checkedMaps.map((map: any) => map.id);
+        const mapIds = checkedMaps.map((map) => map.id);
         const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
         for (let map of mapsToAdd) {
           let state: MapState = await importDB.table("states").get(map.id);
@@ -257,7 +257,7 @@ function ImportExportModal({
       const assetsToAdd = await importDB
         .table("assets")
         .bulkGet(Object.keys(newAssetIds));
-      let newAssets: any[] = [];
+      let newAssets = [];
       for (let asset of assetsToAdd) {
         if (asset) {
           newAssets.push({
@@ -271,7 +271,7 @@ function ImportExportModal({
       }
 
       // Add map groups with new ids
-      let newMapGroups: any[] = [];
+      let newMapGroups = [];
       if (checkedMapGroups.length > 0) {
         for (let group of checkedMapGroups) {
           if (group.type === "item") {
@@ -290,7 +290,7 @@ function ImportExportModal({
       }
 
       // Add token groups with new ids
-      let newTokenGroups: any[] = [];
+      let newTokenGroups = [];
       if (checkedTokenGroups.length > 0) {
         for (let group of checkedTokenGroups) {
           if (group.type === "item") {
@@ -299,7 +299,7 @@ function ImportExportModal({
             newTokenGroups.push({
               ...group,
               id: uuid(),
-              items: group.items.map((item: any) => ({
+              items: group.items.map((item) => ({
                 ...item,
                 id: newTokenIds[item.id],
               })),

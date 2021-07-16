@@ -10,10 +10,16 @@ import useDebounce from "../hooks/useDebounce";
 import { omit } from "../helpers/shared";
 import { Asset } from "../types/Asset";
 
+export type GetAssetEventHanlder = (
+  assetId: string
+) => Promise<Asset | undefined>;
+export type AddAssetsEventHandler = (assets: Asset[]) => Promise<void>;
+export type PutAssetEventsHandler = (asset: Asset) => Promise<void>;
+
 type AssetsContext = {
-  getAsset: (assetId: string) => Promise<Asset | undefined>;
-  addAssets: (assets: Asset[]) => void;
-  putAsset: (asset: Asset) => void;
+  getAsset: GetAssetEventHanlder;
+  addAssets: AddAssetsEventHandler;
+  putAsset: PutAssetEventsHandler;
 };
 
 const AssetsContext = React.createContext<AssetsContext | undefined>(undefined);
@@ -30,7 +36,7 @@ export function AssetsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [worker, databaseStatus]);
 
-  const getAsset = useCallback(
+  const getAsset = useCallback<GetAssetEventHanlder>(
     async (assetId) => {
       if (database) {
         return await database.table("assets").get(assetId);
@@ -39,7 +45,7 @@ export function AssetsProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const addAssets = useCallback(
+  const addAssets = useCallback<AddAssetsEventHandler>(
     async (assets) => {
       if (database) {
         await database.table("assets").bulkAdd(assets);
@@ -48,7 +54,7 @@ export function AssetsProvider({ children }: { children: React.ReactNode }) {
     [database]
   );
 
-  const putAsset = useCallback(
+  const putAsset = useCallback<PutAssetEventsHandler>(
     async (asset) => {
       if (database) {
         // Check for broadcast channel and attempt to use worker to put map to avoid UI lockup

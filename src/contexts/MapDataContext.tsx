@@ -53,10 +53,7 @@ type MapDataContext = {
 const MapDataContext =
   React.createContext<MapDataContext | undefined>(undefined);
 
-const defaultMapState: Pick<
-  MapState,
-  "tokens" | "drawShapes" | "fogShapes" | "editFlags" | "notes"
-> = {
+const defaultMapState: Omit<MapState, "mapId"> = {
   tokens: {},
   drawShapes: {},
   fogShapes: {},

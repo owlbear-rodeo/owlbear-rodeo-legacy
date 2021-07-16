@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect } from "react";
 
 import Vector2 from "../helpers/Vector2";
 import Size from "../helpers/Size";
-// eslint-disable-next-line no-unused-vars
-import { getGridPixelSize, getCellPixelSize, Grid } from "../helpers/grid";
+import { getGridPixelSize, getCellPixelSize } from "../helpers/grid";
+import { Grid } from "../types/Grid";
 
 /**
  * @typedef GridContextValue
@@ -16,14 +16,14 @@ import { getGridPixelSize, getCellPixelSize, Grid } from "../helpers/grid";
  * @property {Vector2} gridCellPixelOffset Offset of the grid cells to convert the center position of hex cells to the top left
  */
 type GridContextValue = {
-  grid: Grid, 
-  gridPixelSize: Size,
-  gridCellPixelSize: Size,
-  gridCellNormalizedSize: Size,
-  gridOffset: Vector2,
-  gridStrokeWidth: number,
-  gridCellPixelOffset: Vector2
-}
+  grid: Grid;
+  gridPixelSize: Size;
+  gridCellPixelSize: Size;
+  gridCellNormalizedSize: Size;
+  gridOffset: Vector2;
+  gridStrokeWidth: number;
+  gridCellPixelOffset: Vector2;
+};
 
 /**
  * @type {GridContextValue}
@@ -66,11 +66,21 @@ export const GridCellPixelOffsetContext = React.createContext(
 
 const defaultStrokeWidth = 1 / 10;
 
-export function GridProvider({ grid: inputGrid, width, height, children }: { grid: Required<Grid>, width: number, height: number, children: any }) {
+export function GridProvider({
+  grid: inputGrid,
+  width,
+  height,
+  children,
+}: {
+  grid: Grid;
+  width: number;
+  height: number;
+  children: React.ReactNode;
+}) {
   let grid = inputGrid;
 
   if (!grid.size.x || !grid.size.y) {
-    grid = defaultValue.grid as Required<Grid>;
+    grid = defaultValue.grid;
   }
 
   const [gridPixelSize, setGridPixelSize] = useState(

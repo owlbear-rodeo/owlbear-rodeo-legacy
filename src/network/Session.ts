@@ -139,7 +139,13 @@ class Session extends EventEmitter {
    * @param {string=} channel
    * @param {string=} chunkId
    */
-  sendTo(sessionId: string, eventId: string, data: any, channel?: string, chunkId?: string) {
+  sendTo(
+    sessionId: string,
+    eventId: string,
+    data,
+    channel?: string,
+    chunkId?: string
+  ) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -248,11 +254,11 @@ class Session extends EventEmitter {
 
       const peer = { id, connection, initiator, ready: false };
 
-      function reply(id: string, data: any, channel?: string, chunkId?: string) {
+      function reply(id: string, data, channel?: string, chunkId?: string) {
         peer.connection.sendObject({ id, data }, channel, chunkId);
       }
 
-      const handleSignal = (signal: any) => {
+      const handleSignal = (signal) => {
         this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
       };
 
@@ -269,9 +275,9 @@ class Session extends EventEmitter {
          * @property {peerReply} reply
          */
         this.emit("peerConnect", { peer, reply });
-      }
+      };
 
-      const handleDataComplete = (data: any) => {
+      const handleDataComplete = (data) => {
         /**
          * Peer Data Event - Data received by a peer
          *
@@ -285,7 +291,7 @@ class Session extends EventEmitter {
         let peerDataEvent: {
           peer: SessionPeer;
           id: string;
-          data: any;
+          data;
           reply: peerReply;
         } = {
           peer,
@@ -293,7 +299,7 @@ class Session extends EventEmitter {
           data: data.data,
           reply: reply,
         };
-        console.log(`Data: ${JSON.stringify(data)}`)
+        console.log(`Data: ${JSON.stringify(data)}`);
         this.emit("peerData", peerDataEvent);
       };
 
@@ -444,7 +450,7 @@ class Session extends EventEmitter {
     }
   }
 
-  _handleSignal(data: any) {
+  _handleSignal(data) {
     const { from, signal } = data;
     if (!(from in this.peers)) {
       if (!this._addPeer(from, false)) {

@@ -18,16 +18,40 @@ import Session from "./Session";
 
 import Action from "../actions/Action";
 
-import Map, {
-  MapState,
-  Map as MapType,
-  TokenState,
-} from "../components/map/Map";
+import Map from "../components/map/Map";
 import TokenBar from "../components/token/TokenBar";
 
 import GlobalImageDrop from "../components/image/GlobalImageDrop";
 
-const defaultMapActions = {
+import { Map as MapType } from "../types/Map";
+import { MapState } from "../types/MapState";
+import {
+  Asset,
+  AssetManifest,
+  AssetManifestAsset,
+  AssetManifestAssets,
+} from "../types/Asset";
+import { TokenState } from "../types/TokenState";
+import { Drawing, DrawingState } from "../types/Drawing";
+import { Fog, FogState } from "../types/Fog";
+
+type MapActions = {
+  mapDrawActions: Action<Drawing>[];
+  mapDrawActionIndex: number;
+  fogDrawActions: Action<Fog>[];
+  fogDrawActionIndex: number;
+};
+
+type MapActionsKey = keyof Pick<
+  MapActions,
+  "mapDrawActions" | "fogDrawActions"
+>;
+type MapActionsIndexKey = keyof Pick<
+  MapActions,
+  "mapDrawActionIndex" | "fogDrawActionIndex"
+>;
+
+const defaultMapActions: MapActions = {
   mapDrawActions: [],
   mapDrawActionIndex: -1,
   fogDrawActions: [],
@@ -51,26 +75,32 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   const { updateMapState } = useMapData();
   const { getAsset, putAsset } = useAssets();
 
-  const [currentMap, setCurrentMap] = useState<any>(null);
-  const [currentMapState, setCurrentMapState]: [
-    currentMapState: MapState,
-    setCurrentMapState: any
-  ] = useNetworkedState(null, session, "map_state", 500, true, "mapId");
-  const [assetManifest, setAssetManifest] = useNetworkedState(
-    null,
-    session,
-    "manifest",
-    500,
-    true,
-    "mapId"
-  );
+  const [currentMap, setCurrentMap] = useState<MapType | null>(null);
+  const [currentMapState, setCurrentMapState] =
+    useNetworkedState<MapState | null>(
+      null,
+      session,
+      "map_state",
+      500,
+      true,
+      "mapId"
+    );
+  const [assetManifest, setAssetManifest] =
+    useNetworkedState<AssetManifest | null>(
+      null,
+      session,
+      "manifest",
+      500,
+      true,
+      "mapId"
+    );
 
   async function loadAssetManifestFromMap(map: MapType, mapState: MapState) {
-    const assets = {};
+    const assets: AssetManifestAssets = {};
     const { owner } = map;
     let processedTokens = new Set();
     for (let tokenState of Object.values(mapState.tokens)) {
-      if (tokenState.file && !processedTokens.has(tokenState.file)) {
+      if (tokenState.type === "file" && !processedTokens.has(tokenState.file)) {
         processedTokens.add(tokenState.file);
         assets[tokenState.file] = {
           id: tokenState.file,
@@ -80,9 +110,11 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
     if (map.type === "file") {
       assets[map.thumbnail] = { id: map.thumbnail, owner };
-      const qualityId = map.resolutions[map.quality];
-      if (qualityId) {
-        assets[qualityId] = { id: qualityId, owner };
+      if (map.quality !== "original") {
+        const qualityId = map.resolutions[map.quality];
+        if (qualityId) {
+          assets[qualityId] = { id: qualityId, owner };
+        }
       } else {
         assets[map.file] = { id: map.file, owner };
       }
@@ -90,8 +122,8 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     setAssetManifest({ mapId: map.id, assets }, true, true);
   }
 
-  function addAssetsIfNeeded(assets: any[]) {
-    setAssetManifest((prevManifest: any) => {
+  function addAssetsIfNeeded(assets: AssetManifestAsset[]) {
+    setAssetManifest((prevManifest) => {
       if (prevManifest?.assets) {
         let newAssets = { ...prevManifest.assets };
         for (let asset of assets) {
@@ -116,7 +148,10 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
 
     async function requestAssetsIfNeeded() {
-      for (let asset of Object.values(assetManifest.assets) as any) {
+      if (!assetManifest) {
+        return;
+      }
+      for (let asset of Object.values(assetManifest.assets)) {
         if (
           asset.owner === userId ||
           requestingAssetsRef.current.has(asset.id)
@@ -144,7 +179,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
 
         if (cachedAsset) {
           requestingAssetsRef.current.delete(asset.id);
-        } else {
+        } else if (owner.sessionId) {
           assetLoadStart(asset.id);
           session.sendTo(owner.sessionId, "assetRequest", asset);
         }
@@ -181,7 +216,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
   }, [currentMap, debouncedMapState, userId, database, updateMapState]);
 
-  async function handleMapChange(newMap: any, newMapState: any) {
+  async function handleMapChange(newMap, newMapState) {
     // Clear map before sending new one
     setCurrentMap(null);
     session.socket?.emit("map", null);
@@ -199,20 +234,20 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     await loadAssetManifestFromMap(newMap, newMapState);
   }
 
-  function handleMapReset(newMapState: any) {
+  function handleMapReset(newMapState) {
     setCurrentMapState(newMapState, true, true);
     setMapActions(defaultMapActions);
   }
 
-  const [mapActions, setMapActions] = useState<any>(defaultMapActions);
+  const [mapActions, setMapActions] = useState(defaultMapActions);
 
   function addMapActions(
-    actions: Action[],
-    indexKey: string,
-    actionsKey: any,
-    shapesKey: any
+    actions: Action<DrawingState | FogState>[],
+    indexKey: MapActionsIndexKey,
+    actionsKey: MapActionsKey,
+    shapesKey: "drawShapes" | "fogShapes"
   ) {
-    setMapActions((prevMapActions: any) => {
+    setMapActions((prevMapActions) => {
       const newActions = [
         ...prevMapActions[actionsKey].slice(0, prevMapActions[indexKey] + 1),
         ...actions,
@@ -225,39 +260,40 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       };
     });
     // Update map state by performing the actions on it
-    setCurrentMapState((prevMapState: any) => {
-      if (prevMapState) {
-        let shapes = prevMapState[shapesKey];
-        for (let action of actions) {
-          shapes = action.execute(shapes);
-        }
-        return {
-          ...prevMapState,
-          [shapesKey]: shapes,
-        };
+    setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
       }
+      let shapes = prevMapState[shapesKey];
+      for (let action of actions) {
+        shapes = action.execute(shapes);
+      }
+      return {
+        ...prevMapState,
+        [shapesKey]: shapes,
+      };
     });
   }
 
   function updateActionIndex(
-    change: any,
-    indexKey: any,
-    actionsKey: any,
-    shapesKey: any
+    change,
+    indexKey: MapActionsIndexKey,
+    actionsKey: MapActionsKey,
+    shapesKey: "drawShapes" | "fogShapes"
   ) {
-    const prevIndex: any = mapActions[indexKey];
+    const prevIndex = mapActions[indexKey];
     const newIndex = Math.min(
       Math.max(mapActions[indexKey] + change, -1),
       mapActions[actionsKey].length - 1
     );
 
-    setMapActions((prevMapActions: Action[]) => ({
+    setMapActions((prevMapActions) => ({
       ...prevMapActions,
       [indexKey]: newIndex,
     }));
 
     // Update map state by either performing the actions or undoing them
-    setCurrentMapState((prevMapState: any) => {
+    setCurrentMapState((prevMapState) => {
       if (prevMapState) {
         let shapes = prevMapState[shapesKey];
         if (prevIndex < newIndex) {
@@ -283,7 +319,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     return newIndex;
   }
 
-  function handleMapDraw(action: Action) {
+  function handleMapDraw(action: Action<DrawingState>) {
     addMapActions(
       [action],
       "mapDrawActionIndex",
@@ -300,7 +336,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     updateActionIndex(1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
   }
 
-  function handleFogDraw(action: Action) {
+  function handleFogDraw(action: Action<FogState>) {
     addMapActions(
       [action],
       "fogDrawActionIndex",
@@ -318,7 +354,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }
 
   // If map changes clear map actions
-  const previousMapIdRef = useRef<any>();
+  const previousMapIdRef = useRef();
   useEffect(() => {
     if (currentMap && currentMap?.id !== previousMapIdRef.current) {
       setMapActions(defaultMapActions);
@@ -326,8 +362,8 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
   }, [currentMap]);
 
-  function handleNoteChange(note: any) {
-    setCurrentMapState((prevMapState: any) => ({
+  function handleNoteChange(note) {
+    setCurrentMapState((prevMapState) => ({
       ...prevMapState,
       notes: {
         ...prevMapState.notes,
@@ -337,7 +373,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }
 
   function handleNoteRemove(noteId: string) {
-    setCurrentMapState((prevMapState: any) => ({
+    setCurrentMapState((prevMapState) => ({
       ...prevMapState,
       notes: omit(prevMapState.notes, [noteId]),
     }));
@@ -352,7 +388,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       return;
     }
 
-    let assets = [];
+    let assets: AssetManifestAsset[] = [];
     for (let tokenState of tokenStates) {
       if (tokenState.type === "file") {
         assets.push({ id: tokenState.file, owner: tokenState.owner });
@@ -371,11 +407,11 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     });
   }
 
-  function handleMapTokenStateChange(change: any) {
+  function handleMapTokenStateChange(change) {
     if (!currentMapState) {
       return;
     }
-    setCurrentMapState((prevMapState: any) => {
+    setCurrentMapState((prevMapState) => {
       let tokens = { ...prevMapState.tokens };
       for (let id in change) {
         if (id in tokens) {
@@ -390,8 +426,8 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     });
   }
 
-  function handleMapTokenStateRemove(tokenState: any) {
-    setCurrentMapState((prevMapState: any) => {
+  function handleMapTokenStateRemove(tokenState) {
+    setCurrentMapState((prevMapState) => {
       const { [tokenState.id]: old, ...rest } = prevMapState.tokens;
       return { ...prevMapState, tokens: rest };
     });
@@ -404,8 +440,8 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       reply,
     }: {
       id: string;
-      data: any;
-      reply: any;
+      data;
+      reply;
     }) {
       if (id === "assetRequest") {
         const asset = await getAsset(data.id);
@@ -440,7 +476,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       assetProgressUpdate({ id, total, count });
     }
 
-    async function handleSocketMap(map: any) {
+    async function handleSocketMap(map) {
       if (map) {
         setCurrentMap(map);
       } else {
@@ -461,7 +497,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
 
   const canChangeMap = !isLoading;
 
-  const canEditMapDrawing: any =
+  const canEditMapDrawing =
     currentMap &&
     currentMapState &&
     (currentMapState.editFlags.includes("drawing") ||
@@ -478,7 +514,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     (currentMapState.editFlags.includes("notes") ||
       currentMap?.owner === userId);
 
-  const disabledMapTokens: { [key: string]: any } = {};
+  const disabledMapTokens = {};
   // If we have a map and state and have the token permission disabled
   // and are not the map owner
   if (

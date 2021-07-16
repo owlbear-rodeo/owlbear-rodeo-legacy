@@ -14,7 +14,7 @@ const SettingsContext =
 
 const settingsProvider = getSettings();
 
-export function SettingsProvider({ children }: { children: any }) {
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(settingsProvider.getAll());
 
   useEffect(() => {

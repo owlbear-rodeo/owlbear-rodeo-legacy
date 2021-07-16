@@ -2,10 +2,9 @@ import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import { PhysicsImpostor } from "@babylonjs/core/Physics/physicsImpostor";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { AbstractMesh, Scene, ShadowGenerator } from "@babylonjs/core";
 
-//@ts-ignore
 import singleMeshSource from "./single.glb";
-//@ts-ignore
 import doubleMeshSource from "./double.glb";
 
 import singleAlbedo from "./singleAlbedo.jpg";
@@ -17,7 +16,6 @@ import doubleMetalRoughness from "./doubleMetalRoughness.jpg";
 import doubleNormal from "./doubleNormal.jpg";
 
 import { importTextureAsync } from "../../helpers/babylon";
-import { Scene, ShadowGenerator, Texture } from "@babylonjs/core";
 
 class DiceTray {
   _size;
@@ -30,12 +28,12 @@ class DiceTray {
     this._size = newSize;
     const wallOffsetWidth = this.collisionSize / 2 + this.width / 2 - 0.5;
     const wallOffsetHeight = this.collisionSize / 2 + this.height / 2 - 0.5;
-    this.wallTop.position.z = -wallOffsetHeight;
-    this.wallRight.position.x = -wallOffsetWidth;
-    this.wallBottom.position.z = wallOffsetHeight;
-    this.wallLeft.position.x = wallOffsetWidth;
-    this.singleMesh.isVisible = newSize === "single";
-    this.doubleMesh.isVisible = newSize === "double";
+    if (this.wallTop) this.wallTop.position.z = -wallOffsetHeight;
+    if (this.wallRight) this.wallRight.position.x = -wallOffsetWidth;
+    if (this.wallBottom) this.wallBottom.position.z = wallOffsetHeight;
+    if (this.wallLeft) this.wallLeft.position.x = wallOffsetWidth;
+    if (this.singleMesh) this.singleMesh.isVisible = newSize === "single";
+    if (this.doubleMesh) this.doubleMesh.isVisible = newSize === "double";
   }
 
   scene;
@@ -44,17 +42,21 @@ class DiceTray {
   get width() {
     return this.size === "single" ? 10 : 20;
   }
-  
+
   height = 20;
   collisionSize = 50;
-  wallTop: any;
-  wallRight: any;
-  wallBottom: any;
-  wallLeft: any;
-  singleMesh: any;
-  doubleMesh: any;
+  wallTop?: Mesh;
+  wallRight?: Mesh;
+  wallBottom?: Mesh;
+  wallLeft?: Mesh;
+  singleMesh?: AbstractMesh;
+  doubleMesh?: AbstractMesh;
 
-  constructor(initialSize: string, scene: Scene, shadowGenerator: ShadowGenerator) {
+  constructor(
+    initialSize: string,
+    scene: Scene,
+    shadowGenerator: ShadowGenerator
+  ) {
     this._size = initialSize;
     this.scene = scene;
     this.shadowGenerator = shadowGenerator;
@@ -65,7 +67,13 @@ class DiceTray {
     await this.loadMeshes();
   }
 
-  createCollision(name: string, x: number, y: number, z: number, friction: number) {
+  createCollision(
+    name: string,
+    x: number,
+    y: number,
+    z: number,
+    friction: number
+  ): Mesh {
     let collision = Mesh.CreateBox(
       name,
       this.collisionSize,
@@ -134,15 +142,6 @@ class DiceTray {
       doubleAlbedoTexture,
       doubleNormalTexture,
       doubleMetalRoughnessTexture,
-    ]: [
-      singleMeshes: any,
-      doubleMeshes: any,
-      singleAlbedoTexture: Texture,
-      singleNormalTexture: Texture,
-      singleMetalRoughnessTexture: Texture,
-      doubleAlbedoTexture: Texture,
-      doubleNormalTexture: Texture,
-      doubleMetalRoughnessTexture: Texture
     ] = await Promise.all([
       SceneLoader.ImportMeshAsync("", singleMeshSource, "", this.scene),
       SceneLoader.ImportMeshAsync("", doubleMeshSource, "", this.scene),
@@ -159,8 +158,6 @@ class DiceTray {
     this.singleMesh.name = "dice_tray";
     let singleMaterial = new PBRMaterial("dice_tray_mat_single", this.scene);
     singleMaterial.albedoTexture = singleAlbedoTexture;
-    // TODO: ask Mitch about texture
-    // singleMaterial.normalTexture = singleNormalTexture;
     singleMaterial.bumpTexture = singleNormalTexture;
     singleMaterial.metallicTexture = singleMetalRoughnessTexture;
     singleMaterial.useRoughnessFromMetallicTextureAlpha = false;
@@ -177,8 +174,6 @@ class DiceTray {
     this.doubleMesh.name = "dice_tray";
     let doubleMaterial = new PBRMaterial("dice_tray_mat_double", this.scene);
     doubleMaterial.albedoTexture = doubleAlbedoTexture;
-    // TODO: ask Mitch about texture
-    //doubleMaterial.normalTexture = doubleNormalTexture;
     doubleMaterial.bumpTexture = doubleNormalTexture;
     doubleMaterial.metallicTexture = doubleMetalRoughnessTexture;
     doubleMaterial.useRoughnessFromMetallicTextureAlpha = false;

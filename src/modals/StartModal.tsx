@@ -38,7 +38,7 @@ function StartModal({
     history.push(`/game/${shortid.generate()}`);
   }
 
-  const inputRef = useRef<any>();
+  const inputRef = useRef();
   function focusInput() {
     inputRef.current && inputRef.current.focus();
   }

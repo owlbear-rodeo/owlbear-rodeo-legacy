@@ -23,8 +23,9 @@ export function fromEntries(iterable: Iterable<[string | number, any]>) {
 }
 
 // Check to see if all tracks are muted
-export function isStreamStopped(stream: MediaStream) {
-  return stream.getTracks().reduce((a: any, b: any) => a && b, { mute: true });
+export function isStreamStopped(stream: MediaStream): boolean {
+  // TODO: Check what this thing actually does
+  return stream.getTracks().reduce((a, b) => a && b, { muted: true }).muted;
 }
 
 export function roundTo(x: number, to: number): number {
@@ -62,9 +63,12 @@ export function isEmpty(obj: Object): boolean {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-export function keyBy<Type>(array: Type[], key: string): Record<string, Type> {
+export function keyBy<Type extends Record<PropertyKey, any>>(
+  array: Type[],
+  key: string
+): Record<string, Type> {
   return array.reduce(
-    (prev: any, current: any) => ({
+    (prev, current) => ({
       ...prev,
       [key ? current[key] : current]: current,
     }),

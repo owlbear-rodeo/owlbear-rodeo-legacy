@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Line, Group, Path, Circle } from "react-konva";
-// eslint-disable-next-line no-unused-vars
 import Konva from "konva";
+import { Line, Group, Path, Circle } from "react-konva";
+import { LineConfig } from "konva/types/shapes/Line";
 import Color from "color";
+
 import Vector2 from "./Vector2";
 
+type HoleyLineProps = {
+  holes: number[][];
+} & LineConfig;
+
 // Holes should be wound in the opposite direction as the containing points array
-export function HoleyLine({ holes, ...props }: { holes: any; props: [] }) {
+export function HoleyLine({ holes, ...props }: HoleyLineProps) {
   // Converted from https://github.com/rfestag/konva/blob/master/src/shapes/Line.ts
-  function drawLine(points: number[], context: any, shape: any) {
+  function drawLine(
+    points: number[],
+    context: Konva.Context,
+    shape: Konva.Line
+  ) {
     const length = points.length;
     const tension = shape.tension();
     const closed = shape.closed();
@@ -76,7 +85,7 @@ export function HoleyLine({ holes, ...props }: { holes: any; props: [] }) {
   }
 
   // Draw points and holes
-  function sceneFunc(context: any, shape: any) {
+  function sceneFunc(context: Konva.Context, shape: Konva.Line) {
     const points = shape.points();
     const closed = shape.closed();
 
@@ -106,22 +115,18 @@ export function HoleyLine({ holes, ...props }: { holes: any; props: [] }) {
     }
   }
 
-  return <Line sceneFunc={sceneFunc} {...props} />;
+  return <Line {...props} sceneFunc={sceneFunc} />;
 }
 
-export function Tick({
-  x,
-  y,
-  scale,
-  onClick,
-  cross,
-}: {
-  x: any;
-  y: any;
-  scale: any;
-  onClick: any;
-  cross: any;
-}) {
+type TickProps = {
+  x: number;
+  y: number;
+  scale: number;
+  onClick: (evt: Konva.KonvaEventObject<MouseEvent>) => void;
+  cross: boolean;
+};
+
+export function Tick({ x, y, scale, onClick, cross }: TickProps) {
   const [fill, setFill] = useState("white");
   function handleEnter() {
     setFill("hsl(260, 100%, 80%)");
@@ -160,19 +165,21 @@ interface TrailPoint extends Vector2 {
   lifetime: number;
 }
 
+type TrailProps = {
+  position: Vector2;
+  size: number;
+  duration: number;
+  segments: number;
+  color: string;
+};
+
 export function Trail({
   position,
   size,
   duration,
   segments,
   color,
-}: {
-  position: Vector2;
-  size: any;
-  duration: number;
-  segments: any;
-  color: string;
-}) {
+}: TrailProps) {
   const trailRef: React.MutableRefObject<Konva.Line | undefined> = useRef();
   const pointsRef: React.MutableRefObject<TrailPoint[]> = useRef([]);
   const prevPositionRef = useRef(position);
@@ -206,7 +213,7 @@ export function Trail({
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(animate);
-    function animate(time: any) {
+    function animate(time: number) {
       request = requestAnimationFrame(animate);
       const deltaTime = time - prevTime;
       prevTime = time;
@@ -243,14 +250,13 @@ export function Trail({
   }, []);
 
   // Custom scene function for drawing a trail from a line
-  function sceneFunc(context: any) {
+  function sceneFunc(context: CanvasRenderingContext2D) {
     // Resample points to ensure a smooth trail
     const resampledPoints = Vector2.resample(pointsRef.current, segments);
     if (resampledPoints.length === 0) {
       return;
     }
     // Draws a line offset in the direction perpendicular to its travel direction
-    // TODO: check alpha type
     const drawOffsetLine = (from: Vector2, to: Vector2, alpha: number) => {
       const forward = Vector2.normalize(Vector2.subtract(from, to));
       // Rotate the forward vector 90 degrees based off of the direction
@@ -328,7 +334,7 @@ Trail.defaultProps = {
  */
 export function getRelativePointerPosition(
   node: Konva.Node
-): { x: number; y: number } | undefined {
+): Vector2 | undefined {
   let transform = node.getAbsoluteTransform().copy();
   transform.invert();
   let position = node.getStage()?.getPointerPosition();
@@ -340,10 +346,9 @@ export function getRelativePointerPosition(
 
 export function getRelativePointerPositionNormalized(
   node: Konva.Node
-): { x: number; y: number } | undefined {
+): Vector2 | undefined {
   const relativePosition = getRelativePointerPosition(node);
   if (!relativePosition) {
-    // TODO: handle possible null value
     return;
   }
   return {
@@ -357,8 +362,8 @@ export function getRelativePointerPositionNormalized(
  * @param {number[]} points points in an x, y alternating array
  * @returns {Vector2[]} a `Vector2` array
  */
-export function convertPointArray(points: number[]) {
-  return points.reduce((acc: any[], _, i, arr) => {
+export function convertPointArray(points: number[]): Vector2[] {
+  return points.reduce((acc: Vector2[], _, i, arr) => {
     if (i % 2 === 0) {
       acc.push({ x: arr[i], y: arr[i + 1] });
     }

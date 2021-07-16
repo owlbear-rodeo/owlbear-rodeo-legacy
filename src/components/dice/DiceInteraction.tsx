@@ -35,7 +35,7 @@ type DiceInteractionProps = {
     canvas: HTMLCanvasElement | WebGLRenderingContext;
   }) => void;
   onPointerDown: () => void;
-  onPointerUp: () => any;
+  onPointerUp: () => void;
 };
 
 function DiceInteraction({

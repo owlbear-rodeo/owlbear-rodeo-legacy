@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -18,7 +18,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import { logError } from "../helpers/logging";
 import { Stripe } from "@stripe/stripe-js";
 
-type Price = { price?: string, name: string, value: number }
+type Price = { price?: string; name: string; value: number };
 
 const prices: Price[] = [
   { price: "$5.00", name: "Small", value: 5 },
@@ -32,11 +32,9 @@ function Donate() {
   const hasDonated = query.has("success");
 
   const [loading, setLoading] = useState(true);
-  // TODO: check with Mitch about changes here from useState(null)
-  // TODO: typing with error a little messy
-  const [error, setError]= useState<any>();
+  const [error, setError] = useState<Error | undefined>(undefined);
 
-  const [stripe, setStripe]: [ stripe: Stripe | undefined, setStripe: React.Dispatch<Stripe | undefined >] = useState();
+  const [stripe, setStripe] = useState<Stripe>();
   useEffect(() => {
     import("@stripe/stripe-js").then(({ loadStripe }) => {
       loadStripe(process.env.REACT_APP_STRIPE_API_KEY as string)
@@ -55,7 +53,7 @@ function Donate() {
     });
   }, []);
 
-  async function handleSubmit(event: any) {
+  async function handleSubmit(event: FormEvent<HTMLDivElement>) {
     event.preventDefault();
     if (loading) {
       return;
@@ -76,7 +74,8 @@ function Donate() {
     const result = await stripe?.redirectToCheckout({ sessionId: session.id });
 
     if (result?.error) {
-      setError(result.error.message);
+      const stripeError = new Error(result.error.message);
+      setError(stripeError);
     }
   }
 
@@ -87,7 +86,7 @@ function Donate() {
     setValue(price.value);
     setSelectedPrice(price.name);
   }
-  
+
   return (
     <Flex
       sx={{
@@ -159,7 +158,9 @@ function Donate() {
               name="donation"
               min={1}
               value={value}
-              onChange={(e: any) => setValue(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setValue(parseInt(e.target.value))
+              }
             />
           </Box>
         )}
@@ -169,7 +170,7 @@ function Donate() {
       </Flex>
       <Footer />
       {loading && <LoadingOverlay />}
-      <ErrorBanner error={error as Error} onRequestClose={() => setError(undefined)} />
+      <ErrorBanner error={error} onRequestClose={() => setError(undefined)} />
     </Flex>
   );
 }

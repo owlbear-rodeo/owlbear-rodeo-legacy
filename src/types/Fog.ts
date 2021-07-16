@@ -28,3 +28,5 @@ export type Fog = {
   type: "fog";
   visible: boolean;
 };
+
+export type FogState = Record<string, Fog>;

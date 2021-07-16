@@ -81,7 +81,7 @@ function SelectMapModal({
    * Image Upload
    */
 
-  const fileInputRef = useRef<any>();
+  const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLargeImageWarningModalOpen, setShowLargeImageWarning] =

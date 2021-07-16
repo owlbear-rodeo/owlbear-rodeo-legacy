@@ -6,13 +6,18 @@ import StreamMuteIcon from "../../icons/StreamMuteIcon";
 import Banner from "../banner/Banner";
 import Slider from "../Slider";
 
-function Stream({ stream, nickname }: { stream: MediaStream, nickname: string }) {
+function Stream({
+  stream,
+  nickname,
+}: {
+  stream: MediaStream;
+  nickname: string;
+}) {
   const [streamVolume, setStreamVolume] = useState(1);
-  const [showStreamInteractBanner, setShowStreamInteractBanner] = useState(
-    false
-  );
+  const [showStreamInteractBanner, setShowStreamInteractBanner] =
+    useState(false);
   const [streamMuted, setStreamMuted] = useState(false);
-  const audioRef = useRef<any>();
+  const audioRef = useRef();
 
   useEffect(() => {
     if (audioRef.current) {
@@ -51,9 +56,8 @@ function Stream({ stream, nickname }: { stream: MediaStream, nickname: string })
 
   // Platforms like iOS don't allow you to control audio volume
   // Detect this by trying to change the audio volume
-  const [isVolumeControlAvailable, setIsVolumeControlAvailable] = useState(
-    true
-  );
+  const [isVolumeControlAvailable, setIsVolumeControlAvailable] =
+    useState(true);
   useEffect(() => {
     let audio = audioRef.current;
     function checkVolumeControlAvailable() {
@@ -75,7 +79,7 @@ function Stream({ stream, nickname }: { stream: MediaStream, nickname: string })
   }, []);
 
   // Use an audio context gain node to control volume to go past 100%
-  const audioGainRef = useRef<any>();
+  const audioGainRef = useRef();
   useEffect(() => {
     let audioContext: AudioContext;
     if (stream && !streamMuted && isVolumeControlAvailable && audioGainRef) {

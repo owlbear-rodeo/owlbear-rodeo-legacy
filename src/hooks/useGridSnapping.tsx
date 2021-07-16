@@ -73,7 +73,7 @@ function useGridSnapping(
       const distanceToSnapPoint = Vector2.distance(offsetPosition, snapPoint);
       if (
         distanceToSnapPoint <
-        (Vector2.min(gridCellPixelSize) as number) * gridSnappingSensitivity
+        Vector2.componentMin(gridCellPixelSize) * gridSnappingSensitivity
       ) {
         // Reverse grid offset
         let offsetSnapPoint = Vector2.add(

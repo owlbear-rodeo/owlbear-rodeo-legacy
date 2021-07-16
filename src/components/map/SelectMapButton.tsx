@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { IconButton } from "theme-ui";
 
 import SelectMapModal from "../../modals/SelectMapModal";
@@ -6,6 +6,20 @@ import SelectMapIcon from "../../icons/SelectMapIcon";
 
 import { useMapData } from "../../contexts/MapDataContext";
 import { useUserId } from "../../contexts/UserIdContext";
+import {
+  MapChangeEventHandler,
+  MapResetEventHandler,
+} from "../../types/Events";
+import { Map } from "../../types/Map";
+import { MapState } from "../../types/MapState";
+
+type SelectMapButtonProps = {
+  onMapChange: MapChangeEventHandler;
+  onMapReset: MapResetEventHandler;
+  currentMap?: Map;
+  currentMapState?: MapState;
+  disabled: boolean;
+};
 
 function SelectMapButton({
   onMapChange,
@@ -13,7 +27,7 @@ function SelectMapButton({
   currentMap,
   currentMapState,
   disabled,
-}) {
+}: SelectMapButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { updateMapState } = useMapData();

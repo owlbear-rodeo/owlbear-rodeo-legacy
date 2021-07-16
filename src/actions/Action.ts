@@ -1,40 +1,31 @@
-// Load Diff for auto complete
-// eslint-disable-next-line no-unused-vars
 import { Diff } from "deep-diff";
 
 import { diff, revertChanges } from "../helpers/diff";
 import cloneDeep from "lodash.clonedeep";
 
 /**
- * @callback ActionUpdate
- * @param {any} state
- */
-
-/**
  * Implementation of the Command Pattern
  * Wraps an update function with internal state to support undo
  */
-class Action {
+class Action<State> {
   /**
    * The update function called with the current state and should return the updated state
    * This is implemented in the child class
-   *
-   * @type {ActionUpdate}
    */
-  update;
+  update(state: State): State {
+    return state;
+  }
 
   /**
    * The changes caused by the last state update
-   * @type {Diff}
    */
-  changes;
+  changes: Diff<State, State>[] | undefined;
 
   /**
    * Executes the action update on the state
-   * @param {any} state The current state to update
-   * @returns {any} The updated state
+   * @param {State} state The current state to update
    */
-  execute(state) {
+  execute(state: State): State {
     if (state && this.update) {
       let newState = this.update(cloneDeep(state));
       this.changes = diff(state, newState);
@@ -45,10 +36,10 @@ class Action {
 
   /**
    * Reverts the changes caused by the last call of `execute`
-   * @param {any} state The current state to perform the undo on
-   * @returns {any} The state with the last changes reverted
+   * @param {State} state The current state to perform the undo on
+   * @returns {State} The state with the last changes reverted
    */
-  undo(state) {
+  undo(state: State): State {
     if (state && this.changes) {
       let revertedState = cloneDeep(state);
       revertChanges(revertedState, this.changes);

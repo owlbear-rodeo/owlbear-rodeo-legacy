@@ -1,39 +1,45 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import cloneDeep from "lodash.clonedeep";
+import { Diff } from "deep-diff";
 
 import useDebounce from "./useDebounce";
 import { diff, applyChanges } from "../helpers/diff";
 import Session from "../network/Session";
 
 /**
- * @callback setNetworkedState
- * @param {any} update The updated state or a state function passed into setState
- * @param {boolean} sync Whether to sync the update with the session
- * @param {boolean} force Whether to force a full update, usefull when partialUpdates is enabled
+ * @param update The updated state or a state function passed into setState
+ * @param sync Whether to sync the update with the session
+ * @param force Whether to force a full update, usefull when partialUpdates is enabled
  */
-// TODO: check parameter requirements here
-type setNetworkedState = (update: any, sync?: boolean, force?: boolean) => void
+export type SetNetworkedState<S> = (
+  update: React.SetStateAction<S>,
+  sync?: boolean,
+  force?: boolean
+) => void;
+
+type Update<T> = {
+  id: string;
+  changes: Diff<T>[];
+};
 
 /**
  * Helper to sync a react state to a `Session`
  *
- * @param {any} initialState
+ * @param {S} initialState
  * @param {Session} session `Session` instance
  * @param {string} eventName Name of the event to send to the session
  * @param {number} debounceRate Amount to debounce before sending to the session (ms)
  * @param {boolean} partialUpdates Allow sending of partial updates to the session
  * @param {string} partialUpdatesKey Key to lookup in the state to identify a partial update
- *
- * @returns {[any, setNetworkedState]}
  */
-function useNetworkedState(
-  initialState: any,
+function useNetworkedState<S extends { readonly [x: string]: any } | null>(
+  initialState: S,
   session: Session,
   eventName: string,
   debounceRate: number = 500,
   partialUpdates: boolean = true,
   partialUpdatesKey: string = "id"
-): [any, setNetworkedState] {
+): [S, SetNetworkedState<S>] {
   const [state, _setState] = useState(initialState);
   // Used to control whether the state needs to be sent to the socket
   const dirtyRef = useRef(false);
@@ -42,9 +48,9 @@ function useNetworkedState(
   const forceUpdateRef = useRef(false);
 
   // Update dirty at the same time as state
-  const setState = useCallback((update, sync = true, force = false) => {
-    dirtyRef.current = sync;
-    forceUpdateRef.current = force;
+  const setState = useCallback<SetNetworkedState<S>>((update, sync, force) => {
+    dirtyRef.current = sync || false;
+    forceUpdateRef.current = force || false;
     _setState(update);
   }, []);
 
@@ -54,7 +60,7 @@ function useNetworkedState(
   }, [eventName]);
 
   const debouncedState = useDebounce(state, debounceRate);
-  const lastSyncedStateRef = useRef();
+  const lastSyncedStateRef = useRef<S>();
   useEffect(() => {
     if (session.socket && dirtyRef.current) {
       // If partial updates enabled, send just the changes to the socket
@@ -88,13 +94,13 @@ function useNetworkedState(
   ]);
 
   useEffect(() => {
-    function handleSocketEvent(data: any) {
+    function handleSocketEvent(data: S) {
       _setState(data);
       lastSyncedStateRef.current = data;
     }
 
-    function handleSocketUpdateEvent(update: any) {
-      _setState((prevState: any) => {
+    function handleSocketUpdateEvent(update: Update<S>) {
+      _setState((prevState) => {
         if (prevState && prevState[partialUpdatesKey] === update.id) {
           let newState = { ...prevState };
           applyChanges(newState, update.changes);

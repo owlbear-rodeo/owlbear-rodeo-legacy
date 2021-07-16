@@ -16,7 +16,12 @@ function DiceTrayButton({
   onShareDiceChange,
   diceRolls,
   onDiceRollsChange,
-}: { shareDice: boolean, onShareDiceChange: any, diceRolls: [], onDiceRollsChange: any}) {
+}: {
+  shareDice: boolean;
+  onShareDiceChange;
+  diceRolls: [];
+  onDiceRollsChange;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [fullScreen] = useSetting("map.fullScreen");
 

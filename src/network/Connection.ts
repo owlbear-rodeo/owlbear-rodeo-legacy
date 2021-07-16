@@ -9,26 +9,26 @@ import blobToBuffer from "../helpers/blobToBuffer";
 const MAX_BUFFER_SIZE = 16000;
 
 class Connection extends SimplePeer {
-  currentChunks: any;
-  dataChannels: any;
+  currentChunks;
+  dataChannels;
 
-  constructor(props: any) {
+  constructor(props) {
     super(props);
-    this.currentChunks = {} as Blob;
+    this.currentChunks = {};
     this.dataChannels = {};
     this.on("data", this.handleData);
     this.on("datachannel", this.handleDataChannel);
   }
 
   // Intercept the data event with decoding and chunking support
-  handleData(packed: any) {
-    const unpacked: any = decode(packed);
+  handleData(packed) {
+    const unpacked = decode(packed);
     // If the special property __chunked is set and true
     // The data is a partial chunk of the a larger file
     // So wait until all chunks are collected and assembled
     // before emitting the dataComplete event
     if (unpacked.__chunked) {
-      let chunk: any = this.currentChunks[unpacked.id] || {
+      let chunk = this.currentChunks[unpacked.id] || {
         data: [],
         count: 0,
         total: unpacked.total,
@@ -65,7 +65,7 @@ class Connection extends SimplePeer {
    * @param {string=} channel
    * @param {string=} chunkId Optional ID to use for chunking
    */
-  sendObject(object: any, channel?: string, chunkId?: string) {
+  sendObject(object, channel?: string, chunkId?: string) {
     try {
       const packedData = encode(object);
       const chunks = this.chunk(packedData, chunkId);
@@ -83,7 +83,7 @@ class Connection extends SimplePeer {
 
   // Override the create data channel function to store our own named reference to it
   // and to use our custom data handler
-  createDataChannel(channelName: string, channelConfig: any, opts: any) {
+  createDataChannel(channelName: string, channelConfig, opts) {
     // TODO: resolve createDataChannel
     // @ts-ignore
     const channel = super.createDataChannel(channelName, channelConfig, opts);
@@ -91,11 +91,11 @@ class Connection extends SimplePeer {
     return channel;
   }
 
-  handleDataChannel(channel: any) {
+  handleDataChannel(channel) {
     const channelName = channel.channelName;
     this.dataChannels[channelName] = channel;
     channel.on("data", this.handleData.bind(this));
-    channel.on("error", (error: any) => {
+    channel.on("error", (error) => {
       this.emit("error", error);
     });
   }

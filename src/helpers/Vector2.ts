@@ -153,34 +153,49 @@ class Vector2 {
   }
 
   /**
-   * Returns the min of `value` and `minimum`, if `minimum` is undefined component wise min is returned instead
+   * Returns the min of `a` and `b`
    * @param {Vector2} a
-   * @param {(Vector2 | number)} [minimum] Value to compare
-   * @returns {(Vector2 | number)}
+   * @param {Vector2 | number} b Value to compare
+   * @returns {Vector2}
    */
-  static min(a: Vector2, minimum?: Vector2 | number): Vector2 | number {
-    if (minimum === undefined) {
-      return a.x < a.y ? a.x : a.y;
-    } else if (typeof minimum === "number") {
-      return { x: Math.min(a.x, minimum), y: Math.min(a.y, minimum) };
+  static min(a: Vector2, b: Vector2 | number): Vector2 {
+    if (typeof b === "number") {
+      return { x: Math.min(a.x, b), y: Math.min(a.y, b) };
     } else {
-      return { x: Math.min(a.x, minimum.x), y: Math.min(a.y, minimum.y) };
+      return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y) };
     }
   }
+
   /**
-   * Returns the max of `a` and `maximum`, if `maximum` is undefined component wise max is returned instead
+   * Returns the component wise minimum of `a`
    * @param {Vector2} a
-   * @param {(Vector2 | number)} [maximum] Value to compare
-   * @returns {(Vector2 | number)}
+   * @returns {number}
    */
-  static max(a: Vector2, maximum?: Vector2 | number): Vector2 | number {
-    if (maximum === undefined) {
-      return a.x > a.y ? a.x : a.y;
-    } else if (typeof maximum === "number") {
-      return { x: Math.max(a.x, maximum), y: Math.max(a.y, maximum) };
+  static componentMin(a: Vector2): number {
+    return a.x < a.y ? a.x : a.y;
+  }
+
+  /**
+   * Returns the max of `a` and `b`
+   * @param {Vector2} a
+   * @param {Vector2 | number} b Value to compare
+   * @returns {Vector2}
+   */
+  static max(a: Vector2, b: Vector2 | number): Vector2 {
+    if (typeof b === "number") {
+      return { x: Math.max(a.x, b), y: Math.max(a.y, b) };
     } else {
-      return { x: Math.max(a.x, maximum.x), y: Math.max(a.y, maximum.y) };
+      return { x: Math.max(a.x, b.x), y: Math.max(a.y, b.y) };
     }
+  }
+
+  /**
+   * Returns the component wise maximum of `a`
+   * @param {Vector2} a
+   * @returns {number)}
+   */
+  static componentMax(a: Vector2): number {
+    return a.x > a.y ? a.x : a.y;
   }
 
   /**

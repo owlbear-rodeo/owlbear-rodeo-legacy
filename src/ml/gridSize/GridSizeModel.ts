@@ -10,8 +10,7 @@ class GridSizeModel extends Model {
   static model: LayersModel;
   // Load tensorflow dynamically
 
-  // TODO: find type for tf
-  static tf: any;
+  static tf;
   constructor() {
     super(config as ModelJSON, { "group1-shard1of1.bin": weights });
   }
@@ -27,8 +26,7 @@ class GridSizeModel extends Model {
     }
     const model = GridSizeModel.model;
 
-    // TODO: check this mess -> changing type on prediction causes issues
-    const prediction: any = tf.tidy(() => {
+    const prediction = tf.tidy(() => {
       const image = tf.browser.fromPixels(imageData, 1).toFloat();
       const normalized = image.div(tf.scalar(255.0));
       const batched = tf.expandDims(normalized);

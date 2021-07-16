@@ -4,7 +4,15 @@ import Stream from "./Stream";
 import DiceRolls from "./DiceRolls";
 
 // TODO: check if stream is a required or optional param
-function Nickname({ nickname, stream, diceRolls }: { nickname: string, stream?: any, diceRolls: any}) {
+function Nickname({
+  nickname,
+  stream,
+  diceRolls,
+}: {
+  nickname: string;
+  stream?;
+  diceRolls;
+}) {
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <Text

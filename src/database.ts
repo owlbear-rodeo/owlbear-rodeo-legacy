@@ -2,7 +2,7 @@
 import Dexie, { DexieOptions } from "dexie";
 import { v4 as uuid } from "uuid";
 
-import { loadVersions } from "./upgrade";
+import { loadVersions, UpgradeEventHandler } from "./upgrade";
 import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
 
@@ -10,7 +10,7 @@ import { getDefaultTokens } from "./tokens";
  * Populate DB with initial data
  * @param {Dexie} db
  */
-function populate(db) {
+function populate(db: Dexie) {
   db.on("populate", () => {
     const userId = uuid();
     db.table("user").add({ key: "userId", value: userId });
@@ -35,16 +35,16 @@ function populate(db) {
  * @param {string=} name
  * @param {number=} versionNumber
  * @param {boolean=} populateData
- * @param {import("./upgrade").OnUpgrade=} onUpgrade
+ * @param {UpgradeEventHandler=} onUpgrade
  * @returns {Dexie}
  */
 export function getDatabase(
   options: DexieOptions,
-  name = "OwlbearRodeoDB",
-  versionNumber = undefined,
-  populateData = true,
-  onUpgrade = undefined
-) {
+  name: string | undefined = "OwlbearRodeoDB",
+  versionNumber: number | undefined = undefined,
+  populateData: boolean | undefined = true,
+  onUpgrade: UpgradeEventHandler | undefined = undefined
+): Dexie {
   let db = new Dexie(name, options);
   loadVersions(db, versionNumber, onUpgrade);
   if (populateData) {

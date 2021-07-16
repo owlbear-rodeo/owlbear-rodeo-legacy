@@ -78,7 +78,7 @@ Slider.defaultProps = {
   value: 0,
   ml: 0,
   mr: 0,
-  labelFunc: (value: any) => value,
+  labelFunc: (value: number) => value,
 };
 
 export default Slider;

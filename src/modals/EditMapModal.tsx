@@ -12,14 +12,18 @@ import { getGridDefaultInset } from "../helpers/grid";
 import useResponsiveLayout from "../hooks/useResponsiveLayout";
 import { Map } from "../types/Map";
 import { MapState } from "../types/MapState";
+import {
+  UpdateMapEventHanlder,
+  UpdateMapStateEventHandler,
+} from "../contexts/MapDataContext";
 
 type EditMapProps = {
   isOpen: boolean;
   onDone: () => void;
   map: Map;
   mapState: MapState;
-  onUpdateMap: (id: string, update: Partial<Map>) => void;
-  onUpdateMapState: (id: string, update: Partial<MapState>) => void;
+  onUpdateMap: UpdateMapEventHanlder;
+  onUpdateMapState: UpdateMapStateEventHandler;
 };
 
 function EditMapModal({
@@ -48,52 +52,45 @@ function EditMapModal({
    */
   // Local cache of map setting changes
   // Applied when done is clicked or map selection is changed
-  const [mapSettingChanges, setMapSettingChanges] = useState<any>({});
-  const [mapStateSettingChanges, setMapStateSettingChanges] = useState<any>({});
+  const [mapSettingChanges, setMapSettingChanges] = useState<Partial<Map>>({});
+  const [mapStateSettingChanges, setMapStateSettingChanges] = useState<
+    Partial<MapState>
+  >({});
 
-  function handleMapSettingsChange(key: string, value: string) {
-    setMapSettingChanges((prevChanges: any) => ({
+  function handleMapSettingsChange(change: Partial<Map>) {
+    setMapSettingChanges((prevChanges) => ({
       ...prevChanges,
-      [key]: value,
-      lastModified: Date.now(),
+      ...change,
     }));
   }
 
-  function handleMapStateSettingsChange(key: string, value: string) {
-    setMapStateSettingChanges((prevChanges: any) => ({
+  function handleMapStateSettingsChange(change: Partial<MapState>) {
+    setMapStateSettingChanges((prevChanges) => ({
       ...prevChanges,
-      [key]: value,
+      ...change,
     }));
   }
 
   async function applyMapChanges() {
     if (!isEmpty(mapSettingChanges) || !isEmpty(mapStateSettingChanges)) {
       // Ensure grid values are positive
-      let verifiedChanges = { ...mapSettingChanges };
-      if ("grid" in verifiedChanges && "size" in verifiedChanges.grid) {
+      let verifiedChanges: Partial<Map> = { ...mapSettingChanges };
+      if (verifiedChanges.grid) {
         verifiedChanges.grid.size.x = verifiedChanges.grid.size.x || 1;
         verifiedChanges.grid.size.y = verifiedChanges.grid.size.y || 1;
       }
       // Ensure inset isn't flipped
-      if ("grid" in verifiedChanges && "inset" in verifiedChanges.grid) {
+      if (verifiedChanges.grid) {
         const inset = verifiedChanges.grid.inset;
         if (
           inset.topLeft.x > inset.bottomRight.x ||
           inset.topLeft.y > inset.bottomRight.y
         ) {
-          if ("size" in verifiedChanges.grid) {
-            verifiedChanges.grid.inset = getGridDefaultInset(
-              { size: verifiedChanges.grid.size, type: map.grid.type },
-              map.width,
-              map.height
-            );
-          } else {
-            verifiedChanges.grid.inset = getGridDefaultInset(
-              map.grid,
-              map.width,
-              map.height
-            );
-          }
+          verifiedChanges.grid.inset = getGridDefaultInset(
+            { size: verifiedChanges.grid.size, type: map.grid.type },
+            map.width,
+            map.height
+          );
         }
       }
       await onUpdateMap(map.id, mapSettingChanges);

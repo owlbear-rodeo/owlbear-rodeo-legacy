@@ -9,31 +9,25 @@ import blobToBuffer from "./helpers/blobToBuffer";
 import { getGridDefaultInset } from "./helpers/grid";
 import { createThumbnail, getImageOutline } from "./helpers/image";
 import {
-  AddShapeAction,
-  EditShapeAction,
-  RemoveShapeAction,
-  SubtractShapeAction,
-  CutShapeAction,
+  AddStatesAction,
+  EditStatesAction,
+  RemoveStatesAction,
+  SubtractFogAction,
+  CutFogAction,
 } from "./actions";
 import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
+import { Outline } from "./types/Outline";
+import { Group, GroupContainer } from "./types/Group";
 
-/**
- * @callback OnUpgrade
- * @param {number} versionNumber
- */
+export type UpgradeEventHandler = (versionNumber: number) => void;
 
-/**
- * @callback VersionCallback
- * @param {Version} version
- * @param {OnUpgrade=} onUpgrade
- */
+type VersionCallback = (version: Version, onUpgrade?: UpgradeEventHandler);
 
 /**
  * Mapping of version number to their upgrade function
- * @type {Object.<number, VersionCallback>}
  */
-export const versions = {
+export const versions: Record<number, VersionCallback> = {
   // v1.2.0
   1(v) {
     v.stores({
@@ -48,7 +42,7 @@ export const versions = {
     v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(2);
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
-      let mapBuffers = {};
+      let mapBuffers: Record<string, ArrayBuffer> = {};
       for (let map of maps) {
         mapBuffers[map.id] = await Dexie.waitFor(blobToBuffer(map.file));
       }
@@ -68,7 +62,7 @@ export const versions = {
         .table("states")
         .toCollection()
         .modify((state) => {
-          function mapTokenId(id) {
+          function mapTokenId(id: string) {
             switch (id) {
               case "__default-Axes":
                 return "__default-Barbarian";
@@ -291,7 +285,7 @@ export const versions = {
     v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(15);
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
-      let tokenSizes = {};
+      let tokenSizes: Record<string, {width: number, height: number}> = {};
       for (let token of tokens) {
         const url = URL.createObjectURL(new Blob([token.file]));
         let image = new Image();
@@ -385,7 +379,7 @@ export const versions = {
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         .value;
       const maps = await Dexie.waitFor(tx.table("maps").toArray());
-      const thumbnails = {};
+      const thumbnails: Record<string, any> = {};
       for (let map of maps) {
         try {
           if (map.owner === userId) {
@@ -409,7 +403,7 @@ export const versions = {
       const userId = (await Dexie.waitFor(tx.table("user").get("userId")))
         .value;
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
-      const thumbnails = {};
+      const thumbnails: Record<string, any> = {};
       for (let token of tokens) {
         try {
           if (token.owner === userId) {
@@ -527,9 +521,7 @@ export const versions = {
             });
           }
         }
-        maps = null;
         await tx.table("assets").bulkAdd(assets);
-        assets = null;
       }
     });
   },
@@ -571,9 +563,7 @@ export const versions = {
             });
           }
         }
-        tokens = null;
         await tx.table("assets").bulkAdd(assets);
-        assets = null;
       }
     });
   },
@@ -582,8 +572,8 @@ export const versions = {
     v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(26);
 
-      let mapUpdates = {};
-      let tokenUpdates = {};
+      let mapUpdates: Record<string, any> = {};
+      let tokenUpdates: Record<string, any> = {};
 
       const primaryKeys = await Dexie.waitFor(
         tx.table("assets").toCollection().primaryKeys()
@@ -617,7 +607,6 @@ export const versions = {
             mapUpdates[prevId][resolution] = id;
           }
         }
-        assets = null;
       }
 
       await tx
@@ -786,9 +775,9 @@ export const versions = {
   34(v, onUpgrade) {
     v.stores({ groups: "id" }).upgrade(async (tx) => {
       onUpgrade?.(34);
-      function groupItems(items) {
-        let groups = [];
-        let subGroups = {};
+      function groupItems(items: {id: string, group: string}[]) {
+        let groups: Group[] = [];
+        let subGroups: Record<string, GroupContainer> = {};
         for (let item of items) {
           if (!item.group) {
             groups.push({ id: item.id, type: "item" });
@@ -850,9 +839,9 @@ export const latestVersion = 36;
  * Load versions onto a database up to a specific version number
  * @param {Dexie} db
  * @param {number=} upTo version number to load up to, latest version if undefined
- * @param {OnUpgrade=} onUpgrade
+ * @param {UpgradeEventHandler=} onUpgrade
  */
-export function loadVersions(db, upTo = latestVersion, onUpgrade = undefined) {
+export function loadVersions(db: Dexie, upTo: number | undefined = latestVersion, onUpgrade: UpgradeEventHandler | undefined) {
   for (let versionNumber = 1; versionNumber <= upTo; versionNumber++) {
     versions[versionNumber](db.version(versionNumber), onUpgrade);
   }
@@ -861,10 +850,8 @@ export function loadVersions(db, upTo = latestVersion, onUpgrade = undefined) {
 /**
  * Convert from the previous representation of actions (1.7.0) to the new representation (1.8.0)
  * and combine into shapes
- * @param {Array} actions
- * @param {number} actionIndex
  */
-function convertOldActionsToShapes(actions, actionIndex) {
+function convertOldActionsToShapes(actions: any[], actionIndex: number) {
   let newShapes = {};
   for (let i = 0; i <= actionIndex; i++) {
     const action = actions[i];
@@ -874,18 +861,18 @@ function convertOldActionsToShapes(actions, actionIndex) {
     let newAction;
     if (action.shapes) {
       if (action.type === "add") {
-        newAction = new AddShapeAction(action.shapes);
+        newAction = new AddStatesAction(action.shapes);
       } else if (action.type === "edit") {
-        newAction = new EditShapeAction(action.shapes);
+        newAction = new EditStatesAction(action.shapes);
       } else if (action.type === "remove") {
-        newAction = new RemoveShapeAction(action.shapes);
+        newAction = new RemoveStatesAction(action.shapes);
       } else if (action.type === "subtract") {
-        newAction = new SubtractShapeAction(action.shapes);
+        newAction = new SubtractFogAction(action.shapes);
       } else if (action.type === "cut") {
-        newAction = new CutShapeAction(action.shapes);
+        newAction = new CutFogAction(action.shapes);
       }
     } else if (action.type === "remove" && action.shapeIds) {
-      newAction = new RemoveShapeAction(action.shapeIds);
+      newAction = new RemoveStatesAction(action.shapeIds);
     }
 
     if (newAction) {
@@ -896,8 +883,14 @@ function convertOldActionsToShapes(actions, actionIndex) {
 }
 
 // Helper to create a thumbnail for a file in a db
-async function createDataThumbnail(data) {
-  let url;
+async function createDataThumbnail(data: any) : Promise<{
+  file:  Uint8Array,
+  width: number,
+  height: number,
+  type: "file",
+  id: "thumbnail",
+}> {
+  let url: string;
   if (data?.resolutions?.low?.file) {
     url = URL.createObjectURL(new Blob([data.resolutions.low.file]));
   } else {
@@ -907,14 +900,16 @@ async function createDataThumbnail(data) {
     new Promise((resolve) => {
       let image = new Image();
       image.onload = async () => {
-        const thumbnail = await createThumbnail(image);
-        resolve({
-          file: thumbnail.file,
-          width: thumbnail.width,
-          height: thumbnail.height,
-          type: "file",
-          id: "thumbnail",
-        });
+        const thumbnail = await createThumbnail(image, "");
+        if (thumbnail) {
+          resolve({
+            file: thumbnail.file,
+            width: thumbnail.width,
+            height: thumbnail.height,
+            type: "file",
+            id: "thumbnail",
+          });
+        }
       };
       image.src = url;
     }),
@@ -922,7 +917,7 @@ async function createDataThumbnail(data) {
   );
 }
 
-async function createDataOutline(data) {
+async function createDataOutline(data: any) : Promise<{id: string, outline: Outline}> {
   const url = URL.createObjectURL(new Blob([data.file]));
   return await Dexie.waitFor(
     new Promise((resolve) => {

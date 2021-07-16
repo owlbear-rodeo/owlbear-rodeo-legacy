@@ -10,14 +10,31 @@ import SettingsButton from "../SettingsButton";
 import StartTimerButton from "./StartTimerButton";
 import Timer from "./Timer";
 import DiceTrayButton from "./DiceTrayButton";
-import { PartyState, PlayerDice, PlayerInfo, Timer as PartyTimer } from "./PartyState"
+import {
+  PartyState,
+  PlayerDice,
+  PlayerInfo,
+  Timer as PartyTimer,
+} from "./PartyState";
 
 import useSetting from "../../hooks/useSetting";
 
 import { useParty } from "../../contexts/PartyContext";
 import { usePlayerState, usePlayerUpdater } from "../../contexts/PlayerContext";
 
-function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }: { gameId: string, stream: any, partyStreams: any, onStreamStart: any, onStreamEnd: any}) {
+function Party({
+  gameId,
+  stream,
+  partyStreams,
+  onStreamStart,
+  onStreamEnd,
+}: {
+  gameId: string;
+  stream;
+  partyStreams;
+  onStreamStart;
+  onStreamEnd;
+}) {
   const setPlayerState = usePlayerUpdater();
   const playerState: PlayerInfo = usePlayerState();
   const partyState: PartyState = useParty();
@@ -26,18 +43,18 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }: { g
   const [shareDice, setShareDice] = useSetting("dice.shareDice");
 
   function handleTimerStart(newTimer: PartyTimer) {
-    setPlayerState((prevState: any) => ({ ...prevState, timer: newTimer }));
+    setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
   }
 
   function handleTimerStop() {
-    setPlayerState((prevState: any) => ({ ...prevState, timer: null }));
+    setPlayerState((prevState) => ({ ...prevState, timer: null }));
   }
 
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(update);
     let counter = 0;
-    function update(time: any) {
+    function update(time) {
       request = requestAnimationFrame(update);
       const deltaTime = time - prevTime;
       prevTime = time;
@@ -51,9 +68,9 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }: { g
             current: playerState.timer.current - counter,
           };
           if (newTimer.current < 0) {
-            setPlayerState((prevState: any) => ({ ...prevState, timer: null }));
+            setPlayerState((prevState) => ({ ...prevState, timer: null }));
           } else {
-            setPlayerState((prevState: any) => ({ ...prevState, timer: newTimer }));
+            setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
           }
           counter = 0;
         }
@@ -65,7 +82,7 @@ function Party({ gameId, stream, partyStreams, onStreamStart, onStreamEnd }: { g
   }, [playerState.timer, setPlayerState]);
 
   function handleNicknameChange(newNickname: string) {
-    setPlayerState((prevState: any) => ({ ...prevState, nickname: newNickname }));
+    setPlayerState((prevState) => ({ ...prevState, nickname: newNickname }));
   }
 
   function handleDiceRollsChange(newDiceRolls: number[]) {

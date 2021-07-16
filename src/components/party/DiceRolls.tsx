@@ -24,14 +24,14 @@ const diceIcons = [
   { type: "d100", Icon: D100Icon },
 ];
 
-function DiceRolls({ rolls }: { rolls: any }) {
+function DiceRolls({ rolls }: { rolls }) {
   const total = getDiceRollTotal(rolls);
 
   const [expanded, setExpanded] = useState<boolean>(false);
 
   let expandedRolls = [];
   for (let icon of diceIcons) {
-    if (rolls.some((roll: any) => roll.type === icon.type)) {
+    if (rolls.some((roll) => roll.type === icon.type)) {
       expandedRolls.push(
         <DiceRoll rolls={rolls} type={icon.type} key={icon.type}>
           <icon.Icon />
@@ -45,29 +45,29 @@ function DiceRolls({ rolls }: { rolls: any }) {
   }
 
   return (
-      <Flex sx={{ flexDirection: "column" }}>
-        <Flex sx={{ alignItems: "center" }}>
-          <IconButton
-            title={expanded ? "Hide Rolls" : "Show Rolls"}
-            aria-label={expanded ? "Hide Rolls" : "Show Rolls"}
-            onClick={() => setExpanded(!expanded)}
-          >
-            <DiceRollsIcon />
-          </IconButton>
-          <Text px={1} as="p" my={1} variant="body2" sx={{ width: "100%" }}>
-            {total}
-          </Text>
-        </Flex>
-        {expanded && (
-          <Flex
-            sx={{
-              flexDirection: "column",
-            }}
-          >
-            {expandedRolls}
-          </Flex>
-        )}
+    <Flex sx={{ flexDirection: "column" }}>
+      <Flex sx={{ alignItems: "center" }}>
+        <IconButton
+          title={expanded ? "Hide Rolls" : "Show Rolls"}
+          aria-label={expanded ? "Hide Rolls" : "Show Rolls"}
+          onClick={() => setExpanded(!expanded)}
+        >
+          <DiceRollsIcon />
+        </IconButton>
+        <Text px={1} as="p" my={1} variant="body2" sx={{ width: "100%" }}>
+          {total}
+        </Text>
       </Flex>
+      {expanded && (
+        <Flex
+          sx={{
+            flexDirection: "column",
+          }}
+        >
+          {expandedRolls}
+        </Flex>
+      )}
+    </Flex>
   );
 }
 

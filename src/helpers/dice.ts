@@ -1,13 +1,15 @@
+import { InstancedMesh, TransformNode } from "@babylonjs/core";
 import { Vector3 } from "@babylonjs/core/Maths/math";
-import { DiceRoll } from "../types/Dice";
+
+import { DiceMesh, DiceRoll } from "../types/Dice";
 
 /**
  * Find the number facing up on a mesh instance of a dice
  * @param {Object} instance The dice instance
  */
-export function getDiceInstanceRoll(instance: any) {
+export function getDiceInstanceRoll(instance: InstancedMesh) {
   let highestDot = -1;
-  let highestLocator;
+  let highestLocator: TransformNode | undefined = undefined;
   for (let locator of instance.getChildTransformNodes()) {
     let dif = locator
       .getAbsolutePosition()
@@ -19,17 +21,19 @@ export function getDiceInstanceRoll(instance: any) {
       highestLocator = locator;
     }
   }
+  if (!highestLocator) {
+    return 0;
+  }
   return parseInt(highestLocator.name.slice(12));
 }
 
 /**
  * Find the number facing up on a dice object
- * @param {Object} dice The Dice object
  */
-export function getDiceRoll(dice: any) {
+export function getDiceRoll(dice: DiceMesh) {
   let number = getDiceInstanceRoll(dice.instance);
   // If the dice is a d100 add the d10
-  if (dice.type === "d100") {
+  if (dice.d10Instance) {
     const d10Number = getDiceInstanceRoll(dice.d10Instance);
     // Both zero set to 100
     if (d10Number === 0 && number === 0) {
@@ -44,7 +48,7 @@ export function getDiceRoll(dice: any) {
 }
 
 export function getDiceRollTotal(diceRolls: DiceRoll[]) {
-  return diceRolls.reduce((accumulator: number, dice: any) => {
+  return diceRolls.reduce((accumulator: number, dice) => {
     if (dice.roll === "unknown") {
       return accumulator;
     } else {

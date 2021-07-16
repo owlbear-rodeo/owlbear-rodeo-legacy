@@ -8,24 +8,28 @@ import { getDatabase } from "../database";
 
 //@ts-ignore
 import DatabaseWorker from "worker-loader!../workers/DatabaseWorker"; // eslint-disable-line import/no-webpack-loader-syntax
+import { DatabaseWorkerService } from "../workers/DatabaseWorker";
+
+export type DatabaseStatus = "loading" | "disabled" | "upgrading" | "loaded";
 
 type DatabaseContext = {
   database: Dexie | undefined;
-  databaseStatus: any;
+  databaseStatus: DatabaseStatus;
   databaseError: Error | undefined;
-  worker: Comlink.Remote<any>;
+  worker: Comlink.Remote<DatabaseWorkerService>;
 };
 
-// TODO: check what default we want here
 const DatabaseContext =
   React.createContext<DatabaseContext | undefined>(undefined);
 
-const worker = Comlink.wrap(new DatabaseWorker());
+const worker: Comlink.Remote<DatabaseWorkerService> = Comlink.wrap(
+  new DatabaseWorker()
+);
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {
   const [database, setDatabase] = useState<Dexie>();
   const [databaseStatus, setDatabaseStatus] =
-    useState<"loading" | "disabled" | "upgrading" | "loaded">("loading");
+    useState<DatabaseStatus>("loading");
   const [databaseError, setDatabaseError] = useState<Error>();
 
   useEffect(() => {

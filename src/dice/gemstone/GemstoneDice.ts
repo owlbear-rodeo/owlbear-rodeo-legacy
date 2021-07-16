@@ -1,5 +1,6 @@
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math";
+import { Material, Scene } from "@babylonjs/core";
 
 import Dice from "../Dice";
 
@@ -8,18 +9,22 @@ import metalRoughness from "./metalRoughness.jpg";
 import normal from "./normal.jpg";
 
 import { importTextureAsync } from "../../helpers/babylon";
-import { Material, Mesh, Scene } from "@babylonjs/core";
+import { BaseDiceTextureSources, DiceMeshes, DiceType } from "../../types/Dice";
 
 class GemstoneDice extends Dice {
-  static meshes: Record<string, Mesh>;
+  static meshes: DiceMeshes;
   static material: Material;
 
-  static getDicePhysicalProperties(diceType: string) {
+  static getDicePhysicalProperties(diceType: DiceType) {
     let properties = super.getDicePhysicalProperties(diceType);
     return { mass: properties.mass * 1.5, friction: properties.friction };
   }
 
-  static async loadMaterial(materialName: string, textures: any, scene: Scene) {
+  static async loadMaterial(
+    materialName: string,
+    textures: BaseDiceTextureSources,
+    scene: Scene
+  ) {
     let pbr = new PBRMaterial(materialName, scene);
     let [albedo, normal, metalRoughness] = await Promise.all([
       importTextureAsync(textures.albedo),
@@ -27,7 +32,6 @@ class GemstoneDice extends Dice {
       importTextureAsync(textures.metalRoughness),
     ]);
     pbr.albedoTexture = albedo;
-    // TODO: ask Mitch about texture
     pbr.bumpTexture = normal;
     pbr.metallicTexture = metalRoughness;
     pbr.useRoughnessFromMetallicTextureAlpha = false;
@@ -56,7 +60,7 @@ class GemstoneDice extends Dice {
     }
   }
 
-  static createInstance(diceType: string, scene: Scene) {
+  static createInstance(diceType: DiceType, scene: Scene) {
     if (!this.material || !this.meshes) {
       throw Error("Dice not loaded, call load before creating an instance");
     }

@@ -1,5 +1,6 @@
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math";
+import { Material, Scene } from "@babylonjs/core";
 
 import Dice from "../Dice";
 
@@ -8,18 +9,28 @@ import mask from "./mask.png";
 import normal from "./normal.jpg";
 
 import { importTextureAsync } from "../../helpers/babylon";
-import { Material, Mesh, Scene } from "@babylonjs/core";
+
+import { BaseDiceTextureSources, DiceMeshes, DiceType } from "../../types/Dice";
+
+type GlassDiceTextureSources = Pick<
+  BaseDiceTextureSources,
+  "albedo" | "normal"
+> & { mask: string };
 
 class GlassDice extends Dice {
-  static meshes: Record<string, Mesh>;
+  static meshes: DiceMeshes;
   static material: Material;
 
-  static getDicePhysicalProperties(diceType: string) {
+  static getDicePhysicalProperties(diceType: DiceType) {
     let properties = super.getDicePhysicalProperties(diceType);
     return { mass: properties.mass * 1.5, friction: properties.friction };
   }
 
-  static async loadMaterial(materialName: string, textures: any, scene: Scene) {
+  static async loadGlassMaterial(
+    materialName: string,
+    textures: GlassDiceTextureSources,
+    scene: Scene
+  ) {
     let pbr = new PBRMaterial(materialName, scene);
     let [albedo, normal, mask] = await Promise.all([
       importTextureAsync(textures.albedo),
@@ -27,7 +38,6 @@ class GlassDice extends Dice {
       importTextureAsync(textures.mask),
     ]);
     pbr.albedoTexture = albedo;
-    // pbr.normalTexture = normal;
     pbr.bumpTexture = normal;
     pbr.roughness = 0.25;
     pbr.metallic = 0;
@@ -47,7 +57,7 @@ class GlassDice extends Dice {
 
   static async load(scene: Scene) {
     if (!this.material) {
-      this.material = await this.loadMaterial(
+      this.material = await this.loadGlassMaterial(
         "glass_pbr",
         { albedo, mask, normal },
         scene
@@ -58,7 +68,7 @@ class GlassDice extends Dice {
     }
   }
 
-  static createInstance(diceType: string, scene: Scene) {
+  static createInstance(diceType: DiceType, scene: Scene) {
     if (!this.material || !this.meshes) {
       throw Error("Dice not loaded, call load before creating an instance");
     }

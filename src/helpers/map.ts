@@ -32,8 +32,6 @@ const mapResolutions: Resolution[] = [
 
 /**
  * Get the asset id of the preview file to send for a map
- * @param {any} map
- * @returns {undefined|string}
  */
 export function getMapPreviewAsset(map: Map): string | undefined {
   if (map.type === "file") {
@@ -126,7 +124,7 @@ export async function createMapFromFile(
         ) {
           const resized = await resizeImage(
             image,
-            Vector2.max(resolutionPixelSize) as number,
+            Vector2.componentMax(resolutionPixelSize),
             file.type,
             resolution.quality
           );

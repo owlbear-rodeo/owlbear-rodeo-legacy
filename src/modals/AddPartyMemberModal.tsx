@@ -8,7 +8,7 @@ function AddPartyMemberModal({
   gameId,
 }: {
   isOpen: boolean;
-  onRequestClose: any;
+  onRequestClose;
   gameId: string;
 }) {
   return (

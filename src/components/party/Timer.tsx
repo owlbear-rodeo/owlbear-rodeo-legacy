@@ -4,8 +4,8 @@ import { Box, Progress } from "theme-ui";
 
 import usePortal from "../../hooks/usePortal";
 
-function Timer({ timer, index }: { timer: any, index: number}) {
-  const progressBarRef = useRef<any>();
+function Timer({ timer, index }: { timer; index: number }) {
+  const progressBarRef = useRef();
 
   useEffect(() => {
     if (progressBarRef.current && timer) {
@@ -16,7 +16,7 @@ function Timer({ timer, index }: { timer: any, index: number}) {
   useEffect(() => {
     let request = requestAnimationFrame(animate);
     let previousTime = performance.now();
-    function animate(time: any) {
+    function animate(time) {
       request = requestAnimationFrame(animate);
       const deltaTime = time - previousTime;
       previousTime = time;

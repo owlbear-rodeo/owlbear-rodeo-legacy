@@ -5,10 +5,10 @@ import Modal from "../components/Modal";
 
 type ChangeNicknameModalProps = {
   isOpen: boolean;
-  onRequestClose: () => void;
-  onChangeSubmit: any;
+  onRequestClose;
+  onChangeSubmit;
   nickname: string;
-  onChange: any;
+  onChange;
 };
 
 function ChangeNicknameModal({

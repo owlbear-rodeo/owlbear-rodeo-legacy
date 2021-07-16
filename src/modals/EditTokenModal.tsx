@@ -43,8 +43,9 @@ function EditTokenModal({
     Partial<Token>
   >({});
 
+  // TODO: CHANGE MAP BACK? OR CHANGE THIS TO PARTIAL
   function handleTokenSettingsChange(key: string, value: Pick<Token, any>) {
-    setTokenSettingChanges((prevChanges: any) => ({
+    setTokenSettingChanges((prevChanges) => ({
       ...prevChanges,
       [key]: value,
     }));

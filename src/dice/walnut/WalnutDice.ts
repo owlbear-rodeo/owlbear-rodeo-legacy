@@ -1,3 +1,4 @@
+import { Material, Scene } from "@babylonjs/core";
 import Dice from "../Dice";
 
 import albedo from "./albedo.jpg";
@@ -11,8 +12,7 @@ import d10Source from "./d10.glb";
 import d12Source from "./d12.glb";
 import d20Source from "./d20.glb";
 import d100Source from "./d100.glb";
-import { Material, Mesh, Scene } from "@babylonjs/core";
-import { DiceType } from "../../types/Dice";
+import { DiceMeshes, DiceType } from "../../types/Dice";
 
 const sourceOverrides = {
   d4: d4Source,
@@ -25,10 +25,10 @@ const sourceOverrides = {
 };
 
 class WalnutDice extends Dice {
-  static meshes: Record<DiceType, Mesh>;
+  static meshes: DiceMeshes;
   static material: Material;
 
-  static getDicePhysicalProperties(diceType: string) {
+  static getDicePhysicalProperties(diceType: DiceType) {
     let properties = super.getDicePhysicalProperties(diceType);
     return { mass: properties.mass * 1.4, friction: properties.friction };
   }

@@ -46,13 +46,13 @@ function NetworkedMapPointer({
   // We use requestAnimationFrame as setInterval was being blocked during
   // re-renders on Chrome with Windows
   const ownPointerUpdateRef: React.MutableRefObject<
-    { position: any; visible: boolean; id: any; color: any } | undefined | null
+    { position; visible: boolean; id; color } | undefined | null
   > = useRef();
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(update);
     let counter = 0;
-    function update(time: any) {
+    function update(time) {
       request = requestAnimationFrame(update);
       const deltaTime = time - prevTime;
       counter += deltaTime;
@@ -79,7 +79,7 @@ function NetworkedMapPointer({
     };
   }, []);
 
-  function updateOwnPointerState(position: any, visible: boolean) {
+  function updateOwnPointerState(position, visible: boolean) {
     setLocalPointerState((prev) => ({
       ...prev,
       [userId]: { position, visible, id: userId, color: pointerColor },
@@ -92,24 +92,24 @@ function NetworkedMapPointer({
     };
   }
 
-  function handleOwnPointerDown(position: any) {
+  function handleOwnPointerDown(position) {
     updateOwnPointerState(position, true);
   }
 
-  function handleOwnPointerMove(position: any) {
+  function handleOwnPointerMove(position) {
     updateOwnPointerState(position, true);
   }
 
-  function handleOwnPointerUp(position: any) {
+  function handleOwnPointerUp(position) {
     updateOwnPointerState(position, false);
   }
 
   // Handle pointer data receive
-  const interpolationsRef: React.MutableRefObject<any> = useRef({});
+  const interpolationsRef: React.MutableRefObject = useRef({});
   useEffect(() => {
     // TODO: Handle player disconnect while pointer visible
-    function handleSocketPlayerPointer(pointer: any) {
-      const interpolations: any = interpolationsRef.current;
+    function handleSocketPlayerPointer(pointer) {
+      const interpolations = interpolationsRef.current;
       const id = pointer.id;
       if (!(id in interpolations)) {
         interpolations[id] = {
@@ -154,8 +154,8 @@ function NetworkedMapPointer({
     function animate() {
       request = requestAnimationFrame(animate);
       const time = performance.now();
-      let interpolatedPointerState: any = {};
-      for (let interp of Object.values(interpolationsRef.current) as any) {
+      let interpolatedPointerState = {};
+      for (let interp of Object.values(interpolationsRef.current)) {
         if (!interp.from || !interp.to) {
           continue;
         }
@@ -200,7 +200,7 @@ function NetworkedMapPointer({
 
   return (
     <Group>
-      {Object.values(localPointerState).map((pointer: any) => (
+      {Object.values(localPointerState).map((pointer) => (
         <MapPointer
           key={pointer.id}
           active={pointer.id === userId ? active : false}

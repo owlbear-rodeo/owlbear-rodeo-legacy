@@ -90,3 +90,5 @@ export function drawingToolIsShape(type: DrawingToolType): type is ShapeType {
     type === "triangle"
   );
 }
+
+export type DrawingState = Record<string, Drawing>;

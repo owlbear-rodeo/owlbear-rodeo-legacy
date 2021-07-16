@@ -6,7 +6,15 @@ import Link from "../Link";
 
 import StartStreamModal from "../../modals/StartStreamModal";
 
-function StartStreamButton({ onStreamStart, onStreamEnd, stream }: { onStreamStart: any, onStreamEnd: any, stream: any}) {
+function StartStreamButton({
+  onStreamStart,
+  onStreamEnd,
+  stream,
+}: {
+  onStreamStart;
+  onStreamEnd;
+  stream;
+}) {
   const [isStreamModalOpoen, setIsStreamModalOpen] = useState(false);
   function openModal() {
     setIsStreamModalOpen(true);
@@ -45,7 +53,7 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }: { onStreamSta
 
   function handleStreamStart() {
     // Must be defined this way in typescript due to open issue - https://github.com/microsoft/TypeScript/issues/33232
-    const mediaDevices = navigator.mediaDevices as any;
+    const mediaDevices = navigator.mediaDevices;
     mediaDevices
       .getDisplayMedia({
         video: true,
@@ -55,10 +63,12 @@ function StartStreamButton({ onStreamStart, onStreamEnd, stream }: { onStreamSta
           echoCancellation: false,
         },
       })
-      .then((localStream: { getTracks: () => any; }) => {
+      .then((localStream: { getTracks }) => {
         const tracks = localStream.getTracks();
 
-        const hasAudio = tracks.some((track: { kind: string; }) => track.kind === "audio");
+        const hasAudio = tracks.some(
+          (track: { kind: string }) => track.kind === "audio"
+        );
         setNoAudioTrack(!hasAudio);
 
         // Ensure an audio track is present

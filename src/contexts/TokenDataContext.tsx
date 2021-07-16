@@ -23,7 +23,7 @@ export type UpdateTokenEventHandler = (
 export type GetTokenEventHandler = (
   tokenId: string
 ) => Promise<Token | undefined>;
-export type UpdateTokenGroupsEventHandler = (groups: any[]) => Promise<void>;
+export type UpdateTokenGroupsEventHandler = (groups: Group[]) => Promise<void>;
 export type UpdateTokensHiddenEventHandler = (
   ids: string[],
   hideInSidebar: boolean

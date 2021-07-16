@@ -1,4 +1,20 @@
+import React from "react";
 import { Grid } from "./Grid";
+
+export type MapToolId =
+  | "move"
+  | "fog"
+  | "drawing"
+  | "measure"
+  | "pointer"
+  | "note";
+
+export type MapTool = {
+  id: MapToolId;
+  icon: React.ReactNode;
+  title: string;
+  SettingsComponent?: React.ElementType;
+};
 
 export type BaseMap = {
   id: string;
@@ -31,7 +47,7 @@ export type FileMap = BaseMap & {
   file: string;
   resolutions: FileMapResolutions;
   thumbnail: string;
-  quality: "low" | "medium" | "high" | "ultra" | "original";
+  quality: keyof FileMapResolutions | "original";
 };
 
 export type Map = DefaultMap | FileMap;

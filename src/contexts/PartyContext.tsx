@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useContext } from "react";
-import { PartyState } from "../components/party/PartyState";
 import Session from "../network/Session";
+
+import { PartyState } from "../types/PartyState";
 
 const PartyContext = React.createContext<PartyState | undefined>(undefined);
 
-export function PartyProvider({ session, children }: { session: Session, children: any}) {
+type PartyProviderProps = {
+  session: Session;
+  children: React.ReactNode;
+};
+
+export function PartyProvider({ session, children }: PartyProviderProps) {
   const [partyState, setPartyState] = useState({});
 
   useEffect(() => {

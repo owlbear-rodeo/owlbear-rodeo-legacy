@@ -31,6 +31,7 @@ import {
   getGuidesFromBoundingBoxes,
   getGuidesFromGridCell,
   findBestGuides,
+  Guide,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
 import {
@@ -40,12 +41,34 @@ import {
 } from "../../helpers/konva";
 import { keyBy } from "../../helpers/shared";
 
-import SubtractShapeAction from "../../actions/SubtractShapeAction";
-import CutShapeAction from "../../actions/CutShapeAction";
+import SubtractFogAction from "../../actions/SubtractFogAction";
+import CutFogAction from "../../actions/CutFogAction";
 
 import useSetting from "../../hooks/useSetting";
 
 import shortcuts from "../../shortcuts";
+
+import { Map } from "../../types/Map";
+import { Fog, FogToolSettings } from "../../types/Fog";
+
+type FogAddEventHandler = (fog: Fog[]) => void;
+type FogCutEventHandler = (fog: Fog[]) => void;
+type FogRemoveEventHandler = (fogId: string[]) => void;
+type FogEditEventHandler = (edit: Partial<Fog>[]) => void;
+type FogErrorEventHandler = (message: string) => void;
+
+type MapFogProps = {
+  map: Map;
+  shapes: Fog[];
+  onShapesAdd: FogAddEventHandler;
+  onShapesCut: FogCutEventHandler;
+  onShapesRemove: FogRemoveEventHandler;
+  onShapesEdit: FogEditEventHandler;
+  onShapeError: FogErrorEventHandler;
+  active: boolean;
+  toolSettings: FogToolSettings;
+  editable: boolean;
+};
 
 function MapFog({
   map,
@@ -58,7 +81,7 @@ function MapFog({
   active,
   toolSettings,
   editable,
-}) {
+}: MapFogProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -76,7 +99,7 @@ function MapFog({
   const [editOpacity] = useSetting("fog.editOpacity");
   const mapStageRef = useMapStage();
 
-  const [drawingShape, setDrawingShape] = useState(null);
+  const [drawingShape, setDrawingShape] = useState<Fog | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
   const [editingShapes, setEditingShapes] = useState([]);
 
@@ -84,7 +107,7 @@ function MapFog({
   const [fogShapes, setFogShapes] = useState(shapes);
   // Bounding boxes for guides
   const [fogShapeBoundingBoxes, setFogShapeBoundingBoxes] = useState([]);
-  const [guides, setGuides] = useState([]);
+  const [guides, setGuides] = useState<Guide[]>([]);
 
   const shouldHover =
     active &&
@@ -108,8 +131,14 @@ function MapFog({
     const mapStage = mapStageRef.current;
 
     function getBrushPosition(snapping = true) {
+      if (!mapStage) {
+        return;
+      }
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
+      if (!position) {
+        return;
+      }
       if (shouldUseGuides && snapping) {
         for (let guide of guides) {
           if (guide.orientation === "vertical") {
@@ -129,6 +158,9 @@ function MapFog({
     function handleBrushDown() {
       if (toolSettings.type === "brush") {
         const brushPosition = getBrushPosition();
+        if (!brushPosition) {
+          return;
+        }
         setDrawingShape({
           type: "fog",
           data: {
@@ -143,6 +175,9 @@ function MapFog({
       }
       if (toolSettings.type === "rectangle") {
         const brushPosition = getBrushPosition();
+        if (!brushPosition) {
+          return;
+        }
         setDrawingShape({
           type: "fog",
           data: {
@@ -166,7 +201,13 @@ function MapFog({
     function handleBrushMove() {
       if (toolSettings.type === "brush" && isBrushDown && drawingShape) {
         const brushPosition = getBrushPosition();
+        if (!brushPosition) {
+          return;
+        }
         setDrawingShape((prevShape) => {
+          if (!prevShape) {
+            return prevShape;
+          }
           const prevPoints = prevShape.data.points;
           if (
             Vector2.compare(
@@ -193,7 +234,13 @@ function MapFog({
       if (toolSettings.type === "rectangle" && isBrushDown && drawingShape) {
         const prevPoints = drawingShape.data.points;
         const brushPosition = getBrushPosition();
+        if (!brushPosition) {
+          return;
+        }
         setDrawingShape((prevShape) => {
+          if (!prevShape) {
+            return prevShape;
+          }
           return {
             ...prevShape,
             data: {
@@ -223,7 +270,7 @@ function MapFog({
           const shapesToSubtract = shapes.filter((shape) =>
             cut ? !shape.visible : shape.visible
           );
-          const subtractAction = new SubtractShapeAction(shapesToSubtract);
+          const subtractAction = new SubtractFogAction(shapesToSubtract);
           const state = subtractAction.execute({
             [drawingShape.id]: drawingShape,
           });
@@ -235,7 +282,7 @@ function MapFog({
         if (drawingShapes.length > 0) {
           if (cut) {
             // Run a pre-emptive cut action to check whether we've cut anything
-            const cutAction = new CutShapeAction(drawingShapes);
+            const cutAction = new CutFogAction(drawingShapes);
             const state = cutAction.execute(keyBy(shapes, "id"));
 
             if (Object.keys(state).length === shapes.length) {
@@ -300,7 +347,7 @@ function MapFog({
 
     function handlePointerMove() {
       if (shouldUseGuides) {
-        let guides = [];
+        let guides: Guide[] = [];
         const brushPosition = getBrushPosition(false);
         const absoluteBrushPosition = Vector2.multiply(brushPosition, {
           x: mapWidth,
@@ -393,7 +440,7 @@ function MapFog({
       const shapesToSubtract = shapes.filter((shape) =>
         cut ? !shape.visible : shape.visible
       );
-      const subtractAction = new SubtractShapeAction(shapesToSubtract);
+      const subtractAction = new SubtractFogAction(shapesToSubtract);
       const state = subtractAction.execute({
         [polygonShape.id]: polygonShape,
       });
@@ -405,7 +452,7 @@ function MapFog({
     if (polygonShapes.length > 0) {
       if (cut) {
         // Run a pre-emptive cut action to check whether we've cut anything
-        const cutAction = new CutShapeAction(polygonShapes);
+        const cutAction = new CutFogAction(polygonShapes);
         const state = cutAction.execute(keyBy(shapes, "id"));
 
         if (Object.keys(state).length === shapes.length) {

@@ -1,5 +1,6 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { Group, Circle, Rect } from "react-konva";
+import { KonvaEventObject, Node } from "konva/types/Node";
 
 import {
   useDebouncedStageScale,
@@ -12,8 +13,15 @@ import { useKeyboard } from "../../contexts/KeyboardContext";
 import Vector2 from "../../helpers/Vector2";
 
 import shortcuts from "../../shortcuts";
+import { Map } from "../../types/Map";
+import { GridInset } from "../../types/Grid";
 
-function MapGridEditor({ map, onGridChange }) {
+type MapGridEditorProps = {
+  map: Map;
+  onGridChange: (inset: GridInset) => void;
+};
+
+function MapGridEditor({ map, onGridChange }: MapGridEditorProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -39,21 +47,21 @@ function MapGridEditor({ map, onGridChange }) {
   }
   const handlePositions = getHandlePositions();
 
-  const handlePreviousPositionRef = useRef();
+  const handlePreviousPositionRef = useRef<Vector2>();
 
-  function handleScaleCircleDragStart(event) {
+  function handleScaleCircleDragStart(event: KonvaEventObject<MouseEvent>) {
     const handle = event.target;
     const position = getHandleNormalizedPosition(handle);
     handlePreviousPositionRef.current = position;
   }
 
-  function handleScaleCircleDragMove(event) {
+  function handleScaleCircleDragMove(event: KonvaEventObject<MouseEvent>) {
     const handle = event.target;
     onGridChange(getHandleInset(handle));
     handlePreviousPositionRef.current = getHandleNormalizedPosition(handle);
   }
 
-  function handleScaleCircleDragEnd(event) {
+  function handleScaleCircleDragEnd(event: KonvaEventObject<MouseEvent>) {
     onGridChange(getHandleInset(event.target));
     setPreventMapInteraction(false);
   }
@@ -66,11 +74,14 @@ function MapGridEditor({ map, onGridChange }) {
     setPreventMapInteraction(false);
   }
 
-  function getHandleInset(handle) {
+  function getHandleInset(handle: Node): GridInset {
     const name = handle.name();
 
     // Find distance and direction of dragging
     const previousPosition = handlePreviousPositionRef.current;
+    if (!previousPosition) {
+      return map.grid.inset;
+    }
     const position = getHandleNormalizedPosition(handle);
     const distance = Vector2.distance(previousPosition, position);
     const direction = Vector2.normalize(
@@ -154,7 +165,7 @@ function MapGridEditor({ map, onGridChange }) {
     }
   }
 
-  function nudgeGrid(direction, scale) {
+  function nudgeGrid(direction: Vector2, scale: number) {
     const inset = map.grid.inset;
     const gridSizeNormalized = Vector2.divide(
       Vector2.subtract(inset.bottomRight, inset.topLeft),
@@ -170,7 +181,7 @@ function MapGridEditor({ map, onGridChange }) {
     });
   }
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     const nudgeAmount = event.shiftKey ? 2 : 0.5;
     if (shortcuts.gridNudgeUp(event)) {
       // Stop arrow up/down scrolling if overflowing
@@ -191,7 +202,7 @@ function MapGridEditor({ map, onGridChange }) {
 
   useKeyboard(handleKeyDown);
 
-  function getHandleNormalizedPosition(handle) {
+  function getHandleNormalizedPosition(handle: Node) {
     return Vector2.divide({ x: handle.x(), y: handle.y() }, mapSize);
   }
 

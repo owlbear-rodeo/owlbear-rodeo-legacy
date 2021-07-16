@@ -1,12 +1,16 @@
 import React, { useState, useContext, ReactChild } from "react";
 
-type DiceLoadingContext = {
-  assetLoadStart: any,
-  assetLoadFinish: any,
-  isLoading: boolean,
-}
+export type AssetLoadStartEventHandler = () => void;
+export type AssetLoadFinishEventHandler = () => void;
 
-const DiceLoadingContext = React.createContext<DiceLoadingContext | undefined>(undefined);
+type DiceLoadingContext = {
+  assetLoadStart: AssetLoadStartEventHandler;
+  assetLoadFinish: AssetLoadFinishEventHandler;
+  isLoading: boolean;
+};
+
+const DiceLoadingContext =
+  React.createContext<DiceLoadingContext | undefined>(undefined);
 
 export function DiceLoadingProvider({ children }: { children: ReactChild }) {
   const [loadingAssetCount, setLoadingAssetCount] = useState(0);

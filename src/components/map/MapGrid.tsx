@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useImage from "use-image";
 
 import { useDataURL } from "../../contexts/AssetsContext";
@@ -8,8 +8,9 @@ import { mapSources as defaultMapSources } from "../../maps";
 import { getImageLightness } from "../../helpers/image";
 
 import Grid from "../Grid";
+import { Map } from "../../types/Map";
 
-function MapGrid({ map }) {
+function MapGrid({ map }: { map: Map }) {
   let mapSourceMap = map;
   const mapURL = useDataURL(
     mapSourceMap,
@@ -17,13 +18,14 @@ function MapGrid({ map }) {
     undefined,
     map.type === "file"
   );
-  const [mapImage, mapLoadingStatus] = useImage(mapURL);
+
+  const [mapImage, mapLoadingStatus] = useImage(mapURL || "");
 
   const [isImageLight, setIsImageLight] = useState(true);
 
   // When the map changes find the average lightness of its pixels
   useEffect(() => {
-    if (mapLoadingStatus === "loaded") {
+    if (mapLoadingStatus === "loaded" && mapImage) {
       setIsImageLight(getImageLightness(mapImage));
     }
   }, [mapImage, mapLoadingStatus]);

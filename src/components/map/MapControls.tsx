@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { IconButton, Flex, Box } from "theme-ui";
 
 import RadioIconButton from "../RadioIconButton";
@@ -21,21 +21,26 @@ import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
 
 import useSetting from "../../hooks/useSetting";
-import { Map } from "../../types/Map";
+import { Map, MapTool, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
+import {
+  MapChangeEventHandler,
+  MapResetEventHandler,
+} from "../../types/Events";
+import { Settings } from "../../types/Settings";
 
 type MapControlsProps = {
-  onMapChange: () => void;
-  onMapReset: () => void;
+  onMapChange: MapChangeEventHandler;
+  onMapReset: MapResetEventHandler;
   currentMap?: Map;
   currentMapState?: MapState;
-  selectedToolId: string;
-  onSelectedToolChange: () => void;
-  toolSettings: any;
-  onToolSettingChange: () => void;
-  onToolAction: () => void;
+  selectedToolId: MapToolId;
+  onSelectedToolChange: (toolId: MapToolId) => void;
+  toolSettings: Settings;
+  onToolSettingChange: (change: Partial<Settings>) => void;
+  onToolAction: (actionId: string) => void;
   disabledControls: string[];
-  disabledSettings: string[];
+  disabledSettings: Partial<Record<keyof Settings, string[]>>;
 };
 
 function MapContols({
@@ -54,7 +59,7 @@ function MapContols({
   const [isExpanded, setIsExpanded] = useState(true);
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
 
-  const toolsById = {
+  const toolsById: Record<string, MapTool> = {
     move: {
       id: "move",
       icon: <MoveToolIcon />,
@@ -89,7 +94,14 @@ function MapContols({
       title: "Note Tool (N)",
     },
   };
-  const tools = ["move", "fog", "drawing", "measure", "pointer", "note"];
+  const tools: MapToolId[] = [
+    "move",
+    "fog",
+    "drawing",
+    "measure",
+    "pointer",
+    "note",
+  ];
 
   const sections = [
     {
@@ -174,32 +186,41 @@ function MapContols({
 
   function getToolSettings() {
     const Settings = toolsById[selectedToolId].SettingsComponent;
-    if (Settings) {
-      return (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "4px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "overlay",
-            borderRadius: "4px",
-          }}
-          p={1}
-        >
-          <Settings
-            settings={toolSettings[selectedToolId]}
-            onSettingChange={(change) =>
-              onToolSettingChange(selectedToolId, change)
-            }
-            onToolAction={onToolAction}
-            disabledActions={disabledSettings[selectedToolId]}
-          />
-        </Box>
-      );
-    } else {
+    if (
+      !Settings ||
+      selectedToolId === "move" ||
+      selectedToolId === "measure" ||
+      selectedToolId === "note"
+    ) {
       return null;
     }
+    return (
+      <Box
+        sx={{
+          position: "absolute",
+          top: "4px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "overlay",
+          borderRadius: "4px",
+        }}
+        p={1}
+      >
+        <Settings
+          settings={toolSettings[selectedToolId]}
+          onSettingChange={(change) =>
+            onToolSettingChange({
+              [selectedToolId]: {
+                ...toolSettings[selectedToolId],
+                ...change,
+              },
+            })
+          }
+          onToolAction={onToolAction}
+          disabledActions={disabledSettings[selectedToolId]}
+        />
+      </Box>
+    );
   }
 
   return (
