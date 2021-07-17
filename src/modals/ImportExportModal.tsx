@@ -94,7 +94,7 @@ function ImportExportModal({
       await worker.importData(
         file,
         importDBName,
-        Comlink.proxy(handleDBProgress)
+        Comlink.proxy(handleDBProgress) as any
       );
 
       setIsLoading(false);
@@ -387,7 +387,7 @@ function ImportExportModal({
 
     try {
       const buffer = await worker.exportData(
-        Comlink.proxy(handleDBProgress),
+        Comlink.proxy(handleDBProgress) as any,
         mapIds,
         tokenIds
       );

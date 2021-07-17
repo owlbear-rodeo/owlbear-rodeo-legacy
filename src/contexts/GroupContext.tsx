@@ -26,7 +26,7 @@ export type GroupClearSelectionEventHandler = () => void;
 export type GroupFilterChangeEventHandler = (filter: string) => void;
 export type GroupClearFilterEventHandler = () => void;
 
-type GroupContext = {
+type GroupContextValue = {
   groups: Group[];
   activeGroups: Group[] | GroupItem[];
   openGroupId: string | undefined;
@@ -46,7 +46,8 @@ type GroupContext = {
   onFilterClear: GroupClearFilterEventHandler;
 };
 
-const GroupContext = React.createContext<GroupContext | undefined>(undefined);
+const GroupContext =
+  React.createContext<GroupContextValue | undefined>(undefined);
 
 type GroupProviderProps = {
   groups: Group[];
@@ -249,7 +250,7 @@ export function GroupProvider({
 
   useBlur(handleBlur);
 
-  const value: GroupContext = {
+  const value = {
     groups,
     activeGroups,
     openGroupId,

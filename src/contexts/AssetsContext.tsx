@@ -16,13 +16,14 @@ export type GetAssetEventHanlder = (
 export type AddAssetsEventHandler = (assets: Asset[]) => Promise<void>;
 export type PutAssetEventsHandler = (asset: Asset) => Promise<void>;
 
-type AssetsContext = {
+type AssetsContextValue = {
   getAsset: GetAssetEventHanlder;
   addAssets: AddAssetsEventHandler;
   putAsset: PutAssetEventsHandler;
 };
 
-const AssetsContext = React.createContext<AssetsContext | undefined>(undefined);
+const AssetsContext =
+  React.createContext<AssetsContextValue | undefined>(undefined);
 
 // 100 MB max cache size
 const maxCacheSize = 1e8;

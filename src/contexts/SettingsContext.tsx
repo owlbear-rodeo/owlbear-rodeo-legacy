@@ -4,13 +4,13 @@ import { getSettings } from "../settings";
 
 import { Settings } from "../types/Settings";
 
-type SettingsContext = {
+type SettingsContextValue = {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
 };
 
 const SettingsContext =
-  React.createContext<SettingsContext | undefined>(undefined);
+  React.createContext<SettingsContextValue | undefined>(undefined);
 
 const settingsProvider = getSettings();
 

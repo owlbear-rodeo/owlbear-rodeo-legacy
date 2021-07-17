@@ -33,7 +33,7 @@ export type GetMapStateEventHandler = (
 export type GetMapEventHandler = (id: string) => Promise<Map | undefined>;
 export type UpdateMapGroupsEventHandler = (groups: Group[]) => Promise<void>;
 
-type MapDataContext = {
+type MapDataContextValue = {
   maps: Array<Map>;
   mapStates: MapState[];
   /** Adds a map to the database, also adds an assosiated state and group for that map */
@@ -51,7 +51,7 @@ type MapDataContext = {
 };
 
 const MapDataContext =
-  React.createContext<MapDataContext | undefined>(undefined);
+  React.createContext<MapDataContextValue | undefined>(undefined);
 
 const defaultMapState: Omit<MapState, "mapId"> = {
   tokens: {},

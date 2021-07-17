@@ -10,7 +10,7 @@ import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 import Droppable from "../drag/Droppable";
 
 function TilesContainer({ children }: { children: React.ReactNode }) {
-  const { onGroupSelect } = useGroup();
+  const { onClearSelection } = useGroup();
 
   const { theme } = useThemeUI();
 
@@ -23,7 +23,7 @@ function TilesContainer({ children }: { children: React.ReactNode }) {
           height: layout.tileContainerHeight,
           backgroundColor: theme.colors?.muted as string,
         }}
-        onClick={() => onGroupSelect(undefined)}
+        onClick={() => onClearSelection()}
       >
         <Grid
           p={3}

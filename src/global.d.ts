@@ -19,3 +19,4 @@ declare module "*.bin" {
   export default source;
 }
 declare module "react-router-hash-link";
+declare module "intersection-observer";

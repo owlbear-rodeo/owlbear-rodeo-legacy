@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Konva from "konva";
 import { Line, Group, Path, Circle } from "react-konva";
 import Color from "color";

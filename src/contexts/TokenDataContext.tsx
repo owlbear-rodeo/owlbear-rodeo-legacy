@@ -29,7 +29,7 @@ export type UpdateTokensHiddenEventHandler = (
   hideInSidebar: boolean
 ) => Promise<void>;
 
-type TokenDataContext = {
+type TokenDataContextValue = {
   tokens: Token[];
   addToken: AddTokenEventHandler;
   tokenGroups: Group[];
@@ -43,7 +43,7 @@ type TokenDataContext = {
 };
 
 const TokenDataContext =
-  React.createContext<TokenDataContext | undefined>(undefined);
+  React.createContext<TokenDataContextValue | undefined>(undefined);
 
 export function TokenDataProvider({ children }: { children: React.ReactNode }) {
   const { database } = useDatabase();
@@ -152,7 +152,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
     );
   }, [tokens]);
 
-  const value: TokenDataContext = {
+  const value = {
     tokens,
     addToken,
     tokenGroups,
@@ -172,7 +172,7 @@ export function TokenDataProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useTokenData(): TokenDataContext {
+export function useTokenData() {
   const context = useContext(TokenDataContext);
   if (context === undefined) {
     throw new Error("useTokenData must be used within a TokenDataProvider");

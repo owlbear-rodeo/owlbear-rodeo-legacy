@@ -1,5 +1,7 @@
 import Case from "case";
-import { Map, MapState } from "../components/map/Map";
+
+import { DefaultMap } from "../types/Map";
+import { MapState } from "../types/MapState";
 
 import blankImage from "./Blank.jpg";
 import grassImage from "./Grass.jpg";
@@ -19,15 +21,18 @@ export const mapSources = {
   wood: woodImage,
 };
 
-export function getDefaultMaps(userId: string) : {maps: Map[], mapStates: MapState[]} {
+export function getDefaultMaps(userId: string): {
+  maps: DefaultMap[];
+  mapStates: MapState[];
+} {
   const mapKeys = Object.keys(mapSources);
-  let maps = [];
-  let mapStates = [];
+  let maps: DefaultMap[] = [];
+  let mapStates: MapState[] = [];
   for (let i = 0; i < mapKeys.length; i++) {
     const key = mapKeys[i];
     const name = Case.capital(key);
     const id = `__default-${name}`;
-    const map = {
+    const map: DefaultMap = {
       id,
       key,
       name,
@@ -45,10 +50,9 @@ export function getDefaultMaps(userId: string) : {maps: Map[], mapStates: MapSta
       lastModified: Date.now(),
       showGrid: key !== "stone",
       snapToGrid: true,
-      group: "",
     };
     maps.push(map);
-    const state = {
+    const state: MapState = {
       mapId: id,
       tokens: {},
       drawShapes: {},

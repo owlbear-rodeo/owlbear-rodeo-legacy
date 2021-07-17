@@ -24,8 +24,13 @@ type TilesOverlayProps = {
 };
 
 function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
-  const { groups, openGroupId, onGroupClose, onGroupSelect, onGroupsChange } =
-    useGroup();
+  const {
+    groups,
+    openGroupId,
+    onGroupClose,
+    onClearSelection,
+    onGroupsChange,
+  } = useGroup();
 
   const { theme } = useThemeUI();
 
@@ -48,7 +53,7 @@ function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
   const [isGroupNameModalOpen, setIsGroupNameModalOpen] = useState(false);
   function handleGroupNameChange(name: string) {
     if (openGroupId) {
-      onGroupsChange(renameGroup(groups, openGroupId, name), undefined);
+      onGroupsChange(renameGroup(groups, openGroupId, name));
       setIsGroupNameModalOpen(false);
     }
   }
@@ -134,7 +139,7 @@ function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
                 marginBottom: "8px",
                 backgroundColor: theme.colors?.muted as string,
               }}
-              onClick={() => onGroupSelect(undefined)}
+              onClick={() => onClearSelection()}
             >
               <Grid
                 sx={{

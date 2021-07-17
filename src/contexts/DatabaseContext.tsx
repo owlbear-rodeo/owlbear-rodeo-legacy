@@ -12,7 +12,7 @@ import { DatabaseWorkerService } from "../workers/DatabaseWorker";
 
 export type DatabaseStatus = "loading" | "disabled" | "upgrading" | "loaded";
 
-type DatabaseContext = {
+type DatabaseContextValue = {
   database: Dexie | undefined;
   databaseStatus: DatabaseStatus;
   databaseError: Error | undefined;
@@ -20,7 +20,7 @@ type DatabaseContext = {
 };
 
 const DatabaseContext =
-  React.createContext<DatabaseContext | undefined>(undefined);
+  React.createContext<DatabaseContextValue | undefined>(undefined);
 
 const worker: Comlink.Remote<DatabaseWorkerService> = Comlink.wrap(
   new DatabaseWorker()
@@ -127,7 +127,7 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useDatabase(): DatabaseContext {
+export function useDatabase() {
   const context = useContext(DatabaseContext);
   if (context === undefined) {
     throw new Error("useDatabase must be used within a DatabaseProvider");

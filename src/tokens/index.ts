@@ -1,4 +1,5 @@
 import Case from "case";
+import { DefaultToken } from "../types/Token";
 
 import aberration from "./Aberration.png";
 import artificer from "./Artificer.png";
@@ -80,13 +81,13 @@ function getDefaultTokenSize(key: string) {
   }
 }
 
-export function getDefaultTokens(userId: string) {
+export function getDefaultTokens(userId: string): DefaultToken[] {
   const tokenKeys = Object.keys(tokenSources);
-  let tokens = [];
+  let tokens: DefaultToken[] = [];
   for (let i = 0; i < tokenKeys.length; i++) {
     const key = tokenKeys[i];
     const name = Case.capital(key);
-    const token = {
+    const token: DefaultToken = {
       key,
       name,
       id: `__default-${name}`,

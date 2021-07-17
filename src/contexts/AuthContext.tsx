@@ -2,12 +2,13 @@ import React, { useState, useEffect, useContext } from "react";
 
 import FakeStorage from "../helpers/FakeStorage";
 
-type AuthContext = {
+type AuthContextValue = {
   password: string;
   setPassword: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const AuthContext = React.createContext<AuthContext | undefined>(undefined);
+const AuthContext =
+  React.createContext<AuthContextValue | undefined>(undefined);
 
 let storage: Storage | FakeStorage;
 try {

@@ -93,7 +93,7 @@ let service = {
         assetIds.push(map.file);
         assetIds.push(map.thumbnail);
         for (let res of Object.values(map.resolutions)) {
-          assetIds.push(res);
+          res && assetIds.push(res);
         }
       }
     }

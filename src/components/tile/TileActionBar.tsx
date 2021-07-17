@@ -18,7 +18,7 @@ function TileActionBar({ onAdd, addTitle }: TileActionBarProps) {
   const {
     selectMode,
     onSelectModeChange,
-    onGroupSelect,
+    onClearSelection,
     filter,
     onFilterChange,
   } = useGroup();
@@ -37,7 +37,7 @@ function TileActionBar({ onAdd, addTitle }: TileActionBarProps) {
           outlineOffset: "0px",
         },
       }}
-      onFocus={() => onGroupSelect(undefined)}
+      onFocus={() => onClearSelection()}
     >
       <Search value={filter} onChange={(e) => onFilterChange(e.target.value)} />
       <Flex

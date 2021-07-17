@@ -9,7 +9,7 @@ type MapLoadingProgressUpdate = MapLoadingProgress & {
   id: string;
 };
 
-type MapLoadingContext = {
+type MapLoadingContextValue = {
   isLoading: boolean;
   assetLoadStart: (id: string) => void;
   assetProgressUpdate: (update: MapLoadingProgressUpdate) => void;
@@ -17,7 +17,7 @@ type MapLoadingContext = {
 };
 
 const MapLoadingContext =
-  React.createContext<MapLoadingContext | undefined>(undefined);
+  React.createContext<MapLoadingContextValue | undefined>(undefined);
 
 export function MapLoadingProvider({
   children,

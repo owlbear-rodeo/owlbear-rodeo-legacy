@@ -43,7 +43,6 @@ function SortableTilesDragOverlay({
   const dragBounce = useSpring({
     transform: !!dragId ? "scale(0.9)" : "scale(1)",
     config: config.wobbly,
-    position: "relative",
   });
 
   function renderDragOverlays() {
@@ -75,7 +74,7 @@ function SortableTilesDragOverlay({
             transform: `translate(${coords[index].x}%, ${coords[index].y}%)`,
           }}
         >
-          <animated.div style={dragBounce}>
+          <animated.div style={{ ...dragBounce, position: "relative" }}>
             {renderTile(group)}
             {index === selectedIndices.length - 1 &&
               selectedGroupIds.length > 1 && (

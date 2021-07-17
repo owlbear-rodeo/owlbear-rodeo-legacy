@@ -3,14 +3,14 @@ import React, { useState, useContext, ReactChild } from "react";
 export type AssetLoadStartEventHandler = () => void;
 export type AssetLoadFinishEventHandler = () => void;
 
-type DiceLoadingContext = {
+type DiceLoadingContextValue = {
   assetLoadStart: AssetLoadStartEventHandler;
   assetLoadFinish: AssetLoadFinishEventHandler;
   isLoading: boolean;
 };
 
 const DiceLoadingContext =
-  React.createContext<DiceLoadingContext | undefined>(undefined);
+  React.createContext<DiceLoadingContextValue | undefined>(undefined);
 
 export function DiceLoadingProvider({ children }: { children: ReactChild }) {
   const [loadingAssetCount, setLoadingAssetCount] = useState(0);
@@ -38,7 +38,7 @@ export function DiceLoadingProvider({ children }: { children: ReactChild }) {
   );
 }
 
-export function useDiceLoading(): DiceLoadingContext {
+export function useDiceLoading() {
   const context = useContext(DiceLoadingContext);
   if (context === undefined) {
     throw new Error("useDiceLoading must be used within a DiceLoadingProvider");
