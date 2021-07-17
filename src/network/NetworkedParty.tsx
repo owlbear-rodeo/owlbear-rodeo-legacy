@@ -22,7 +22,9 @@ type NetworkedPartyProps = { gameId: string; session: Session };
 function NetworkedParty({ gameId, session }: NetworkedPartyProps) {
   const partyState = useParty();
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [partyStreams, setPartyStreams] = useState({});
+  const [partyStreams, setPartyStreams] = useState<Record<string, MediaStream>>(
+    {}
+  );
 
   const { addToast } = useToasts();
 

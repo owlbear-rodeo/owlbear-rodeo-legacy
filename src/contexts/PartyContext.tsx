@@ -11,7 +11,7 @@ type PartyProviderProps = {
 };
 
 export function PartyProvider({ session, children }: PartyProviderProps) {
-  const [partyState, setPartyState] = useState({});
+  const [partyState, setPartyState] = useState<PartyState>({});
 
   useEffect(() => {
     function handleSocketPartyState(partyState: PartyState) {
