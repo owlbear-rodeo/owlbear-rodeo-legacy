@@ -31,7 +31,7 @@ import {
   TokenStateChangeEventHandler,
 } from "../../types/Events";
 
-type MapTokenStateProps = {
+type MapTokenProps = {
   tokenState: TokenState;
   onTokenStateChange: TokenStateChangeEventHandler;
   onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
@@ -51,7 +51,7 @@ function MapToken({
   draggable,
   fadeOnHover,
   map,
-}: MapTokenStateProps) {
+}: MapTokenProps) {
   const userId = useUserId();
 
   const mapWidth = useMapWidth();

@@ -1,11 +1,12 @@
 import { Outline } from "./Outline";
+import { TokenCategory } from "./Token";
 
 export type BaseTokenState = {
   id: string;
   tokenId: string;
   owner: string;
   size: number;
-  category: string;
+  category: TokenCategory;
   label: string;
   statuses: string[];
   x: number;

@@ -23,33 +23,21 @@ import TokenBar from "../components/token/TokenBar";
 
 import GlobalImageDrop from "../components/image/GlobalImageDrop";
 
-import { Map as MapType } from "../types/Map";
+import {
+  Map as MapType,
+  MapActions,
+  MapActionsIndexKey,
+  MapActionsKey,
+} from "../types/Map";
 import { MapState } from "../types/MapState";
 import {
-  Asset,
   AssetManifest,
   AssetManifestAsset,
   AssetManifestAssets,
 } from "../types/Asset";
 import { TokenState } from "../types/TokenState";
-import { Drawing, DrawingState } from "../types/Drawing";
-import { Fog, FogState } from "../types/Fog";
-
-type MapActions = {
-  mapDrawActions: Action<Drawing>[];
-  mapDrawActionIndex: number;
-  fogDrawActions: Action<Fog>[];
-  fogDrawActionIndex: number;
-};
-
-type MapActionsKey = keyof Pick<
-  MapActions,
-  "mapDrawActions" | "fogDrawActions"
->;
-type MapActionsIndexKey = keyof Pick<
-  MapActions,
-  "mapDrawActionIndex" | "fogDrawActionIndex"
->;
+import { DrawingState } from "../types/Drawing";
+import { FogState } from "../types/Fog";
 
 const defaultMapActions: MapActions = {
   mapDrawActions: [],

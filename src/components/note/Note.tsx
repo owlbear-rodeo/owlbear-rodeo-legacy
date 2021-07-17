@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Rect, Text } from "react-konva";
+import Konva from "konva";
 import { useSpring, animated } from "@react-spring/konva";
 
 import { useUserId } from "../../contexts/UserIdContext";
@@ -15,7 +16,26 @@ import colors from "../../helpers/colors";
 import usePrevious from "../../hooks/usePrevious";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
+import { Note as NoteType } from "../../types/Note";
+import {
+  NoteChangeEventHandler,
+  NoteDragEventHandler,
+  NoteMenuOpenEventHandler,
+} from "../../types/Events";
+import { Map } from "../../types/Map";
+
 const defaultFontSize = 16;
+
+type NoteProps = {
+  note: NoteType;
+  map: Map;
+  onNoteChange?: NoteChangeEventHandler;
+  onNoteMenuOpen?: NoteMenuOpenEventHandler;
+  draggable: boolean;
+  onNoteDragStart?: NoteDragEventHandler;
+  onNoteDragEnd?: NoteDragEventHandler;
+  fadeOnHover: boolean;
+};
 
 function Note({
   note,
@@ -26,7 +46,7 @@ function Note({
   onNoteDragStart,
   onNoteDragEnd,
   fadeOnHover,
-}) {
+}: NoteProps) {
   const userId = useUserId();
 
   const mapWidth = useMapWidth();
@@ -45,11 +65,11 @@ function Note({
 
   const snapPositionToGrid = useGridSnapping();
 
-  function handleDragStart(event) {
-    onNoteDragStart && onNoteDragStart(event, note.id);
+  function handleDragStart(event: Konva.KonvaEventObject<DragEvent>) {
+    onNoteDragStart?.(event, note.id);
   }
 
-  function handleDragMove(event) {
+  function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
     const noteGroup = event.target;
     // Snap to corners of grid
     if (map.snapToGrid) {
@@ -57,21 +77,20 @@ function Note({
     }
   }
 
-  function handleDragEnd(event) {
+  function handleDragEnd(event: Konva.KonvaEventObject<DragEvent>) {
     const noteGroup = event.target;
-    onNoteChange &&
-      onNoteChange({
-        ...note,
-        x: noteGroup.x() / mapWidth,
-        y: noteGroup.y() / mapHeight,
-        lastModifiedBy: userId,
-        lastModified: Date.now(),
-      });
-    onNoteDragEnd && onNoteDragEnd(note.id);
+    onNoteChange?.({
+      ...note,
+      x: noteGroup.x() / mapWidth,
+      y: noteGroup.y() / mapHeight,
+      lastModifiedBy: userId,
+      lastModified: Date.now(),
+    });
+    onNoteDragEnd?.(event, note.id);
     setPreventMapInteraction(false);
   }
 
-  function handleClick(event) {
+  function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
     if (draggable) {
       const noteNode = event.target;
       onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode);
@@ -79,8 +98,8 @@ function Note({
   }
 
   // Store note pointer down time to check for a click when note is locked
-  const notePointerDownTimeRef = useRef();
-  function handlePointerDown(event) {
+  const notePointerDownTimeRef = useRef<number>(0);
+  function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
     if (draggable) {
       setPreventMapInteraction(true);
     }
@@ -89,7 +108,7 @@ function Note({
     }
   }
 
-  function handlePointerUp(event) {
+  function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
     if (draggable) {
       setPreventMapInteraction(false);
     }
@@ -100,7 +119,7 @@ function Note({
       const delta = event.evt.timeStamp - notePointerDownTimeRef.current;
       if (delta < 300) {
         const noteNode = event.target;
-        onNoteMenuOpen(note.id, noteNode);
+        onNoteMenuOpen?.(note.id, noteNode);
       }
     }
   }
@@ -121,12 +140,10 @@ function Note({
   const [fontScale, setFontScale] = useState(1);
   useEffect(() => {
     const text = textRef.current;
-
-    if (!text) {
-      return;
-    }
-
     function findFontSize() {
+      if (!text) {
+        return;
+      }
       // Create an array from 1 / defaultFontSize of the note height to the full note height
       let sizes = Array.from(
         { length: Math.ceil(noteHeight - notePadding * 2) },
@@ -151,7 +168,7 @@ function Note({
     findFontSize();
   }, [note, note.text, note.visible, noteWidth, noteHeight, notePadding]);
 
-  const textRef = useRef();
+  const textRef = useRef<Konva.Text>(null);
 
   // Animate to new note positions if edited by others
   const noteX = note.x * mapWidth;
@@ -228,5 +245,10 @@ function Note({
     </animated.Group>
   );
 }
+
+Note.defaultProps = {
+  fadeOnHover: false,
+  draggable: false,
+};
 
 export default Note;

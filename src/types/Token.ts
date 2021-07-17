@@ -1,4 +1,6 @@
+import Konva from "konva";
 import { Outline } from "./Outline";
+import { TokenState } from "./TokenState";
 
 export type TokenCategory = "character" | "vehicle" | "prop";
 
@@ -29,3 +31,14 @@ export type FileToken = BaseToken & {
 };
 
 export type Token = DefaultToken | FileToken;
+
+export type TokenMenuOptions = {
+  tokenStateId: string;
+  tokenImage: Konva.Node;
+};
+
+export type TokenDraggingOptions = {
+  dragging: boolean;
+  tokenState: TokenState;
+  tokenGroup: Konva.Node;
+};

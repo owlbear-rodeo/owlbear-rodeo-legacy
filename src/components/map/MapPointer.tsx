@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Group } from "react-konva";
 
 import {
@@ -15,7 +15,17 @@ import {
 } from "../../helpers/konva";
 import Vector2 from "../../helpers/Vector2";
 
-import colors from "../../helpers/colors";
+import colors, { Color } from "../../helpers/colors";
+
+type MapPointerProps = {
+  active: boolean;
+  position: Vector2;
+  onPointerDown?: (position: Vector2) => void;
+  onPointerMove?: (position: Vector2) => void;
+  onPointerUp?: (position: Vector2) => void;
+  visible: boolean;
+  color: Color;
+};
 
 function MapPointer({
   active,
@@ -25,7 +35,7 @@ function MapPointer({
   onPointerUp,
   visible,
   color,
-}) {
+}: MapPointerProps) {
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
   const interactionEmitter = useInteractionEmitter();
@@ -40,30 +50,36 @@ function MapPointer({
     const mapStage = mapStageRef.current;
 
     function getBrushPosition() {
+      if (!mapStage) {
+        return;
+      }
       const mapImage = mapStage.findOne("#mapImage");
       return getRelativePointerPositionNormalized(mapImage);
     }
 
     function handleBrushDown() {
-      onPointerDown && onPointerDown(getBrushPosition());
+      const brushPosition = getBrushPosition();
+      brushPosition && onPointerDown?.(brushPosition);
     }
 
     function handleBrushMove() {
-      onPointerMove && visible && onPointerMove(getBrushPosition());
+      const brushPosition = getBrushPosition();
+      brushPosition && visible && onPointerMove?.(brushPosition);
     }
 
     function handleBrushUp() {
-      onPointerMove && onPointerUp(getBrushPosition());
+      const brushPosition = getBrushPosition();
+      brushPosition && onPointerUp?.(brushPosition);
     }
 
-    interactionEmitter.on("dragStart", handleBrushDown);
-    interactionEmitter.on("drag", handleBrushMove);
-    interactionEmitter.on("dragEnd", handleBrushUp);
+    interactionEmitter?.on("dragStart", handleBrushDown);
+    interactionEmitter?.on("drag", handleBrushMove);
+    interactionEmitter?.on("dragEnd", handleBrushUp);
 
     return () => {
-      interactionEmitter.off("dragStart", handleBrushDown);
-      interactionEmitter.off("drag", handleBrushMove);
-      interactionEmitter.off("dragEnd", handleBrushUp);
+      interactionEmitter?.off("dragStart", handleBrushDown);
+      interactionEmitter?.off("drag", handleBrushMove);
+      interactionEmitter?.off("dragEnd", handleBrushUp);
     };
   });
 

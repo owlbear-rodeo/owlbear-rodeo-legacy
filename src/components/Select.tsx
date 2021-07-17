@@ -3,7 +3,7 @@ import Creatable from "react-select/creatable";
 import { useThemeUI } from "theme-ui";
 
 type SelectProps = {
-  creatable: boolean;
+  creatable?: boolean;
 } & Props;
 
 function Select({ creatable, ...props }: SelectProps) {
@@ -75,5 +75,9 @@ function Select({ creatable, ...props }: SelectProps) {
     />
   );
 }
+
+Select.defaultProps = {
+  creatable: false,
+};
 
 export default Select;

@@ -9,10 +9,10 @@ type MapMenuProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
   onModalContent: (instance: HTMLDivElement) => void;
-  top: number;
-  left: number;
-  bottom: number;
-  right: number;
+  top: number | string;
+  left: number | string;
+  bottom: number | string;
+  right: number | string;
   children: React.ReactNode;
   style: React.CSSProperties;
   excludeNode: Node | null;

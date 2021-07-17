@@ -24,8 +24,7 @@ import MapGrid from "./MapGrid";
 import MapGridEditor from "./MapGridEditor";
 import { Map } from "../../types/Map";
 import { GridInset } from "../../types/Grid";
-
-type MapSettingsChangeEventHandler = (change: Partial<Map>) => void;
+import { MapSettingsChangeEventHandler } from "../../types/Events";
 
 type MapEditorProps = {
   map: Map;

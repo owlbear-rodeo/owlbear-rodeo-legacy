@@ -1,7 +1,25 @@
-import React from "react";
 import { Group } from "react-konva";
+import {
+  TokenMenuOpenChangeEventHandler,
+  TokenStateChangeEventHandler,
+} from "../../types/Events";
+import { Map, MapToolId } from "../../types/Map";
+import { MapState } from "../../types/MapState";
+import { TokenCategory, TokenDraggingOptions } from "../../types/Token";
+import { TokenState } from "../../types/TokenState";
 
 import MapToken from "./MapToken";
+
+type MapTokensProps = {
+  map: Map;
+  mapState: MapState;
+  tokenDraggingOptions?: TokenDraggingOptions;
+  setTokenDraggingOptions: (options: TokenDraggingOptions) => void;
+  onMapTokenStateChange: TokenStateChangeEventHandler;
+  onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
+  selectedToolId: MapToolId;
+  disabledTokens: string[];
+};
 
 function MapTokens({
   map,
@@ -9,11 +27,11 @@ function MapTokens({
   tokenDraggingOptions,
   setTokenDraggingOptions,
   onMapTokenStateChange,
-  handleTokenMenuOpen,
+  onTokenMenuOpen,
   selectedToolId,
   disabledTokens,
-}) {
-  function getMapTokenCategoryWeight(category) {
+}: MapTokensProps) {
+  function getMapTokenCategoryWeight(category: TokenCategory) {
     switch (category) {
       case "character":
         return 0;
@@ -27,7 +45,11 @@ function MapTokens({
   }
 
   // Sort so vehicles render below other tokens
-  function sortMapTokenStates(a, b, tokenDraggingOptions) {
+  function sortMapTokenStates(
+    a: TokenState,
+    b: TokenState,
+    tokenDraggingOptions?: TokenDraggingOptions
+  ) {
     // If categories are different sort in order "prop", "vehicle", "character"
     if (b.category !== a.category) {
       const aWeight = getMapTokenCategoryWeight(a.category);
@@ -62,7 +84,7 @@ function MapTokens({
             key={tokenState.id}
             tokenState={tokenState}
             onTokenStateChange={onMapTokenStateChange}
-            onTokenMenuOpen={handleTokenMenuOpen}
+            onTokenMenuOpen={onTokenMenuOpen}
             onTokenDragStart={(e) =>
               setTokenDraggingOptions({
                 dragging: true,
@@ -71,6 +93,7 @@ function MapTokens({
               })
             }
             onTokenDragEnd={() =>
+              tokenDraggingOptions &&
               setTokenDraggingOptions({
                 ...tokenDraggingOptions,
                 dragging: false,

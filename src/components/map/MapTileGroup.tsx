@@ -6,7 +6,24 @@ import MapImage from "./MapTileImage";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
 
-function MapTileGroup({ group, maps, isSelected, onSelect, onDoubleClick }) {
+import { Map } from "../../types/Map";
+import { GroupContainer } from "../../types/Group";
+
+type MapTileGroupProps = {
+  group: GroupContainer;
+  maps: Map[];
+  isSelected: boolean;
+  onSelect: (groupId: string) => void;
+  onDoubleClick: () => void;
+};
+
+function MapTileGroup({
+  group,
+  maps,
+  isSelected,
+  onSelect,
+  onDoubleClick,
+}: MapTileGroupProps) {
   const layout = useResponsiveLayout();
 
   return (

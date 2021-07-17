@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Box, Flex, Text, IconButton } from "theme-ui";
+import Konva from "konva";
 
 import Slider from "../Slider";
 import TextareaAutosize from "../TextareaAutoSize";
 
 import MapMenu from "../map/MapMenu";
 
-import colors, { colorOptions } from "../../helpers/colors";
+import colors, { Color, colorOptions } from "../../helpers/colors";
 
 import usePrevious from "../../hooks/usePrevious";
 
@@ -19,7 +20,23 @@ import TextIcon from "../../icons/NoteTextIcon";
 
 import { useUserId } from "../../contexts/UserIdContext";
 
+import {
+  NoteChangeEventHandler,
+  RequestCloseEventHandler,
+} from "../../types/Events";
+import { Note } from "../../types/Note";
+import { Map } from "../../types/Map";
+
 const defaultNoteMaxSize = 6;
+
+type NoteMenuProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  note?: Note;
+  noteNode?: Konva.Node;
+  onNoteChange: NoteChangeEventHandler;
+  map: Map;
+};
 
 function NoteMenu({
   isOpen,
@@ -28,7 +45,7 @@ function NoteMenu({
   noteNode,
   onNoteChange,
   map,
-}) {
+}: NoteMenuProps) {
   const userId = useUserId();
 
   const wasOpen = usePrevious(isOpen);
@@ -43,29 +60,30 @@ function NoteMenu({
       if (noteNode) {
         const nodeRect = noteNode.getClientRect();
         const mapElement = document.querySelector(".map");
-        const mapRect = mapElement.getBoundingClientRect();
-
-        // Center X for the menu which is 156px wide
-        setMenuLeft(mapRect.left + nodeRect.x + nodeRect.width / 2 - 156 / 2);
-        // Y 12px from the bottom
-        setMenuTop(mapRect.top + nodeRect.y + nodeRect.height + 12);
+        if (mapElement) {
+          const mapRect = mapElement.getBoundingClientRect();
+          // Center X for the menu which is 156px wide
+          setMenuLeft(mapRect.left + nodeRect.x + nodeRect.width / 2 - 156 / 2);
+          // Y 12px from the bottom
+          setMenuTop(mapRect.top + nodeRect.y + nodeRect.height + 12);
+        }
       }
     }
   }, [isOpen, note, wasOpen, noteNode]);
 
-  function handleTextChange(event) {
+  function handleTextChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const text = event.target.value.substring(0, 1024);
     note && onNoteChange({ ...note, text: text });
   }
 
-  function handleColorChange(color) {
+  function handleColorChange(color: Color) {
     if (!note) {
       return;
     }
     onNoteChange({ ...note, color: color });
   }
 
-  function handleSizeChange(event) {
+  function handleSizeChange(event: React.ChangeEvent<HTMLInputElement>) {
     const newSize = parseFloat(event.target.value);
     note && onNoteChange({ ...note, size: newSize });
   }
@@ -82,30 +100,35 @@ function NoteMenu({
     note && onNoteChange({ ...note, textOnly: !note.textOnly });
   }
 
-  function handleModalContent(node) {
+  function handleModalContent(node: HTMLElement) {
     if (node) {
       // Focus input
-      const tokenLabelInput = node.querySelector("#changeNoteText");
-      tokenLabelInput.focus();
-      tokenLabelInput.select();
+      const tokenLabelInput =
+        node.querySelector<HTMLInputElement>("#changeNoteText");
+      if (tokenLabelInput) {
+        tokenLabelInput.focus();
+        tokenLabelInput.select();
+      }
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
       const mapElement = document.querySelector(".map");
-      const mapRect = mapElement.getBoundingClientRect();
-      setMenuLeft((prevLeft) =>
-        Math.min(
-          mapRect.right - nodeRect.width,
-          Math.max(mapRect.left, prevLeft)
-        )
-      );
-      setMenuTop((prevTop) =>
-        Math.min(mapRect.bottom - nodeRect.height, prevTop)
-      );
+      if (mapElement) {
+        const mapRect = mapElement.getBoundingClientRect();
+        setMenuLeft((prevLeft) =>
+          Math.min(
+            mapRect.right - nodeRect.width,
+            Math.max(mapRect.left, prevLeft)
+          )
+        );
+        setMenuTop((prevTop) =>
+          Math.min(mapRect.bottom - nodeRect.height, prevTop)
+        );
+      }
     }
   }
 
-  function handleTextKeyPress(e) {
+  function handleTextKeyPress(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onRequestClose();

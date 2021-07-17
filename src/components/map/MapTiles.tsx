@@ -10,11 +10,26 @@ import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
 
-function MapTiles({ mapsById, onMapEdit, onMapSelect, subgroup }) {
+import { Map } from "../../types/Map";
+import { Group } from "../../types/Group";
+
+type MapTileProps = {
+  mapsById: Record<string, Map>;
+  onMapEdit: (mapId: string) => void;
+  onMapSelect: (groupId: string) => void;
+  subgroup: boolean;
+};
+
+function MapTiles({
+  mapsById,
+  onMapEdit,
+  onMapSelect,
+  subgroup,
+}: MapTileProps) {
   const { selectedGroupIds, selectMode, onGroupOpen, onGroupSelect } =
     useGroup();
 
-  function renderTile(group) {
+  function renderTile(group: Group) {
     if (group.type === "item") {
       const map = mapsById[group.id];
       if (map) {

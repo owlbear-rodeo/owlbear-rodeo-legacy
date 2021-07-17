@@ -1,3 +1,4 @@
+import Konva from "konva";
 import { Color } from "../helpers/colors";
 
 export type Note = {
@@ -12,4 +13,15 @@ export type Note = {
   visible: boolean;
   x: number;
   y: number;
+};
+
+export type NoteMenuOptions = {
+  noteId: string;
+  noteNode: Konva.Node;
+};
+
+export type NoteDraggingOptions = {
+  dragging: boolean;
+  noteId: string;
+  noteGroup: Konva.Node;
 };

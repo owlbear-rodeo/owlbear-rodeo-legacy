@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box } from "theme-ui";
 import { useToasts } from "react-toast-notifications";
 
@@ -27,15 +27,48 @@ import {
   RemoveStatesAction,
 } from "../../actions";
 import Session from "../../network/Session";
-import { Drawing } from "../../types/Drawing";
-import { Fog } from "../../types/Fog";
-import { Map, MapToolId } from "../../types/Map";
+import { Drawing, DrawingState } from "../../types/Drawing";
+import { Fog, FogState } from "../../types/Fog";
+import { Map, MapActions, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
 import { Settings } from "../../types/Settings";
 import {
   MapChangeEventHandler,
   MapResetEventHandler,
+  MapTokensStateCreateHandler,
+  MapTokenStateRemoveHandler,
+  NoteChangeEventHandler,
+  NoteRemoveEventHander,
+  TokenStateChangeEventHandler,
 } from "../../types/Events";
+import Action from "../../actions/Action";
+import Konva from "konva";
+import { TokenDraggingOptions, TokenMenuOptions } from "../../types/Token";
+import { Note, NoteDraggingOptions, NoteMenuOptions } from "../../types/Note";
+
+type MapProps = {
+  map: Map;
+  mapState: MapState;
+  mapActions: MapActions;
+  onMapTokenStateChange: TokenStateChangeEventHandler;
+  onMapTokenStateRemove: MapTokenStateRemoveHandler;
+  onMapChange: MapChangeEventHandler;
+  onMapReset: MapResetEventHandler;
+  onMapDraw: (action: Action<DrawingState>) => void;
+  onMapDrawUndo: () => void;
+  onMapDrawRedo: () => void;
+  onFogDraw: (action: Action<FogState>) => void;
+  onFogDrawUndo: () => void;
+  onFogDrawRedo: () => void;
+  onMapNoteChange: NoteChangeEventHandler;
+  onMapNoteRemove: NoteRemoveEventHander;
+  allowMapDrawing: boolean;
+  allowFogDrawing: boolean;
+  allowMapChange: boolean;
+  allowNoteEditing: boolean;
+  disabledTokens: string[];
+  session: Session;
+};
 
 function Map({
   map,
@@ -59,29 +92,7 @@ function Map({
   allowNoteEditing,
   disabledTokens,
   session,
-}: {
-  map: Map;
-  mapState: MapState;
-  mapActions: ;
-  onMapTokenStateChange: ;
-  onMapTokenStateRemove: ;
-  onMapChange: MapChangeEventHandler;
-  onMapReset: MapResetEventHandler;
-  onMapDraw: ;
-  onMapDrawUndo: ;
-  onMapDrawRedo: ;
-  onFogDraw: ;
-  onFogDrawUndo: ;
-  onFogDrawRedo: ;
-  onMapNoteChange: ;
-  onMapNoteRemove: ;
-  allowMapDrawing: boolean;
-  allowFogDrawing: boolean;
-  allowMapChange: boolean;
-  allowNoteEditing: boolean;
-  disabledTokens: ;
-  session: Session;
-}) {
+}: MapProps) {
   const { addToast } = useToasts();
 
   const { tokensById } = useTokenData();
@@ -141,7 +152,7 @@ function Map({
     onFogDraw(new EditStatesAction(shapes));
   }
 
-  const disabledControls = [];
+  const disabledControls: MapToolId[] = [];
   if (!allowMapDrawing) {
     disabledControls.push("drawing");
   }
@@ -206,9 +217,10 @@ function Map({
   );
 
   const [isTokenMenuOpen, setIsTokenMenuOpen] = useState<boolean>(false);
-  const [tokenMenuOptions, setTokenMenuOptions] = useState({});
-  const [tokenDraggingOptions, setTokenDraggingOptions] = useState();
-  function handleTokenMenuOpen(tokenStateId: string, tokenImage) {
+  const [tokenMenuOptions, setTokenMenuOptions] = useState<TokenMenuOptions>();
+  const [tokenDraggingOptions, setTokenDraggingOptions] =
+    useState<TokenDraggingOptions>();
+  function handleTokenMenuOpen(tokenStateId: string, tokenImage: Konva.Node) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
     setIsTokenMenuOpen(true);
   }
@@ -220,7 +232,7 @@ function Map({
       tokenDraggingOptions={tokenDraggingOptions}
       setTokenDraggingOptions={setTokenDraggingOptions}
       onMapTokenStateChange={onMapTokenStateChange}
-      handleTokenMenuOpen={handleTokenMenuOpen}
+      onTokenMenuOpen={handleTokenMenuOpen}
       selectedToolId={selectedToolId}
       disabledTokens={disabledTokens}
     />
@@ -231,8 +243,12 @@ function Map({
       isOpen={isTokenMenuOpen}
       onRequestClose={() => setIsTokenMenuOpen(false)}
       onTokenStateChange={onMapTokenStateChange}
-      tokenState={mapState && mapState.tokens[tokenMenuOptions.tokenStateId]}
-      tokenImage={tokenMenuOptions.tokenImage}
+      tokenState={
+        tokenMenuOptions &&
+        mapState &&
+        mapState.tokens[tokenMenuOptions.tokenStateId]
+      }
+      tokenImage={tokenMenuOptions && tokenMenuOptions.tokenImage}
       map={map}
     />
   );
@@ -241,7 +257,7 @@ function Map({
     <TokenDragOverlay
       onTokenStateRemove={(state) => {
         onMapTokenStateRemove(state);
-        setTokenDraggingOptions(null);
+        setTokenDraggingOptions(undefined);
       }}
       onTokenStateChange={onMapTokenStateChange}
       tokenState={tokenDraggingOptions && tokenDraggingOptions.tokenState}
@@ -291,14 +307,19 @@ function Map({
   );
 
   const [isNoteMenuOpen, setIsNoteMenuOpen] = useState<boolean>(false);
-  const [noteMenuOptions, setNoteMenuOptions] = useState({});
-  const [noteDraggingOptions, setNoteDraggingOptions] = useState();
-  function handleNoteMenuOpen(noteId: string, noteNode) {
+  const [noteMenuOptions, setNoteMenuOptions] = useState<NoteMenuOptions>();
+  const [noteDraggingOptions, setNoteDraggingOptions] =
+    useState<NoteDraggingOptions>();
+  function handleNoteMenuOpen(noteId: string, noteNode: Konva.Node) {
     setNoteMenuOptions({ noteId, noteNode });
     setIsNoteMenuOpen(true);
   }
 
-  function sortNotes(a, b, noteDraggingOptions) {
+  function sortNotes(
+    a: Note,
+    b: Note,
+    noteDraggingOptions?: NoteDraggingOptions
+  ) {
     if (
       noteDraggingOptions &&
       noteDraggingOptions.dragging &&
@@ -341,6 +362,7 @@ function Map({
         setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
       }
       onNoteDragEnd={() =>
+        noteDraggingOptions &&
         setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false })
       }
       fadeOnHover={selectedToolId === "drawing"}
@@ -352,23 +374,25 @@ function Map({
       isOpen={isNoteMenuOpen}
       onRequestClose={() => setIsNoteMenuOpen(false)}
       onNoteChange={onMapNoteChange}
-      note={mapState && mapState.notes[noteMenuOptions.noteId]}
-      noteNode={noteMenuOptions.noteNode}
+      note={
+        noteMenuOptions && mapState && mapState.notes[noteMenuOptions.noteId]
+      }
+      noteNode={noteMenuOptions?.noteNode}
       map={map}
     />
   );
 
-  const noteDragOverlay = (
+  const noteDragOverlay = noteDraggingOptions ? (
     <NoteDragOverlay
-      dragging={!!(noteDraggingOptions && noteDraggingOptions.dragging)}
-      noteGroup={noteDraggingOptions && noteDraggingOptions.noteGroup}
-      noteId={noteDraggingOptions && noteDraggingOptions.noteId}
+      dragging={noteDraggingOptions.dragging}
+      noteGroup={noteDraggingOptions.noteGroup}
+      noteId={noteDraggingOptions.noteId}
       onNoteRemove={(noteId) => {
         onMapNoteRemove(noteId);
-        setNoteDraggingOptions(null);
+        setNoteDraggingOptions(undefined);
       }}
     />
-  );
+  ) : null;
 
   return (
     <Box sx={{ flexGrow: 1 }}>

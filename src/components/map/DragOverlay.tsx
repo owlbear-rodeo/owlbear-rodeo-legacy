@@ -72,29 +72,31 @@ function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
     }
   });
 
+  if (!dragging) {
+    return null;
+  }
+
   return (
-    dragging && (
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "32px",
-          left: "50%",
-          borderRadius: "50%",
-          transform: isRemoveHovered
-            ? "translateX(-50%) scale(2.0)"
-            : "translateX(-50%) scale(1.5)",
-          transition: "transform 250ms ease",
-          color: isRemoveHovered ? "primary" : "text",
-          pointerEvents: "none",
-        }}
-        bg="overlay"
-        ref={removeTokenRef}
-      >
-        <IconButton>
-          <RemoveTokenIcon />
-        </IconButton>
-      </Box>
-    )
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: "32px",
+        left: "50%",
+        borderRadius: "50%",
+        transform: isRemoveHovered
+          ? "translateX(-50%) scale(2.0)"
+          : "translateX(-50%) scale(1.5)",
+        transition: "transform 250ms ease",
+        color: isRemoveHovered ? "primary" : "text",
+        pointerEvents: "none",
+      }}
+      bg="overlay"
+      ref={removeTokenRef}
+    >
+      <IconButton>
+        <RemoveTokenIcon />
+      </IconButton>
+    </Box>
   );
 }
 

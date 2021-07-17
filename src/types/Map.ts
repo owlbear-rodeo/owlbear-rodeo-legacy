@@ -1,7 +1,11 @@
 import React from "react";
+import Action from "../actions/Action";
+import { Drawing } from "./Drawing";
+import { Fog } from "./Fog";
 import { Grid } from "./Grid";
 
 export type MapToolId =
+  | "map"
   | "move"
   | "fog"
   | "drawing"
@@ -42,12 +46,30 @@ export type FileMapResolutions = {
   ultra?: string;
 };
 
+export type MapQuality = keyof FileMapResolutions | "original";
+
 export type FileMap = BaseMap & {
   type: "file";
   file: string;
   resolutions: FileMapResolutions;
   thumbnail: string;
-  quality: keyof FileMapResolutions | "original";
+  quality: MapQuality;
 };
 
 export type Map = DefaultMap | FileMap;
+
+export type MapActions = {
+  mapDrawActions: Action<Drawing>[];
+  mapDrawActionIndex: number;
+  fogDrawActions: Action<Fog>[];
+  fogDrawActionIndex: number;
+};
+
+export type MapActionsKey = keyof Pick<
+  MapActions,
+  "mapDrawActions" | "fogDrawActions"
+>;
+export type MapActionsIndexKey = keyof Pick<
+  MapActions,
+  "mapDrawActionIndex" | "fogDrawActionIndex"
+>;

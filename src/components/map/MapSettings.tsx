@@ -9,8 +9,16 @@ import { mapSources as defaultMapSources } from "../../maps";
 
 import Divider from "../Divider";
 import Select from "../Select";
+import { Map, MapQuality } from "../../types/Map";
+import { EditFlag, MapState } from "../../types/MapState";
+import {
+  MapSettingsChangeEventHandler,
+  MapStateSettingsChangeEventHandler,
+} from "../../types/Events";
+import { Grid, GridMeasurementType, GridType } from "../../types/Grid";
 
-const qualitySettings = [
+type QualityTypeSetting = { value: MapQuality; label: string };
+const qualitySettings: QualityTypeSetting[] = [
   { value: "low", label: "Low" },
   { value: "medium", label: "Medium" },
   { value: "high", label: "High" },
@@ -18,42 +26,53 @@ const qualitySettings = [
   { value: "original", label: "Original" },
 ];
 
-const gridTypeSettings = [
+type GridTypeSetting = { value: GridType; label: string };
+const gridTypeSettings: GridTypeSetting[] = [
   { value: "square", label: "Square" },
   { value: "hexVertical", label: "Hex Vertical" },
   { value: "hexHorizontal", label: "Hex Horizontal" },
 ];
 
-const gridSquareMeasurementTypeSettings = [
+type GridMeasurementTypeSetting = { value: GridMeasurementType; label: string };
+const gridSquareMeasurementTypeSettings: GridMeasurementTypeSetting[] = [
   { value: "chebyshev", label: "Chessboard (D&D 5e)" },
   { value: "alternating", label: "Alternating Diagonal (D&D 3.5e)" },
   { value: "euclidean", label: "Euclidean" },
   { value: "manhattan", label: "Manhattan" },
 ];
 
-const gridHexMeasurementTypeSettings = [
+const gridHexMeasurementTypeSettings: GridMeasurementTypeSetting[] = [
   { value: "manhattan", label: "Manhattan" },
   { value: "euclidean", label: "Euclidean" },
 ];
+
+type MapSettingsProps = {
+  map: Map;
+  mapState: MapState;
+  onSettingsChange: MapSettingsChangeEventHandler;
+  onStateSettingsChange: MapStateSettingsChangeEventHandler;
+};
 
 function MapSettings({
   map,
   mapState,
   onSettingsChange,
   onStateSettingsChange,
-}) {
-  function handleFlagChange(event, flag) {
+}: MapSettingsProps) {
+  function handleFlagChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+    flag: EditFlag
+  ) {
     if (event.target.checked) {
-      onStateSettingsChange("editFlags", [...mapState.editFlags, flag]);
+      onStateSettingsChange({ editFlags: [...mapState.editFlags, flag] });
     } else {
-      onStateSettingsChange(
-        "editFlags",
-        mapState.editFlags.filter((f) => f !== flag)
-      );
+      onStateSettingsChange({
+        editFlags: mapState.editFlags.filter((f) => f !== flag),
+      });
     }
   }
 
-  function handleGridSizeXChange(event) {
+  function handleGridSizeXChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = parseInt(event.target.value) || 0;
     let grid = {
       ...map.grid,
@@ -63,10 +82,10 @@ function MapSettings({
       },
     };
     grid.inset = getGridUpdatedInset(grid, map.width, map.height);
-    onSettingsChange("grid", grid);
+    onSettingsChange({ grid });
   }
 
-  function handleGridSizeYChange(event) {
+  function handleGridSizeYChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = parseInt(event.target.value) || 0;
     let grid = {
       ...map.grid,
@@ -76,12 +95,15 @@ function MapSettings({
       },
     };
     grid.inset = getGridUpdatedInset(grid, map.width, map.height);
-    onSettingsChange("grid", grid);
+    onSettingsChange({ grid });
   }
 
-  function handleGridTypeChange(option) {
+  function handleGridTypeChange(option: GridTypeSetting | null) {
+    if (!option) {
+      return;
+    }
     const type = option.value;
-    let grid = {
+    let grid: Grid = {
       ...map.grid,
       type,
       measurement: {
@@ -90,10 +112,15 @@ function MapSettings({
       },
     };
     grid.inset = getGridUpdatedInset(grid, map.width, map.height);
-    onSettingsChange("grid", grid);
+    onSettingsChange({ grid });
   }
 
-  function handleGridMeasurementTypeChange(option) {
+  function handleGridMeasurementTypeChange(
+    option: GridMeasurementTypeSetting | null
+  ) {
+    if (!option) {
+      return;
+    }
     const grid = {
       ...map.grid,
       measurement: {
@@ -101,10 +128,19 @@ function MapSettings({
         type: option.value,
       },
     };
-    onSettingsChange("grid", grid);
+    onSettingsChange({ grid });
   }
 
-  function handleGridMeasurementScaleChange(event) {
+  function handleQualityChange(option: QualityTypeSetting | null) {
+    if (!option) {
+      return;
+    }
+    onSettingsChange({ quality: option.value });
+  }
+
+  function handleGridMeasurementScaleChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
     const grid = {
       ...map.grid,
       measurement: {
@@ -112,7 +148,7 @@ function MapSettings({
         scale: event.target.value,
       },
     };
-    onSettingsChange("grid", grid);
+    onSettingsChange({ grid });
   }
 
   const mapURL = useDataURL(map, defaultMapSources);
@@ -124,7 +160,7 @@ function MapSettings({
         const blob = await response.blob();
         let size = blob.size;
         size /= 1000000; // Bytes to Megabytes
-        setMapSize(size.toFixed(2));
+        setMapSize(parseFloat(size.toFixed(2)));
       } else {
         setMapSize(0);
       }
@@ -168,7 +204,7 @@ function MapSettings({
         <Input
           name="name"
           value={(map && map.name) || ""}
-          onChange={(e) => onSettingsChange("name", e.target.value)}
+          onChange={(e) => onSettingsChange({ name: e.target.value })}
           disabled={mapEmpty}
           my={1}
         />
@@ -185,10 +221,11 @@ function MapSettings({
               isDisabled={mapEmpty}
               options={gridTypeSettings}
               value={
-                !mapEmpty &&
-                gridTypeSettings.find((s) => s.value === map.grid.type)
+                mapEmpty
+                  ? undefined
+                  : gridTypeSettings.find((s) => s.value === map.grid.type)
               }
-              onChange={handleGridTypeChange}
+              onChange={handleGridTypeChange as any}
               isSearchable={false}
             />
           </Box>
@@ -197,7 +234,9 @@ function MapSettings({
               <Checkbox
                 checked={!mapEmpty && map.showGrid}
                 disabled={mapEmpty}
-                onChange={(e) => onSettingsChange("showGrid", e.target.checked)}
+                onChange={(e) =>
+                  onSettingsChange({ showGrid: e.target.checked })
+                }
               />
               Draw Grid
             </Label>
@@ -206,7 +245,7 @@ function MapSettings({
                 checked={!mapEmpty && map.snapToGrid}
                 disabled={mapEmpty}
                 onChange={(e) =>
-                  onSettingsChange("snapToGrid", e.target.checked)
+                  onSettingsChange({ snapToGrid: e.target.checked })
                 }
               />
               Snap to Grid
@@ -224,12 +263,13 @@ function MapSettings({
                   : gridHexMeasurementTypeSettings
               }
               value={
-                !mapEmpty &&
-                gridSquareMeasurementTypeSettings.find(
-                  (s) => s.value === map.grid.measurement.type
-                )
+                mapEmpty
+                  ? undefined
+                  : gridSquareMeasurementTypeSettings.find(
+                      (s) => s.value === map.grid.measurement.type
+                    )
               }
-              onChange={handleGridMeasurementTypeChange}
+              onChange={handleGridMeasurementTypeChange as any}
               isSearchable={false}
             />
           </Box>
@@ -254,14 +294,17 @@ function MapSettings({
             <Select
               options={qualitySettings}
               value={
-                !mapEmpty &&
-                qualitySettings.find((s) => s.value === map.quality)
+                mapEmpty
+                  ? undefined
+                  : qualitySettings.find((s) => s.value === map.quality)
               }
               isDisabled={mapEmpty}
-              onChange={(option) => onSettingsChange("quality", option.value)}
-              isOptionDisabled={(option) =>
-                mapEmpty ||
-                (option.value !== "original" && !map.resolutions[option.value])
+              onChange={handleQualityChange as any}
+              isOptionDisabled={
+                ((option: QualityTypeSetting) =>
+                  mapEmpty ||
+                  (option.value !== "original" &&
+                    !map.resolutions[option.value])) as any
               }
               isSearchable={false}
             />

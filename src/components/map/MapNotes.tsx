@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import shortid from "shortid";
 import { Group } from "react-konva";
+import Konva from "konva";
 
 import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
@@ -13,7 +14,29 @@ import useGridSnapping from "../../hooks/useGridSnapping";
 
 import Note from "../note/Note";
 
+import { Map } from "../../types/Map";
+import { Note as NoteType } from "../../types/Note";
+import {
+  NoteAddEventHander,
+  NoteChangeEventHandler,
+  NoteDragEventHandler,
+  NoteMenuOpenEventHandler,
+} from "../../types/Events";
+
 const defaultNoteSize = 2;
+
+type MapNoteProps = {
+  map: Map;
+  active: boolean;
+  onNoteAdd: NoteAddEventHander;
+  onNoteChange: NoteChangeEventHandler;
+  notes: NoteType[];
+  onNoteMenuOpen: NoteMenuOpenEventHandler;
+  draggable: boolean;
+  onNoteDragStart: NoteDragEventHandler;
+  onNoteDragEnd: NoteDragEventHandler;
+  fadeOnHover: boolean;
+};
 
 function MapNotes({
   map,
@@ -26,14 +49,14 @@ function MapNotes({
   onNoteDragStart,
   onNoteDragEnd,
   fadeOnHover,
-}) {
+}: MapNoteProps) {
   const interactionEmitter = useInteractionEmitter();
   const userId = useUserId();
   const mapStageRef = useMapStage();
   const [isBrushDown, setIsBrushDown] = useState(false);
-  const [noteData, setNoteData] = useState(null);
+  const [noteData, setNoteData] = useState<NoteType | null>(null);
 
-  const creatingNoteRef = useRef();
+  const creatingNoteRef = useRef<Konva.Group>(null);
 
   const snapPositionToGrid = useGridSnapping();
 
@@ -44,8 +67,14 @@ function MapNotes({
     const mapStage = mapStageRef.current;
 
     function getBrushPosition() {
+      if (!mapStage) {
+        return;
+      }
       const mapImage = mapStage.findOne("#mapImage");
       let position = getRelativePointerPosition(mapImage);
+      if (!position) {
+        return;
+      }
       if (map.snapToGrid) {
         position = snapPositionToGrid(position);
       }
@@ -57,6 +86,9 @@ function MapNotes({
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
+      if (!brushPosition || !userId) {
+        return;
+      }
       setNoteData({
         x: brushPosition.x,
         y: brushPosition.y,
@@ -76,17 +108,25 @@ function MapNotes({
     function handleBrushMove() {
       if (noteData) {
         const brushPosition = getBrushPosition();
-        setNoteData((prev) => ({
-          ...prev,
-          x: brushPosition.x,
-          y: brushPosition.y,
-        }));
+        if (!brushPosition) {
+          return;
+        }
+        setNoteData((prev) => {
+          if (!prev) {
+            return prev;
+          }
+          return {
+            ...prev,
+            x: brushPosition.x,
+            y: brushPosition.y,
+          };
+        });
         setIsBrushDown(true);
       }
     }
 
     function handleBrushUp() {
-      if (noteData) {
+      if (noteData && creatingNoteRef.current) {
         onNoteAdd(noteData);
         onNoteMenuOpen(noteData.id, creatingNoteRef.current);
       }
@@ -94,14 +134,14 @@ function MapNotes({
       setIsBrushDown(false);
     }
 
-    interactionEmitter.on("dragStart", handleBrushDown);
-    interactionEmitter.on("drag", handleBrushMove);
-    interactionEmitter.on("dragEnd", handleBrushUp);
+    interactionEmitter?.on("dragStart", handleBrushDown);
+    interactionEmitter?.on("drag", handleBrushMove);
+    interactionEmitter?.on("dragEnd", handleBrushUp);
 
     return () => {
-      interactionEmitter.off("dragStart", handleBrushDown);
-      interactionEmitter.off("drag", handleBrushMove);
-      interactionEmitter.off("dragEnd", handleBrushUp);
+      interactionEmitter?.off("dragStart", handleBrushDown);
+      interactionEmitter?.off("drag", handleBrushMove);
+      interactionEmitter?.off("dragEnd", handleBrushUp);
     };
   });
 
@@ -121,9 +161,7 @@ function MapNotes({
         />
       ))}
       <Group ref={creatingNoteRef}>
-        {isBrushDown && noteData && (
-          <Note note={noteData} map={map} draggable={false} />
-        )}
+        {isBrushDown && noteData && <Note note={noteData} map={map} />}
       </Group>
     </Group>
   );
