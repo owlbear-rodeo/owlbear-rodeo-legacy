@@ -93,7 +93,12 @@ function TokenPreview({ token }: TokenPreviewProps) {
       bg="muted"
       ref={containerRef}
     >
-      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+      <ReactResizeDetector
+        handleWidth
+        handleHeight
+        onResize={handleResize}
+        targetRef={containerRef}
+      >
         <Stage
           width={stageWidth}
           height={stageHeight}

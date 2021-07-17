@@ -136,7 +136,12 @@ function MapEditor({ map, onSettingsChange }: MapEditorProps) {
           bg="muted"
           ref={containerRef}
         >
-          <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+          <ReactResizeDetector
+            handleWidth
+            handleHeight
+            onResize={handleResize}
+            targetRef={containerRef}
+          >
             <KonvaBridge
               stageRender={(children: React.ReactNode) => (
                 <Stage

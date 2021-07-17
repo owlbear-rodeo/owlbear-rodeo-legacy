@@ -210,7 +210,12 @@ function MapInteraction({
           ref={containerRef}
           className="map"
         >
-          <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+          <ReactResizeDetector
+            handleWidth
+            handleHeight
+            onResize={handleResize}
+            targetRef={containerRef}
+          >
             <KonvaBridge
               stageRender={(children) => (
                 <Stage

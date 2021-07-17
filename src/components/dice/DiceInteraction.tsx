@@ -192,7 +192,12 @@ function DiceInteraction({
       }}
       ref={containerRef}
     >
-      <ReactResizeDetector handleWidth handleHeight onResize={handleResize}>
+      <ReactResizeDetector
+        handleWidth
+        handleHeight
+        onResize={handleResize}
+        targetRef={containerRef}
+      >
         <canvas
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Close, Grid, useThemeUI, IconButton, Text, Flex } from "theme-ui";
 import { useSpring, animated, config } from "react-spring";
 import ReactResizeDetector from "react-resize-detector";
@@ -42,6 +42,7 @@ function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
     config: config.gentle,
   });
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContinerSize] = useState({ width: 0, height: 0 });
   function handleContainerResize(width?: number, height?: number) {
     if (width && height) {
@@ -76,11 +77,13 @@ function TilesOverlay({ modalSize, children }: TilesOverlayProps) {
           top: 0,
         }}
         bg="overlay"
+        ref={containerRef}
       />
       <ReactResizeDetector
         handleWidth
         handleHeight
         onResize={handleContainerResize}
+        targetRef={containerRef}
       >
         <animated.div
           style={{
