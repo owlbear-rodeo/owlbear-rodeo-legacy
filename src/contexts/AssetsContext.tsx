@@ -134,6 +134,9 @@ export function AssetURLsProvider({ children }: { children: React.ReactNode }) {
 
   // Update the asset keys to load when a url is added without an asset attached
   useEffect(() => {
+    if (!loadingDebouncedAssetURLs) {
+      return;
+    }
     let keysToLoad: string[] = [];
     for (let url of Object.values(loadingDebouncedAssetURLs)) {
       if (url.url === null) {
