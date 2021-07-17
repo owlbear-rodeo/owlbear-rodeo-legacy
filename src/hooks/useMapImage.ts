@@ -8,7 +8,7 @@ import { mapSources as defaultMapSources } from "../maps";
 import { Map } from "../types/Map";
 
 function useMapImage(
-  map: Map
+  map: Map | null
 ): [HTMLImageElement | undefined, "loaded" | "loading" | "failed"] {
   const mapURL = useDataURL(map, defaultMapSources);
   const [mapImage, mapImageStatus] = useImage(mapURL || "");

@@ -28,7 +28,7 @@ import { MapLoadingProvider } from "../contexts/MapLoadingContext";
 import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
-import Session from "../network/Session";
+import Session, { PeerErrorEvent, SessionStatus } from "../network/Session";
 
 function Game() {
   const { id: gameId }: { id: string } = useParams();
@@ -36,7 +36,7 @@ function Game() {
   const { databaseStatus } = useDatabase();
 
   const [session] = useState(new Session());
-  const [sessionStatus, setSessionStatus] = useState();
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus>();
 
   useEffect(() => {
     async function connect() {
@@ -50,9 +50,9 @@ function Game() {
   }, [session]);
 
   // Handle session errors
-  const [peerError, setPeerError] = useState(null);
+  const [peerError, setPeerError] = useState<string | null>(null);
   useEffect(() => {
-    function handlePeerError({ error }) {
+    function handlePeerError({ error }: PeerErrorEvent) {
       if (error.code === "ERR_WEBRTC_SUPPORT") {
         setPeerError("WebRTC not supported.");
       } else if (error.code === "ERR_CREATE_OFFER") {
@@ -66,7 +66,7 @@ function Game() {
   }, [session]);
 
   useEffect(() => {
-    function handleStatus(status: any) {
+    function handleStatus(status: SessionStatus) {
       setSessionStatus(status);
     }
 

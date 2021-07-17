@@ -32,8 +32,8 @@ import { Settings } from "../../types/Settings";
 type MapControlsProps = {
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
-  currentMap?: Map;
-  currentMapState?: MapState;
+  currentMap: Map | null;
+  currentMapState: MapState | null;
   selectedToolId: MapToolId;
   onSelectedToolChange: (toolId: MapToolId) => void;
   toolSettings: Settings;

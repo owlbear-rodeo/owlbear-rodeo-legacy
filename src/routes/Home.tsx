@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Flex, Button, Image, Text, IconButton, Link } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
@@ -23,9 +23,8 @@ import owlington from "../images/Owlington.png";
 function Home() {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isGettingStartedModalOpen, setIsGettingStartedModalOpen] = useState(
-    false
-  );
+  const [isGettingStartedModalOpen, setIsGettingStartedModalOpen] =
+    useState(false);
 
   // Reset password on visiting home
   const { setPassword } = useAuth();
@@ -80,6 +79,7 @@ function Home() {
         </Text>
         <Button
           as="a"
+          // @ts-ignore
           href="https://patreon.com/owlbearrodeo"
           mt={4}
           mx={2}
@@ -94,6 +94,7 @@ function Home() {
         </Button>
         <Button
           as="a"
+          // @ts-ignore
           href="/donate"
           mt={2}
           mb={4}

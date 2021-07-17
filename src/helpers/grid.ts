@@ -245,10 +245,10 @@ export function getGridUpdatedInset(
 
 /**
  * Get the max zoom for a grid
- * @param {Grid} grid
+ * @param {Grid=} grid
  * @returns {number}
  */
-export function getGridMaxZoom(grid: Grid): number {
+export function getGridMaxZoom(grid?: Grid): number {
   if (!grid) {
     return 10;
   }

@@ -6,7 +6,10 @@ import { Note } from "./Note";
 import { Token } from "./Token";
 import { TokenState } from "./TokenState";
 
-export type MapChangeEventHandler = (map?: Map, mapState?: MapState) => void;
+export type MapChangeEventHandler = (
+  map: Map | null,
+  mapState: MapState | null
+) => void;
 export type MapResetEventHandler = (newState: MapState) => void;
 export type MapSettingsChangeEventHandler = (change: Partial<Map>) => void;
 export type MapStateSettingsChangeEventHandler = (
@@ -31,7 +34,7 @@ export type TokenSettingsChangeEventHandler = (change: Partial<Token>) => void;
 
 export type NoteAddEventHander = (note: Note) => void;
 export type NoteRemoveEventHander = (noteId: string) => void;
-export type NoteChangeEventHandler = (change: Partial<Note>) => void;
+export type NoteChangeEventHandler = (note: Note) => void;
 export type NoteMenuOpenEventHandler = (
   noteId: string,
   noteNode: Konva.Node

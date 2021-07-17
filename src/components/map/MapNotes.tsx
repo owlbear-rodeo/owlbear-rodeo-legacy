@@ -26,7 +26,7 @@ import {
 const defaultNoteSize = 2;
 
 type MapNoteProps = {
-  map: Map;
+  map: Map | null;
   active: boolean;
   onNoteAdd: NoteAddEventHander;
   onNoteChange: NoteChangeEventHandler;
@@ -75,7 +75,7 @@ function MapNotes({
       if (!position) {
         return;
       }
-      if (map.snapToGrid) {
+      if (map?.snapToGrid) {
         position = snapPositionToGrid(position);
       }
       return Vector2.divide(position, {

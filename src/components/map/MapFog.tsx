@@ -58,7 +58,7 @@ type FogEditEventHandler = (edit: Partial<Fog>[]) => void;
 type FogErrorEventHandler = (message: string) => void;
 
 type MapFogProps = {
-  map: Map;
+  map: Map | null;
   shapes: Fog[];
   onShapesAdd: FogAddEventHandler;
   onShapesCut: FogCutEventHandler;
@@ -354,7 +354,7 @@ function MapFog({
             x: mapWidth,
             y: mapHeight,
           });
-          if (map.snapToGrid) {
+          if (map?.snapToGrid) {
             guides.push(
               ...getGuidesFromGridCell(
                 absoluteBrushPosition,

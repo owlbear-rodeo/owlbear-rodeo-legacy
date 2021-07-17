@@ -18,7 +18,7 @@ type MapTokensProps = {
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
   selectedToolId: MapToolId;
-  disabledTokens: string[];
+  disabledTokens: Record<string, boolean>;
 };
 
 function MapTokens({

@@ -47,8 +47,8 @@ import { TokenDraggingOptions, TokenMenuOptions } from "../../types/Token";
 import { Note, NoteDraggingOptions, NoteMenuOptions } from "../../types/Note";
 
 type MapProps = {
-  map: Map;
-  mapState: MapState;
+  map: Map | null;
+  mapState: MapState | null;
   mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onMapTokenStateRemove: MapTokenStateRemoveHandler;
@@ -66,7 +66,7 @@ type MapProps = {
   allowFogDrawing: boolean;
   allowMapChange: boolean;
   allowNoteEditing: boolean;
-  disabledTokens: string[];
+  disabledTokens: Record<string, boolean>;
   session: Session;
 };
 
@@ -244,9 +244,7 @@ function Map({
       onRequestClose={() => setIsTokenMenuOpen(false)}
       onTokenStateChange={onMapTokenStateChange}
       tokenState={
-        tokenMenuOptions &&
-        mapState &&
-        mapState.tokens[tokenMenuOptions.tokenStateId]
+        tokenMenuOptions && mapState?.tokens[tokenMenuOptions.tokenStateId]
       }
       tokenImage={tokenMenuOptions && tokenMenuOptions.tokenImage}
       map={map}
@@ -372,9 +370,7 @@ function Map({
       isOpen={isNoteMenuOpen}
       onRequestClose={() => setIsNoteMenuOpen(false)}
       onNoteChange={onMapNoteChange}
-      note={
-        noteMenuOptions && mapState && mapState.notes[noteMenuOptions.noteId]
-      }
+      note={noteMenuOptions && mapState?.notes[noteMenuOptions.noteId]}
       noteNode={noteMenuOptions?.noteNode}
       map={map}
     />

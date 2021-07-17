@@ -25,8 +25,8 @@ import { MapState } from "../../types/MapState";
 type SelectedToolChangeEventHanlder = (tool: MapToolId) => void;
 
 type MapInteractionProps = {
-  map: Map;
-  mapState: MapState;
+  map: Map | null;
+  mapState: MapState | null;
   children?: React.ReactNode;
   controls: React.ReactNode;
   selectedToolId: MapToolId;

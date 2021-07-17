@@ -28,7 +28,7 @@ const defaultFontSize = 16;
 
 type NoteProps = {
   note: NoteType;
-  map: Map;
+  map: Map | null;
   onNoteChange?: NoteChangeEventHandler;
   onNoteMenuOpen?: NoteMenuOpenEventHandler;
   draggable: boolean;
@@ -72,20 +72,22 @@ function Note({
   function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
     const noteGroup = event.target;
     // Snap to corners of grid
-    if (map.snapToGrid) {
+    if (map?.snapToGrid) {
       noteGroup.position(snapPositionToGrid(noteGroup.position()));
     }
   }
 
   function handleDragEnd(event: Konva.KonvaEventObject<DragEvent>) {
     const noteGroup = event.target;
-    onNoteChange?.({
-      ...note,
-      x: noteGroup.x() / mapWidth,
-      y: noteGroup.y() / mapHeight,
-      lastModifiedBy: userId,
-      lastModified: Date.now(),
-    });
+    if (userId) {
+      onNoteChange?.({
+        ...note,
+        x: noteGroup.x() / mapWidth,
+        y: noteGroup.y() / mapHeight,
+        lastModifiedBy: userId,
+        lastModified: Date.now(),
+      });
+    }
     onNoteDragEnd?.(event, note.id);
     setPreventMapInteraction(false);
   }
@@ -103,7 +105,7 @@ function Note({
     if (draggable) {
       setPreventMapInteraction(true);
     }
-    if (note.locked && map.owner === userId) {
+    if (note.locked && map?.owner === userId) {
       notePointerDownTimeRef.current = event.evt.timeStamp;
     }
   }
@@ -114,7 +116,7 @@ function Note({
     }
     // Check note click when locked and we are the map owner
     // We can't use onClick because that doesn't check pointer distance
-    if (note.locked && map.owner === userId) {
+    if (note.locked && map?.owner === userId) {
       // If down and up time is small trigger a click
       const delta = event.evt.timeStamp - notePointerDownTimeRef.current;
       if (delta < 300) {

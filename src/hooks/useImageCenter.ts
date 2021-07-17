@@ -11,7 +11,7 @@ type ImageData = {
 };
 
 function useImageCenter(
-  data: ImageData,
+  data: ImageData | null,
   stageRef: MapStage,
   stageWidth: number,
   stageHeight: number,

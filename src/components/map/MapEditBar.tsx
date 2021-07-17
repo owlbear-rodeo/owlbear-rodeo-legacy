@@ -20,7 +20,7 @@ import {
 } from "../../types/Events";
 
 type MapEditBarProps = {
-  currentMap?: Map;
+  currentMap: Map | null;
   disabled: boolean;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
@@ -79,7 +79,7 @@ function MapEditBar({
     await removeMaps(selectedMapIds);
     // Removed the map from the map screen if needed
     if (currentMap && selectedMapIds.includes(currentMap.id)) {
-      onMapChange(undefined, undefined);
+      onMapChange(null, null);
     }
     onLoad(false);
   }

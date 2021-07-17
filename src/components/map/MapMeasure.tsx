@@ -29,7 +29,7 @@ import { Map } from "../../types/Map";
 import { PointsData } from "../../types/Drawing";
 
 type MapMeasureProps = {
-  map: Map;
+  map: Map | null;
   active: boolean;
 };
 
@@ -74,7 +74,7 @@ function MapMeasure({ map, active }: MapMeasureProps) {
       if (!position) {
         return;
       }
-      if (map.snapToGrid) {
+      if (map?.snapToGrid) {
         position = snapPositionToGrid(position);
       }
       return Vector2.divide(position, {

@@ -6,7 +6,7 @@ import Slider from "../Slider";
 
 import MapMenu from "../map/MapMenu";
 
-import colors, { colorOptions } from "../../helpers/colors";
+import colors, { Color, colorOptions } from "../../helpers/colors";
 
 import usePrevious from "../../hooks/usePrevious";
 
@@ -27,10 +27,10 @@ import { Map } from "../../types/Map";
 type TokenMenuProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
-  tokenState: TokenState;
-  tokenImage: Konva.Node;
+  tokenState?: TokenState;
+  tokenImage?: Konva.Node;
   onTokenStateChange: TokenStateChangeEventHandler;
-  map: Map;
+  map: Map | null;
 };
 
 const defaultTokenMaxSize = 6;
@@ -74,7 +74,7 @@ function TokenMenu({
     tokenState && onTokenStateChange({ [tokenState.id]: { label: label } });
   }
 
-  function handleStatusChange(status: string) {
+  function handleStatusChange(status: Color) {
     if (!tokenState) {
       return;
     }

@@ -2,14 +2,13 @@ import io, { Socket } from "socket.io-client";
 import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
-import Connection from "./Connection";
+import Connection, { DataProgressEvent } from "./Connection";
 
 import { omit } from "../helpers/shared";
 import { logError } from "../helpers/logging";
-import { SimplePeerData } from "simple-peer";
+import { SignalData } from "simple-peer";
 
 /**
- * @typedef {object} SessionPeer
  * @property {string} id - The socket id of the peer
  * @property {Connection} connection - The actual peer connection
  * @property {boolean} initiator - Is this peer the initiator of the connection
@@ -22,37 +21,13 @@ export type SessionPeer = {
   ready: boolean;
 };
 
-/**
- * @callback peerReply
- * @param {string} id - The id of the event
- * @param {object} data - The data to send
- * @param {string=} channel - The channel to send to
- * @param {string=} chunkId
- */
+export type PeerData = any;
 
-type peerReply = (id: string, data: SimplePeerData, channel: string) => void;
-
-/**
- * Session Status Event - Status of the session has changed
- *
- * @event Session#status
- * @property {"ready"|"joining"|"joined"|"offline"|"reconnecting"|"auth"|"needs_update"} status
- */
+export type PeerReply = (id: string, data: PeerData, chunkId?: string) => void;
 
 /**
  *
  * Handles connections to multiple peers
- *
- * @fires Session#peerConnect
- * @fires Session#peerData
- * @fires Session#peerTrackAdded
- * @fires Session#peerTrackRemoved
- * @fires Session#peerDisconnect
- * @fires Session#peerError
- * @fires Session#status
- * @fires Session#playerJoined
- * @fires Session#playerLeft
- * @fires Session#gameExpired
  */
 class Session extends EventEmitter {
   /**
@@ -73,7 +48,7 @@ class Session extends EventEmitter {
     return this.socket && this.socket.id;
   }
 
-  _iceServers: string[] = [];
+  _iceServers: RTCIceServer[] = [];
 
   // Store party id and password for reconnect
   _gameId: string = "";
@@ -133,19 +108,10 @@ class Session extends EventEmitter {
   /**
    * Send data to a single peer
    *
-   * @param {string} sessionId - The socket id of the player to send to
-   * @param {string} eventId - The id of the event to send
-   * @param {object} data
-   * @param {string=} channel
-   * @param {string=} chunkId
+   * @param sessionId - The socket id of the player to send to
+   * @param eventId - The id of the event to send
    */
-  sendTo(
-    sessionId: string,
-    eventId: string,
-    data,
-    channel?: string,
-    chunkId?: string
-  ) {
+  sendTo(sessionId: string, eventId: string, data: PeerData, chunkId?: string) {
     if (!(sessionId in this.peers)) {
       if (!this._addPeer(sessionId, true)) {
         return;
@@ -156,14 +122,13 @@ class Session extends EventEmitter {
       this.peers[sessionId].connection.once("connect", () => {
         this.peers[sessionId].connection.sendObject(
           { id: eventId, data },
-          channel,
           chunkId
         );
       });
     } else {
       this.peers[sessionId].connection.sendObject(
         { id: eventId, data },
-        channel
+        chunkId
       );
     }
   }
@@ -241,7 +206,7 @@ class Session extends EventEmitter {
    * @param {boolean} initiator
    * @returns {boolean} True if peer was added successfully
    */
-  _addPeer(id: string, initiator: boolean) {
+  _addPeer(id: string, initiator: boolean): boolean {
     try {
       const connection = new Connection({
         initiator,
@@ -254,11 +219,11 @@ class Session extends EventEmitter {
 
       const peer = { id, connection, initiator, ready: false };
 
-      function reply(id: string, data, channel?: string, chunkId?: string) {
-        peer.connection.sendObject({ id, data }, channel, chunkId);
-      }
+      const reply: PeerReply = (id, data, chunkId) => {
+        peer.connection.sendObject({ id, data }, chunkId);
+      };
 
-      const handleSignal = (signal) => {
+      const handleSignal = (signal: SignalData) => {
         this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
       };
 
@@ -266,105 +231,54 @@ class Session extends EventEmitter {
         if (peer.id in this.peers) {
           this.peers[peer.id].ready = true;
         }
-        /**
-         * Peer Connect Event - A peer has connected
-         *
-         * @event Session#peerConnect
-         * @type {object}
-         * @property {SessionPeer} peer
-         * @property {peerReply} reply
-         */
-        this.emit("peerConnect", { peer, reply });
+        const peerConnectEvent: PeerConnectEvent = {
+          peer,
+          reply,
+        };
+        this.emit("peerConnect", peerConnectEvent);
       };
 
-      const handleDataComplete = (data) => {
-        /**
-         * Peer Data Event - Data received by a peer
-         *
-         * @event Session#peerData
-         * @type {object}
-         * @property {SessionPeer} peer
-         * @property {string} id
-         * @property {object} data
-         * @property {peerReply} reply
-         */
-        let peerDataEvent: {
-          peer: SessionPeer;
-          id: string;
-          data;
-          reply: peerReply;
-        } = {
+      const handleDataComplete = (data: any) => {
+        const peerDataEvent: PeerDataEvent = {
           peer,
           id: data.id,
           data: data.data,
           reply: reply,
         };
-        console.log(`Data: ${JSON.stringify(data)}`);
         this.emit("peerData", peerDataEvent);
       };
 
-      const handleDataProgress = ({
-        id,
-        count,
-        total,
-      }: {
-        id: string;
-        count: number;
-        total: number;
-      }) => {
-        this.emit("peerDataProgress", {
+      const handleDataProgress = ({ id, count, total }: DataProgressEvent) => {
+        const peerDataProgressEvent: PeerDataProgressEvent = {
           peer,
           id,
           count,
           total,
           reply,
-        });
+        };
+
+        this.emit("peerDataProgress", peerDataProgressEvent);
       };
 
       const handleTrack = (track: MediaStreamTrack, stream: MediaStream) => {
-        /**
-         * Peer Track Added Event - A `MediaStreamTrack` was added by a peer
-         *
-         * @event Session#peerTrackAdded
-         * @type {object}
-         * @property {SessionPeer} peer
-         * @property {MediaStreamTrack} track
-         * @property {MediaStream} stream
-         */
-        let peerTrackAddedEvent: {
-          peer: SessionPeer;
-          track: MediaStreamTrack;
-          stream: MediaStream;
-        } = { peer, track, stream };
+        const peerTrackAddedEvent: PeerTrackAddedEvent = {
+          peer,
+          track,
+          stream,
+        };
         this.emit("peerTrackAdded", peerTrackAddedEvent);
         track.addEventListener("mute", () => {
-          /**
-           * Peer Track Removed Event - A `MediaStreamTrack` was removed by a peer
-           *
-           * @event Session#peerTrackRemoved
-           * @type {object}
-           * @property {SessionPeer} peer
-           * @property {MediaStreamTrack} track
-           * @property {MediaStream} stream
-           */
-          let peerTrackRemovedEvent: {
-            peer: SessionPeer;
-            track: MediaStreamTrack;
-            stream: MediaStream;
-          } = { peer, track, stream };
+          const peerTrackRemovedEvent: PeerTrackRemovedEvent = {
+            peer,
+            track,
+            stream,
+          };
           this.emit("peerTrackRemoved", peerTrackRemovedEvent);
         });
       };
 
       const handleClose = () => {
-        /**
-         * Peer Disconnect Event - A peer has disconnected
-         *
-         * @event Session#peerDisconnect
-         * @type {object}
-         * @property {SessionPeer} peer
-         */
-        let peerDisconnectEvent: { peer: SessionPeer } = { peer };
+        const peerDisconnectEvent: PeerDisconnectEvent = { peer };
         this.emit("peerDisconnect", peerDisconnectEvent);
         if (peer.id in this.peers) {
           peer.connection.destroy();
@@ -372,16 +286,8 @@ class Session extends EventEmitter {
         }
       };
 
-      const handleError = (error: Error) => {
-        /**
-         * Peer Error Event - An error occured with a peer connection
-         *
-         * @event Session#peerError
-         * @type {object}
-         * @property {SessionPeer} peer
-         * @property {Error} error
-         */
-        let peerErrorEvent: { peer: SessionPeer; error: Error } = {
+      const handleError = (error: PeerError) => {
+        const peerErrorEvent: PeerErrorEvent = {
           peer,
           error,
         };
@@ -418,31 +324,14 @@ class Session extends EventEmitter {
   }
 
   _handleGameExpired() {
-    /**
-     * Game Expired Event - A joining game has expired
-     *
-     * @event Session#gameExpired
-     */
     this.emit("gameExpired");
   }
 
   _handlePlayerJoined(id: string) {
-    /**
-     * Player Joined Event - A player has joined the game
-     *
-     * @event Session#playerJoined
-     * @property {string} id
-     */
     this.emit("playerJoined", id);
   }
 
   _handlePlayerLeft(id: string) {
-    /**
-     * Player Left Event - A player has left the game
-     *
-     * @event Session#playerLeft
-     * @property {string} id
-     */
     this.emit("playerLeft", id);
     if (id in this.peers) {
       this.peers[id].connection.destroy();
@@ -450,7 +339,7 @@ class Session extends EventEmitter {
     }
   }
 
-  _handleSignal(data) {
+  _handleSignal(data: { from: string; signal: SignalData }) {
     const { from, signal } = data;
     if (!(from in this.peers)) {
       if (!this._addPeer(from, false)) {
@@ -484,14 +373,96 @@ class Session extends EventEmitter {
   }
 
   _handleForceUpdate() {
-    /**
-     * Force Update Event - An update has been released
-     *
-     * @event Session#forceUpdate
-     */
     this.socket.disconnect();
     this.emit("status", "needs_update");
   }
+}
+
+export type PeerConnectEvent = {
+  peer: SessionPeer;
+  reply: PeerReply;
+};
+export type PeerConnectEventHandler = (event: PeerConnectEvent) => void;
+
+export type PeerDataEvent = {
+  peer: SessionPeer;
+  id: string;
+  data: PeerData;
+  reply: PeerReply;
+};
+export type PeerDataEventHandler = (event: PeerDataEvent) => void;
+
+export type PeerDataProgressEvent = {
+  peer: SessionPeer;
+  id: string;
+  count: number;
+  total: number;
+  reply: PeerReply;
+};
+export type PeerDataProgressEventHandler = (
+  event: PeerDataProgressEvent
+) => void;
+
+export type PeerTrackAddedEvent = {
+  peer: SessionPeer;
+  track: MediaStreamTrack;
+  stream: MediaStream;
+};
+export type PeerTrackAddedEventHandler = (event: PeerTrackAddedEvent) => void;
+
+export type PeerTrackRemovedEvent = {
+  peer: SessionPeer;
+  track: MediaStreamTrack;
+  stream: MediaStream;
+};
+export type PeerTrackRemovedEventHandler = (
+  event: PeerTrackRemovedEvent
+) => void;
+
+export type PeerDisconnectEvent = { peer: SessionPeer };
+export type PeerDisconnectEventHandler = (event: PeerDisconnectEvent) => void;
+
+export type PeerError = Error & { code: string };
+export type PeerErrorEvent = { peer: SessionPeer; error: PeerError };
+export type PeerErrorEventHandler = (event: PeerErrorEvent) => void;
+
+export type SessionStatus =
+  | "ready"
+  | "joining"
+  | "joined"
+  | "offline"
+  | "reconnecting"
+  | "auth"
+  | "needs_update";
+export type SessionStatusHandler = (status: SessionStatus) => void;
+
+export type PlayerJoinedHandler = (id: string) => void;
+export type PlayerLeftHandler = (id: string) => void;
+export type GameExpiredHandler = () => void;
+
+declare interface Session {
+  /** Peer Connect Event - A peer has connected */
+  on(event: "peerConnect", listener: PeerConnectEventHandler): this;
+  /** Peer Data Event - Data received by a peer */
+  on(event: "peerData", listener: PeerDataEventHandler): this;
+  /** Peer Data Progress Event - Part of some data received by a peer */
+  on(event: "peerDataProgress", listener: PeerDataProgressEventHandler): this;
+  /** Peer Track Added Event - A `MediaStreamTrack` was added by a peer */
+  on(event: "peerTrackAdded", listener: PeerTrackAddedEventHandler): this;
+  /** Peer Track Removed Event - A `MediaStreamTrack` was removed by a peer */
+  on(event: "peerTrackRemoved", listener: PeerTrackRemovedEventHandler): this;
+  /** Peer Disconnect Event - A peer has disconnected */
+  on(event: "peerDisconnect", listener: PeerDisconnectEventHandler): this;
+  /** Peer Error Event - An error occured with a peer connection */
+  on(event: "peerError", listener: PeerErrorEventHandler): this;
+  /** Session Status Event - Status of the session has changed */
+  on(event: "status", listener: SessionStatusHandler): this;
+  /** Player Joined Event - A player has joined the game */
+  on(event: "playerJoined", listener: PlayerJoinedHandler): this;
+  /** Player Left Event - A player has left the game */
+  on(event: "playerLeft", listener: PlayerLeftHandler): this;
+  /** Game Expired Event - A joining game has expired */
+  on(event: "gameExpired", listener: GameExpiredHandler): this;
 }
 
 export default Session;

@@ -42,7 +42,7 @@ type SelectMapProps = {
   onDone: RequestCloseEventHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
-  currentMap?: Map;
+  currentMap: Map | null;
 };
 
 function SelectMapModal({
@@ -175,12 +175,12 @@ function SelectMapModal({
     }
     if (mapId) {
       setIsLoading(true);
-      const map = await getMap(mapId);
-      const mapState = await getMapState(mapId);
+      const map = (await getMap(mapId)) || null;
+      const mapState = (await getMapState(mapId)) || null;
       onMapChange(map, mapState);
       setIsLoading(false);
     } else {
-      onMapChange(undefined, undefined);
+      onMapChange(null, null);
     }
     onDone();
   }

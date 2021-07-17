@@ -1,7 +1,7 @@
 import React from "react";
 import Action from "../actions/Action";
-import { Drawing } from "./Drawing";
-import { Fog } from "./Fog";
+import { DrawingState } from "./Drawing";
+import { FogState } from "./Fog";
 import { Grid } from "./Grid";
 
 export type MapToolId =
@@ -59,9 +59,9 @@ export type FileMap = BaseMap & {
 export type Map = DefaultMap | FileMap;
 
 export type MapActions = {
-  mapDrawActions: Action<Drawing>[];
+  mapDrawActions: Action<DrawingState>[];
   mapDrawActionIndex: number;
-  fogDrawActions: Action<Fog>[];
+  fogDrawActions: Action<FogState>[];
   fogDrawActionIndex: number;
 };
 

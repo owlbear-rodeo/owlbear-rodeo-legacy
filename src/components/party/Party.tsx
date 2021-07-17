@@ -10,12 +10,6 @@ import SettingsButton from "../SettingsButton";
 import StartTimerButton from "./StartTimerButton";
 import Timer from "./Timer";
 import DiceTrayButton from "./DiceTrayButton";
-import {
-  PartyState,
-  PlayerDice,
-  PlayerInfo,
-  Timer as PartyTimer,
-} from "./PartyState";
 
 import useSetting from "../../hooks/useSetting";
 
@@ -36,10 +30,10 @@ function Party({
   onStreamEnd;
 }) {
   const setPlayerState = usePlayerUpdater();
-  const playerState: PlayerInfo = usePlayerState();
-  const partyState: PartyState = useParty();
+  const playerState = usePlayerState();
+  const partyState = useParty();
 
-  const [fullScreen] = useSetting("map.fullScreen");
+  const [fullScreen] = useSetting<boolean>("map.fullScreen");
   const [shareDice, setShareDice] = useSetting("dice.shareDice");
 
   function handleTimerStart(newTimer: PartyTimer) {

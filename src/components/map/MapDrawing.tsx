@@ -37,7 +37,7 @@ export type DrawingAddEventHanlder = (drawing: Drawing) => void;
 export type DrawingsRemoveEventHandler = (drawingIds: string[]) => void;
 
 type MapDrawingProps = {
-  map: Map;
+  map: Map | null;
   drawings: Drawing[];
   onDrawingAdd: DrawingAddEventHanlder;
   onDrawingsRemove: DrawingsRemoveEventHandler;
@@ -85,7 +85,7 @@ function MapDrawing({
     const mapStage = mapStageRef.current;
 
     function getBrushPosition() {
-      if (!mapStage) {
+      if (!mapStage || !map) {
         return;
       }
       const mapImage = mapStage.findOne("#mapImage");

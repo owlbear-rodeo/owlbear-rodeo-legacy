@@ -14,7 +14,7 @@ import useDebounce from "../hooks/useDebounce";
 import useNetworkedState from "../hooks/useNetworkedState";
 
 // Load session for auto complete
-import Session from "./Session";
+import Session, { PeerDataEvent, PeerDataProgressEvent } from "./Session";
 
 import Action from "../actions/Action";
 
@@ -38,6 +38,7 @@ import {
 import { TokenState } from "../types/TokenState";
 import { DrawingState } from "../types/Drawing";
 import { FogState } from "../types/Fog";
+import { Note } from "../types/Note";
 
 const defaultMapActions: MapActions = {
   mapDrawActions: [],
@@ -204,7 +205,10 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
   }, [currentMap, debouncedMapState, userId, database, updateMapState]);
 
-  async function handleMapChange(newMap, newMapState) {
+  async function handleMapChange(
+    newMap: MapType | null,
+    newMapState: MapState | null
+  ) {
     // Clear map before sending new one
     setCurrentMap(null);
     session.socket?.emit("map", null);
@@ -222,7 +226,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     await loadAssetManifestFromMap(newMap, newMapState);
   }
 
-  function handleMapReset(newMapState) {
+  function handleMapReset(newMapState: MapState) {
     setCurrentMapState(newMapState, true, true);
     setMapActions(defaultMapActions);
   }
@@ -264,7 +268,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }
 
   function updateActionIndex(
-    change,
+    change: number,
     indexKey: MapActionsIndexKey,
     actionsKey: MapActionsKey,
     shapesKey: "drawShapes" | "fogShapes"
@@ -288,19 +292,21 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
           // Redo
           for (let i = prevIndex + 1; i < newIndex + 1; i++) {
             let action = mapActions[actionsKey][i];
-            shapes = action.execute(shapes);
+            shapes = action.execute(shapes as any);
           }
         } else {
           // Undo
           for (let i = prevIndex; i > newIndex; i--) {
             let action = mapActions[actionsKey][i];
-            shapes = action.undo(shapes);
+            shapes = action.undo(shapes as any);
           }
         }
         return {
           ...prevMapState,
           [shapesKey]: shapes,
         };
+      } else {
+        return prevMapState;
       }
     });
 
@@ -342,7 +348,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }
 
   // If map changes clear map actions
-  const previousMapIdRef = useRef();
+  const previousMapIdRef = useRef<string>();
   useEffect(() => {
     if (currentMap && currentMap?.id !== previousMapIdRef.current) {
       setMapActions(defaultMapActions);
@@ -350,21 +356,31 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
   }, [currentMap]);
 
-  function handleNoteChange(note) {
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
-      notes: {
-        ...prevMapState.notes,
-        [note.id]: note,
-      },
-    }));
+  function handleNoteChange(note: Note) {
+    setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
+      return {
+        ...prevMapState,
+        notes: {
+          ...prevMapState.notes,
+          [note.id]: note,
+        },
+      };
+    });
   }
 
   function handleNoteRemove(noteId: string) {
-    setCurrentMapState((prevMapState) => ({
-      ...prevMapState,
-      notes: omit(prevMapState.notes, [noteId]),
-    }));
+    setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
+      return {
+        ...prevMapState,
+        notes: omit(prevMapState.notes, [noteId]),
+      };
+    });
   }
 
   /**
@@ -387,6 +403,9 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
 
     setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
       let newMapTokens = { ...prevMapState.tokens };
       for (let tokenState of tokenStates) {
         newMapTokens[tokenState.id] = tokenState;
@@ -395,15 +414,20 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     });
   }
 
-  function handleMapTokenStateChange(change) {
+  function handleMapTokenStateChange(
+    change: Record<string, Partial<TokenState>>
+  ) {
     if (!currentMapState) {
       return;
     }
     setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
       let tokens = { ...prevMapState.tokens };
       for (let id in change) {
         if (id in tokens) {
-          tokens[id] = { ...tokens[id], ...change[id] };
+          tokens[id] = { ...tokens[id], ...change[id] } as TokenState;
         }
       }
 
@@ -414,29 +438,24 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     });
   }
 
-  function handleMapTokenStateRemove(tokenState) {
+  function handleMapTokenStateRemove(tokenState: TokenState) {
     setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
       const { [tokenState.id]: old, ...rest } = prevMapState.tokens;
       return { ...prevMapState, tokens: rest };
     });
   }
 
   useEffect(() => {
-    async function handlePeerData({
-      id,
-      data,
-      reply,
-    }: {
-      id: string;
-      data;
-      reply;
-    }) {
+    async function handlePeerData({ id, data, reply }: PeerDataEvent) {
       if (id === "assetRequest") {
         const asset = await getAsset(data.id);
         if (asset) {
-          reply("assetResponseSuccess", asset, undefined, data.id);
+          reply("assetResponseSuccess", asset, data.id);
         } else {
-          reply("assetResponseFail", data.id, undefined, data.id);
+          reply("assetResponseFail", data.id, data.id);
         }
       }
 
@@ -456,15 +475,11 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       id,
       total,
       count,
-    }: {
-      id: string;
-      total: number;
-      count: number;
-    }) {
+    }: PeerDataProgressEvent) {
       assetProgressUpdate({ id, total, count });
     }
 
-    async function handleSocketMap(map) {
+    async function handleSocketMap(map?: MapType) {
       if (map) {
         setCurrentMap(map);
       } else {
@@ -502,7 +517,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     (currentMapState.editFlags.includes("notes") ||
       currentMap?.owner === userId);
 
-  const disabledMapTokens = {};
+  const disabledMapTokens: Record<string, boolean> = {};
   // If we have a map and state and have the token permission disabled
   // and are not the map owner
   if (
@@ -539,10 +554,10 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         onFogDrawRedo={handleFogDrawRedo}
         onMapNoteChange={handleNoteChange}
         onMapNoteRemove={handleNoteRemove}
-        allowMapDrawing={canEditMapDrawing}
-        allowFogDrawing={canEditFogDrawing}
+        allowMapDrawing={!!canEditMapDrawing}
+        allowFogDrawing={!!canEditFogDrawing}
         allowMapChange={canChangeMap}
-        allowNoteEditing={canEditNotes}
+        allowNoteEditing={!!canEditNotes}
         disabledTokens={disabledMapTokens}
         session={session}
       />

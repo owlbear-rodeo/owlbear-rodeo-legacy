@@ -35,7 +35,7 @@ type NoteMenuProps = {
   note?: Note;
   noteNode?: Konva.Node;
   onNoteChange: NoteChangeEventHandler;
-  map: Map;
+  map: Map | null;
 };
 
 function NoteMenu({

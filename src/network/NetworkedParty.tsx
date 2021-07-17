@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToasts } from "react-toast-notifications";
 
-// Load session for auto complete
-import Session, { SessionPeer } from "./Session";
+import Session, { PeerTrackAddedEvent, PeerTrackRemovedEvent } from "./Session";
 import { isStreamStopped, omit } from "../helpers/shared";
 
 import { useParty } from "../contexts/PartyContext";
 
 import Party from "../components/party/Party";
-import { PartyState } from "../components/party/PartyState";
 
 /**
  * @typedef {object} NetworkedPartyProps
@@ -16,13 +14,13 @@ import { PartyState } from "../components/party/PartyState";
  * @property {Session} session
  */
 
-type NetworkedPartyProps = { gameId: string, session: Session }
+type NetworkedPartyProps = { gameId: string; session: Session };
 
 /**
  * @param {NetworkedPartyProps} props
  */
-function NetworkedParty(props: NetworkedPartyProps) {
-  const partyState: PartyState = useParty();
+function NetworkedParty({ gameId, session }: NetworkedPartyProps) {
+  const partyState = useParty();
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [partyStreams, setPartyStreams] = useState({});
 
@@ -35,7 +33,9 @@ function NetworkedParty(props: NetworkedPartyProps) {
       // Only add the audio track of the stream to the remote peer
       if (track.kind === "audio") {
         for (let player of Object.values(partyState)) {
-          props.session.startStreamTo(player.sessionId, track, localStream);
+          if (player.sessionId) {
+            session.startStreamTo(player.sessionId, track, localStream);
+          }
         }
       }
     }
@@ -50,12 +50,14 @@ function NetworkedParty(props: NetworkedPartyProps) {
         // Only sending audio so only remove the audio track
         if (track.kind === "audio") {
           for (let player of Object.values(partyState)) {
-            props.session.endStreamTo(player.sessionId, track, localStream);
+            if (player.sessionId) {
+              session.endStreamTo(player.sessionId, track, localStream);
+            }
           }
         }
       }
     },
-    [props.session, partyState]
+    [session, partyState]
   );
 
   // Keep a reference to players who have just joined to show the joined notification
@@ -77,7 +79,7 @@ function NetworkedParty(props: NetworkedPartyProps) {
         const tracks = stream.getTracks();
         for (let track of tracks) {
           if (track.kind === "audio") {
-            props.session.startStreamTo(sessionId, track, stream);
+            session.startStreamTo(sessionId, track, stream);
           }
         }
       }
@@ -92,14 +94,20 @@ function NetworkedParty(props: NetworkedPartyProps) {
       }
     }
 
-    function handlePeerTrackAdded({ peer, stream: remoteStream }: { peer: SessionPeer, stream: MediaStream}) {
+    function handlePeerTrackAdded({
+      peer,
+      stream: remoteStream,
+    }: PeerTrackAddedEvent) {
       setPartyStreams((prevStreams) => ({
         ...prevStreams,
         [peer.id]: remoteStream,
       }));
     }
 
-    function handlePeerTrackRemoved({ peer, stream: remoteStream }: { peer: SessionPeer, stream: MediaStream }) {
+    function handlePeerTrackRemoved({
+      peer,
+      stream: remoteStream,
+    }: PeerTrackRemovedEvent) {
       if (isStreamStopped(remoteStream)) {
         setPartyStreams((prevStreams) => omit(prevStreams, [peer.id]));
       } else {
@@ -110,16 +118,16 @@ function NetworkedParty(props: NetworkedPartyProps) {
       }
     }
 
-    props.session.on("playerJoined", handlePlayerJoined);
-    props.session.on("playerLeft", handlePlayerLeft);
-    props.session.on("peerTrackAdded", handlePeerTrackAdded);
-    props.session.on("peerTrackRemoved", handlePeerTrackRemoved);
+    session.on("playerJoined", handlePlayerJoined);
+    session.on("playerLeft", handlePlayerLeft);
+    session.on("peerTrackAdded", handlePeerTrackAdded);
+    session.on("peerTrackRemoved", handlePeerTrackRemoved);
 
     return () => {
-      props.session.off("playerJoined", handlePlayerJoined);
-      props.session.off("playerLeft", handlePlayerLeft);
-      props.session.off("peerTrackAdded", handlePeerTrackAdded);
-      props.session.off("peerTrackRemoved", handlePeerTrackRemoved);
+      session.off("playerJoined", handlePlayerJoined);
+      session.off("playerLeft", handlePlayerLeft);
+      session.off("peerTrackAdded", handlePeerTrackAdded);
+      session.off("peerTrackRemoved", handlePeerTrackRemoved);
     };
   });
 
@@ -142,7 +150,7 @@ function NetworkedParty(props: NetworkedPartyProps) {
   return (
     <>
       <Party
-        gameId={props.gameId}
+        gameId={gameId}
         onStreamStart={handleStreamStart}
         onStreamEnd={handleStreamEnd}
         stream={stream}

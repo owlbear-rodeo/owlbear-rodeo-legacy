@@ -209,8 +209,8 @@ export function AssetURLsProvider({ children }: { children: React.ReactNode }) {
  * Helper function to load either file or default asset into a URL
  */
 export function useAssetURL(
-  assetId: string,
-  type: "file" | "default",
+  assetId: string | null,
+  type: "file" | "default" | null,
   defaultSources: Record<string, string>,
   unknownSource?: string
 ) {
@@ -227,9 +227,8 @@ export function useAssetURL(
     if (!assetId || type !== "file") {
       return;
     }
-
-    function updateAssetURL() {
-      function increaseReferences(prevURLs: AssetURLs): AssetURLs {
+    const updateAssetURL = () => {
+      const increaseReferences = (prevURLs: AssetURLs): AssetURLs => {
         return {
           ...prevURLs,
           [assetId]: {
@@ -237,14 +236,14 @@ export function useAssetURL(
             references: prevURLs[assetId].references + 1,
           },
         };
-      }
+      };
 
-      function createReference(prevURLs: AssetURLs): AssetURLs {
+      const createReference = (prevURLs: AssetURLs): AssetURLs => {
         return {
           ...prevURLs,
           [assetId]: { url: null, id: assetId, references: 1 },
         };
-      }
+      };
       setAssetURLs?.((prevURLs) => {
         if (assetId in prevURLs) {
           // Check if the asset url is already added and increase references
@@ -253,7 +252,7 @@ export function useAssetURL(
           return createReference(prevURLs);
         }
       });
-    }
+    };
 
     updateAssetURL();
 
@@ -307,22 +306,22 @@ type DefaultData = {
  * Load a map or token into a URL taking into account a thumbnail and multiple resolutions
  */
 export function useDataURL(
-  data: FileData | DefaultData,
+  data: FileData | DefaultData | null,
   defaultSources: Record<string, string>,
   unknownSource: string | undefined = undefined,
   thumbnail = false
 ) {
-  const [assetId, setAssetId] = useState<string>();
+  const [assetId, setAssetId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
     function loadAssetId() {
+      if (!data) {
+        return;
+      }
       if (data.type === "default") {
         setAssetId(data.key);
       } else {
-        if (thumbnail) {
+        if (thumbnail && data.thumbnail) {
           setAssetId(data.thumbnail);
         } else if (
           data.resolutions &&
@@ -340,8 +339,8 @@ export function useDataURL(
   }, [data, thumbnail]);
 
   const assetURL = useAssetURL(
-    assetId || "",
-    data?.type,
+    assetId || null,
+    data?.type || null,
     defaultSources,
     unknownSource
   );

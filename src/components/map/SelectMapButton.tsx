@@ -16,8 +16,8 @@ import { MapState } from "../../types/MapState";
 type SelectMapButtonProps = {
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
-  currentMap?: Map;
-  currentMapState?: MapState;
+  currentMap: Map | null;
+  currentMapState: MapState | null;
   disabled: boolean;
 };
 

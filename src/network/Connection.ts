@@ -8,21 +8,37 @@ import blobToBuffer from "../helpers/blobToBuffer";
 // http://viblast.com/blog/2015/2/5/webrtc-data-channel-message-size/
 const MAX_BUFFER_SIZE = 16000;
 
-class Connection extends SimplePeer {
-  currentChunks;
-  dataChannels;
+type NetworkChunk = {
+  __chunked: boolean;
+  data: Uint8Array;
+  id: string;
+  index: number;
+  total: number;
+};
 
-  constructor(props) {
+type LocalChunk = {
+  data: Uint8Array[];
+  count: number;
+  total: number;
+};
+
+export type DataProgressEvent = {
+  id: string;
+  count: number;
+  total: number;
+};
+
+class Connection extends SimplePeer {
+  currentChunks: Record<string, LocalChunk>;
+  constructor(props: SimplePeer.Options) {
     super(props);
     this.currentChunks = {};
-    this.dataChannels = {};
     this.on("data", this.handleData);
-    this.on("datachannel", this.handleDataChannel);
   }
 
   // Intercept the data event with decoding and chunking support
-  handleData(packed) {
-    const unpacked = decode(packed);
+  handleData(packed: Uint8Array) {
+    const unpacked = decode(packed) as NetworkChunk;
     // If the special property __chunked is set and true
     // The data is a partial chunk of the a larger file
     // So wait until all chunks are collected and assembled
@@ -46,7 +62,6 @@ class Connection extends SimplePeer {
       // All chunks have been loaded
       if (chunk.count === chunk.total) {
         // Merge chunks with a blob
-        // TODO: Look at a more efficient way to recombine buffer data
         const merged = new Blob(chunk.data);
         blobToBuffer(merged).then((buffer) => {
           this.emit("dataComplete", decode(buffer));
@@ -62,52 +77,23 @@ class Connection extends SimplePeer {
    * Custom send function with encoding, chunking and data channel support
    * Uses `write` to send the data to allow for buffer / backpressure handling
    * @param {any} object
-   * @param {string=} channel
    * @param {string=} chunkId Optional ID to use for chunking
    */
-  sendObject(object, channel?: string, chunkId?: string) {
+  sendObject(object: any, chunkId?: string) {
     try {
       const packedData = encode(object);
       const chunks = this.chunk(packedData, chunkId);
       for (let chunk of chunks) {
-        if (this.dataChannels[channel]) {
-          this.dataChannels[channel].write(encode(chunk));
-        } else {
-          this.write(encode(chunk));
-        }
+        this.write(encode(chunk));
       }
     } catch (error) {
       console.error(error);
     }
   }
 
-  // Override the create data channel function to store our own named reference to it
-  // and to use our custom data handler
-  createDataChannel(channelName: string, channelConfig, opts) {
-    // TODO: resolve createDataChannel
-    // @ts-ignore
-    const channel = super.createDataChannel(channelName, channelConfig, opts);
-    this.handleDataChannel(channel);
-    return channel;
-  }
-
-  handleDataChannel(channel) {
-    const channelName = channel.channelName;
-    this.dataChannels[channelName] = channel;
-    channel.on("data", this.handleData.bind(this));
-    channel.on("error", (error) => {
-      this.emit("error", error);
-    });
-  }
-
   // Converted from https://github.com/peers/peerjs/
-  /**
-   * Chunk byte array
-   * @param {Uint8Array} data
-   * @param {string=} chunkId
-   * @returns {Uint8Array[]}
-   */
-  chunk(data: Uint8Array, chunkId?: string) {
+  /** Chunk byte array */
+  chunk(data: Uint8Array, chunkId?: string): NetworkChunk[] {
     const chunks = [];
     const size = data.byteLength;
     const total = Math.ceil(size / MAX_BUFFER_SIZE);

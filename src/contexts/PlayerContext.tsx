@@ -8,7 +8,7 @@ import { getRandomMonster } from "../helpers/monsters";
 import useNetworkedState, {
   SetNetworkedState,
 } from "../hooks/useNetworkedState";
-import Session from "../network/Session";
+import Session, { SessionStatus } from "../network/Session";
 import { PlayerState } from "../types/PlayerState";
 
 export const PlayerStateContext =
@@ -103,7 +103,7 @@ export function PlayerProvider({ session, children }: PlayerProviderProps) {
       updateSessionId();
     }
 
-    function handleSocketStatus(status: string) {
+    function handleSocketStatus(status: SessionStatus) {
       if (status === "joined") {
         updateSessionId();
       }

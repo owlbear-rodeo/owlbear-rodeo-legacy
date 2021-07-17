@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
 import { useUserId } from "../contexts/UserIdContext";
@@ -9,20 +9,31 @@ import Vector2 from "../helpers/Vector2";
 
 import useSetting from "../hooks/useSetting";
 import Session from "./Session";
+import { Color } from "../helpers/colors";
+import { PointerState } from "../types/Pointer";
 
 // Send pointer updates every 50ms (20fps)
 const sendTickRate = 50;
 
-function NetworkedMapPointer({
-  session,
-  active,
-}: {
+type InterpolatedPointerState = PointerState & { time: number };
+
+type PointerInterpolation = {
+  id: string;
+  from: InterpolatedPointerState | null;
+  to: InterpolatedPointerState;
+};
+
+type NetworkedMapPointerProps = {
   session: Session;
   active: boolean;
-}) {
+};
+
+function NetworkedMapPointer({ session, active }: NetworkedMapPointerProps) {
   const userId = useUserId();
-  const [localPointerState, setLocalPointerState] = useState({});
-  const [pointerColor] = useSetting("pointer.color");
+  const [localPointerState, setLocalPointerState] = useState<
+    Record<string, PointerState>
+  >({});
+  const [pointerColor] = useSetting<Color>("pointer.color");
 
   const sessionRef = useRef(session);
   useEffect(() => {
@@ -45,14 +56,12 @@ function NetworkedMapPointer({
   // Send pointer updates every sendTickRate to peers to save on bandwidth
   // We use requestAnimationFrame as setInterval was being blocked during
   // re-renders on Chrome with Windows
-  const ownPointerUpdateRef: React.MutableRefObject<
-    { position; visible: boolean; id; color } | undefined | null
-  > = useRef();
+  const ownPointerUpdateRef = useRef<PointerState | null>(null);
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(update);
     let counter = 0;
-    function update(time) {
+    function update(time: number) {
       request = requestAnimationFrame(update);
       const deltaTime = time - prevTime;
       counter += deltaTime;
@@ -79,7 +88,10 @@ function NetworkedMapPointer({
     };
   }, []);
 
-  function updateOwnPointerState(position, visible: boolean) {
+  function updateOwnPointerState(position: Vector2, visible: boolean) {
+    if (!userId) {
+      return;
+    }
     setLocalPointerState((prev) => ({
       ...prev,
       [userId]: { position, visible, id: userId, color: pointerColor },
@@ -92,23 +104,23 @@ function NetworkedMapPointer({
     };
   }
 
-  function handleOwnPointerDown(position) {
+  function handleOwnPointerDown(position: Vector2) {
     updateOwnPointerState(position, true);
   }
 
-  function handleOwnPointerMove(position) {
+  function handleOwnPointerMove(position: Vector2) {
     updateOwnPointerState(position, true);
   }
 
-  function handleOwnPointerUp(position) {
+  function handleOwnPointerUp(position: Vector2) {
     updateOwnPointerState(position, false);
   }
 
   // Handle pointer data receive
-  const interpolationsRef: React.MutableRefObject = useRef({});
+  const interpolationsRef = useRef<Record<string, PointerInterpolation>>({});
   useEffect(() => {
     // TODO: Handle player disconnect while pointer visible
-    function handleSocketPlayerPointer(pointer) {
+    function handleSocketPlayerPointer(pointer: InterpolatedPointerState) {
       const interpolations = interpolationsRef.current;
       const id = pointer.id;
       if (!(id in interpolations)) {
@@ -154,7 +166,7 @@ function NetworkedMapPointer({
     function animate() {
       request = requestAnimationFrame(animate);
       const time = performance.now();
-      let interpolatedPointerState = {};
+      let interpolatedPointerState: Record<string, PointerState> = {};
       for (let interp of Object.values(interpolationsRef.current)) {
         if (!interp.from || !interp.to) {
           continue;
@@ -206,9 +218,13 @@ function NetworkedMapPointer({
           active={pointer.id === userId ? active : false}
           position={pointer.position}
           visible={pointer.visible}
-          onPointerDown={pointer.id === userId && handleOwnPointerDown}
-          onPointerMove={pointer.id === userId && handleOwnPointerMove}
-          onPointerUp={pointer.id === userId && handleOwnPointerUp}
+          onPointerDown={
+            pointer.id === userId ? handleOwnPointerDown : undefined
+          }
+          onPointerMove={
+            pointer.id === userId ? handleOwnPointerMove : undefined
+          }
+          onPointerUp={pointer.id === userId ? handleOwnPointerUp : undefined}
           color={pointer.color}
         />
       ))}
