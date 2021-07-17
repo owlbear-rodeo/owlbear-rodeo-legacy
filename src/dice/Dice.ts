@@ -16,7 +16,13 @@ import d100Source from "./shared/d100.glb";
 
 import { lerp } from "../helpers/shared";
 import { importTextureAsync } from "../helpers/babylon";
-import { InstancedMesh, Material, Mesh, Scene } from "@babylonjs/core";
+import {
+  AbstractMesh,
+  InstancedMesh,
+  Material,
+  Mesh,
+  Scene,
+} from "@babylonjs/core";
 import {
   DiceType,
   BaseDiceTextureSources,
@@ -97,14 +103,14 @@ class Dice {
   ) {
     let instance = mesh.createInstance(name);
     instance.position = mesh.position;
-    for (let child of mesh.getChildMeshes()) {
+    for (let child of mesh.getChildTransformNodes()) {
       const locator = child.clone(child.name, instance);
       if (!locator) {
         throw new Error("Unable to clone dice locator");
       }
       locator.setAbsolutePosition(child.getAbsolutePosition());
       locator.name = child.name;
-      instance.addChild(locator);
+      instance.addChild(locator as AbstractMesh);
     }
 
     instance.physicsImpostor = new PhysicsImpostor(
