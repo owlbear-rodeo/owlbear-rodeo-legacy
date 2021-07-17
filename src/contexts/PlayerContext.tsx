@@ -3,8 +3,6 @@ import React, { useEffect, useContext } from "react";
 import { useDatabase } from "./DatabaseContext";
 import { useUserId } from "./UserIdContext";
 
-import { getRandomMonster } from "../helpers/monsters";
-
 import useNetworkedState, {
   SetNetworkedState,
 } from "../hooks/useNetworkedState";
@@ -50,10 +48,6 @@ export function PlayerProvider({ session, children }: PlayerProviderProps) {
           ...prevState,
           nickname: storedNickname.value,
         }));
-      } else {
-        const name = getRandomMonster();
-        setPlayerState((prevState) => ({ ...prevState, nickname: name }));
-        database?.table("user").add({ key: "nickname", value: name });
       }
     }
 

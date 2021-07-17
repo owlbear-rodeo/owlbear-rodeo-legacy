@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import { loadVersions, UpgradeEventHandler } from "./upgrade";
 import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
+import { getRandomMonster } from "./helpers/monsters";
 
 /**
  * Populate DB with initial data
@@ -14,6 +15,8 @@ function populate(db: Dexie) {
   db.on("populate", () => {
     const userId = uuid();
     db.table("user").add({ key: "userId", value: userId });
+    const nickname = getRandomMonster();
+    db.table("user").add({ key: "nickname", value: nickname });
     const { maps, mapStates } = getDefaultMaps(userId);
     db.table("maps").bulkAdd(maps);
     db.table("states").bulkAdd(mapStates);
