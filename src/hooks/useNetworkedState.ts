@@ -48,16 +48,14 @@ function useNetworkedState<S extends { readonly [x: string]: any } | null>(
   const forceUpdateRef = useRef(false);
 
   // Update dirty at the same time as state
-  const setState = useCallback<SetNetworkedState<S>>((update, sync, force) => {
-    dirtyRef.current = sync || false;
-    forceUpdateRef.current = force || false;
-    _setState(update);
-  }, []);
-
-  const eventNameRef = useRef(eventName);
-  useEffect(() => {
-    eventNameRef.current = eventName;
-  }, [eventName]);
+  const setState = useCallback<SetNetworkedState<S>>(
+    (update, sync = true, force = false) => {
+      dirtyRef.current = sync;
+      forceUpdateRef.current = force;
+      _setState(update);
+    },
+    []
+  );
 
   const debouncedState = useDebounce(state, debounceRate);
   const lastSyncedStateRef = useRef<S>();
