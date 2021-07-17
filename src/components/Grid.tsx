@@ -48,22 +48,28 @@ function Grid({ stroke }: { stroke: "black" | "white" }) {
   if (grid.type === "square") {
     // Square grid pattern is 150 DPI
     const scale = gridCellPixelSize.width / 300;
-    patternProps.fillPatternScaleX = scale;
-    patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetX = gridCellPixelSize.width / scale / 2;
-    patternProps.fillPatternOffsetY = gridCellPixelSize.height / scale / 2;
+    if (scale > 0) {
+      patternProps.fillPatternScaleX = scale;
+      patternProps.fillPatternScaleY = scale;
+      patternProps.fillPatternOffsetX = gridCellPixelSize.width / scale / 2;
+      patternProps.fillPatternOffsetY = gridCellPixelSize.height / scale / 2;
+    }
   } else if (grid.type === "hexVertical") {
     // Hex tile pattern is 153 DPI to better fit hex tiles
     const scale = gridCellPixelSize.width / 153;
-    patternProps.fillPatternScaleX = scale;
-    patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetY = gridCellPixelSize.radius / scale / 2;
+    if (scale > 0) {
+      patternProps.fillPatternScaleX = scale;
+      patternProps.fillPatternScaleY = scale;
+      patternProps.fillPatternOffsetY = gridCellPixelSize.radius / scale / 2;
+    }
   } else if (grid.type === "hexHorizontal") {
     const scale = gridCellPixelSize.height / 153;
-    patternProps.fillPatternScaleX = scale;
-    patternProps.fillPatternScaleY = scale;
-    patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / scale / 2;
-    patternProps.fillPatternRotation = 90;
+    if (scale > 0) {
+      patternProps.fillPatternScaleX = scale;
+      patternProps.fillPatternScaleY = scale;
+      patternProps.fillPatternOffsetY = -gridCellPixelSize.radius / scale / 2;
+      patternProps.fillPatternRotation = 90;
+    }
   }
 
   return (
