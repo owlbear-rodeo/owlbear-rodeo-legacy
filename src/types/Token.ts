@@ -40,5 +40,5 @@ export type TokenMenuOptions = {
 export type TokenDraggingOptions = {
   dragging: boolean;
   tokenState: TokenState;
-  tokenGroup: Konva.Node;
+  tokenNode: Konva.Node;
 };

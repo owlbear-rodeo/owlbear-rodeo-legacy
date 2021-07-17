@@ -1,17 +1,25 @@
-import React from "react";
 import { Flex, Box, Input, Label } from "theme-ui";
 
 import { isEmpty } from "../../helpers/shared";
 
 import Select from "../Select";
 
-const categorySettings = [
+import { Token, TokenCategory } from "../../types/Token";
+import { TokenSettingsChangeEventHandler } from "../../types/Events";
+
+type CategorySetting = { value: TokenCategory; label: string };
+const categorySettings: CategorySetting[] = [
   { value: "character", label: "Character" },
   { value: "prop", label: "Prop" },
   { value: "vehicle", label: "Vehicle / Mount" },
 ];
 
-function TokenSettings({ token, onSettingsChange }) {
+type TokenSettingsProps = {
+  token: Token;
+  onSettingsChange: TokenSettingsChangeEventHandler;
+};
+
+function TokenSettings({ token, onSettingsChange }: TokenSettingsProps) {
   const tokenEmpty = !token || isEmpty(token);
   return (
     <Flex sx={{ flexDirection: "column" }}>
@@ -20,7 +28,7 @@ function TokenSettings({ token, onSettingsChange }) {
         <Input
           name="name"
           value={(token && token.name) || ""}
-          onChange={(e) => onSettingsChange("name", e.target.value)}
+          onChange={(e) => onSettingsChange({ name: e.target.value })}
           disabled={tokenEmpty}
           my={1}
         />
@@ -30,12 +38,14 @@ function TokenSettings({ token, onSettingsChange }) {
         <Select
           options={categorySettings}
           value={
-            !tokenEmpty &&
-            categorySettings.find((s) => s.value === token.defaultCategory)
+            tokenEmpty
+              ? undefined
+              : categorySettings.find((s) => s.value === token.defaultCategory)
           }
           isDisabled={tokenEmpty}
-          onChange={(option) =>
-            onSettingsChange("defaultCategory", option.value)
+          onChange={
+            ((option: CategorySetting) =>
+              onSettingsChange({ defaultCategory: option.value })) as any
           }
           isSearchable={false}
         />
@@ -47,7 +57,7 @@ function TokenSettings({ token, onSettingsChange }) {
           name="tokenSize"
           value={`${(token && token.defaultSize) || 0}`}
           onChange={(e) =>
-            onSettingsChange("defaultSize", parseFloat(e.target.value))
+            onSettingsChange({ defaultSize: parseFloat(e.target.value) })
           }
           disabled={tokenEmpty}
           min={1}
@@ -59,7 +69,7 @@ function TokenSettings({ token, onSettingsChange }) {
         <Input
           name="label"
           value={(token && token.defaultLabel) || ""}
-          onChange={(e) => onSettingsChange("defaultLabel", e.target.value)}
+          onChange={(e) => onSettingsChange({ defaultLabel: e.target.value })}
           disabled={tokenEmpty}
           my={1}
         />

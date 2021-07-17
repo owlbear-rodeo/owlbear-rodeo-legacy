@@ -5,7 +5,7 @@ import { Data } from "@dnd-kit/core/dist/store/types";
 type DraggableProps = {
   id: string;
   children: React.ReactNode;
-  data: Data;
+  data?: Data;
 };
 
 function Draggable({ id, children, data }: DraggableProps) {

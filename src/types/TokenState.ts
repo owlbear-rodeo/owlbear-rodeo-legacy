@@ -1,3 +1,4 @@
+import { Color } from "../helpers/colors";
 import { Outline } from "./Outline";
 import { TokenCategory } from "./Token";
 
@@ -8,7 +9,7 @@ export type BaseTokenState = {
   size: number;
   category: TokenCategory;
   label: string;
-  statuses: string[];
+  statuses: Color[];
   x: number;
   y: number;
   lastModifiedBy: string;

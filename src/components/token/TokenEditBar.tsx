@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Flex, Close, IconButton } from "theme-ui";
 
 import { groupsFromIds, itemsFromGroups } from "../../helpers/group";
@@ -15,10 +15,15 @@ import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import shortcuts from "../../shortcuts";
 
-function TokenEditBar({ disabled, onLoad }) {
+type TokenEditBarProps = {
+  disabled: boolean;
+  onLoad: (load: boolean) => void;
+};
+
+function TokenEditBar({ disabled, onLoad }: TokenEditBarProps) {
   const { tokens, removeTokens, updateTokensHidden } = useTokenData();
 
-  const { activeGroups, selectedGroupIds, onGroupSelect } = useGroup();
+  const { activeGroups, selectedGroupIds, onClearSelection } = useGroup();
 
   const [allTokensVisible, setAllTokensVisisble] = useState(false);
 
@@ -40,12 +45,12 @@ function TokenEditBar({ disabled, onLoad }) {
     setIsTokensRemoveModalOpen(false);
     const selectedTokens = getSelectedTokens();
     const selectedTokenIds = selectedTokens.map((token) => token.id);
-    onGroupSelect();
+    onClearSelection();
     await removeTokens(selectedTokenIds);
     onLoad(false);
   }
 
-  async function handleTokensHide(hideInSidebar) {
+  async function handleTokensHide(hideInSidebar: boolean) {
     const selectedTokens = getSelectedTokens();
     const selectedTokenIds = selectedTokens.map((token) => token.id);
     // Show loading indicator if hiding more than 10 tokens
@@ -61,7 +66,7 @@ function TokenEditBar({ disabled, onLoad }) {
   /**
    * Shortcuts
    */
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (disabled) {
       return;
     }
@@ -101,7 +106,7 @@ function TokenEditBar({ disabled, onLoad }) {
       <Close
         title="Clear Selection"
         aria-label="Clear Selection"
-        onClick={() => onGroupSelect()}
+        onClick={() => onClearSelection()}
       />
       <Flex>
         <IconButton

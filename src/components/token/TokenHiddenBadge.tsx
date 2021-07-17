@@ -1,10 +1,13 @@
-import React from "react";
 import { Flex } from "theme-ui";
 
 import TokenShowIcon from "../../icons/TokenShowIcon";
 import TokenHideIcon from "../../icons/TokenHideIcon";
 
-function TokenHiddenBadge({ hidden }) {
+type TokenHiddenBadgeProps = {
+  hidden: boolean;
+};
+
+function TokenHiddenBadge({ hidden }: TokenHiddenBadgeProps) {
   return (
     <Flex
       sx={{

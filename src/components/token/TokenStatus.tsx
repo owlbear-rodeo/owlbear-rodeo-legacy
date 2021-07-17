@@ -1,9 +1,15 @@
-import React from "react";
 import { Circle, Group } from "react-konva";
 
 import colors from "../../helpers/colors";
+import { TokenState } from "../../types/TokenState";
 
-function TokenStatus({ tokenState, width, height }) {
+type TokenStatusProps = {
+  tokenState: TokenState;
+  width: number;
+  height: number;
+};
+
+function TokenStatus({ tokenState, width, height }: TokenStatusProps) {
   // Ensure statuses is an array and filter empty values
   const statuses = [...new Set((tokenState?.statuses || []).filter((s) => s))];
   return (

@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Box, IconButton } from "theme-ui";
 import { Stage, Layer, Image, Rect, Group } from "react-konva";
 import ReactResizeDetector from "react-resize-detector";
 import useImage from "use-image";
+import Konva from "konva";
 
 import usePreventOverscroll from "../../hooks/usePreventOverscroll";
 import useStageInteraction from "../../hooks/useStageInteraction";
@@ -18,32 +19,32 @@ import GridOffIcon from "../../icons/GridOffIcon";
 import { tokenSources } from "../../tokens";
 
 import Grid from "../Grid";
+import { Token } from "../../types/Token";
 
-function TokenPreview({ token }) {
-  const [tokenSourceData, setTokenSourceData] = useState({});
-  useEffect(() => {
-    if (token.id !== tokenSourceData.id) {
-      setTokenSourceData(token);
-    }
-  }, [token, tokenSourceData]);
+type TokenPreviewProps = {
+  token: Token;
+};
 
-  const tokenURL = useDataURL(tokenSourceData, tokenSources);
-  const [tokenSourceImage] = useImage(tokenURL);
+function TokenPreview({ token }: TokenPreviewProps) {
+  const tokenURL = useDataURL(token, tokenSources);
+  const [tokenSourceImage] = useImage(tokenURL || "");
 
   const [stageWidth, setStageWidth] = useState(1);
   const [stageHeight, setStageHeight] = useState(1);
   const [stageScale, setStageScale] = useState(1);
 
   const stageTranslateRef = useRef({ x: 0, y: 0 });
-  const tokenStageRef = useRef();
-  const tokenLayerRef = useRef();
+  const tokenStageRef = useRef<Konva.Stage>(null);
+  const tokenLayerRef = useRef<Konva.Layer>(null);
 
-  function handleResize(width, height) {
-    setStageWidth(width);
-    setStageHeight(height);
+  function handleResize(width?: number, height?: number) {
+    if (width && height) {
+      setStageWidth(width);
+      setStageHeight(height);
+    }
   }
 
-  const containerRef = useRef();
+  const containerRef = useRef<HTMLDivElement>(null);
   usePreventOverscroll(containerRef);
 
   const [tokenWidth, tokenHeight] = useImageCenter(
@@ -59,11 +60,11 @@ function TokenPreview({ token }) {
   );
 
   useStageInteraction(
-    tokenStageRef.current,
+    tokenStageRef,
     stageScale,
     setStageScale,
     stageTranslateRef,
-    tokenLayerRef.current
+    tokenLayerRef
   );
 
   const [showGridPreview, setShowGridPreview] = useState(true);

@@ -1,9 +1,19 @@
-import React from "react";
 import { Rect, Circle, Line } from "react-konva";
 
 import colors from "../../helpers/colors";
+import { Outline } from "../../types/Outline";
 
-export function TokenOutlineSVG({ outline, width, height }) {
+type TokenOutlineSVGProps = {
+  outline: Outline;
+  width: number;
+  height: number;
+};
+
+export function TokenOutlineSVG({
+  outline,
+  width,
+  height,
+}: TokenOutlineSVGProps) {
   if (outline.type === "rect") {
     return (
       <svg
@@ -55,7 +65,12 @@ export function TokenOutlineSVG({ outline, width, height }) {
   }
 }
 
-function TokenOutline({ outline, hidden }) {
+type TokenOutlineProps = {
+  outline: Outline;
+  hidden: boolean;
+};
+
+function TokenOutline({ outline, hidden }: TokenOutlineProps) {
   const sharedProps = {
     fill: colors.black,
     opacity: hidden ? 0 : 0.8,
@@ -84,7 +99,7 @@ function TokenOutline({ outline, hidden }) {
       <Line
         points={outline.points}
         closed
-        tension={outline.points < 200 ? 0 : 0.33}
+        tension={outline.points.length < 200 ? 0 : 0.33}
         {...sharedProps}
       />
     );

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Input, Flex, Text, IconButton } from "theme-ui";
+import Konva from "konva";
 
 import Slider from "../Slider";
 
@@ -16,6 +17,22 @@ import HideIcon from "../../icons/TokenHideIcon";
 
 import { useUserId } from "../../contexts/UserIdContext";
 
+import {
+  RequestCloseEventHandler,
+  TokenStateChangeEventHandler,
+} from "../../types/Events";
+import { TokenState } from "../../types/TokenState";
+import { Map } from "../../types/Map";
+
+type TokenMenuProps = {
+  isOpen: boolean;
+  onRequestClose: RequestCloseEventHandler;
+  tokenState: TokenState;
+  tokenImage: Konva.Node;
+  onTokenStateChange: TokenStateChangeEventHandler;
+  map: Map;
+};
+
 const defaultTokenMaxSize = 6;
 function TokenMenu({
   isOpen,
@@ -24,7 +41,7 @@ function TokenMenu({
   tokenImage,
   onTokenStateChange,
   map,
-}) {
+}: TokenMenuProps) {
   const userId = useUserId();
 
   const wasOpen = usePrevious(isOpen);
@@ -39,22 +56,25 @@ function TokenMenu({
       if (tokenImage) {
         const imageRect = tokenImage.getClientRect();
         const mapElement = document.querySelector(".map");
-        const mapRect = mapElement.getBoundingClientRect();
-
-        // Center X for the menu which is 156px wide
-        setMenuLeft(mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2);
-        // Y 12px from the bottom
-        setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
+        if (mapElement) {
+          const mapRect = mapElement.getBoundingClientRect();
+          // Center X for the menu which is 156px wide
+          setMenuLeft(
+            mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2
+          );
+          // Y 12px from the bottom
+          setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
+        }
       }
     }
   }, [isOpen, tokenState, wasOpen, tokenImage]);
 
-  function handleLabelChange(event) {
+  function handleLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
     const label = event.target.value.substring(0, 48);
     tokenState && onTokenStateChange({ [tokenState.id]: { label: label } });
   }
 
-  function handleStatusChange(status) {
+  function handleStatusChange(status: string) {
     if (!tokenState) {
       return;
     }
@@ -69,12 +89,12 @@ function TokenMenu({
     });
   }
 
-  function handleSizeChange(event) {
+  function handleSizeChange(event: React.ChangeEvent<HTMLInputElement>) {
     const newSize = parseFloat(event.target.value);
     tokenState && onTokenStateChange({ [tokenState.id]: { size: newSize } });
   }
 
-  function handleRotationChange(event) {
+  function handleRotationChange(event: React.ChangeEvent<HTMLInputElement>) {
     const newRotation = parseInt(event.target.value);
     tokenState &&
       onTokenStateChange({
@@ -96,26 +116,31 @@ function TokenMenu({
       });
   }
 
-  function handleModalContent(node) {
+  function handleModalContent(node: HTMLElement) {
     if (node) {
       // Focus input
-      const tokenLabelInput = node.querySelector("#changeTokenLabel");
-      tokenLabelInput.focus();
-      tokenLabelInput.select();
+      const tokenLabelInput =
+        node.querySelector<HTMLInputElement>("#changeTokenLabel");
+      if (tokenLabelInput) {
+        tokenLabelInput.focus();
+        tokenLabelInput.select();
+      }
 
       // Ensure menu is in bounds
       const nodeRect = node.getBoundingClientRect();
       const mapElement = document.querySelector(".map");
-      const mapRect = mapElement.getBoundingClientRect();
-      setMenuLeft((prevLeft) =>
-        Math.min(
-          mapRect.right - nodeRect.width,
-          Math.max(mapRect.left, prevLeft)
-        )
-      );
-      setMenuTop((prevTop) =>
-        Math.min(mapRect.bottom - nodeRect.height, prevTop)
-      );
+      if (mapElement) {
+        const mapRect = mapElement.getBoundingClientRect();
+        setMenuLeft((prevLeft) =>
+          Math.min(
+            mapRect.right - nodeRect.width,
+            Math.max(mapRect.left, prevLeft)
+          )
+        );
+        setMenuTop((prevTop) =>
+          Math.min(mapRect.bottom - nodeRect.height, prevTop)
+        );
+      }
     }
   }
 

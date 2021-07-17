@@ -1,13 +1,18 @@
-import React, { useState } from "react";
-import { Image, Box } from "theme-ui";
+import { useState } from "react";
+import { Image, Box, ImageProps } from "theme-ui";
 
 import { useDataURL } from "../../contexts/AssetsContext";
 
 import { tokenSources as defaultTokenSources } from "../../tokens";
+import { Token } from "../../types/Token";
 
 import { TokenOutlineSVG } from "./TokenOutline";
 
-const TokenImage = React.forwardRef(({ token, ...props }, ref) => {
+type TokenImageProps = {
+  token: Token;
+} & ImageProps;
+
+function TokenImage({ token, ...props }: TokenImageProps) {
   const tokenURL = useDataURL(
     token,
     defaultTokenSources,
@@ -35,12 +40,11 @@ const TokenImage = React.forwardRef(({ token, ...props }, ref) => {
       <Image
         onLoad={() => setShowOutline(false)}
         src={tokenURL}
-        ref={ref}
         style={showOutline ? { display: "none" } : props.style}
         {...props}
       />
     </>
   );
-});
+}
 
 export default TokenImage;

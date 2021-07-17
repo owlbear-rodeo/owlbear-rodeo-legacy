@@ -1,5 +1,3 @@
-import React from "react";
-
 import TokenTile from "./TokenTile";
 import TokenTileGroup from "./TokenTileGroup";
 import TokenHiddenBadge from "./TokenHiddenBadge";
@@ -10,12 +8,20 @@ import SortableTilesDragOverlay from "../tile/SortableTilesDragOverlay";
 import { getGroupItems } from "../../helpers/group";
 
 import { useGroup } from "../../contexts/GroupContext";
+import { Token } from "../../types/Token";
+import { Group } from "../../types/Group";
 
-function TokenTiles({ tokensById, onTokenEdit, subgroup }) {
+type TokenTilesProps = {
+  tokensById: Record<string, Token>;
+  onTokenEdit: (tokenId: string) => void;
+  subgroup: boolean;
+};
+
+function TokenTiles({ tokensById, onTokenEdit, subgroup }: TokenTilesProps) {
   const { selectedGroupIds, selectMode, onGroupOpen, onGroupSelect } =
     useGroup();
 
-  function renderTile(group) {
+  function renderTile(group: Group) {
     if (group.type === "item") {
       const token = tokensById[group.id];
       if (token) {

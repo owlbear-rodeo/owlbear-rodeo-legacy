@@ -1,10 +1,19 @@
-import React from "react";
 import { Grid } from "theme-ui";
 
 import Tile from "../tile/Tile";
 import TokenImage from "./TokenImage";
 
 import useResponsiveLayout from "../../hooks/useResponsiveLayout";
+import { GroupContainer } from "../../types/Group";
+import { Token } from "../../types/Token";
+
+type TokenTileProps = {
+  group: GroupContainer;
+  tokens: Token[];
+  isSelected: boolean;
+  onSelect: (tokenId: string) => void;
+  onDoubleClick: () => void;
+};
 
 function TokenTileGroup({
   group,
@@ -12,7 +21,7 @@ function TokenTileGroup({
   isSelected,
   onSelect,
   onDoubleClick,
-}) {
+}: TokenTileProps) {
   const layout = useResponsiveLayout();
 
   return (

@@ -44,10 +44,10 @@ function EditTokenModal({
   >({});
 
   // TODO: CHANGE MAP BACK? OR CHANGE THIS TO PARTIAL
-  function handleTokenSettingsChange(key: string, value: Pick<Token, any>) {
+  function handleTokenSettingsChange(change: Partial<Token>) {
     setTokenSettingChanges((prevChanges) => ({
       ...prevChanges,
-      [key]: value,
+      ...change,
     }));
   }
 
@@ -67,7 +67,7 @@ function EditTokenModal({
   const selectedTokenWithChanges = {
     ...token,
     ...tokenSettingChanges,
-  };
+  } as Token;
 
   const layout = useResponsiveLayout();
 

@@ -1,10 +1,15 @@
-import React from "react";
 import { Box } from "theme-ui";
 import { useInView } from "react-intersection-observer";
 
 import TokenImage from "./TokenImage";
 
-function TokenBarToken({ token }) {
+import { Token } from "../../types/Token";
+
+type TokenBarTokenProps = {
+  token: Token;
+};
+
+function TokenBarToken({ token }: TokenBarTokenProps) {
   const [ref, inView] = useInView({ triggerOnce: true });
 
   return (

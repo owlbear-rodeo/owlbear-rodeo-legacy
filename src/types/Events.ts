@@ -3,6 +3,7 @@ import { DefaultDice } from "./Dice";
 import { Map } from "./Map";
 import { MapState } from "./MapState";
 import { Note } from "./Note";
+import { Token } from "./Token";
 import { TokenState } from "./TokenState";
 
 export type MapChangeEventHandler = (map?: Map, mapState?: MapState) => void;
@@ -26,6 +27,7 @@ export type TokenMenuOpenChangeEventHandler = (
   tokenStateId: string,
   tokenImage: Konva.Node
 ) => void;
+export type TokenSettingsChangeEventHandler = (change: Partial<Token>) => void;
 
 export type NoteAddEventHander = (note: Note) => void;
 export type NoteRemoveEventHander = (noteId: string) => void;

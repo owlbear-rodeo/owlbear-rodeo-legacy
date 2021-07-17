@@ -1,7 +1,17 @@
 import React from "react";
+import { Token } from "../../types/Token";
 
 import Tile from "../tile/Tile";
 import TokenImage from "./TokenImage";
+
+type TokenTileProps = {
+  token: Token;
+  isSelected: boolean;
+  onSelect: (tokenId: string) => void;
+  onTokenEdit: (tokenId: string) => void;
+  canEdit: boolean;
+  badges: React.ReactChild[];
+};
 
 function TokenTile({
   token,
@@ -10,7 +20,7 @@ function TokenTile({
   onTokenEdit,
   canEdit,
   badges,
-}) {
+}: TokenTileProps) {
   return (
     <Tile
       title={token.name}

@@ -89,7 +89,7 @@ function MapTokens({
               setTokenDraggingOptions({
                 dragging: true,
                 tokenState,
-                tokenGroup: e.target,
+                tokenNode: e.target,
               })
             }
             onTokenDragEnd={() =>

@@ -259,11 +259,9 @@ function Map({
         onMapTokenStateRemove(state);
         setTokenDraggingOptions(undefined);
       }}
-      onTokenStateChange={onMapTokenStateChange}
       tokenState={tokenDraggingOptions && tokenDraggingOptions.tokenState}
-      tokenGroup={tokenDraggingOptions && tokenDraggingOptions.tokenGroup}
+      tokenNode={tokenDraggingOptions && tokenDraggingOptions.tokenNode}
       dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
-      token={tokensById[tokenDraggingOptions.tokenState.tokenId]}
     />
   );
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Box, Flex, Grid } from "theme-ui";
 import SimpleBar from "simplebar-react";
@@ -9,6 +9,7 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
+  DragStartEvent,
 } from "@dnd-kit/core";
 
 import TokenBarToken from "./TokenBarToken";
@@ -23,7 +24,7 @@ import usePreventSelect from "../../hooks/usePreventSelect";
 import { useTokenData } from "../../contexts/TokenDataContext";
 import { useUserId } from "../../contexts/UserIdContext";
 import { useMapStage } from "../../contexts/MapStageContext";
-import DragContext from "../../contexts/DragContext";
+import DragContext, { CustomDragEndEvent } from "../../contexts/DragContext";
 
 import {
   createTokenState,
@@ -31,13 +32,19 @@ import {
 } from "../../helpers/token";
 import { findGroup } from "../../helpers/group";
 import Vector2 from "../../helpers/Vector2";
+import { MapTokensStateCreateHandler } from "../../types/Events";
+import { Group } from "../../types/Group";
 
-function TokenBar({ onMapTokensStateCreate }) {
+type TokenBarProps = {
+  onMapTokensStateCreate: MapTokensStateCreateHandler;
+};
+
+function TokenBar({ onMapTokensStateCreate }: TokenBarProps) {
   const userId = useUserId();
   const { tokensById, tokenGroups } = useTokenData();
-  const [fullScreen] = useSetting("map.fullScreen");
+  const [fullScreen] = useSetting<boolean>("map.fullScreen");
 
-  const [dragId, setDragId] = useState();
+  const [dragId, setDragId] = useState<string | null>(null);
 
   const mapStageRef = useMapStage();
 
@@ -52,14 +59,20 @@ function TokenBar({ onMapTokensStateCreate }) {
 
   const [preventSelect, resumeSelect] = usePreventSelect();
 
-  function handleDragStart({ active }) {
+  function handleDragStart({ active }: DragStartEvent) {
     setDragId(active.id);
     preventSelect();
   }
 
-  function handleDragEnd({ active, overlayNodeClientRect }) {
+  function handleDragEnd({
+    active,
+    overlayNodeClientRect,
+  }: CustomDragEndEvent) {
     setDragId(null);
-
+    resumeSelect();
+    if (!userId) {
+      return;
+    }
     const mapStage = mapStageRef.current;
     if (mapStage && overlayNodeClientRect) {
       const dragRect = overlayNodeClientRect;
@@ -96,8 +109,6 @@ function TokenBar({ onMapTokensStateCreate }) {
         }
       }
     }
-
-    resumeSelect();
   }
 
   function handleDragCancel() {
@@ -105,7 +116,7 @@ function TokenBar({ onMapTokensStateCreate }) {
     resumeSelect();
   }
 
-  function renderToken(group, draggable = true) {
+  function renderToken(group: Group, draggable = true) {
     if (group.type === "item") {
       const token = tokensById[group.id];
       if (token && !token.hideInSidebar) {
@@ -139,6 +150,8 @@ function TokenBar({ onMapTokensStateCreate }) {
       }
     }
   }
+
+  const dragGroup = dragId && findGroup(tokenGroups, dragId);
 
   return (
     <DragContext
@@ -188,7 +201,7 @@ function TokenBar({ onMapTokensStateCreate }) {
         </Flex>
         {createPortal(
           <DragOverlay dropAnimation={null}>
-            {dragId && renderToken(findGroup(tokenGroups, dragId), false)}
+            {dragGroup && renderToken(dragGroup, false)}
           </DragOverlay>,
           document.body
         )}

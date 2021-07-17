@@ -1,13 +1,21 @@
-import React, { useRef, useEffect, useState } from "react";
+import Konva from "konva";
+import { useRef, useEffect, useState } from "react";
 import { Rect, Text, Group } from "react-konva";
 
 import useSetting from "../../hooks/useSetting";
+import { TokenState } from "../../types/TokenState";
 
 const maxTokenSize = 3;
 const defaultFontSize = 16;
 
-function TokenLabel({ tokenState, width, height }) {
-  const [labelSize] = useSetting("map.labelSize");
+type TokenLabelProps = {
+  tokenState: TokenState;
+  width: number;
+  height: number;
+};
+
+function TokenLabel({ tokenState, width, height }: TokenLabelProps) {
+  const [labelSize] = useSetting<number>("map.labelSize");
 
   const paddingY =
     (height / 12 / tokenState.size) * Math.min(tokenState.size, maxTokenSize);
@@ -22,7 +30,7 @@ function TokenLabel({ tokenState, width, height }) {
       return;
     }
 
-    let fontSizes = [];
+    let fontSizes: number[] = [];
     for (let size = 20 * labelSize; size >= 6; size--) {
       const verticalSize = height / size / tokenState.size;
       const tokenSize = Math.min(tokenState.size, maxTokenSize);
@@ -30,7 +38,7 @@ function TokenLabel({ tokenState, width, height }) {
       fontSizes.push(fontSize);
     }
 
-    function findFontScale() {
+    const findFontScale = () => {
       const size = fontSizes.reduce((prev, curr) => {
         text.fontSize(curr);
         const textWidth = text.getTextWidth() + paddingX * 2;
@@ -42,7 +50,7 @@ function TokenLabel({ tokenState, width, height }) {
       }, 1);
 
       setFontScale(size / defaultFontSize);
-    }
+    };
 
     findFontScale();
   }, [
@@ -68,8 +76,8 @@ function TokenLabel({ tokenState, width, height }) {
     }
   }, [tokenState.label, paddingX, width, fontScale]);
 
-  const textRef = useRef();
-  const textSizerRef = useRef();
+  const textRef = useRef<Konva.Text>(null);
+  const textSizerRef = useRef<Konva.Text>(null);
 
   return (
     <Group y={height - (defaultFontSize * fontScale + paddingY) / 2}>
