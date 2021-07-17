@@ -167,34 +167,36 @@ function NoteMenu({
             justifyContent: "space-between",
           }}
         >
-          {colorOptions.map((color) => (
-            <Box
-              key={color}
-              sx={{
-                width: "16.66%",
-                paddingTop: "16.66%",
-                borderRadius: "50%",
-                transform: "scale(0.75)",
-                backgroundColor: colors[color],
-                cursor: "pointer",
-              }}
-              onClick={() => handleColorChange(color)}
-              aria-label={`Note label Color ${color}`}
-            >
-              {note && note.color === color && (
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    border: "2px solid white",
-                    position: "absolute",
-                    top: 0,
-                    borderRadius: "50%",
-                  }}
-                />
-              )}
-            </Box>
-          ))}
+          {colorOptions
+            .filter((color) => color !== "primary")
+            .map((color) => (
+              <Box
+                key={color}
+                sx={{
+                  width: "16.66%",
+                  paddingTop: "16.66%",
+                  borderRadius: "50%",
+                  transform: "scale(0.75)",
+                  backgroundColor: colors[color],
+                  cursor: "pointer",
+                }}
+                onClick={() => handleColorChange(color)}
+                aria-label={`Note label Color ${color}`}
+              >
+                {note && note.color === color && (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      border: "2px solid white",
+                      position: "absolute",
+                      top: 0,
+                      borderRadius: "50%",
+                    }}
+                  />
+                )}
+              </Box>
+            ))}
         </Box>
         <Flex sx={{ alignItems: "center" }}>
           <Text

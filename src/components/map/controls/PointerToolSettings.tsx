@@ -18,7 +18,7 @@ function PointerToolSettings({
       <ColorControl
         color={settings.color}
         onColorChange={(color) => onSettingChange({ color })}
-        exclude={["black", "darkGray", "lightGray", "white"]}
+        exclude={["black", "darkGray", "lightGray", "white", "primary"]}
       />
     </Flex>
   );

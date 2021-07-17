@@ -123,6 +123,7 @@ function DrawingToolSettings({
       <ColorControl
         color={settings.color}
         onColorChange={(color) => onSettingChange({ color })}
+        exclude={["primary"]}
       />
       <Divider vertical />
       <ToolSection
