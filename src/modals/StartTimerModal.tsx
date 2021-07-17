@@ -7,11 +7,12 @@ import { getHMSDuration, getDurationHMS } from "../helpers/timer";
 
 import useSetting from "../hooks/useSetting";
 
-import { RequestCloseEventHandler } from "../types/Events";
+import {
+  RequestCloseEventHandler,
+  TimerStartEventHandler,
+  TimerStopEventHandler,
+} from "../types/Events";
 import { Timer } from "../types/Timer";
-
-export type TimerStartEventHandler = (event: Timer) => void;
-export type TimerStopEventHandler = () => void;
 
 type StartTimerProps = {
   isOpen: boolean;

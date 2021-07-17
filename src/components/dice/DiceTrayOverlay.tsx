@@ -3,6 +3,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import { CubeTexture } from "@babylonjs/core/Materials/Textures/cubeTexture";
+import { Scene } from "@babylonjs/core";
 import { Box } from "theme-ui";
 
 // @ts-ignore
@@ -19,16 +20,21 @@ import DiceTray from "../../dice/diceTray/DiceTray";
 import { useDiceLoading } from "../../contexts/DiceLoadingContext";
 
 import { getDiceRoll } from "../../helpers/dice";
+
 import useSetting from "../../hooks/useSetting";
+
 import { DefaultDice, DiceMesh, DiceRoll, DiceType } from "../../types/Dice";
-import { Scene } from "@babylonjs/core";
+import {
+  DiceRollsChangeEventHandler,
+  DiceShareChangeEventHandler,
+} from "../../types/Events";
 
 type DiceTrayOverlayProps = {
   isOpen: boolean;
   shareDice: boolean;
-  onShareDiceChange: () => void;
+  onShareDiceChange: DiceShareChangeEventHandler;
   diceRolls: DiceRoll[];
-  onDiceRollsChange: (newRolls: DiceRoll[]) => void;
+  onDiceRollsChange: DiceRollsChangeEventHandler;
 };
 
 function DiceTrayOverlay({

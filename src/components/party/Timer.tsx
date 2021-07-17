@@ -1,11 +1,17 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { Box, Progress } from "theme-ui";
 
 import usePortal from "../../hooks/usePortal";
+import { Timer as TimerType } from "../../types/Timer";
 
-function Timer({ timer, index }: { timer; index: number }) {
-  const progressBarRef = useRef();
+type TimerProps = {
+  timer?: TimerType;
+  index: number;
+};
+
+function Timer({ timer, index }: TimerProps) {
+  const progressBarRef = useRef<HTMLProgressElement>(null);
 
   useEffect(() => {
     if (progressBarRef.current && timer) {
@@ -16,7 +22,7 @@ function Timer({ timer, index }: { timer; index: number }) {
   useEffect(() => {
     let request = requestAnimationFrame(animate);
     let previousTime = performance.now();
-    function animate(time) {
+    function animate(time: number) {
       request = requestAnimationFrame(animate);
       const deltaTime = time - previousTime;
       previousTime = time;

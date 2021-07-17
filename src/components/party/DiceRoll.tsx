@@ -1,14 +1,13 @@
 import { Flex, Box, Text } from "theme-ui";
+import { DiceRoll as DiceRollType, DiceType } from "../../types/Dice";
 
-function DiceRoll({
-  rolls,
-  type,
-  children,
-}: {
-  rolls;
-  type: string;
-  children;
-}) {
+type DiceRollProps = {
+  rolls: DiceRollType[];
+  type: DiceType;
+  children: React.ReactNode;
+};
+
+function DiceRoll({ rolls, type, children }: DiceRollProps) {
   return (
     <Flex sx={{ flexWrap: "wrap" }}>
       <Box sx={{ transform: "scale(0.8)" }}>{children}</Box>

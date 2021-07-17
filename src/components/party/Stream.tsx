@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, ChangeEvent } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { Text, IconButton, Box, Flex } from "theme-ui";
 
 import StreamMuteIcon from "../../icons/StreamMuteIcon";
@@ -6,18 +6,17 @@ import StreamMuteIcon from "../../icons/StreamMuteIcon";
 import Banner from "../banner/Banner";
 import Slider from "../Slider";
 
-function Stream({
-  stream,
-  nickname,
-}: {
+type StreamProps = {
   stream: MediaStream;
   nickname: string;
-}) {
+};
+
+function Stream({ stream, nickname }: StreamProps) {
   const [streamVolume, setStreamVolume] = useState(1);
   const [showStreamInteractBanner, setShowStreamInteractBanner] =
     useState(false);
   const [streamMuted, setStreamMuted] = useState(false);
-  const audioRef = useRef();
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -59,17 +58,21 @@ function Stream({
   const [isVolumeControlAvailable, setIsVolumeControlAvailable] =
     useState(true);
   useEffect(() => {
-    let audio = audioRef.current;
-    function checkVolumeControlAvailable() {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    const checkVolumeControlAvailable = () => {
       const prevVolume = audio.volume;
       // Set volume to 0.5, then check if the value actually stuck 100ms later
       audio.volume = 0.5;
       setTimeout(() => {
-        setIsVolumeControlAvailable(audio.volume === 0.5);
-        audio.volume = prevVolume;
-        // TODO: check if this supposed to be a number or number[]
+        if (audio) {
+          setIsVolumeControlAvailable(audio.volume === 0.5);
+          audio.volume = prevVolume;
+        }
       }, 100);
-    }
+    };
 
     audio.addEventListener("playing", checkVolumeControlAvailable);
 
@@ -79,7 +82,7 @@ function Stream({
   }, []);
 
   // Use an audio context gain node to control volume to go past 100%
-  const audioGainRef = useRef();
+  const audioGainRef = useRef<GainNode>();
   useEffect(() => {
     let audioContext: AudioContext;
     if (stream && !streamMuted && isVolumeControlAvailable && audioGainRef) {

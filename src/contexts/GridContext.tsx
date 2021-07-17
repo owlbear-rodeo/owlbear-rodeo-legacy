@@ -66,21 +66,25 @@ export const GridCellPixelOffsetContext = React.createContext(
 
 const defaultStrokeWidth = 1 / 10;
 
+type GridProviderProps = {
+  grid: Grid | null;
+  width: number;
+  height: number;
+  children: React.ReactNode;
+};
+
 export function GridProvider({
   grid: inputGrid,
   width,
   height,
   children,
-}: {
-  grid: Grid;
-  width: number;
-  height: number;
-  children: React.ReactNode;
-}) {
-  let grid = inputGrid;
+}: GridProviderProps) {
+  let grid: Grid;
 
-  if (!grid.size.x || !grid.size.y) {
+  if (!inputGrid || !inputGrid.size.x || !inputGrid.size.y) {
     grid = defaultValue.grid;
+  } else {
+    grid = inputGrid;
   }
 
   const [gridPixelSize, setGridPixelSize] = useState(

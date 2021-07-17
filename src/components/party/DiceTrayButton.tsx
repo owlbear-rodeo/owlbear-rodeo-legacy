@@ -9,19 +9,27 @@ import useSetting from "../../hooks/useSetting";
 
 import LoadingOverlay from "../LoadingOverlay";
 
+import {
+  DiceShareChangeEventHandler,
+  DiceRollsChangeEventHandler,
+} from "../../types/Events";
+import { DiceRoll } from "../../types/Dice";
+
 const DiceTrayOverlay = React.lazy(() => import("../dice/DiceTrayOverlay"));
+
+type DiceTrayButtonProps = {
+  shareDice: boolean;
+  onShareDiceChange: DiceShareChangeEventHandler;
+  diceRolls: DiceRoll[];
+  onDiceRollsChange: DiceRollsChangeEventHandler;
+};
 
 function DiceTrayButton({
   shareDice,
   onShareDiceChange,
   diceRolls,
   onDiceRollsChange,
-}: {
-  shareDice: boolean;
-  onShareDiceChange;
-  diceRolls: [];
-  onDiceRollsChange;
-}) {
+}: DiceTrayButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [fullScreen] = useSetting("map.fullScreen");
 

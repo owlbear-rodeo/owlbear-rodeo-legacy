@@ -359,24 +359,22 @@ export function gridDistance(
  * @returns {GridScale}
  */
 
-export function parseGridScale(scale: string): GridScale {
+export function parseGridScale(scale: string | null): GridScale {
   if (typeof scale === "string") {
     const match = scale.match(/(\d*)(\.\d*)?([a-zA-Z]*)/);
-    // TODO: handle case where match is not found
-    if (!match) {
-      throw Error;
-    }
-    const integer = parseFloat(match[1]);
-    const fractional = parseFloat(match[2]);
-    const unit = match[3] || "";
-    if (!isNaN(integer) && !isNaN(fractional)) {
-      return {
-        multiplier: integer + fractional,
-        unit: unit,
-        digits: match[2].length - 1,
-      };
-    } else if (!isNaN(integer) && isNaN(fractional)) {
-      return { multiplier: integer, unit: unit, digits: 0 };
+    if (match) {
+      const integer = parseFloat(match[1]);
+      const fractional = parseFloat(match[2]);
+      const unit = match[3] || "";
+      if (!isNaN(integer) && !isNaN(fractional)) {
+        return {
+          multiplier: integer + fractional,
+          unit: unit,
+          digits: match[2].length - 1,
+        };
+      } else if (!isNaN(integer) && isNaN(fractional)) {
+        return { multiplier: integer, unit: unit, digits: 0 };
+      }
     }
   }
   return { multiplier: 1, unit: "", digits: 0 };

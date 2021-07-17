@@ -23,7 +23,6 @@ export type CustomDragEndEvent = DragEndWithOverlayEvent & DragEndEvent;
 
 type CustomDragProps = {
   onDragEnd?: (event: CustomDragEndEvent) => void;
-  ;
 };
 
 function DragPositionMonitor({ onDragEnd }: CustomDragProps) {

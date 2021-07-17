@@ -12,7 +12,6 @@ import MapMeasure from "./MapMeasure";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 import MapNotes from "./MapNotes";
 
-import { useTokenData } from "../../contexts/TokenDataContext";
 import { useSettings } from "../../contexts/SettingsContext";
 
 import TokenMenu from "../token/TokenMenu";
@@ -29,13 +28,12 @@ import {
 import Session from "../../network/Session";
 import { Drawing, DrawingState } from "../../types/Drawing";
 import { Fog, FogState } from "../../types/Fog";
-import { Map, MapActions, MapToolId } from "../../types/Map";
+import { Map as MapType, MapActions, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
 import { Settings } from "../../types/Settings";
 import {
   MapChangeEventHandler,
   MapResetEventHandler,
-  MapTokensStateCreateHandler,
   MapTokenStateRemoveHandler,
   NoteChangeEventHandler,
   NoteRemoveEventHander,
@@ -47,7 +45,7 @@ import { TokenDraggingOptions, TokenMenuOptions } from "../../types/Token";
 import { Note, NoteDraggingOptions, NoteMenuOptions } from "../../types/Note";
 
 type MapProps = {
-  map: Map | null;
+  map: MapType | null;
   mapState: MapState | null;
   mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
@@ -94,8 +92,6 @@ function Map({
   session,
 }: MapProps) {
   const { addToast } = useToasts();
-
-  const { tokensById } = useTokenData();
 
   const [selectedToolId, setSelectedToolId] = useState<MapToolId>("move");
   const { settings, setSettings } = useSettings();

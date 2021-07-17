@@ -22,7 +22,10 @@ import { Group, GroupContainer } from "./types/Group";
 
 export type UpgradeEventHandler = (versionNumber: number) => void;
 
-type VersionCallback = (version: Version, onUpgrade?: UpgradeEventHandler);
+type VersionCallback = (
+  version: Version,
+  onUpgrade?: UpgradeEventHandler
+) => void;
 
 /**
  * Mapping of version number to their upgrade function
@@ -285,7 +288,7 @@ export const versions: Record<number, VersionCallback> = {
     v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(15);
       const tokens = await Dexie.waitFor(tx.table("tokens").toArray());
-      let tokenSizes: Record<string, {width: number, height: number}> = {};
+      let tokenSizes: Record<string, { width: number; height: number }> = {};
       for (let token of tokens) {
         const url = URL.createObjectURL(new Blob([token.file]));
         let image = new Image();
@@ -775,7 +778,7 @@ export const versions: Record<number, VersionCallback> = {
   34(v, onUpgrade) {
     v.stores({ groups: "id" }).upgrade(async (tx) => {
       onUpgrade?.(34);
-      function groupItems(items: {id: string, group: string}[]) {
+      function groupItems(items: { id: string; group: string }[]) {
         let groups: Group[] = [];
         let subGroups: Record<string, GroupContainer> = {};
         for (let item of items) {
@@ -841,7 +844,11 @@ export const latestVersion = 36;
  * @param {number=} upTo version number to load up to, latest version if undefined
  * @param {UpgradeEventHandler=} onUpgrade
  */
-export function loadVersions(db: Dexie, upTo: number | undefined = latestVersion, onUpgrade: UpgradeEventHandler | undefined) {
+export function loadVersions(
+  db: Dexie,
+  upTo: number | undefined = latestVersion,
+  onUpgrade: UpgradeEventHandler | undefined
+) {
   for (let versionNumber = 1; versionNumber <= upTo; versionNumber++) {
     versions[versionNumber](db.version(versionNumber), onUpgrade);
   }
@@ -883,12 +890,12 @@ function convertOldActionsToShapes(actions: any[], actionIndex: number) {
 }
 
 // Helper to create a thumbnail for a file in a db
-async function createDataThumbnail(data: any) : Promise<{
-  file:  Uint8Array,
-  width: number,
-  height: number,
-  type: "file",
-  id: "thumbnail",
+async function createDataThumbnail(data: any): Promise<{
+  file: Uint8Array;
+  width: number;
+  height: number;
+  type: "file";
+  id: "thumbnail";
 }> {
   let url: string;
   if (data?.resolutions?.low?.file) {
@@ -917,7 +924,9 @@ async function createDataThumbnail(data: any) : Promise<{
   );
 }
 
-async function createDataOutline(data: any) : Promise<{id: string, outline: Outline}> {
+async function createDataOutline(
+  data: any
+): Promise<{ id: string; outline: Outline }> {
   const url = URL.createObjectURL(new Blob([data.file]));
   return await Dexie.waitFor(
     new Promise((resolve) => {

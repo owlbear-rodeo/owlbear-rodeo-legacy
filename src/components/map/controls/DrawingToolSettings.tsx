@@ -26,11 +26,14 @@ import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 import shortcuts from "../../../shortcuts";
 
-import { DrawingToolSettings, DrawingToolType } from "../../../types/Drawing";
+import {
+  DrawingToolSettings as DrawingToolSettingsType,
+  DrawingToolType,
+} from "../../../types/Drawing";
 
 type DrawingToolSettingsProps = {
-  settings: DrawingToolSettings;
-  onSettingChange: (change: Partial<DrawingToolSettings>) => void;
+  settings: DrawingToolSettingsType;
+  onSettingChange: (change: Partial<DrawingToolSettingsType>) => void;
   onToolAction: (action: string) => void;
   disabledActions: string[];
 };

@@ -2,17 +2,15 @@ import { Text, Flex } from "theme-ui";
 
 import Stream from "./Stream";
 import DiceRolls from "./DiceRolls";
+import { DiceRoll } from "../../types/Dice";
 
-// TODO: check if stream is a required or optional param
-function Nickname({
-  nickname,
-  stream,
-  diceRolls,
-}: {
+type NicknameProps = {
   nickname: string;
-  stream?;
-  diceRolls;
-}) {
+  stream?: MediaStream;
+  diceRolls?: DiceRoll[];
+};
+
+function Nickname({ nickname, stream, diceRolls }: NicknameProps) {
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <Text

@@ -52,7 +52,7 @@ function MapMeasure({ map, active }: MapMeasureProps) {
     useState<MeasureData | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
-  const gridScale = parseGridScale(active && grid.measurement.scale);
+  const gridScale = parseGridScale(active ? grid.measurement.scale : null);
 
   const snapPositionToGrid = useGridSnapping(
     grid.measurement.type === "euclidean" ? 0 : 1,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { IconButton } from "theme-ui";
 
 import AddPartyMemberModal from "../../modals/AddPartyMemberModal";

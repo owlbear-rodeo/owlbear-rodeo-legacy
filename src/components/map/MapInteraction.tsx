@@ -193,7 +193,11 @@ function MapInteraction({
 
   return (
     <MapInteractionProvider value={mapInteraction}>
-      <GridProvider grid={map?.grid} width={mapWidth} height={mapHeight}>
+      <GridProvider
+        grid={map?.grid || null}
+        width={mapWidth}
+        height={mapHeight}
+      >
         <Box
           sx={{
             position: "relative",

@@ -9,15 +9,14 @@ type MapTileImageProps = {
 } & ImageProps;
 
 function MapTileImage({ map, ...props }: MapTileImageProps) {
-    const mapURL = useDataURL(
-      map,
-      defaultMapSources,
-      undefined,
-      map.type === "file"
-    );
+  const mapURL = useDataURL(
+    map,
+    defaultMapSources,
+    undefined,
+    map.type === "file"
+  );
 
-    return <Image src={mapURL} {...props} />;
-  }
-);
+  return <Image src={mapURL} {...props} />;
+}
 
 export default MapTileImage;

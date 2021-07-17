@@ -23,11 +23,14 @@ import { useKeyboard } from "../../../contexts/KeyboardContext";
 
 import shortcuts from "../../../shortcuts";
 
-import { FogToolSettings, FogToolType } from "../../../types/Fog";
+import {
+  FogToolSettings as FogToolSettingsType,
+  FogToolType,
+} from "../../../types/Fog";
 
 type FogToolSettingsProps = {
-  settings: FogToolSettings;
-  onSettingChange: (change: Partial<FogToolSettings>) => void;
+  settings: FogToolSettingsType;
+  onSettingChange: (change: Partial<FogToolSettingsType>) => void;
   onToolAction: (action: string) => void;
   disabledActions: string[];
 };

@@ -1,8 +1,9 @@
 import Konva from "konva";
-import { DefaultDice } from "./Dice";
+import { DefaultDice, DiceRoll } from "./Dice";
 import { Map } from "./Map";
 import { MapState } from "./MapState";
 import { Note } from "./Note";
+import { Timer } from "./Timer";
 import { Token } from "./Token";
 import { TokenState } from "./TokenState";
 
@@ -43,3 +44,12 @@ export type NoteDragEventHandler = (
   event: Konva.KonvaEventObject<DragEvent>,
   noteId: string
 ) => void;
+
+export type DiceShareChangeEventHandler = (share: boolean) => void;
+export type DiceRollsChangeEventHandler = (newRolls: DiceRoll[]) => void;
+
+export type StreamStartEventHandler = (stream: MediaStream) => void;
+export type StreamEndEventHandler = (stream: MediaStream) => void;
+
+export type TimerStartEventHandler = (event: Timer) => void;
+export type TimerStopEventHandler = () => void;

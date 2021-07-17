@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Flex, Box, Text } from "theme-ui";
 import SimpleBar from "simplebar-react";
 
@@ -15,6 +15,20 @@ import useSetting from "../../hooks/useSetting";
 
 import { useParty } from "../../contexts/PartyContext";
 import { usePlayerState, usePlayerUpdater } from "../../contexts/PlayerContext";
+import { DiceRoll } from "../../types/Dice";
+import {
+  StreamEndEventHandler,
+  StreamStartEventHandler,
+} from "../../types/Events";
+import { Timer as TimerType } from "../../types/Timer";
+
+type PartyProps = {
+  gameId: string;
+  stream: MediaStream | null;
+  partyStreams: Record<string, MediaStream>;
+  onStreamStart: StreamStartEventHandler;
+  onStreamEnd: StreamEndEventHandler;
+};
 
 function Party({
   gameId,
@@ -22,33 +36,27 @@ function Party({
   partyStreams,
   onStreamStart,
   onStreamEnd,
-}: {
-  gameId: string;
-  stream;
-  partyStreams;
-  onStreamStart;
-  onStreamEnd;
-}) {
+}: PartyProps) {
   const setPlayerState = usePlayerUpdater();
   const playerState = usePlayerState();
   const partyState = useParty();
 
   const [fullScreen] = useSetting<boolean>("map.fullScreen");
-  const [shareDice, setShareDice] = useSetting("dice.shareDice");
+  const [shareDice, setShareDice] = useSetting<boolean>("dice.shareDice");
 
-  function handleTimerStart(newTimer: PartyTimer) {
+  function handleTimerStart(newTimer: TimerType) {
     setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
   }
 
   function handleTimerStop() {
-    setPlayerState((prevState) => ({ ...prevState, timer: null }));
+    setPlayerState((prevState) => ({ ...prevState, timer: undefined }));
   }
 
   useEffect(() => {
     let prevTime = performance.now();
     let request = requestAnimationFrame(update);
     let counter = 0;
-    function update(time) {
+    function update(time: number) {
       request = requestAnimationFrame(update);
       const deltaTime = time - prevTime;
       prevTime = time;
@@ -57,12 +65,12 @@ function Party({
         counter += deltaTime;
         // Update timer every second
         if (counter > 1000) {
-          const newTimer: PartyTimer = {
+          const newTimer: TimerType = {
             ...playerState.timer,
             current: playerState.timer.current - counter,
           };
           if (newTimer.current < 0) {
-            setPlayerState((prevState) => ({ ...prevState, timer: null }));
+            setPlayerState((prevState) => ({ ...prevState, timer: undefined }));
           } else {
             setPlayerState((prevState) => ({ ...prevState, timer: newTimer }));
           }
@@ -79,9 +87,9 @@ function Party({
     setPlayerState((prevState) => ({ ...prevState, nickname: newNickname }));
   }
 
-  function handleDiceRollsChange(newDiceRolls: number[]) {
+  function handleDiceRollsChange(newDiceRolls: DiceRoll[]) {
     setPlayerState(
-      (prevState: PlayerDice) => ({
+      (prevState) => ({
         ...prevState,
         dice: { share: shareDice, rolls: newDiceRolls },
       }),
@@ -91,7 +99,7 @@ function Party({
 
   function handleShareDiceChange(newShareDice: boolean) {
     setShareDice(newShareDice);
-    setPlayerState((prevState: PlayerInfo) => ({
+    setPlayerState((prevState) => ({
       ...prevState,
       dice: { ...prevState.dice, share: newShareDice },
     }));
@@ -134,17 +142,16 @@ function Party({
             height: "calc(100% - 232px)",
           }}
         >
-          {/* TODO: check if stream is required here */}
           <Nickname
             nickname={`${playerState.nickname} (you)`}
-            diceRolls={shareDice && playerState.dice.rolls}
+            diceRolls={shareDice ? playerState.dice.rolls : undefined}
           />
           {Object.entries(partyState).map(([id, { nickname, dice }]) => (
             <Nickname
               nickname={nickname}
               key={id}
               stream={partyStreams[id]}
-              diceRolls={dice.share && dice.rolls}
+              diceRolls={dice.share ? dice.rolls : undefined}
             />
           ))}
           {playerState.timer && <Timer timer={playerState.timer} index={0} />}

@@ -13,8 +13,9 @@ import D100Icon from "../../icons/D100Icon";
 import DiceRoll from "./DiceRoll";
 
 import { getDiceRollTotal } from "../../helpers/dice";
+import { DiceRoll as DiceRollType, DiceType } from "../../types/Dice";
 
-const diceIcons = [
+const diceIcons: { type: DiceType; Icon: React.ElementType }[] = [
   { type: "d20", Icon: D20Icon },
   { type: "d12", Icon: D12Icon },
   { type: "d10", Icon: D10Icon },
@@ -24,7 +25,11 @@ const diceIcons = [
   { type: "d100", Icon: D100Icon },
 ];
 
-function DiceRolls({ rolls }: { rolls }) {
+type DiceRollsProps = {
+  rolls: DiceRollType[];
+};
+
+function DiceRolls({ rolls }: DiceRollsProps) {
   const total = getDiceRollTotal(rolls);
 
   const [expanded, setExpanded] = useState<boolean>(false);

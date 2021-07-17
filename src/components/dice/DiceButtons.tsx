@@ -18,11 +18,13 @@ import SelectDiceButton from "./SelectDiceButton";
 
 import Divider from "../Divider";
 
+import Dice from "../../dice/Dice";
+
 import { dice } from "../../dice";
 import useSetting from "../../hooks/useSetting";
 
 import { DefaultDice, DiceRoll, DiceType } from "../../types/Dice";
-import Dice from "../../dice/Dice";
+import { DiceShareChangeEventHandler } from "../../types/Events";
 
 type DiceButtonsProps = {
   diceRolls: DiceRoll[];
@@ -31,7 +33,7 @@ type DiceButtonsProps = {
   diceTraySize: "single" | "double";
   onDiceTraySizeChange: (newSize: "single" | "double") => void;
   shareDice: boolean;
-  onShareDiceChange: (value: boolean) => void;
+  onShareDiceChange: DiceShareChangeEventHandler;
   loading: boolean;
 };
 

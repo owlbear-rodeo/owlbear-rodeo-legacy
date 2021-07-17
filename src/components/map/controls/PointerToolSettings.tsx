@@ -2,11 +2,11 @@ import { Flex } from "theme-ui";
 
 import ColorControl from "./ColorControl";
 
-import { PointerToolSettings } from "../../../types/Pointer";
+import { PointerToolSettings as PointerToolSettingsType } from "../../../types/Pointer";
 
 type PointerToolSettingsProps = {
-  settings: PointerToolSettings;
-  onSettingChange: (change: Partial<PointerToolSettings>) => void;
+  settings: PointerToolSettingsType;
+  onSettingChange: (change: Partial<PointerToolSettingsType>) => void;
 };
 
 function PointerToolSettings({

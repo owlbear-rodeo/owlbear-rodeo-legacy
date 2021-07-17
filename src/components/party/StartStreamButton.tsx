@@ -1,20 +1,26 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { IconButton, Box, Text } from "theme-ui";
 import adapter from "webrtc-adapter";
 
 import Link from "../Link";
 
 import StartStreamModal from "../../modals/StartStreamModal";
+import {
+  StreamEndEventHandler,
+  StreamStartEventHandler,
+} from "../../types/Events";
+
+type StartStreamProps = {
+  onStreamStart: StreamStartEventHandler;
+  onStreamEnd: StreamEndEventHandler;
+  stream: MediaStream | null;
+};
 
 function StartStreamButton({
   onStreamStart,
   onStreamEnd,
   stream,
-}: {
-  onStreamStart;
-  onStreamEnd;
-  stream;
-}) {
+}: StartStreamProps) {
   const [isStreamModalOpoen, setIsStreamModalOpen] = useState(false);
   function openModal() {
     setIsStreamModalOpen(true);
@@ -53,7 +59,7 @@ function StartStreamButton({
 
   function handleStreamStart() {
     // Must be defined this way in typescript due to open issue - https://github.com/microsoft/TypeScript/issues/33232
-    const mediaDevices = navigator.mediaDevices;
+    const mediaDevices: any = navigator.mediaDevices;
     mediaDevices
       .getDisplayMedia({
         video: true,
@@ -63,7 +69,7 @@ function StartStreamButton({
           echoCancellation: false,
         },
       })
-      .then((localStream: { getTracks }) => {
+      .then((localStream: MediaStream) => {
         const tracks = localStream.getTracks();
 
         const hasAudio = tracks.some(
