@@ -1,4 +1,7 @@
 const theme = {
+  config: {
+    useColorSchemeMediaQuery: false,
+  },
   colors: {
     text: "hsl(210, 50%, 96%)",
     background: "hsl(230, 25%, 18%)",
@@ -157,9 +160,10 @@ const theme = {
     ".comment": {
       fontStyle: "italic",
     },
-    ".property,.tag,.boolean,.number,.constant,.symbol,.deleted,.function,.class-name,.regex,.important,.variable": {
-      color: "purple",
-    },
+    ".property,.tag,.boolean,.number,.constant,.symbol,.deleted,.function,.class-name,.regex,.important,.variable":
+      {
+        color: "purple",
+      },
     ".atrule,.attr-value,.keyword": {
       color: "primary",
     },
