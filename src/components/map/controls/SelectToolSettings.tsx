@@ -35,7 +35,7 @@ function SelectToolSettings({
 
   const tools = [
     {
-      id: "lasso",
+      id: "path",
       title: "Lasso (L)",
       isSelected: settings.type === "path",
       icon: <PathIcon />,

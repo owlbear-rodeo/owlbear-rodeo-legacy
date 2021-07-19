@@ -43,6 +43,7 @@ import Action from "../../actions/Action";
 import Konva from "konva";
 import { TokenDraggingOptions, TokenMenuOptions } from "../../types/Token";
 import { Note, NoteDraggingOptions, NoteMenuOptions } from "../../types/Note";
+import MapSelect from "./MapSelect";
 
 type MapProps = {
   map: MapType | null;
@@ -385,6 +386,13 @@ function Map({
     />
   ) : null;
 
+  const mapSelect = (
+    <MapSelect
+      active={selectedToolId === "select"}
+      toolSettings={settings.select}
+    />
+  );
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <MapInteraction
@@ -410,6 +418,7 @@ function Map({
         {mapFog}
         {mapPointer}
         {mapMeasure}
+        {mapSelect}
       </MapInteraction>
     </Box>
   );
