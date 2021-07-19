@@ -41,9 +41,6 @@ function zoomOut(event: KeyboardEvent): boolean {
 
 type Shortcut = (event: KeyboardEvent) => boolean;
 
-/**
- * @type {Object.<string, shortcut>}
- */
 const shortcuts: Record<string, Shortcut> = {
   // Tools
   move: (event) => singleKey(event, " "),
@@ -78,6 +75,10 @@ const shortcuts: Record<string, Shortcut> = {
   fogCut: (event) => singleKey(event, "c"),
   fogFinishPolygon: ({ key }) => key === "Enter",
   fogCancelPolygon: ({ key }) => key === "Escape",
+  // Select tool
+  selectTool: (event) => singleKey(event, "s"),
+  selectPath: (event) => singleKey(event, "l"),
+  selectRect: (event) => singleKey(event, "r"),
   // Stage interaction
   stageZoomIn: zoomIn,
   stageZoomOut: zoomOut,

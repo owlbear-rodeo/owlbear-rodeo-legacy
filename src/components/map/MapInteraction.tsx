@@ -135,26 +135,6 @@ function MapInteraction({
       previousSelectedToolRef.current = selectedToolId;
       onSelectedToolChange("move");
     }
-
-    // Basic keyboard shortcuts
-    if (shortcuts.moveTool(event) && !disabledControls.includes("move")) {
-      onSelectedToolChange("move");
-    }
-    if (shortcuts.drawingTool(event) && !disabledControls.includes("drawing")) {
-      onSelectedToolChange("drawing");
-    }
-    if (shortcuts.fogTool(event) && !disabledControls.includes("fog")) {
-      onSelectedToolChange("fog");
-    }
-    if (shortcuts.measureTool(event) && !disabledControls.includes("measure")) {
-      onSelectedToolChange("measure");
-    }
-    if (shortcuts.pointerTool(event) && !disabledControls.includes("pointer")) {
-      onSelectedToolChange("pointer");
-    }
-    if (shortcuts.noteTool(event) && !disabledControls.includes("note")) {
-      onSelectedToolChange("note");
-    }
   }
 
   function handleKeyUp(event: KeyboardEvent) {

@@ -156,6 +156,7 @@ function Map({
     disabledControls.push("move");
     disabledControls.push("measure");
     disabledControls.push("pointer");
+    disabledControls.push("select");
   }
   if (!allowFogDrawing) {
     disabledControls.push("fog");

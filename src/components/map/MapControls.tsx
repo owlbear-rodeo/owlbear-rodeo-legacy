@@ -9,6 +9,7 @@ import SelectMapButton from "./SelectMapButton";
 import FogToolSettings from "./controls/FogToolSettings";
 import DrawingToolSettings from "./controls/DrawingToolSettings";
 import PointerToolSettings from "./controls/PointerToolSettings";
+import SelectToolSettings from "./controls/SelectToolSettings";
 
 import MoveToolIcon from "../../icons/MoveToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";
@@ -19,8 +20,10 @@ import PointerToolIcon from "../../icons/PointerToolIcon";
 import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
+import SelectToolIcon from "../../icons/SelecToolIcon";
 
 import useSetting from "../../hooks/useSetting";
+
 import { Map, MapTool, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
 import {
@@ -28,6 +31,10 @@ import {
   MapResetEventHandler,
 } from "../../types/Events";
 import { Settings } from "../../types/Settings";
+
+import { useKeyboard } from "../../contexts/KeyboardContext";
+
+import shortcuts from "../../shortcuts";
 
 type MapControlsProps = {
   onMapChange: MapChangeEventHandler;
@@ -39,7 +46,7 @@ type MapControlsProps = {
   toolSettings: Settings;
   onToolSettingChange: (change: Partial<Settings>) => void;
   onToolAction: (actionId: string) => void;
-  disabledControls: string[];
+  disabledControls: MapToolId[];
   disabledSettings: Partial<Record<keyof Settings, string[]>>;
 };
 
@@ -64,6 +71,12 @@ function MapContols({
       id: "move",
       icon: <MoveToolIcon />,
       title: "Move Tool (W)",
+    },
+    select: {
+      id: "select",
+      icon: <SelectToolIcon />,
+      title: "Select Tool (S)",
+      SettingsComponent: SelectToolSettings,
     },
     fog: {
       id: "fog",
@@ -96,6 +109,7 @@ function MapContols({
   };
   const tools: MapToolId[] = [
     "move",
+    "select",
     "fog",
     "drawing",
     "measure",
@@ -209,7 +223,7 @@ function MapContols({
         <Settings
           settings={toolSettings[selectedToolId]}
           onSettingChange={(
-            change: Partial<Settings["fog" | "drawing" | "pointer"]>
+            change: Partial<Settings["fog" | "drawing" | "pointer" | "select"]>
           ) =>
             onToolSettingChange({
               [selectedToolId]: {
@@ -224,6 +238,32 @@ function MapContols({
       </Box>
     );
   }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (shortcuts.moveTool(event) && !disabledControls.includes("move")) {
+      onSelectedToolChange("move");
+    }
+    if (shortcuts.selectTool(event) && !disabledControls.includes("select")) {
+      onSelectedToolChange("select");
+    }
+    if (shortcuts.drawingTool(event) && !disabledControls.includes("drawing")) {
+      onSelectedToolChange("drawing");
+    }
+    if (shortcuts.fogTool(event) && !disabledControls.includes("fog")) {
+      onSelectedToolChange("fog");
+    }
+    if (shortcuts.measureTool(event) && !disabledControls.includes("measure")) {
+      onSelectedToolChange("measure");
+    }
+    if (shortcuts.pointerTool(event) && !disabledControls.includes("pointer")) {
+      onSelectedToolChange("pointer");
+    }
+    if (shortcuts.noteTool(event) && !disabledControls.includes("note")) {
+      onSelectedToolChange("note");
+    }
+  }
+
+  useKeyboard(handleKeyDown);
 
   return (
     <>

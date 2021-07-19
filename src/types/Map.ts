@@ -7,6 +7,7 @@ import { Grid } from "./Grid";
 export type MapToolId =
   | "map"
   | "move"
+  | "select"
   | "fog"
   | "drawing"
   | "measure"

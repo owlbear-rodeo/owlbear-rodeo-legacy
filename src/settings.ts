@@ -64,6 +64,11 @@ function loadVersions(settings: Settings) {
     ...prev,
     fog: { ...prev.fog, editOpacity: 0.5 },
   }));
+  // v1.10.0 - Add select tool
+  settings.version(8, (prev: any) => ({
+    ...prev,
+    select: { type: "path" },
+  }));
 }
 
 export function getSettings() {
