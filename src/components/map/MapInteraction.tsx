@@ -135,6 +135,9 @@ function MapInteraction({
       previousSelectedToolRef.current = selectedToolId;
       onSelectedToolChange("move");
     }
+    if (!event.repeat && shortcuts.move(event) && selectedToolId === "move") {
+      previousSelectedToolRef.current = "move";
+    }
   }
 
   function handleKeyUp(event: KeyboardEvent) {
