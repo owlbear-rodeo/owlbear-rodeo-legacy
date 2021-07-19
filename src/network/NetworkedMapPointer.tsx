@@ -3,7 +3,7 @@ import { Group } from "react-konva";
 
 import { useUserId } from "../contexts/UserIdContext";
 
-import MapPointer from "../components/map/MapPointer";
+import PointerTool from "../components/tools/PointerTool";
 import { isEmpty } from "../helpers/shared";
 import Vector2 from "../helpers/Vector2";
 
@@ -213,7 +213,7 @@ function NetworkedMapPointer({ session, active }: NetworkedMapPointerProps) {
   return (
     <Group>
       {Object.values(localPointerState).map((pointer) => (
-        <MapPointer
+        <PointerTool
           key={pointer.id}
           active={pointer.id === userId ? active : false}
           position={pointer.position}

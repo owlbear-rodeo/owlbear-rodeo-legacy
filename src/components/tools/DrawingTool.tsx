@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import shortid from "shortid";
-import { Group, Line, Rect, Circle } from "react-konva";
+import { Group } from "react-konva";
 
 import {
   useDebouncedStageScale,
@@ -20,10 +20,11 @@ import {
   getUpdatedShapeData,
   simplifyPoints,
 } from "../../helpers/drawing";
-import colors from "../../helpers/colors";
 import { getRelativePointerPosition } from "../../helpers/konva";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
+
+import DrawingShape from "../konva/Drawing";
 
 import { Map } from "../../types/Map";
 import {
@@ -45,7 +46,7 @@ type MapDrawingProps = {
   toolSettings: DrawingToolSettings;
 };
 
-function MapDrawing({
+function DrawingTool({
   map,
   drawings,
   onDrawingAdd: onShapeAdd,
@@ -226,94 +227,23 @@ function MapDrawing({
   }
 
   function renderDrawing(shape: Drawing) {
-    const defaultProps = {
-      key: shape.id,
-      onMouseMove: () => handleShapeOver(shape, isBrushDown),
-      onTouchOver: () => handleShapeOver(shape, isBrushDown),
-      onMouseDown: () => handleShapeOver(shape, true),
-      onTouchStart: () => handleShapeOver(shape, true),
-      onMouseUp: eraseHoveredShapes,
-      onTouchEnd: eraseHoveredShapes,
-      fill: colors[shape.color] || shape.color,
-      opacity: shape.blend ? 0.5 : 1,
-      id: shape.id,
-    };
-    if (shape.type === "path") {
-      return (
-        <Line
-          points={shape.data.points.reduce(
-            (acc: number[], point) => [
-              ...acc,
-              point.x * mapWidth,
-              point.y * mapHeight,
-            ],
-            []
-          )}
-          stroke={colors[shape.color] || shape.color}
-          tension={0.5}
-          closed={shape.pathType === "fill"}
-          fillEnabled={shape.pathType === "fill"}
-          lineCap="round"
-          lineJoin="round"
-          strokeWidth={gridStrokeWidth * shape.strokeWidth}
-          {...defaultProps}
-        />
-      );
-    } else if (shape.type === "shape") {
-      if (shape.shapeType === "rectangle") {
-        return (
-          <Rect
-            x={shape.data.x * mapWidth}
-            y={shape.data.y * mapHeight}
-            width={shape.data.width * mapWidth}
-            height={shape.data.height * mapHeight}
-            {...defaultProps}
-          />
-        );
-      } else if (shape.shapeType === "circle") {
-        const minSide = mapWidth < mapHeight ? mapWidth : mapHeight;
-        return (
-          <Circle
-            x={shape.data.x * mapWidth}
-            y={shape.data.y * mapHeight}
-            radius={shape.data.radius * minSide}
-            {...defaultProps}
-          />
-        );
-      } else if (shape.shapeType === "triangle") {
-        return (
-          <Line
-            points={shape.data.points.reduce(
-              (acc: number[], point) => [
-                ...acc,
-                point.x * mapWidth,
-                point.y * mapHeight,
-              ],
-              []
-            )}
-            closed={true}
-            {...defaultProps}
-          />
-        );
-      } else if (shape.shapeType === "line") {
-        return (
-          <Line
-            points={shape.data.points.reduce(
-              (acc: number[], point) => [
-                ...acc,
-                point.x * mapWidth,
-                point.y * mapHeight,
-              ],
-              []
-            )}
-            strokeWidth={gridStrokeWidth * shape.strokeWidth}
-            stroke={colors[shape.color] || shape.color}
-            lineCap="round"
-            {...defaultProps}
-          />
-        );
-      }
-    }
+    return (
+      <DrawingShape
+        drawing={shape}
+        key={shape.id}
+        onMouseMove={() => handleShapeOver(shape, isBrushDown)}
+        onTouchOver={() => handleShapeOver(shape, isBrushDown)}
+        onMouseDown={() => handleShapeOver(shape, true)}
+        onTouchStart={() => handleShapeOver(shape, true)}
+        onMouseUp={eraseHoveredShapes}
+        onTouchEnd={eraseHoveredShapes}
+        strokeWidth={
+          shape.type === "path" || shape.shapeType === "line"
+            ? gridStrokeWidth * shape.strokeWidth
+            : 0
+        }
+      />
+    );
   }
 
   function renderErasingDrawing(drawing: Drawing) {
@@ -333,4 +263,4 @@ function MapDrawing({
   );
 }
 
-export default MapDrawing;
+export default DrawingTool;

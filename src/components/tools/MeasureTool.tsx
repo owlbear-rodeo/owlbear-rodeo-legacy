@@ -35,7 +35,7 @@ type MapMeasureProps = {
 
 type MeasureData = { length: number; points: Vector2[] };
 
-function MapMeasure({ map, active }: MapMeasureProps) {
+function MeasureTool({ map, active }: MapMeasureProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -201,4 +201,4 @@ function MapMeasure({ map, active }: MapMeasureProps) {
   return <Group>{drawingShapeData && renderShape(drawingShapeData)}</Group>;
 }
 
-export default MapMeasure;
+export default MeasureTool;

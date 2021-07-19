@@ -16,9 +16,9 @@ import {
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useDataURL } from "../../contexts/AssetsContext";
 
-import TokenStatus from "../token/TokenStatus";
-import TokenLabel from "../token/TokenLabel";
-import TokenOutline from "../token/TokenOutline";
+import TokenStatus from "./TokenStatus";
+import TokenLabel from "./TokenLabel";
+import TokenOutline from "./TokenOutline";
 
 import { Intersection, getScaledOutline } from "../../helpers/token";
 import Vector2 from "../../helpers/Vector2";
@@ -27,6 +27,7 @@ import { tokenSources } from "../../tokens";
 import { TokenState } from "../../types/TokenState";
 import { Map } from "../../types/Map";
 import {
+  TokenDragEventHandler,
   TokenMenuOpenChangeEventHandler,
   TokenStateChangeEventHandler,
 } from "../../types/Events";
@@ -35,14 +36,14 @@ type MapTokenProps = {
   tokenState: TokenState;
   onTokenStateChange: TokenStateChangeEventHandler;
   onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
-  onTokenDragStart: (event: Konva.KonvaEventObject<DragEvent>) => void;
-  onTokenDragEnd: (event: Konva.KonvaEventObject<DragEvent>) => void;
+  onTokenDragStart: TokenDragEventHandler;
+  onTokenDragEnd: TokenDragEventHandler;
   draggable: boolean;
   fadeOnHover: boolean;
   map: Map;
 };
 
-function MapToken({
+function Token({
   tokenState,
   onTokenStateChange,
   onTokenMenuOpen,
@@ -95,7 +96,7 @@ function MapToken({
       }
     }
 
-    onTokenDragStart(event);
+    onTokenDragStart(event, tokenState.id);
   }
 
   function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
@@ -142,7 +143,7 @@ function MapToken({
         lastModified: Date.now(),
       },
     });
-    onTokenDragEnd(event);
+    onTokenDragEnd(event, tokenState.id);
   }
 
   function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -292,4 +293,4 @@ function MapToken({
   );
 }
 
-export default MapToken;
+export default Token;

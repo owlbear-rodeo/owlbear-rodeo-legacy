@@ -9,11 +9,10 @@ import {
 import { useMapStage } from "../../contexts/MapStageContext";
 import { useGridStrokeWidth } from "../../contexts/GridContext";
 
-import {
-  getRelativePointerPositionNormalized,
-  Trail,
-} from "../../helpers/konva";
+import { getRelativePointerPositionNormalized } from "../../helpers/konva";
 import Vector2 from "../../helpers/Vector2";
+
+import Pointer from "../konva/Pointer";
 
 import colors, { Color } from "../../helpers/colors";
 
@@ -27,7 +26,7 @@ type MapPointerProps = {
   color: Color;
 };
 
-function MapPointer({
+function PointerTool({
   active,
   position,
   onPointerDown,
@@ -88,7 +87,7 @@ function MapPointer({
   return (
     <Group>
       {visible && (
-        <Trail
+        <Pointer
           position={Vector2.multiply(position, { x: mapWidth, y: mapHeight })}
           color={colors[color]}
           size={size}
@@ -99,8 +98,8 @@ function MapPointer({
   );
 }
 
-MapPointer.defaultProps = {
+PointerTool.defaultProps = {
   color: "red",
 };
 
-export default MapPointer;
+export default PointerTool;

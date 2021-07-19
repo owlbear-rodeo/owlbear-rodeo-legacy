@@ -6,7 +6,7 @@ import { useDataURL } from "../../contexts/AssetsContext";
 import { tokenSources as defaultTokenSources } from "../../tokens";
 import { Token } from "../../types/Token";
 
-import { TokenOutlineSVG } from "./TokenOutline";
+import TokenOutlineSVG from "./TokenOutline";
 
 type TokenImageProps = {
   token: Token;

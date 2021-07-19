@@ -30,7 +30,7 @@ type MapSelectProps = {
   toolSettings: SelectToolSettings;
 };
 
-function MapSelect({ active, toolSettings }: MapSelectProps) {
+function SelectTool({ active, toolSettings }: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
@@ -192,4 +192,4 @@ function MapSelect({ active, toolSettings }: MapSelectProps) {
   return <Group>{selection && renderSelection(selection)}</Group>;
 }
 
-export default MapSelect;
+export default SelectTool;

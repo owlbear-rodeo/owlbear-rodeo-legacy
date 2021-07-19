@@ -34,11 +34,7 @@ import {
   Guide,
 } from "../../helpers/drawing";
 import colors from "../../helpers/colors";
-import {
-  HoleyLine,
-  Tick,
-  getRelativePointerPosition,
-} from "../../helpers/konva";
+import { getRelativePointerPosition } from "../../helpers/konva";
 import { keyBy } from "../../helpers/shared";
 
 import SubtractFogAction from "../../actions/SubtractFogAction";
@@ -50,6 +46,9 @@ import shortcuts from "../../shortcuts";
 
 import { Map } from "../../types/Map";
 import { Fog, FogToolSettings } from "../../types/Fog";
+
+import FogShape from "../konva/Fog";
+import Tick from "../konva/Tick";
 
 type FogAddEventHandler = (fog: Fog[]) => void;
 type FogCutEventHandler = (fog: Fog[]) => void;
@@ -70,7 +69,7 @@ type MapFogProps = {
   editable: boolean;
 };
 
-function MapFog({
+function FogTool({
   map,
   shapes,
   onShapesAdd,
@@ -572,43 +571,32 @@ function MapFog({
     }
   }
 
-  function reducePoints(acc: number[], point: Vector2) {
-    return [...acc, point.x * mapWidth, point.y * mapHeight];
-  }
-
   function renderShape(shape: Fog) {
-    const points = shape.data.points.reduce(reducePoints, []);
-    const holes =
-      shape.data.holes &&
-      shape.data.holes.map((hole) => hole.reduce(reducePoints, []));
     const opacity = editable ? editOpacity : 1;
-    // Control opacity only on fill as using opacity with stroke leads to performance issues
-    const fill = new Color(colors[shape.color] || shape.color)
-      .alpha(opacity)
-      .string();
     const stroke =
       editable && active
         ? colors.lightGray
         : colors[shape.color] || shape.color;
+    // Control opacity only on fill as using opacity with stroke leads to performance issues
+    const fill = new Color(colors[shape.color] || shape.color)
+      .alpha(opacity)
+      .string();
     return (
-      <HoleyLine
+      <FogShape
         key={shape.id}
+        fog={shape}
         onMouseMove={() => handleShapeOver(shape, isBrushDown)}
         onTouchOver={() => handleShapeOver(shape, isBrushDown)}
         onMouseDown={() => handleShapeOver(shape, true)}
         onTouchStart={() => handleShapeOver(shape, true)}
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
-        points={points}
         stroke={stroke}
-        fill={fill}
-        closed
-        lineCap="round"
-        lineJoin="round"
+        opacity={opacity}
         strokeWidth={gridStrokeWidth * shape.strokeWidth}
+        fill={fill}
         fillPatternImage={patternImage}
         fillPriority={editable && !shape.visible ? "pattern" : "color"}
-        holes={holes}
         // Disable collision if the fog is transparent and we're not editing it
         // This allows tokens to be moved under the fog
         hitFunc={editable && !active ? () => {} : undefined}
@@ -698,4 +686,4 @@ function MapFog({
   );
 }
 
-export default MapFog;
+export default FogTool;

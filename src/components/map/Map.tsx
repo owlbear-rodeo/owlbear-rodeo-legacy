@@ -4,28 +4,26 @@ import { useToasts } from "react-toast-notifications";
 
 import MapControls from "./MapControls";
 import MapInteraction from "./MapInteraction";
-import MapTokens from "./MapTokens";
-import MapDrawing from "./MapDrawing";
-import MapFog from "./MapFog";
 import MapGrid from "./MapGrid";
-import MapMeasure from "./MapMeasure";
+
+import DrawingTool from "../tools/DrawingTool";
+import FogTool from "../tools/FogTool";
+import MeasureTool from "../tools/MeasureTool";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
-import MapNotes from "./MapNotes";
+import SelectTool from "../tools/SelectTool";
 
 import { useSettings } from "../../contexts/SettingsContext";
 
-import TokenMenu from "../token/TokenMenu";
-import TokenDragOverlay from "../token/TokenDragOverlay";
-import NoteMenu from "../note/NoteMenu";
-import NoteDragOverlay from "../note/NoteDragOverlay";
-
+import Action from "../../actions/Action";
 import {
   AddStatesAction,
   CutFogAction,
   EditStatesAction,
   RemoveStatesAction,
 } from "../../actions";
+
 import Session from "../../network/Session";
+
 import { Drawing, DrawingState } from "../../types/Drawing";
 import { Fog, FogState } from "../../types/Fog";
 import { Map as MapType, MapActions, MapToolId } from "../../types/Map";
@@ -39,11 +37,9 @@ import {
   NoteRemoveEventHander,
   TokenStateChangeEventHandler,
 } from "../../types/Events";
-import Action from "../../actions/Action";
-import Konva from "konva";
-import { TokenDraggingOptions, TokenMenuOptions } from "../../types/Token";
-import { Note, NoteDraggingOptions, NoteMenuOptions } from "../../types/Note";
-import MapSelect from "./MapSelect";
+
+import useMapTokens from "../../hooks/useMapTokens";
+import useMapNotes from "../../hooks/useMapNotes";
 
 type MapProps = {
   map: MapType | null;
@@ -198,199 +194,22 @@ function Map({
     disabledSettings.fog.push("redo");
   }
 
-  const mapControls = (
-    <MapControls
-      onMapChange={onMapChange}
-      onMapReset={onMapReset}
-      currentMap={map}
-      currentMapState={mapState}
-      onSelectedToolChange={setSelectedToolId}
-      selectedToolId={selectedToolId}
-      toolSettings={settings}
-      onToolSettingChange={handleToolSettingChange}
-      onToolAction={handleToolAction}
-      disabledControls={disabledControls}
-      disabledSettings={disabledSettings}
-    />
+  const { tokens, tokenMenu, tokenDragOverlay } = useMapTokens(
+    map,
+    mapState,
+    onMapTokenStateChange,
+    onMapTokenStateRemove,
+    selectedToolId,
+    disabledTokens
   );
 
-  const [isTokenMenuOpen, setIsTokenMenuOpen] = useState<boolean>(false);
-  const [tokenMenuOptions, setTokenMenuOptions] = useState<TokenMenuOptions>();
-  const [tokenDraggingOptions, setTokenDraggingOptions] =
-    useState<TokenDraggingOptions>();
-  function handleTokenMenuOpen(tokenStateId: string, tokenImage: Konva.Node) {
-    setTokenMenuOptions({ tokenStateId, tokenImage });
-    setIsTokenMenuOpen(true);
-  }
-
-  const mapTokens = map && mapState && (
-    <MapTokens
-      map={map}
-      mapState={mapState}
-      tokenDraggingOptions={tokenDraggingOptions}
-      setTokenDraggingOptions={setTokenDraggingOptions}
-      onMapTokenStateChange={onMapTokenStateChange}
-      onTokenMenuOpen={handleTokenMenuOpen}
-      selectedToolId={selectedToolId}
-      disabledTokens={disabledTokens}
-    />
-  );
-
-  const tokenMenu = (
-    <TokenMenu
-      isOpen={isTokenMenuOpen}
-      onRequestClose={() => setIsTokenMenuOpen(false)}
-      onTokenStateChange={onMapTokenStateChange}
-      tokenState={
-        tokenMenuOptions && mapState?.tokens[tokenMenuOptions.tokenStateId]
-      }
-      tokenImage={tokenMenuOptions && tokenMenuOptions.tokenImage}
-      map={map}
-    />
-  );
-
-  const tokenDragOverlay = tokenDraggingOptions && (
-    <TokenDragOverlay
-      onTokenStateRemove={(state) => {
-        onMapTokenStateRemove(state);
-        setTokenDraggingOptions(undefined);
-      }}
-      tokenState={tokenDraggingOptions && tokenDraggingOptions.tokenState}
-      tokenNode={tokenDraggingOptions && tokenDraggingOptions.tokenNode}
-      dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
-    />
-  );
-
-  const mapDrawing = (
-    <MapDrawing
-      map={map}
-      drawings={drawShapes}
-      onDrawingAdd={handleMapShapeAdd}
-      onDrawingsRemove={handleMapShapesRemove}
-      active={selectedToolId === "drawing"}
-      toolSettings={settings.drawing}
-    />
-  );
-
-  const mapFog = (
-    <MapFog
-      map={map}
-      shapes={fogShapes}
-      onShapesAdd={handleFogShapesAdd}
-      onShapesCut={handleFogShapesCut}
-      onShapesRemove={handleFogShapesRemove}
-      onShapesEdit={handleFogShapesEdit}
-      onShapeError={addToast}
-      active={selectedToolId === "fog"}
-      toolSettings={settings.fog}
-      editable={allowFogDrawing && !settings.fog.preview}
-    />
-  );
-
-  const mapGrid = map && map.showGrid && <MapGrid map={map} />;
-
-  const mapMeasure = (
-    <MapMeasure map={map} active={selectedToolId === "measure"} />
-  );
-
-  const mapPointer = (
-    <NetworkedMapPointer
-      active={selectedToolId === "pointer"}
-      session={session}
-    />
-  );
-
-  const [isNoteMenuOpen, setIsNoteMenuOpen] = useState<boolean>(false);
-  const [noteMenuOptions, setNoteMenuOptions] = useState<NoteMenuOptions>();
-  const [noteDraggingOptions, setNoteDraggingOptions] =
-    useState<NoteDraggingOptions>();
-  function handleNoteMenuOpen(noteId: string, noteNode: Konva.Node) {
-    setNoteMenuOptions({ noteId, noteNode });
-    setIsNoteMenuOpen(true);
-  }
-
-  function sortNotes(
-    a: Note,
-    b: Note,
-    noteDraggingOptions?: NoteDraggingOptions
-  ) {
-    if (
-      noteDraggingOptions &&
-      noteDraggingOptions.dragging &&
-      noteDraggingOptions.noteId === a.id
-    ) {
-      // If dragging token `a` move above
-      return 1;
-    } else if (
-      noteDraggingOptions &&
-      noteDraggingOptions.dragging &&
-      noteDraggingOptions.noteId === b.id
-    ) {
-      // If dragging token `b` move above
-      return -1;
-    } else {
-      // Else sort so last modified is on top
-      return a.lastModified - b.lastModified;
-    }
-  }
-
-  const mapNotes = (
-    <MapNotes
-      map={map}
-      active={selectedToolId === "note"}
-      onNoteAdd={onMapNoteChange}
-      onNoteChange={onMapNoteChange}
-      notes={
-        mapState
-          ? Object.values(mapState.notes).sort((a, b) =>
-              sortNotes(a, b, noteDraggingOptions)
-            )
-          : []
-      }
-      onNoteMenuOpen={handleNoteMenuOpen}
-      draggable={
-        allowNoteEditing &&
-        (selectedToolId === "note" || selectedToolId === "move")
-      }
-      onNoteDragStart={(e, noteId) =>
-        setNoteDraggingOptions({ dragging: true, noteId, noteGroup: e.target })
-      }
-      onNoteDragEnd={() =>
-        noteDraggingOptions &&
-        setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false })
-      }
-      fadeOnHover={selectedToolId === "drawing"}
-    />
-  );
-
-  const noteMenu = (
-    <NoteMenu
-      isOpen={isNoteMenuOpen}
-      onRequestClose={() => setIsNoteMenuOpen(false)}
-      onNoteChange={onMapNoteChange}
-      note={noteMenuOptions && mapState?.notes[noteMenuOptions.noteId]}
-      noteNode={noteMenuOptions?.noteNode}
-      map={map}
-    />
-  );
-
-  const noteDragOverlay = noteDraggingOptions ? (
-    <NoteDragOverlay
-      dragging={noteDraggingOptions.dragging}
-      noteGroup={noteDraggingOptions.noteGroup}
-      noteId={noteDraggingOptions.noteId}
-      onNoteRemove={(noteId) => {
-        onMapNoteRemove(noteId);
-        setNoteDraggingOptions(undefined);
-      }}
-    />
-  ) : null;
-
-  const mapSelect = (
-    <MapSelect
-      active={selectedToolId === "select"}
-      toolSettings={settings.select}
-    />
+  const { notes, noteMenu, noteDragOverlay } = useMapNotes(
+    map,
+    mapState,
+    onMapNoteChange,
+    onMapNoteRemove,
+    selectedToolId,
+    allowNoteEditing
   );
 
   return (
@@ -400,7 +219,19 @@ function Map({
         mapState={mapState}
         controls={
           <>
-            {mapControls}
+            <MapControls
+              onMapChange={onMapChange}
+              onMapReset={onMapReset}
+              currentMap={map}
+              currentMapState={mapState}
+              onSelectedToolChange={setSelectedToolId}
+              selectedToolId={selectedToolId}
+              toolSettings={settings}
+              onToolSettingChange={handleToolSettingChange}
+              onToolAction={handleToolAction}
+              disabledControls={disabledControls}
+              disabledSettings={disabledSettings}
+            />
             {tokenMenu}
             {noteMenu}
             {tokenDragOverlay}
@@ -411,14 +242,38 @@ function Map({
         onSelectedToolChange={setSelectedToolId}
         disabledControls={disabledControls}
       >
-        {mapGrid}
-        {mapDrawing}
-        {mapNotes}
-        {mapTokens}
-        {mapFog}
-        {mapPointer}
-        {mapMeasure}
-        {mapSelect}
+        {map && map.showGrid && <MapGrid map={map} />}
+        <DrawingTool
+          map={map}
+          drawings={drawShapes}
+          onDrawingAdd={handleMapShapeAdd}
+          onDrawingsRemove={handleMapShapesRemove}
+          active={selectedToolId === "drawing"}
+          toolSettings={settings.drawing}
+        />
+        {notes}
+        {tokens}
+        <FogTool
+          map={map}
+          shapes={fogShapes}
+          onShapesAdd={handleFogShapesAdd}
+          onShapesCut={handleFogShapesCut}
+          onShapesRemove={handleFogShapesRemove}
+          onShapesEdit={handleFogShapesEdit}
+          onShapeError={addToast}
+          active={selectedToolId === "fog"}
+          toolSettings={settings.fog}
+          editable={allowFogDrawing && !settings.fog.preview}
+        />
+        <NetworkedMapPointer
+          active={selectedToolId === "pointer"}
+          session={session}
+        />
+        <MeasureTool map={map} active={selectedToolId === "measure"} />
+        <SelectTool
+          active={selectedToolId === "select"}
+          toolSettings={settings.select}
+        />
       </MapInteraction>
     </Box>
   );

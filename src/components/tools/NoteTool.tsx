@@ -12,7 +12,7 @@ import { getRelativePointerPosition } from "../../helpers/konva";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-import Note from "../note/Note";
+import Note from "../konva/Note";
 
 import { Map } from "../../types/Map";
 import { Note as NoteType } from "../../types/Note";
@@ -38,7 +38,7 @@ type MapNoteProps = {
   fadeOnHover: boolean;
 };
 
-function MapNotes({
+function NoteTool({
   map,
   active,
   onNoteAdd,
@@ -167,4 +167,4 @@ function MapNotes({
   );
 }
 
-export default MapNotes;
+export default NoteTool;
