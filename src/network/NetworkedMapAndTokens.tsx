@@ -8,8 +8,6 @@ import { useDatabase } from "../contexts/DatabaseContext";
 import { useParty } from "../contexts/PartyContext";
 import { useAssets } from "../contexts/AssetsContext";
 
-import { omit } from "../helpers/shared";
-
 import useDebounce from "../hooks/useDebounce";
 import useNetworkedState from "../hooks/useNetworkedState";
 import useMapActions from "../hooks/useMapActions";
@@ -34,6 +32,11 @@ import { TokenState } from "../types/TokenState";
 import { DrawingState } from "../types/Drawing";
 import { FogState } from "../types/Fog";
 import { Note } from "../types/Note";
+import {
+  AddStatesAction,
+  EditStatesAction,
+  RemoveStatesAction,
+} from "../actions";
 
 /**
  * @typedef {object} NetworkedMapProps
@@ -248,49 +251,22 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }, [currentMap, resetActions]);
 
   function handleNoteCreate(notes: Note[]) {
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let newNotes = { ...prevMapState.notes };
-      for (let note of notes) {
-        newNotes[note.id] = note;
-      }
-      return {
-        ...prevMapState,
-        notes: newNotes,
-      };
-    });
+    const action = new AddStatesAction(notes);
+    addActions([{ type: "notes", action }]);
   }
 
   function handleNoteChange(changes: Record<string, Partial<Note>>) {
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let notes = { ...prevMapState.notes };
-      for (let id in changes) {
-        if (id in notes) {
-          notes[id] = { ...notes[id], ...changes[id] } as Note;
-        }
-      }
-      return {
-        ...prevMapState,
-        notes,
-      };
-    });
+    let edits: Partial<Note>[] = [];
+    for (let id in changes) {
+      edits.push({ ...changes[id], id });
+    }
+    const action = new EditStatesAction(edits);
+    addActions([{ type: "notes", action }]);
   }
 
   function handleNoteRemove(noteIds: string[]) {
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      return {
-        ...prevMapState,
-        notes: omit(prevMapState.notes, noteIds),
-      };
-    });
+    const action = new RemoveStatesAction<Note>(noteIds);
+    addActions([{ type: "notes", action }]);
   }
 
   /**
@@ -312,52 +288,24 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       addAssetsIfNeeded(assets);
     }
 
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let newMapTokens = { ...prevMapState.tokens };
-      for (let tokenState of tokenStates) {
-        newMapTokens[tokenState.id] = tokenState;
-      }
-      return { ...prevMapState, tokens: newMapTokens };
-    });
+    const action = new AddStatesAction(tokenStates);
+    addActions([{ type: "tokens", action }]);
   }
 
   function handleMapTokenStateChange(
     changes: Record<string, Partial<TokenState>>
   ) {
-    if (!currentMapState) {
-      return;
+    let edits: Partial<TokenState>[] = [];
+    for (let id in changes) {
+      edits.push({ ...changes[id], id });
     }
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let tokens = { ...prevMapState.tokens };
-      for (let id in changes) {
-        if (id in tokens) {
-          tokens[id] = { ...tokens[id], ...changes[id] } as TokenState;
-        }
-      }
-
-      return {
-        ...prevMapState,
-        tokens,
-      };
-    });
+    const action = new EditStatesAction(edits);
+    addActions([{ type: "tokens", action }]);
   }
 
   function handleMapTokenStateRemove(tokenStateIds: string[]) {
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      return {
-        ...prevMapState,
-        tokens: omit(prevMapState.tokens, tokenStateIds),
-      };
-    });
+    const action = new RemoveStatesAction<TokenState>(tokenStateIds);
+    addActions([{ type: "tokens", action }]);
   }
 
   useEffect(() => {
