@@ -25,3 +25,5 @@ export type NoteDraggingOptions = {
   noteId: string;
   noteGroup: Konva.Node;
 };
+
+export type Notes = Record<string, Note>;

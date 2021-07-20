@@ -33,3 +33,5 @@ export type FileTokenState = BaseTokenState & {
 };
 
 export type TokenState = DefaultTokenState | FileTokenState;
+
+export type TokenStates = Record<string, TokenState>;

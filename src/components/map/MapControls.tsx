@@ -22,6 +22,9 @@ import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
 import SelectToolIcon from "../../icons/SelecToolIcon";
 
+import UndoButton from "../controls/shared/UndoButton";
+import RedoButton from "../controls/shared/RedoButton";
+
 import useSetting from "../../hooks/useSetting";
 
 import { Map, MapTool, MapToolId } from "../../types/Map";
@@ -48,6 +51,8 @@ type MapControlsProps = {
   onToolAction: (actionId: string) => void;
   disabledControls: MapToolId[];
   disabledSettings: Partial<Record<keyof Settings, string[]>>;
+  onUndo: () => void;
+  onRedo: () => void;
 };
 
 function MapContols({
@@ -62,6 +67,8 @@ function MapContols({
   onToolAction,
   disabledControls,
   disabledSettings,
+  onUndo,
+  onRedo,
 }: MapControlsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
@@ -143,6 +150,15 @@ function MapContols({
           {toolsById[tool].icon}
         </RadioIconButton>
       )),
+    },
+    {
+      id: "history",
+      component: (
+        <>
+          <UndoButton onClick={onUndo} />
+          <RedoButton onClick={onRedo} />
+        </>
+      ),
     },
   ];
 

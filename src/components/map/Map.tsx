@@ -26,7 +26,7 @@ import Session from "../../network/Session";
 
 import { Drawing, DrawingState } from "../../types/Drawing";
 import { Fog, FogState } from "../../types/Fog";
-import { Map as MapType, MapActions, MapToolId } from "../../types/Map";
+import { Map as MapType, MapToolId } from "../../types/Map";
 import { MapState } from "../../types/MapState";
 import { Settings } from "../../types/Settings";
 import {
@@ -45,17 +45,12 @@ import useMapNotes from "../../hooks/useMapNotes";
 type MapProps = {
   map: MapType | null;
   mapState: MapState | null;
-  mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onMapTokenStateRemove: TokenStateRemoveHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
   onMapDraw: (action: Action<DrawingState>) => void;
-  onMapDrawUndo: () => void;
-  onMapDrawRedo: () => void;
   onFogDraw: (action: Action<FogState>) => void;
-  onFogDrawUndo: () => void;
-  onFogDrawRedo: () => void;
   onMapNoteCreate: NoteCreateEventHander;
   onMapNoteChange: NoteChangeEventHandler;
   onMapNoteRemove: NoteRemoveEventHander;
@@ -65,22 +60,19 @@ type MapProps = {
   allowNoteEditing: boolean;
   disabledTokens: Record<string, boolean>;
   session: Session;
+  onUndo: () => void;
+  onRedo: () => void;
 };
 
 function Map({
   map,
   mapState,
-  mapActions,
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
   onMapReset,
   onMapDraw,
-  onMapDrawUndo,
-  onMapDrawRedo,
   onFogDraw,
-  onFogDrawUndo,
-  onFogDrawRedo,
   onMapNoteCreate,
   onMapNoteChange,
   onMapNoteRemove,
@@ -90,6 +82,8 @@ function Map({
   allowNoteEditing,
   disabledTokens,
   session,
+  onUndo,
+  onRedo,
 }: MapProps) {
   const { addToast } = useToasts();
 
@@ -109,18 +103,6 @@ function Map({
   function handleToolAction(action: string) {
     if (action === "eraseAll") {
       onMapDraw(new RemoveStatesAction(drawShapes.map((s) => s.id)));
-    }
-    if (action === "mapUndo") {
-      onMapDrawUndo();
-    }
-    if (action === "mapRedo") {
-      onMapDrawRedo();
-    }
-    if (action === "fogUndo") {
-      onFogDrawUndo();
-    }
-    if (action === "fogRedo") {
-      onFogDrawRedo();
     }
   }
 
@@ -169,32 +151,12 @@ function Map({
   }
 
   const disabledSettings: {
-    fog: string[];
     drawing: string[];
   } = {
-    fog: [],
     drawing: [],
   };
   if (drawShapes.length === 0) {
     disabledSettings.drawing.push("erase");
-  }
-  if (!mapState || mapActions.mapDrawActionIndex < 0) {
-    disabledSettings.drawing.push("undo");
-  }
-  if (
-    !mapState ||
-    mapActions.mapDrawActionIndex === mapActions.mapDrawActions.length - 1
-  ) {
-    disabledSettings.drawing.push("redo");
-  }
-  if (!mapState || mapActions.fogDrawActionIndex < 0) {
-    disabledSettings.fog.push("undo");
-  }
-  if (
-    !mapState ||
-    mapActions.fogDrawActionIndex === mapActions.fogDrawActions.length - 1
-  ) {
-    disabledSettings.fog.push("redo");
   }
 
   const { tokens, tokenMenu, tokenDragOverlay } = useMapTokens(
@@ -235,6 +197,8 @@ function Map({
               onToolAction={handleToolAction}
               disabledControls={disabledControls}
               disabledSettings={disabledSettings}
+              onUndo={onUndo}
+              onRedo={onRedo}
             />
             {tokenMenu}
             {noteMenu}

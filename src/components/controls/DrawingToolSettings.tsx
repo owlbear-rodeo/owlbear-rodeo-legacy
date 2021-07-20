@@ -17,9 +17,6 @@ import BrushTriangleIcon from "../../icons/BrushTriangleIcon";
 import EraseAllIcon from "../../icons/EraseAllIcon";
 import EraseIcon from "../../icons/EraseToolIcon";
 
-import UndoButton from "./shared/UndoButton";
-import RedoButton from "./shared/RedoButton";
-
 import Divider from "../Divider";
 
 import { useKeyboard } from "../../contexts/KeyboardContext";
@@ -62,10 +59,6 @@ function DrawingToolSettings({
       onSettingChange({ type: "erase" });
     } else if (shortcuts.drawBlend(event)) {
       onSettingChange({ useBlending: !settings.useBlending });
-    } else if (shortcuts.redo(event) && !disabledActions.includes("redo")) {
-      onToolAction("mapRedo");
-    } else if (shortcuts.undo(event) && !disabledActions.includes("undo")) {
-      onToolAction("mapUndo");
     }
   }
   useKeyboard(handleKeyDown);
@@ -154,15 +147,6 @@ function DrawingToolSettings({
       <AlphaBlendToggle
         useBlending={settings.useBlending}
         onBlendingChange={(useBlending) => onSettingChange({ useBlending })}
-      />
-      <Divider vertical />
-      <UndoButton
-        onClick={() => onToolAction("mapUndo")}
-        disabled={disabledActions.includes("undo")}
-      />
-      <RedoButton
-        onClick={() => onToolAction("mapRedo")}
-        disabled={disabledActions.includes("redo")}
       />
     </Flex>
   );

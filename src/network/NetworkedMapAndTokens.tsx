@@ -23,12 +23,7 @@ import TokenBar from "../components/token/TokenBar";
 
 import GlobalImageDrop from "../components/image/GlobalImageDrop";
 
-import {
-  Map as MapType,
-  MapActions,
-  MapActionsIndexKey,
-  MapActionsKey,
-} from "../types/Map";
+import { Map as MapType, MapActions, MapAction } from "../types/Map";
 import { MapState } from "../types/MapState";
 import {
   AssetManifest,
@@ -41,10 +36,8 @@ import { FogState } from "../types/Fog";
 import { Note } from "../types/Note";
 
 const defaultMapActions: MapActions = {
-  mapDrawActions: [],
-  mapDrawActionIndex: -1,
-  fogDrawActions: [],
-  fogDrawActionIndex: -1,
+  actions: [],
+  actionIndex: -1,
 };
 
 /**
@@ -233,118 +226,115 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
 
   const [mapActions, setMapActions] = useState(defaultMapActions);
 
-  function addMapActions(
-    actions: Action<DrawingState | FogState>[],
-    indexKey: MapActionsIndexKey,
-    actionsKey: MapActionsKey,
-    shapesKey: "drawShapes" | "fogShapes"
-  ) {
-    setMapActions((prevMapActions) => {
+  function applyMapActionsToState(
+    mapState: MapState,
+    actions: MapAction[]
+  ): MapState {
+    for (let mapAction of actions) {
+      if (mapAction.type === "drawings") {
+        mapState.drawShapes = mapAction.action.execute(mapState.drawShapes);
+      } else if (mapAction.type === "fogs") {
+        mapState.fogShapes = mapAction.action.execute(mapState.fogShapes);
+      } else if (mapAction.type === "tokens") {
+        mapState.tokens = mapAction.action.execute(mapState.tokens);
+      } else if (mapAction.type === "notes") {
+        mapState.notes = mapAction.action.execute(mapState.notes);
+      }
+    }
+    return mapState;
+  }
+
+  function undoMapActionsToState(
+    mapState: MapState,
+    actions: MapAction[]
+  ): MapState {
+    for (let mapAction of actions) {
+      if (mapAction.type === "drawings") {
+        mapState.drawShapes = mapAction.action.undo(mapState.drawShapes);
+      } else if (mapAction.type === "fogs") {
+        mapState.fogShapes = mapAction.action.undo(mapState.fogShapes);
+      } else if (mapAction.type === "tokens") {
+        mapState.tokens = mapAction.action.undo(mapState.tokens);
+      } else if (mapAction.type === "notes") {
+        mapState.notes = mapAction.action.undo(mapState.notes);
+      }
+    }
+    return mapState;
+  }
+
+  function addActions(actions: MapAction[]) {
+    setMapActions((prevActions) => {
       const newActions = [
-        ...prevMapActions[actionsKey].slice(0, prevMapActions[indexKey] + 1),
-        ...actions,
+        ...prevActions.actions.slice(0, prevActions.actionIndex + 1),
+        actions,
       ];
       const newIndex = newActions.length - 1;
       return {
-        ...prevMapActions,
-        [actionsKey]: newActions,
-        [indexKey]: newIndex,
+        actions: newActions,
+        actionIndex: newIndex,
       };
     });
+
     // Update map state by performing the actions on it
     setCurrentMapState((prevMapState) => {
       if (!prevMapState) {
         return prevMapState;
       }
-      let shapes = prevMapState[shapesKey];
-      for (let action of actions) {
-        shapes = action.execute(shapes);
-      }
-      return {
-        ...prevMapState,
-        [shapesKey]: shapes,
-      };
+      let state = { ...prevMapState };
+      state = applyMapActionsToState(state, actions);
+      return state;
     });
   }
 
-  function updateActionIndex(
-    change: number,
-    indexKey: MapActionsIndexKey,
-    actionsKey: MapActionsKey,
-    shapesKey: "drawShapes" | "fogShapes"
-  ) {
-    const prevIndex = mapActions[indexKey];
+  function updateActionIndex(change: number) {
+    const prevIndex = mapActions.actionIndex;
     const newIndex = Math.min(
-      Math.max(mapActions[indexKey] + change, -1),
-      mapActions[actionsKey].length - 1
+      Math.max(mapActions.actionIndex + change, -1),
+      mapActions.actions.length - 1
     );
 
     setMapActions((prevMapActions) => ({
       ...prevMapActions,
-      [indexKey]: newIndex,
+      actionIndex: newIndex,
     }));
 
     // Update map state by either performing the actions or undoing them
     setCurrentMapState((prevMapState) => {
-      if (prevMapState) {
-        let shapes = prevMapState[shapesKey];
-        if (prevIndex < newIndex) {
-          // Redo
-          for (let i = prevIndex + 1; i < newIndex + 1; i++) {
-            let action = mapActions[actionsKey][i];
-            shapes = action.execute(shapes as any);
-          }
-        } else {
-          // Undo
-          for (let i = prevIndex; i > newIndex; i--) {
-            let action = mapActions[actionsKey][i];
-            shapes = action.undo(shapes as any);
-          }
-        }
-        return {
-          ...prevMapState,
-          [shapesKey]: shapes,
-        };
-      } else {
+      if (!prevMapState) {
         return prevMapState;
       }
+      let state = { ...prevMapState };
+      if (prevIndex < newIndex) {
+        // Redo
+        for (let i = prevIndex + 1; i < newIndex + 1; i++) {
+          const actions = mapActions.actions[i];
+          state = applyMapActionsToState(state, actions);
+        }
+      } else {
+        // Undo
+        for (let i = prevIndex; i > newIndex; i--) {
+          const actions = mapActions.actions[i];
+          state = undoMapActionsToState(state, actions);
+        }
+      }
+      return state;
     });
-
-    return newIndex;
   }
 
   function handleMapDraw(action: Action<DrawingState>) {
-    addMapActions(
-      [action],
-      "mapDrawActionIndex",
-      "mapDrawActions",
-      "drawShapes"
-    );
-  }
-
-  function handleMapDrawUndo() {
-    updateActionIndex(-1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
-  }
-
-  function handleMapDrawRedo() {
-    updateActionIndex(1, "mapDrawActionIndex", "mapDrawActions", "drawShapes");
+    addActions([{ type: "drawings", action }]);
   }
 
   function handleFogDraw(action: Action<FogState>) {
-    addMapActions(
-      [action],
-      "fogDrawActionIndex",
-      "fogDrawActions",
-      "fogShapes"
-    );
+    addActions([{ type: "fogs", action }]);
   }
 
-  function handleFogDrawUndo() {
-    updateActionIndex(-1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
+  function handleUndo() {
+    updateActionIndex(-1);
   }
 
-  function handleFogDrawRedo() {
-    updateActionIndex(1, "fogDrawActionIndex", "fogDrawActions", "fogShapes");
+  function handleRedo() {
+    updateActionIndex(1);
   }
 
   // If map changes clear map actions
@@ -562,17 +552,12 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       <Map
         map={currentMap}
         mapState={currentMapState}
-        mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onMapChange={handleMapChange}
         onMapReset={handleMapReset}
         onMapDraw={handleMapDraw}
-        onMapDrawUndo={handleMapDrawUndo}
-        onMapDrawRedo={handleMapDrawRedo}
         onFogDraw={handleFogDraw}
-        onFogDrawUndo={handleFogDrawUndo}
-        onFogDrawRedo={handleFogDrawRedo}
         onMapNoteCreate={handleNoteCreate}
         onMapNoteChange={handleNoteChange}
         onMapNoteRemove={handleNoteRemove}
@@ -582,6 +567,8 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         allowNoteEditing={!!canEditNotes}
         disabledTokens={disabledMapTokens}
         session={session}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
       />
       <TokenBar onMapTokensStateCreate={handleMapTokensStateCreate} />
     </GlobalImageDrop>

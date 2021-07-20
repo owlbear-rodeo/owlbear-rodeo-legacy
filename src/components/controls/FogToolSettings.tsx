@@ -13,8 +13,6 @@ import FogRemoveIcon from "../../icons/FogRemoveIcon";
 import FogToggleIcon from "../../icons/FogToggleIcon";
 import FogRectangleIcon from "../../icons/FogRectangleIcon";
 
-import UndoButton from "./shared/UndoButton";
-import RedoButton from "./shared/RedoButton";
 import ToolSection from "./shared/ToolSection";
 
 import Divider from "../Divider";
@@ -31,16 +29,9 @@ import {
 type FogToolSettingsProps = {
   settings: FogToolSettingsType;
   onSettingChange: (change: Partial<FogToolSettingsType>) => void;
-  onToolAction: (action: string) => void;
-  disabledActions: string[];
 };
 
-function FogToolSettings({
-  settings,
-  onSettingChange,
-  onToolAction,
-  disabledActions,
-}: FogToolSettingsProps) {
+function FogToolSettings({ settings, onSettingChange }: FogToolSettingsProps) {
   // Keyboard shortcuts
   function handleKeyDown(event: KeyboardEvent) {
     if (shortcuts.fogPolygon(event)) {
@@ -59,10 +50,6 @@ function FogToolSettings({
       onSettingChange({ useFogCut: !settings.useFogCut });
     } else if (shortcuts.fogRectangle(event)) {
       onSettingChange({ type: "rectangle" });
-    } else if (shortcuts.redo(event) && !disabledActions.includes("redo")) {
-      onToolAction("fogRedo");
-    } else if (shortcuts.undo(event) && !disabledActions.includes("undo")) {
-      onToolAction("fogUndo");
     }
   }
 
@@ -133,15 +120,6 @@ function FogToolSettings({
       <FogPreviewToggle
         useFogPreview={settings.preview}
         onFogPreviewChange={(preview) => onSettingChange({ preview })}
-      />
-      <Divider vertical />
-      <UndoButton
-        onClick={() => onToolAction("fogUndo")}
-        disabled={disabledActions.includes("undo")}
-      />
-      <RedoButton
-        onClick={() => onToolAction("fogRedo")}
-        disabled={disabledActions.includes("redo")}
       />
     </Flex>
   );
