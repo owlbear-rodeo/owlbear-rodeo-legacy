@@ -36,13 +36,13 @@ function SelectToolSettings({
   const tools = [
     {
       id: "path",
-      title: "Lasso (L)",
+      title: "Lasso Selection (L)",
       isSelected: settings.type === "path",
       icon: <PathIcon />,
     },
     {
       id: "rectangle",
-      title: "Rectangle (R)",
+      title: "Rectangle Selection (R)",
       isSelected: settings.type === "rectangle",
       icon: <RectIcon />,
     },
