@@ -18,7 +18,7 @@ function TokenDragOverlay({
   dragging,
 }: TokenDragOverlayProps) {
   function handleTokenRemove() {
-    onTokenStateRemove(tokenState);
+    onTokenStateRemove([tokenState.id]);
   }
 
   return (

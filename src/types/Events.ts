@@ -22,7 +22,7 @@ export type DiceSelectEventHandler = (dice: DefaultDice) => void;
 export type RequestCloseEventHandler = () => void;
 
 export type TokensStateCreateHandler = (states: TokenState[]) => void;
-export type TokenStateRemoveHandler = (state: TokenState) => void;
+export type TokenStateRemoveHandler = (tokenStateIds: string[]) => void;
 export type TokenStateChangeEventHandler = (
   changes: Record<string, Partial<TokenState>>
 ) => void;
@@ -36,9 +36,11 @@ export type TokenDragEventHandler = (
   tokenStateId: string
 ) => void;
 
-export type NoteAddEventHander = (note: Note) => void;
-export type NoteRemoveEventHander = (noteId: string) => void;
-export type NoteChangeEventHandler = (note: Note) => void;
+export type NoteCreateEventHander = (notes: Note[]) => void;
+export type NoteRemoveEventHander = (noteIds: string[]) => void;
+export type NoteChangeEventHandler = (
+  changes: Record<string, Partial<Note>>
+) => void;
 export type NoteMenuOpenEventHandler = (
   noteId: string,
   noteNode: Konva.Node

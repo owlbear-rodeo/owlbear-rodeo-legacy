@@ -81,11 +81,12 @@ function Note({
     const noteGroup = event.target;
     if (userId) {
       onNoteChange?.({
-        ...note,
-        x: noteGroup.x() / mapWidth,
-        y: noteGroup.y() / mapHeight,
-        lastModifiedBy: userId,
-        lastModified: Date.now(),
+        [note.id]: {
+          x: noteGroup.x() / mapWidth,
+          y: noteGroup.y() / mapHeight,
+          lastModifiedBy: userId,
+          lastModified: Date.now(),
+        },
       });
     }
     onNoteDragEnd?.(event, note.id);

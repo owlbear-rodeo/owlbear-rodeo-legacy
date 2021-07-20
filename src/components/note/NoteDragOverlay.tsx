@@ -1,9 +1,10 @@
 import Konva from "konva";
+import { NoteRemoveEventHander } from "../../types/Events";
 
 import DragOverlay from "../map/DragOverlay";
 
 type NoteDragOverlayProps = {
-  onNoteRemove: (noteId: string) => void;
+  onNoteRemove: NoteRemoveEventHander;
   noteId: string;
   noteGroup: Konva.Node;
   dragging: boolean;
@@ -16,7 +17,7 @@ function NoteDragOverlay({
   dragging,
 }: NoteDragOverlayProps) {
   function handleNoteRemove() {
-    onNoteRemove(noteId);
+    onNoteRemove([noteId]);
   }
 
   return (

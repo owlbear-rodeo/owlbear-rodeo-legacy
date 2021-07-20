@@ -356,29 +356,48 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     }
   }, [currentMap]);
 
-  function handleNoteChange(note: Note) {
+  function handleNoteCreate(notes: Note[]) {
     setCurrentMapState((prevMapState) => {
       if (!prevMapState) {
         return prevMapState;
       }
+      let newNotes = { ...prevMapState.notes };
+      for (let note of notes) {
+        newNotes[note.id] = note;
+      }
       return {
         ...prevMapState,
-        notes: {
-          ...prevMapState.notes,
-          [note.id]: note,
-        },
+        notes: newNotes,
       };
     });
   }
 
-  function handleNoteRemove(noteId: string) {
+  function handleNoteChange(changes: Record<string, Partial<Note>>) {
+    setCurrentMapState((prevMapState) => {
+      if (!prevMapState) {
+        return prevMapState;
+      }
+      let notes = { ...prevMapState.notes };
+      for (let id in changes) {
+        if (id in notes) {
+          notes[id] = { ...notes[id], ...changes[id] } as Note;
+        }
+      }
+      return {
+        ...prevMapState,
+        notes,
+      };
+    });
+  }
+
+  function handleNoteRemove(noteIds: string[]) {
     setCurrentMapState((prevMapState) => {
       if (!prevMapState) {
         return prevMapState;
       }
       return {
         ...prevMapState,
-        notes: omit(prevMapState.notes, [noteId]),
+        notes: omit(prevMapState.notes, noteIds),
       };
     });
   }
@@ -415,7 +434,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   }
 
   function handleMapTokenStateChange(
-    change: Record<string, Partial<TokenState>>
+    changes: Record<string, Partial<TokenState>>
   ) {
     if (!currentMapState) {
       return;
@@ -425,9 +444,9 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         return prevMapState;
       }
       let tokens = { ...prevMapState.tokens };
-      for (let id in change) {
+      for (let id in changes) {
         if (id in tokens) {
-          tokens[id] = { ...tokens[id], ...change[id] } as TokenState;
+          tokens[id] = { ...tokens[id], ...changes[id] } as TokenState;
         }
       }
 
@@ -438,13 +457,15 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     });
   }
 
-  function handleMapTokenStateRemove(tokenState: TokenState) {
+  function handleMapTokenStateRemove(tokenStateIds: string[]) {
     setCurrentMapState((prevMapState) => {
       if (!prevMapState) {
         return prevMapState;
       }
-      const { [tokenState.id]: old, ...rest } = prevMapState.tokens;
-      return { ...prevMapState, tokens: rest };
+      return {
+        ...prevMapState,
+        tokens: omit(prevMapState.tokens, tokenStateIds),
+      };
     });
   }
 
@@ -552,6 +573,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         onFogDraw={handleFogDraw}
         onFogDrawUndo={handleFogDrawUndo}
         onFogDrawRedo={handleFogDrawRedo}
+        onMapNoteCreate={handleNoteCreate}
         onMapNoteChange={handleNoteChange}
         onMapNoteRemove={handleNoteRemove}
         allowMapDrawing={!!canEditMapDrawing}

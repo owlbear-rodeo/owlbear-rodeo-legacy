@@ -73,31 +73,31 @@ function NoteMenu({
 
   function handleTextChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const text = event.target.value.substring(0, 1024);
-    note && onNoteChange({ ...note, text: text });
+    note && onNoteChange({ [note.id]: { text: text } });
   }
 
   function handleColorChange(color: Color) {
     if (!note) {
       return;
     }
-    onNoteChange({ ...note, color: color });
+    onNoteChange({ [note.id]: { color: color } });
   }
 
   function handleSizeChange(event: React.ChangeEvent<HTMLInputElement>) {
     const newSize = parseFloat(event.target.value);
-    note && onNoteChange({ ...note, size: newSize });
+    note && onNoteChange({ [note.id]: { size: newSize } });
   }
 
   function handleVisibleChange() {
-    note && onNoteChange({ ...note, visible: !note.visible });
+    note && onNoteChange({ [note.id]: { visible: !note.visible } });
   }
 
   function handleLockChange() {
-    note && onNoteChange({ ...note, locked: !note.locked });
+    note && onNoteChange({ [note.id]: { locked: !note.locked } });
   }
 
   function handleModeChange() {
-    note && onNoteChange({ ...note, textOnly: !note.textOnly });
+    note && onNoteChange({ [note.id]: { textOnly: !note.textOnly } });
   }
 
   function handleModalContent(node: HTMLElement) {

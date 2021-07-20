@@ -17,7 +17,7 @@ import Note from "../konva/Note";
 import { Map } from "../../types/Map";
 import { Note as NoteType } from "../../types/Note";
 import {
-  NoteAddEventHander,
+  NoteCreateEventHander,
   NoteChangeEventHandler,
   NoteDragEventHandler,
   NoteMenuOpenEventHandler,
@@ -28,7 +28,7 @@ const defaultNoteSize = 2;
 type MapNoteProps = {
   map: Map | null;
   active: boolean;
-  onNoteAdd: NoteAddEventHander;
+  onNoteCreate: NoteCreateEventHander;
   onNoteChange: NoteChangeEventHandler;
   notes: NoteType[];
   onNoteMenuOpen: NoteMenuOpenEventHandler;
@@ -41,7 +41,7 @@ type MapNoteProps = {
 function NoteTool({
   map,
   active,
-  onNoteAdd,
+  onNoteCreate,
   onNoteChange,
   notes,
   onNoteMenuOpen,
@@ -127,7 +127,7 @@ function NoteTool({
 
     function handleBrushUp() {
       if (noteData && creatingNoteRef.current) {
-        onNoteAdd(noteData);
+        onNoteCreate([noteData]);
         onNoteMenuOpen(noteData.id, creatingNoteRef.current);
       }
       setNoteData(null);

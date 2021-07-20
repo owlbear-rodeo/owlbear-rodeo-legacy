@@ -4,7 +4,11 @@ import { useState } from "react";
 import NoteDragOverlay from "../components/note/NoteDragOverlay";
 import NoteMenu from "../components/note/NoteMenu";
 import NoteTool from "../components/tools/NoteTool";
-import { NoteChangeEventHandler, NoteRemoveEventHander } from "../types/Events";
+import {
+  NoteChangeEventHandler,
+  NoteCreateEventHander,
+  NoteRemoveEventHander,
+} from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
 import { MapState } from "../types/MapState";
 import { Note, NoteDraggingOptions, NoteMenuOptions } from "../types/Note";
@@ -12,6 +16,7 @@ import { Note, NoteDraggingOptions, NoteMenuOptions } from "../types/Note";
 function useMapNotes(
   map: Map | null,
   mapState: MapState | null,
+  onNoteCreate: NoteCreateEventHander,
   onNoteChange: NoteChangeEventHandler,
   onNoteRemove: NoteRemoveEventHander,
   selectedToolId: MapToolId,
@@ -38,8 +43,8 @@ function useMapNotes(
       setNoteDraggingOptions({ ...noteDraggingOptions, dragging: false });
   }
 
-  function handleNoteRemove(noteId: string) {
-    onNoteRemove(noteId);
+  function handleNoteRemove(noteIds: string[]) {
+    onNoteRemove(noteIds);
     setNoteDraggingOptions(undefined);
   }
 
@@ -47,7 +52,7 @@ function useMapNotes(
     <NoteTool
       map={map}
       active={selectedToolId === "note"}
-      onNoteAdd={onNoteChange}
+      onNoteCreate={onNoteCreate}
       onNoteChange={onNoteChange}
       notes={
         mapState

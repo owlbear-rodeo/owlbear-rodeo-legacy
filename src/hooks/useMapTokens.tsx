@@ -56,8 +56,8 @@ function useMapTokens(
       });
   }
 
-  function handleTokenStateRemove(tokenState: TokenState) {
-    onTokenStateRemove(tokenState);
+  function handleTokenStateRemove(tokenStateIds: string[]) {
+    onTokenStateRemove(tokenStateIds);
     setTokenDraggingOptions(undefined);
   }
 

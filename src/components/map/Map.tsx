@@ -36,6 +36,7 @@ import {
   NoteChangeEventHandler,
   NoteRemoveEventHander,
   TokenStateChangeEventHandler,
+  NoteCreateEventHander,
 } from "../../types/Events";
 
 import useMapTokens from "../../hooks/useMapTokens";
@@ -55,6 +56,7 @@ type MapProps = {
   onFogDraw: (action: Action<FogState>) => void;
   onFogDrawUndo: () => void;
   onFogDrawRedo: () => void;
+  onMapNoteCreate: NoteCreateEventHander;
   onMapNoteChange: NoteChangeEventHandler;
   onMapNoteRemove: NoteRemoveEventHander;
   allowMapDrawing: boolean;
@@ -79,6 +81,7 @@ function Map({
   onFogDraw,
   onFogDrawUndo,
   onFogDrawRedo,
+  onMapNoteCreate,
   onMapNoteChange,
   onMapNoteRemove,
   allowMapDrawing,
@@ -206,6 +209,7 @@ function Map({
   const { notes, noteMenu, noteDragOverlay } = useMapNotes(
     map,
     mapState,
+    onMapNoteCreate,
     onMapNoteChange,
     onMapNoteRemove,
     selectedToolId,
