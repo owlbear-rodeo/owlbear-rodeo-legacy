@@ -6,10 +6,10 @@ import Divider from "../Divider";
 
 import SelectMapButton from "./SelectMapButton";
 
-import FogToolSettings from "./controls/FogToolSettings";
-import DrawingToolSettings from "./controls/DrawingToolSettings";
-import PointerToolSettings from "./controls/PointerToolSettings";
-import SelectToolSettings from "./controls/SelectToolSettings";
+import FogToolSettings from "../controls/FogToolSettings";
+import DrawingToolSettings from "../controls/DrawingToolSettings";
+import PointerToolSettings from "../controls/PointerToolSettings";
+import SelectToolSettings from "../controls/SelectToolSettings";
 
 import MoveToolIcon from "../../icons/MoveToolIcon";
 import FogToolIcon from "../../icons/FogToolIcon";

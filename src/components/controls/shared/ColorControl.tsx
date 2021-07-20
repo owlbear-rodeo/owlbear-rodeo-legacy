@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, SxProp } from "theme-ui";
 
 import colors, { colorOptions, Color } from "../../../helpers/colors";
-import MapMenu from "../MapMenu";
+import MapMenu from "../../map/MapMenu";
 
 type ColorCircleProps = {
   color: Color;

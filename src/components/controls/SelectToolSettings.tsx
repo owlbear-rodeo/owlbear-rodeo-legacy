@@ -3,16 +3,16 @@ import { Flex } from "theme-ui";
 import {
   SelectToolSettings as SelectToolSettingsType,
   SelectToolType,
-} from "../../../types/Select";
+} from "../../types/Select";
 
-import { useKeyboard } from "../../../contexts/KeyboardContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
-import ToolSection from "./ToolSection";
+import ToolSection from "./shared/ToolSection";
 
-import shortcuts from "../../../shortcuts";
+import shortcuts from "../../shortcuts";
 
-import RectIcon from "../../../icons/SelectRectangleIcon";
-import PathIcon from "../../../icons/SelectPathIcon";
+import RectIcon from "../../icons/SelectRectangleIcon";
+import PathIcon from "../../icons/SelectPathIcon";
 
 type SelectToolSettingsProps = {
   settings: SelectToolSettingsType;

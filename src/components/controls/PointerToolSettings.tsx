@@ -1,8 +1,8 @@
 import { Flex } from "theme-ui";
 
-import ColorControl from "./ColorControl";
+import ColorControl from "./shared/ColorControl";
 
-import { PointerToolSettings as PointerToolSettingsType } from "../../../types/Pointer";
+import { PointerToolSettings as PointerToolSettingsType } from "../../types/Pointer";
 
 type PointerToolSettingsProps = {
   settings: PointerToolSettingsType;

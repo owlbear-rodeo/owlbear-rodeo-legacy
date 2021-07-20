@@ -2,34 +2,34 @@ import { useEffect } from "react";
 import { Flex, IconButton } from "theme-ui";
 import { useMedia } from "react-media";
 
-import RadioIconButton from "../../RadioIconButton";
+import RadioIconButton from "../RadioIconButton";
 
-import ColorControl from "./ColorControl";
-import AlphaBlendToggle from "./AlphaBlendToggle";
-import ToolSection from "./ToolSection";
+import ColorControl from "./shared/ColorControl";
+import AlphaBlendToggle from "./shared/AlphaBlendToggle";
+import ToolSection from "./shared/ToolSection";
 
-import BrushIcon from "../../../icons/BrushToolIcon";
-import BrushPaintIcon from "../../../icons/BrushPaintIcon";
-import BrushLineIcon from "../../../icons/BrushLineIcon";
-import BrushRectangleIcon from "../../../icons/BrushRectangleIcon";
-import BrushCircleIcon from "../../../icons/BrushCircleIcon";
-import BrushTriangleIcon from "../../../icons/BrushTriangleIcon";
-import EraseAllIcon from "../../../icons/EraseAllIcon";
-import EraseIcon from "../../../icons/EraseToolIcon";
+import BrushIcon from "../../icons/BrushToolIcon";
+import BrushPaintIcon from "../../icons/BrushPaintIcon";
+import BrushLineIcon from "../../icons/BrushLineIcon";
+import BrushRectangleIcon from "../../icons/BrushRectangleIcon";
+import BrushCircleIcon from "../../icons/BrushCircleIcon";
+import BrushTriangleIcon from "../../icons/BrushTriangleIcon";
+import EraseAllIcon from "../../icons/EraseAllIcon";
+import EraseIcon from "../../icons/EraseToolIcon";
 
-import UndoButton from "./UndoButton";
-import RedoButton from "./RedoButton";
+import UndoButton from "./shared/UndoButton";
+import RedoButton from "./shared/RedoButton";
 
-import Divider from "../../Divider";
+import Divider from "../Divider";
 
-import { useKeyboard } from "../../../contexts/KeyboardContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
-import shortcuts from "../../../shortcuts";
+import shortcuts from "../../shortcuts";
 
 import {
   DrawingToolSettings as DrawingToolSettingsType,
   DrawingToolType,
-} from "../../../types/Drawing";
+} from "../../types/Drawing";
 
 type DrawingToolSettingsProps = {
   settings: DrawingToolSettingsType;

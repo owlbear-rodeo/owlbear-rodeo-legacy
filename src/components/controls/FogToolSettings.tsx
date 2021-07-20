@@ -1,32 +1,32 @@
 import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
-import RadioIconButton from "../../RadioIconButton";
+import RadioIconButton from "../RadioIconButton";
 
-import MultilayerToggle from "./MultilayerToggle";
-import FogPreviewToggle from "./FogPreviewToggle";
-import FogCutToggle from "./FogCutToggle";
+import MultilayerToggle from "./shared/MultilayerToggle";
+import FogPreviewToggle from "./shared/FogPreviewToggle";
+import FogCutToggle from "./shared/FogCutToggle";
 
-import FogBrushIcon from "../../../icons/FogBrushIcon";
-import FogPolygonIcon from "../../../icons/FogPolygonIcon";
-import FogRemoveIcon from "../../../icons/FogRemoveIcon";
-import FogToggleIcon from "../../../icons/FogToggleIcon";
-import FogRectangleIcon from "../../../icons/FogRectangleIcon";
+import FogBrushIcon from "../../icons/FogBrushIcon";
+import FogPolygonIcon from "../../icons/FogPolygonIcon";
+import FogRemoveIcon from "../../icons/FogRemoveIcon";
+import FogToggleIcon from "../../icons/FogToggleIcon";
+import FogRectangleIcon from "../../icons/FogRectangleIcon";
 
-import UndoButton from "./UndoButton";
-import RedoButton from "./RedoButton";
-import ToolSection from "./ToolSection";
+import UndoButton from "./shared/UndoButton";
+import RedoButton from "./shared/RedoButton";
+import ToolSection from "./shared/ToolSection";
 
-import Divider from "../../Divider";
+import Divider from "../Divider";
 
-import { useKeyboard } from "../../../contexts/KeyboardContext";
+import { useKeyboard } from "../../contexts/KeyboardContext";
 
-import shortcuts from "../../../shortcuts";
+import shortcuts from "../../shortcuts";
 
 import {
   FogToolSettings as FogToolSettingsType,
   FogToolType,
-} from "../../../types/Fog";
+} from "../../types/Fog";
 
 type FogToolSettingsProps = {
   settings: FogToolSettingsType;
