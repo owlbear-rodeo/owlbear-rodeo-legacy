@@ -1,11 +1,11 @@
 import Konva from "konva";
 
 import DragOverlay from "../map/DragOverlay";
-import { MapTokenStateRemoveHandler } from "../../types/Events";
+import { TokenStateRemoveHandler } from "../../types/Events";
 import { TokenState } from "../../types/TokenState";
 
 type TokenDragOverlayProps = {
-  onTokenStateRemove: MapTokenStateRemoveHandler;
+  onTokenStateRemove: TokenStateRemoveHandler;
   tokenState: TokenState;
   tokenNode: Konva.Node;
   dragging: boolean;

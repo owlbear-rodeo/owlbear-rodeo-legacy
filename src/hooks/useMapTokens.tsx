@@ -9,7 +9,7 @@ import {
 } from "../types/Token";
 import { TokenState } from "../types/TokenState";
 import {
-  MapTokenStateRemoveHandler,
+  TokenStateRemoveHandler,
   TokenStateChangeEventHandler,
 } from "../types/Events";
 import { useState } from "react";
@@ -23,7 +23,7 @@ function useMapTokens(
   map: Map | null,
   mapState: MapState | null,
   onTokenStateChange: TokenStateChangeEventHandler,
-  onTokenStateRemove: MapTokenStateRemoveHandler,
+  onTokenStateRemove: TokenStateRemoveHandler,
   selectedToolId: MapToolId,
   disabledTokens: Record<string, boolean>
 ) {

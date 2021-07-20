@@ -32,11 +32,11 @@ import {
 } from "../../helpers/token";
 import { findGroup } from "../../helpers/group";
 import Vector2 from "../../helpers/Vector2";
-import { MapTokensStateCreateHandler } from "../../types/Events";
+import { TokensStateCreateHandler } from "../../types/Events";
 import { Group } from "../../types/Group";
 
 type TokenBarProps = {
-  onMapTokensStateCreate: MapTokensStateCreateHandler;
+  onMapTokensStateCreate: TokensStateCreateHandler;
 };
 
 function TokenBar({ onMapTokensStateCreate }: TokenBarProps) {

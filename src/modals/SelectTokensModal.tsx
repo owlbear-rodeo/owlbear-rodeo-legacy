@@ -37,14 +37,14 @@ import { useMapStage } from "../contexts/MapStageContext";
 
 import { TokenState } from "../types/TokenState";
 import {
-  MapTokensStateCreateHandler,
+  TokensStateCreateHandler,
   RequestCloseEventHandler,
 } from "../types/Events";
 
 type SelectTokensModalProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
-  onMapTokensStateCreate: MapTokensStateCreateHandler;
+  onMapTokensStateCreate: TokensStateCreateHandler;
 };
 
 function SelectTokensModal({

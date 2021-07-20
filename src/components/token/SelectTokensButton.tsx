@@ -4,10 +4,10 @@ import { IconButton } from "theme-ui";
 import SelectTokensIcon from "../../icons/SelectTokensIcon";
 
 import SelectTokensModal from "../../modals/SelectTokensModal";
-import { MapTokensStateCreateHandler } from "../../types/Events";
+import { TokensStateCreateHandler } from "../../types/Events";
 
 type SelectTokensButtonProps = {
-  onMapTokensStateCreate: MapTokensStateCreateHandler;
+  onMapTokensStateCreate: TokensStateCreateHandler;
 };
 
 function SelectTokensButton({

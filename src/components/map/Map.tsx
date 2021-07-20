@@ -32,7 +32,7 @@ import { Settings } from "../../types/Settings";
 import {
   MapChangeEventHandler,
   MapResetEventHandler,
-  MapTokenStateRemoveHandler,
+  TokenStateRemoveHandler,
   NoteChangeEventHandler,
   NoteRemoveEventHander,
   TokenStateChangeEventHandler,
@@ -46,7 +46,7 @@ type MapProps = {
   mapState: MapState | null;
   mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
-  onMapTokenStateRemove: MapTokenStateRemoveHandler;
+  onMapTokenStateRemove: TokenStateRemoveHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
   onMapDraw: (action: Action<DrawingState>) => void;

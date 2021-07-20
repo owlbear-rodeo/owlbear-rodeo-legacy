@@ -21,9 +21,8 @@ export type DiceSelectEventHandler = (dice: DefaultDice) => void;
 
 export type RequestCloseEventHandler = () => void;
 
-export type MapTokensStateCreateHandler = (states: TokenState[]) => void;
-export type MapTokenStateRemoveHandler = (state: TokenState) => void;
-
+export type TokensStateCreateHandler = (states: TokenState[]) => void;
+export type TokenStateRemoveHandler = (state: TokenState) => void;
 export type TokenStateChangeEventHandler = (
   changes: Record<string, Partial<TokenState>>
 ) => void;
