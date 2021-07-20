@@ -1,10 +1,5 @@
 import React from "react";
-import Action from "../actions/Action";
-import { DrawingState } from "./Drawing";
-import { FogState } from "./Fog";
 import { Grid } from "./Grid";
-import { Notes } from "./Note";
-import { TokenStates } from "./TokenState";
 
 export type MapToolId =
   | "map"
@@ -60,22 +55,3 @@ export type FileMap = BaseMap & {
 };
 
 export type Map = DefaultMap | FileMap;
-
-export type DrawingsAction = {
-  type: "drawings";
-  action: Action<DrawingState>;
-};
-export type FogsAction = { type: "fogs"; action: Action<FogState> };
-export type TokensAction = { type: "tokens"; action: Action<TokenStates> };
-export type NotesAction = { type: "notes"; action: Action<Notes> };
-
-export type MapAction =
-  | DrawingsAction
-  | FogsAction
-  | TokensAction
-  | NotesAction;
-
-export type MapActions = {
-  actions: MapAction[][];
-  actionIndex: number;
-};

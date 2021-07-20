@@ -12,8 +12,8 @@ import { omit } from "../helpers/shared";
 
 import useDebounce from "../hooks/useDebounce";
 import useNetworkedState from "../hooks/useNetworkedState";
+import useMapActions from "../hooks/useMapActions";
 
-// Load session for auto complete
 import Session, { PeerDataEvent, PeerDataProgressEvent } from "./Session";
 
 import Action from "../actions/Action";
@@ -23,7 +23,7 @@ import TokenBar from "../components/token/TokenBar";
 
 import GlobalImageDrop from "../components/image/GlobalImageDrop";
 
-import { Map as MapType, MapActions, MapAction } from "../types/Map";
+import { Map as MapType } from "../types/Map";
 import { MapState } from "../types/MapState";
 import {
   AssetManifest,
@@ -34,11 +34,6 @@ import { TokenState } from "../types/TokenState";
 import { DrawingState } from "../types/Drawing";
 import { FogState } from "../types/Fog";
 import { Note } from "../types/Note";
-
-const defaultMapActions: MapActions = {
-  actions: [],
-  actionIndex: -1,
-};
 
 /**
  * @typedef {object} NetworkedMapProps
@@ -219,106 +214,12 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     await loadAssetManifestFromMap(newMap, newMapState);
   }
 
+  const [_, addActions, updateActionIndex, resetActions] =
+    useMapActions(setCurrentMapState);
+
   function handleMapReset(newMapState: MapState) {
     setCurrentMapState(newMapState, true, true);
-    setMapActions(defaultMapActions);
-  }
-
-  const [mapActions, setMapActions] = useState(defaultMapActions);
-
-  function applyMapActionsToState(
-    mapState: MapState,
-    actions: MapAction[]
-  ): MapState {
-    for (let mapAction of actions) {
-      if (mapAction.type === "drawings") {
-        mapState.drawShapes = mapAction.action.execute(mapState.drawShapes);
-      } else if (mapAction.type === "fogs") {
-        mapState.fogShapes = mapAction.action.execute(mapState.fogShapes);
-      } else if (mapAction.type === "tokens") {
-        mapState.tokens = mapAction.action.execute(mapState.tokens);
-      } else if (mapAction.type === "notes") {
-        mapState.notes = mapAction.action.execute(mapState.notes);
-      }
-    }
-    return mapState;
-  }
-
-  function undoMapActionsToState(
-    mapState: MapState,
-    actions: MapAction[]
-  ): MapState {
-    for (let mapAction of actions) {
-      if (mapAction.type === "drawings") {
-        mapState.drawShapes = mapAction.action.undo(mapState.drawShapes);
-      } else if (mapAction.type === "fogs") {
-        mapState.fogShapes = mapAction.action.undo(mapState.fogShapes);
-      } else if (mapAction.type === "tokens") {
-        mapState.tokens = mapAction.action.undo(mapState.tokens);
-      } else if (mapAction.type === "notes") {
-        mapState.notes = mapAction.action.undo(mapState.notes);
-      }
-    }
-    return mapState;
-  }
-
-  function addActions(actions: MapAction[]) {
-    setMapActions((prevActions) => {
-      const newActions = [
-        ...prevActions.actions.slice(0, prevActions.actionIndex + 1),
-        actions,
-      ];
-      const newIndex = newActions.length - 1;
-      return {
-        actions: newActions,
-        actionIndex: newIndex,
-      };
-    });
-
-    // Update map state by performing the actions on it
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let state = { ...prevMapState };
-      state = applyMapActionsToState(state, actions);
-      return state;
-    });
-  }
-
-  function updateActionIndex(change: number) {
-    const prevIndex = mapActions.actionIndex;
-    const newIndex = Math.min(
-      Math.max(mapActions.actionIndex + change, -1),
-      mapActions.actions.length - 1
-    );
-
-    setMapActions((prevMapActions) => ({
-      ...prevMapActions,
-      actionIndex: newIndex,
-    }));
-
-    // Update map state by either performing the actions or undoing them
-    setCurrentMapState((prevMapState) => {
-      if (!prevMapState) {
-        return prevMapState;
-      }
-      let state = { ...prevMapState };
-      if (prevIndex < newIndex) {
-        // Redo
-        for (let i = prevIndex + 1; i < newIndex + 1; i++) {
-          const actions = mapActions.actions[i];
-          state = applyMapActionsToState(state, actions);
-        }
-      } else {
-        // Undo
-        for (let i = prevIndex; i > newIndex; i--) {
-          const actions = mapActions.actions[i];
-          state = undoMapActionsToState(state, actions);
-        }
-      }
-      return state;
-    });
+    resetActions();
   }
 
   function handleMapDraw(action: Action<DrawingState>) {
@@ -341,10 +242,10 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   const previousMapIdRef = useRef<string>();
   useEffect(() => {
     if (currentMap && currentMap?.id !== previousMapIdRef.current) {
-      setMapActions(defaultMapActions);
+      resetActions();
       previousMapIdRef.current = currentMap?.id;
     }
-  }, [currentMap]);
+  }, [currentMap, resetActions]);
 
   function handleNoteCreate(notes: Note[]) {
     setCurrentMapState((prevMapState) => {
