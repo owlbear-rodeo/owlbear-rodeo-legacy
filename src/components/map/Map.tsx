@@ -38,6 +38,7 @@ import {
   NoteRemoveEventHander,
   TokenStateChangeEventHandler,
   NoteCreateEventHander,
+  SelectionItemsChangeEventHandler,
 } from "../../types/Events";
 
 import useMapTokens from "../../hooks/useMapTokens";
@@ -50,6 +51,7 @@ type MapProps = {
   mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onMapTokenStateRemove: TokenStateRemoveHandler;
+  onSelectionItemsChange: SelectionItemsChangeEventHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
   onMapDraw: (action: Action<DrawingState>) => void;
@@ -69,6 +71,7 @@ function Map({
   mapActions,
   onMapTokenStateChange,
   onMapTokenStateRemove,
+  onSelectionItemsChange,
   onMapChange,
   onMapReset,
   onMapDraw,
@@ -211,6 +214,7 @@ function Map({
         <SelectTool
           active={selectedToolId === "select"}
           toolSettings={settings.select}
+          onSelectionItemsChange={onSelectionItemsChange}
         />
       </MapInteraction>
     </Box>

@@ -194,6 +194,7 @@ function Note({
   return (
     <animated.Group
       {...props}
+      id={note.id}
       onClick={handleClick}
       onTap={handleClick}
       width={noteWidth}

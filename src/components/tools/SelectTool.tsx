@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Group, Line, Rect } from "react-konva";
+import { Group } from "react-konva";
 
 import {
   useDebouncedStageScale,
@@ -15,32 +15,43 @@ import {
   simplifyPoints,
 } from "../../helpers/drawing";
 import Vector2 from "../../helpers/Vector2";
-import colors from "../../helpers/colors";
-import { getRelativePointerPosition } from "../../helpers/konva";
-
-import { Selection, SelectToolSettings } from "../../types/Select";
-import { RectData } from "../../types/Drawing";
 import {
-  useGridCellNormalizedSize,
-  useGridStrokeWidth,
-} from "../../contexts/GridContext";
+  getRelativePointerPosition,
+  scaleAndFlattenPoints,
+} from "../../helpers/konva";
+import { Intersection } from "../../helpers/token";
+
+import {
+  Selection as SelectionType,
+  SelectionItem,
+  SelectToolSettings,
+} from "../../types/Select";
+import { RectData } from "../../types/Drawing";
+import { useGridCellNormalizedSize } from "../../contexts/GridContext";
+import Konva from "konva";
+import Selection from "../konva/Selection";
+import { SelectionItemsChangeEventHandler } from "../../types/Events";
 
 type MapSelectProps = {
   active: boolean;
   toolSettings: SelectToolSettings;
+  onSelectionItemsChange: SelectionItemsChangeEventHandler;
 };
 
-function SelectTool({ active, toolSettings }: MapSelectProps) {
+function SelectTool({
+  active,
+  toolSettings,
+  onSelectionItemsChange,
+}: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
   const interactionEmitter = useInteractionEmitter();
 
   const gridCellNormalizedSize = useGridCellNormalizedSize();
-  const gridStrokeWidth = useGridStrokeWidth();
 
   const mapStageRef = useMapStage();
-  const [selection, setSelection] = useState<Selection | null>(null);
+  const [selection, setSelection] = useState<SelectionType | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
   useEffect(() => {
@@ -66,20 +77,24 @@ function SelectTool({ active, toolSettings }: MapSelectProps) {
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
-      if (!brushPosition) {
+      if (!brushPosition || selection) {
         return;
       }
       if (toolSettings.type === "path") {
         setSelection({
           type: "path",
-          nodes: [],
+          items: [],
           data: { points: [brushPosition] },
+          x: 0,
+          y: 0,
         });
       } else {
         setSelection({
           type: "rectangle",
-          nodes: [],
+          items: [],
           data: getDefaultShapeData("rectangle", brushPosition) as RectData,
+          x: 0,
+          y: 0,
         });
       }
       setIsBrushDown(true);
@@ -134,7 +149,77 @@ function SelectTool({ active, toolSettings }: MapSelectProps) {
     }
 
     function handleBrushUp() {
-      setSelection(null);
+      if (selection && mapStage) {
+        const tokensGroup = mapStage.findOne<Konva.Group>("#tokens");
+        const notesGroup = mapStage.findOne<Konva.Group>("#notes");
+        if (tokensGroup && notesGroup) {
+          let points: Vector2[] = [];
+          if (selection.type === "path") {
+            points = selection.data.points;
+          } else {
+            points.push({ x: selection.data.x, y: selection.data.y });
+            points.push({
+              x: selection.data.x + selection.data.width,
+              y: selection.data.y,
+            });
+            points.push({
+              x: selection.data.x + selection.data.width,
+              y: selection.data.y + selection.data.height,
+            });
+            points.push({
+              x: selection.data.x,
+              y: selection.data.y + selection.data.height,
+            });
+          }
+          const intersection = new Intersection(
+            {
+              type: "path",
+              points: scaleAndFlattenPoints(points, {
+                x: mapWidth,
+                y: mapHeight,
+              }),
+            },
+            { x: selection.x, y: selection.y },
+            { x: 0, y: 0 },
+            0
+          );
+
+          let intersectingItems: SelectionItem[] = [];
+
+          const tokens = tokensGroup.children;
+          if (tokens) {
+            for (let token of tokens) {
+              if (intersection.intersects(token.position())) {
+                intersectingItems.push({ type: "token", id: token.id() });
+              }
+            }
+          }
+          const notes = notesGroup.children;
+          if (notes) {
+            for (let note of notes) {
+              if (intersection.intersects(note.position())) {
+                intersectingItems.push({ type: "note", id: note.id() });
+              }
+            }
+          }
+
+          if (intersectingItems.length > 0) {
+            setSelection((prevSelection) => {
+              if (!prevSelection) {
+                return prevSelection;
+              }
+              return { ...prevSelection, items: intersectingItems };
+            });
+          } else {
+            setSelection(null);
+          }
+        } else {
+          setSelection(null);
+        }
+      } else {
+        setSelection(null);
+      }
+
       setIsBrushDown(false);
     }
 
@@ -149,47 +234,17 @@ function SelectTool({ active, toolSettings }: MapSelectProps) {
     };
   });
 
-  function renderSelection(selection: Selection) {
-    const strokeWidth = gridStrokeWidth / stageScale;
-    const defaultProps = {
-      stroke: colors.primary,
-      strokeWidth: strokeWidth,
-      dash: [strokeWidth / 2, strokeWidth * 2],
-    };
-    if (selection.type === "path") {
-      return (
-        <Line
-          points={selection.data.points.reduce(
-            (acc: number[], point) => [
-              ...acc,
-              point.x * mapWidth,
-              point.y * mapHeight,
-            ],
-            []
-          )}
-          tension={0.5}
-          closed={false}
-          lineCap="round"
-          lineJoin="round"
-          {...defaultProps}
+  return (
+    <Group>
+      {selection && (
+        <Selection
+          selection={selection}
+          onSelectionChange={setSelection}
+          onSelectionItemsChange={onSelectionItemsChange}
         />
-      );
-    } else if (selection.type === "rectangle") {
-      return (
-        <Rect
-          x={selection.data.x * mapWidth}
-          y={selection.data.y * mapHeight}
-          width={selection.data.width * mapWidth}
-          height={selection.data.height * mapHeight}
-          lineCap="round"
-          lineJoin="round"
-          {...defaultProps}
-        />
-      );
-    }
-  }
-
-  return <Group>{selection && renderSelection(selection)}</Group>;
+      )}
+    </Group>
+  );
 }
 
 export default SelectTool;

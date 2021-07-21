@@ -146,7 +146,7 @@ function NoteTool({
   });
 
   return (
-    <Group>
+    <Group id="notes">
       {notes.map((note) => (
         <Note
           note={note}

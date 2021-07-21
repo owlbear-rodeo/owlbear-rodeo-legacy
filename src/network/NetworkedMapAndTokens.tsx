@@ -308,6 +308,28 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     addActions([{ type: "tokens", action }]);
   }
 
+  function handleSelectionItemsChange(
+    tokenChanges: Record<string, Partial<TokenState>>,
+    noteChanges: Record<string, Partial<Note>>
+  ) {
+    let tokenEdits: Partial<TokenState>[] = [];
+    for (let id in tokenChanges) {
+      tokenEdits.push({ ...tokenChanges[id], id });
+    }
+    const tokenAction = new EditStatesAction(tokenEdits);
+
+    let noteEdits: Partial<Note>[] = [];
+    for (let id in noteChanges) {
+      noteEdits.push({ ...noteChanges[id], id });
+    }
+    const noteAction = new EditStatesAction(noteEdits);
+
+    addActions([
+      { type: "tokens", action: tokenAction },
+      { type: "notes", action: noteAction },
+    ]);
+  }
+
   useEffect(() => {
     async function handlePeerData({ id, data, reply }: PeerDataEvent) {
       if (id === "assetRequest") {
@@ -371,6 +393,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
+        onSelectionItemsChange={handleSelectionItemsChange}
         onMapChange={handleMapChange}
         onMapReset={handleMapReset}
         onMapDraw={handleMapDraw}

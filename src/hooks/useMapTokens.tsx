@@ -79,7 +79,7 @@ function useMapTokens(
   }
 
   const tokens = map && mapState && (
-    <Group>
+    <Group id="tokens">
       {Object.values(mapState.tokens)
         .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
         .map((tokenState) => (

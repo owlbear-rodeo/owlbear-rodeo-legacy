@@ -58,3 +58,8 @@ export type StreamEndEventHandler = (stream: MediaStream) => void;
 
 export type TimerStartEventHandler = (event: Timer) => void;
 export type TimerStopEventHandler = () => void;
+
+export type SelectionItemsChangeEventHandler = (
+  tokenChanges: Record<string, Partial<TokenState>>,
+  noteChanges: Record<string, Partial<Note>>
+) => void;

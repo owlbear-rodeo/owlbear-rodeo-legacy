@@ -1,4 +1,3 @@
-import Konva from "konva";
 import { RectData, PointsData } from "./Drawing";
 
 export type SelectToolType = "path" | "rectangle";
@@ -7,8 +6,17 @@ export type SelectToolSettings = {
   type: SelectToolType;
 };
 
+export type SelectionItemType = "token" | "note";
+
+export type SelectionItem = {
+  type: SelectionItemType;
+  id: string;
+};
+
 export type BaseSelection = {
-  nodes: Konva.Node[];
+  items: SelectionItem[];
+  x: number;
+  y: number;
 };
 
 export type RectSelection = BaseSelection & {
