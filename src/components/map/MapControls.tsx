@@ -38,19 +38,22 @@ import { Settings } from "../../types/Settings";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
 import shortcuts from "../../shortcuts";
+import { useUserId } from "../../contexts/UserIdContext";
+import { isEmpty } from "../../helpers/shared";
+import { MapActions } from "../../hooks/useMapActions";
 
 type MapControlsProps = {
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
-  currentMap: Map | null;
-  currentMapState: MapState | null;
+  map: Map | null;
+  mapState: MapState | null;
+  mapActions: MapActions;
+  allowMapChange: boolean;
   selectedToolId: MapToolId;
   onSelectedToolChange: (toolId: MapToolId) => void;
   toolSettings: Settings;
   onToolSettingChange: (change: Partial<Settings>) => void;
   onToolAction: (actionId: string) => void;
-  disabledControls: MapToolId[];
-  disabledSettings: Partial<Record<keyof Settings, string[]>>;
   onUndo: () => void;
   onRedo: () => void;
 };
@@ -58,20 +61,61 @@ type MapControlsProps = {
 function MapContols({
   onMapChange,
   onMapReset,
-  currentMap,
-  currentMapState,
+  map,
+  mapState,
+  mapActions,
+  allowMapChange,
   selectedToolId,
   onSelectedToolChange,
   toolSettings,
   onToolSettingChange,
   onToolAction,
-  disabledControls,
-  disabledSettings,
   onUndo,
   onRedo,
 }: MapControlsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [fullScreen, setFullScreen] = useSetting("map.fullScreen");
+
+  const userId = useUserId();
+
+  const isOwner = map && map.owner === userId;
+
+  const allowMapDrawing = isOwner || mapState?.editFlags.includes("drawing");
+  const allowFogDrawing = isOwner || mapState?.editFlags.includes("fog");
+  const allowNoteEditing = isOwner || mapState?.editFlags.includes("notes");
+
+  const disabledControls: MapToolId[] = [];
+  if (!allowMapDrawing) {
+    disabledControls.push("drawing");
+  }
+  if (!map) {
+    disabledControls.push("move");
+    disabledControls.push("measure");
+    disabledControls.push("pointer");
+    disabledControls.push("select");
+  }
+  if (!allowFogDrawing) {
+    disabledControls.push("fog");
+  }
+  if (!allowMapChange) {
+    disabledControls.push("map");
+  }
+  if (!allowNoteEditing) {
+    disabledControls.push("note");
+  }
+  if (!map || mapActions.actionIndex < 0) {
+    disabledControls.push("undo");
+  }
+  if (!map || mapActions.actionIndex === mapActions.actions.length - 1) {
+    disabledControls.push("redo");
+  }
+
+  const disabledSettings: Partial<Record<keyof Settings, string[]>> = {
+    drawing: [],
+  };
+  if (mapState && isEmpty(mapState.drawShapes)) {
+    disabledSettings.drawing?.push("erase");
+  }
 
   const toolsById: Record<string, MapTool> = {
     move: {
@@ -131,8 +175,8 @@ function MapContols({
         <SelectMapButton
           onMapChange={onMapChange}
           onMapReset={onMapReset}
-          currentMap={currentMap}
-          currentMapState={currentMapState}
+          currentMap={map}
+          currentMapState={mapState}
           disabled={disabledControls.includes("map")}
         />
       ),
@@ -155,8 +199,14 @@ function MapContols({
       id: "history",
       component: (
         <>
-          <UndoButton onClick={onUndo} />
-          <RedoButton onClick={onRedo} />
+          <UndoButton
+            onClick={onUndo}
+            disabled={disabledControls.includes("undo")}
+          />
+          <RedoButton
+            onClick={onRedo}
+            disabled={disabledControls.includes("redo")}
+          />
         </>
       ),
     },
@@ -218,9 +268,10 @@ function MapContols({
     const Settings = toolsById[selectedToolId].SettingsComponent;
     if (
       !Settings ||
-      selectedToolId === "move" ||
-      selectedToolId === "measure" ||
-      selectedToolId === "note"
+      (selectedToolId !== "fog" &&
+        selectedToolId !== "drawing" &&
+        selectedToolId !== "pointer" &&
+        selectedToolId !== "select")
     ) {
       return null;
     }
@@ -276,6 +327,12 @@ function MapContols({
     }
     if (shortcuts.noteTool(event) && !disabledControls.includes("note")) {
       onSelectedToolChange("note");
+    }
+    if (shortcuts.redo(event) && !disabledControls.includes("redo")) {
+      onRedo();
+    }
+    if (shortcuts.undo(event) && !disabledControls.includes("undo")) {
+      onUndo();
     }
   }
 

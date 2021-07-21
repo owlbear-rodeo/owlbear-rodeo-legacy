@@ -13,6 +13,7 @@ import NetworkedMapPointer from "../../network/NetworkedMapPointer";
 import SelectTool from "../tools/SelectTool";
 
 import { useSettings } from "../../contexts/SettingsContext";
+import { useUserId } from "../../contexts/UserIdContext";
 
 import Action from "../../actions/Action";
 import {
@@ -41,10 +42,12 @@ import {
 
 import useMapTokens from "../../hooks/useMapTokens";
 import useMapNotes from "../../hooks/useMapNotes";
+import { MapActions } from "../../hooks/useMapActions";
 
 type MapProps = {
   map: MapType | null;
   mapState: MapState | null;
+  mapActions: MapActions;
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onMapTokenStateRemove: TokenStateRemoveHandler;
   onMapChange: MapChangeEventHandler;
@@ -54,11 +57,7 @@ type MapProps = {
   onMapNoteCreate: NoteCreateEventHander;
   onMapNoteChange: NoteChangeEventHandler;
   onMapNoteRemove: NoteRemoveEventHander;
-  allowMapDrawing: boolean;
-  allowFogDrawing: boolean;
   allowMapChange: boolean;
-  allowNoteEditing: boolean;
-  disabledTokens: Record<string, boolean>;
   session: Session;
   onUndo: () => void;
   onRedo: () => void;
@@ -67,6 +66,7 @@ type MapProps = {
 function Map({
   map,
   mapState,
+  mapActions,
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onMapChange,
@@ -76,16 +76,14 @@ function Map({
   onMapNoteCreate,
   onMapNoteChange,
   onMapNoteRemove,
-  allowMapDrawing,
-  allowFogDrawing,
   allowMapChange,
-  allowNoteEditing,
-  disabledTokens,
   session,
   onUndo,
   onRedo,
 }: MapProps) {
   const { addToast } = useToasts();
+
+  const userId = useUserId();
 
   const [selectedToolId, setSelectedToolId] = useState<MapToolId>("move");
   const { settings, setSettings } = useSettings();
@@ -130,42 +128,12 @@ function Map({
     onFogDraw(new EditStatesAction(shapes));
   }
 
-  const disabledControls: MapToolId[] = [];
-  if (!allowMapDrawing) {
-    disabledControls.push("drawing");
-  }
-  if (!map) {
-    disabledControls.push("move");
-    disabledControls.push("measure");
-    disabledControls.push("pointer");
-    disabledControls.push("select");
-  }
-  if (!allowFogDrawing) {
-    disabledControls.push("fog");
-  }
-  if (!allowMapChange) {
-    disabledControls.push("map");
-  }
-  if (!allowNoteEditing) {
-    disabledControls.push("note");
-  }
-
-  const disabledSettings: {
-    drawing: string[];
-  } = {
-    drawing: [],
-  };
-  if (drawShapes.length === 0) {
-    disabledSettings.drawing.push("erase");
-  }
-
   const { tokens, tokenMenu, tokenDragOverlay } = useMapTokens(
     map,
     mapState,
     onMapTokenStateChange,
     onMapTokenStateRemove,
-    selectedToolId,
-    disabledTokens
+    selectedToolId
   );
 
   const { notes, noteMenu, noteDragOverlay } = useMapNotes(
@@ -175,7 +143,7 @@ function Map({
     onMapNoteChange,
     onMapNoteRemove,
     selectedToolId,
-    allowNoteEditing
+    !!(map?.owner === userId || mapState?.editFlags.includes("notes"))
   );
 
   return (
@@ -188,15 +156,15 @@ function Map({
             <MapControls
               onMapChange={onMapChange}
               onMapReset={onMapReset}
-              currentMap={map}
-              currentMapState={mapState}
+              map={map}
+              mapState={mapState}
+              mapActions={mapActions}
+              allowMapChange={allowMapChange}
               onSelectedToolChange={setSelectedToolId}
               selectedToolId={selectedToolId}
               toolSettings={settings}
               onToolSettingChange={handleToolSettingChange}
               onToolAction={handleToolAction}
-              disabledControls={disabledControls}
-              disabledSettings={disabledSettings}
               onUndo={onUndo}
               onRedo={onRedo}
             />
@@ -208,7 +176,6 @@ function Map({
         }
         selectedToolId={selectedToolId}
         onSelectedToolChange={setSelectedToolId}
-        disabledControls={disabledControls}
       >
         {map && map.showGrid && <MapGrid map={map} />}
         <DrawingTool
@@ -231,7 +198,10 @@ function Map({
           onShapeError={addToast}
           active={selectedToolId === "fog"}
           toolSettings={settings.fog}
-          editable={allowFogDrawing && !settings.fog.preview}
+          editable={
+            !!(map?.owner === userId || mapState?.editFlags.includes("fog")) &&
+            !settings.fog.preview
+          }
         />
         <NetworkedMapPointer
           active={selectedToolId === "pointer"}

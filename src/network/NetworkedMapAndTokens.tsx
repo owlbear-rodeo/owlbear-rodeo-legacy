@@ -217,7 +217,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     await loadAssetManifestFromMap(newMap, newMapState);
   }
 
-  const [_, addActions, updateActionIndex, resetActions] =
+  const [mapActions, addActions, updateActionIndex, resetActions] =
     useMapActions(setCurrentMapState);
 
   function handleMapReset(newMapState: MapState) {
@@ -360,39 +360,6 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
 
   const canChangeMap = !isLoading;
 
-  const canEditMapDrawing =
-    currentMap &&
-    currentMapState &&
-    (currentMapState.editFlags.includes("drawing") ||
-      currentMap?.owner === userId);
-
-  const canEditFogDrawing =
-    currentMap &&
-    currentMapState &&
-    (currentMapState.editFlags.includes("fog") || currentMap?.owner === userId);
-
-  const canEditNotes =
-    currentMap &&
-    currentMapState &&
-    (currentMapState.editFlags.includes("notes") ||
-      currentMap?.owner === userId);
-
-  const disabledMapTokens: Record<string, boolean> = {};
-  // If we have a map and state and have the token permission disabled
-  // and are not the map owner
-  if (
-    currentMapState &&
-    currentMap &&
-    !currentMapState.editFlags.includes("tokens") &&
-    currentMap?.owner !== userId
-  ) {
-    for (let token of Object.values(currentMapState.tokens)) {
-      if (token.owner !== userId) {
-        disabledMapTokens[token.id] = true;
-      }
-    }
-  }
-
   return (
     <GlobalImageDrop
       onMapChange={handleMapChange}
@@ -401,6 +368,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
       <Map
         map={currentMap}
         mapState={currentMapState}
+        mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onMapChange={handleMapChange}
@@ -410,11 +378,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         onMapNoteCreate={handleNoteCreate}
         onMapNoteChange={handleNoteChange}
         onMapNoteRemove={handleNoteRemove}
-        allowMapDrawing={!!canEditMapDrawing}
-        allowFogDrawing={!!canEditFogDrawing}
         allowMapChange={canChangeMap}
-        allowNoteEditing={!!canEditNotes}
-        disabledTokens={disabledMapTokens}
         session={session}
         onUndo={handleUndo}
         onRedo={handleRedo}

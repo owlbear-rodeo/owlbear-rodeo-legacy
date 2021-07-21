@@ -31,7 +31,6 @@ type MapInteractionProps = {
   controls: React.ReactNode;
   selectedToolId: MapToolId;
   onSelectedToolChange: SelectedToolChangeEventHanlder;
-  disabledControls: MapToolId[];
 };
 
 function MapInteraction({
@@ -41,7 +40,6 @@ function MapInteraction({
   controls,
   selectedToolId,
   onSelectedToolChange,
-  disabledControls,
 }: MapInteractionProps) {
   const [mapImage, mapImageStatus] = useMapImage(map);
 
@@ -126,11 +124,7 @@ function MapInteraction({
       // Stop active state on move icon from being selected
       event.preventDefault();
     }
-    if (
-      shortcuts.move(event) &&
-      selectedToolId !== "move" &&
-      !disabledControls.includes("move")
-    ) {
+    if (map && shortcuts.move(event) && selectedToolId !== "move") {
       event.preventDefault();
       previousSelectedToolRef.current = selectedToolId;
       onSelectedToolChange("move");

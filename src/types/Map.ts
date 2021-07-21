@@ -9,7 +9,9 @@ export type MapToolId =
   | "drawing"
   | "measure"
   | "pointer"
-  | "note";
+  | "note"
+  | "undo"
+  | "redo";
 
 export type MapTool = {
   id: MapToolId;
