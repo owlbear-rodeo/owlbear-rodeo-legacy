@@ -21,6 +21,7 @@ import Vector2 from "../../helpers/Vector2";
 import { SelectionItemsChangeEventHandler } from "../../types/Events";
 import { TokenState } from "../../types/TokenState";
 import { Note } from "../../types/Note";
+import useGridSnapping from "../../hooks/useGridSnapping";
 
 const dashAnimationSpeed = -0.01;
 
@@ -45,19 +46,32 @@ function Selection({
   const stageScale = useDebouncedStageScale();
   const gridStrokeWidth = useGridStrokeWidth();
 
+  const snapPositionToGrid = useGridSnapping();
+
   const intersectingNodesRef = useRef<
-    { type: SelectionItemType; node: Konva.Node; id: string }[]
+    {
+      type: SelectionItemType;
+      node: Konva.Node;
+      id: string;
+      initialX: number;
+      initialY: number;
+    }[]
   >([]);
-  const previousDragPositionRef = useRef({ x: 0, y: 0 });
+  const initialDragPositionRef = useRef({ x: 0, y: 0 });
 
   function handleDragStart(event: Konva.KonvaEventObject<DragEvent>) {
-    previousDragPositionRef.current = event.target.position();
+    initialDragPositionRef.current = event.target.position();
     const stage = event.target.getStage();
     if (stage) {
       for (let item of selection.items) {
         const node = stage.findOne(`#${item.id}`);
         if (node) {
-          intersectingNodesRef.current.push({ ...item, node });
+          intersectingNodesRef.current.push({
+            ...item,
+            node,
+            initialX: node.x(),
+            initialY: node.y(),
+          });
         }
       }
     }
@@ -66,12 +80,15 @@ function Selection({
   function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
     const deltaPosition = Vector2.subtract(
       event.target.position(),
-      previousDragPositionRef.current
+      initialDragPositionRef.current
     );
     for (let item of intersectingNodesRef.current) {
-      item.node.position(Vector2.add(item.node.position(), deltaPosition));
+      item.node.position(
+        snapPositionToGrid(
+          Vector2.add({ x: item.initialX, y: item.initialY }, deltaPosition)
+        )
+      );
     }
-    previousDragPositionRef.current = event.target.position();
   }
 
   function handleDragEnd(event: Konva.KonvaEventObject<DragEvent>) {
