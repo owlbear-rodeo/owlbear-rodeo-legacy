@@ -10,7 +10,6 @@ import DrawingTool from "../tools/DrawingTool";
 import FogTool from "../tools/FogTool";
 import MeasureTool from "../tools/MeasureTool";
 import NetworkedMapPointer from "../../network/NetworkedMapPointer";
-import SelectTool from "../tools/SelectTool";
 
 import { useSettings } from "../../contexts/SettingsContext";
 import { useUserId } from "../../contexts/UserIdContext";
@@ -44,6 +43,7 @@ import {
 import useMapTokens from "../../hooks/useMapTokens";
 import useMapNotes from "../../hooks/useMapNotes";
 import { MapActions } from "../../hooks/useMapActions";
+import useMapSelection from "../../hooks/useMapSelection";
 
 type MapProps = {
   map: MapType | null;
@@ -149,6 +149,13 @@ function Map({
     !!(map?.owner === userId || mapState?.editFlags.includes("notes"))
   );
 
+  const { selectionTool, selectionMenu } = useMapSelection(
+    map,
+    onSelectionItemsChange,
+    selectedToolId,
+    settings.select
+  );
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <MapInteraction
@@ -173,6 +180,7 @@ function Map({
             />
             {tokenMenu}
             {noteMenu}
+            {selectionMenu}
             {tokenDragOverlay}
             {noteDragOverlay}
           </>
@@ -211,11 +219,7 @@ function Map({
           session={session}
         />
         <MeasureTool map={map} active={selectedToolId === "measure"} />
-        <SelectTool
-          active={selectedToolId === "select"}
-          toolSettings={settings.select}
-          onSelectionItemsChange={onSelectionItemsChange}
-        />
+        {selectionTool}
       </MapInteraction>
     </Box>
   );

@@ -31,17 +31,24 @@ import { useGridCellNormalizedSize } from "../../contexts/GridContext";
 import Konva from "konva";
 import Selection from "../konva/Selection";
 import { SelectionItemsChangeEventHandler } from "../../types/Events";
+import { getSelectionPoints } from "../../helpers/selection";
 
 type MapSelectProps = {
   active: boolean;
   toolSettings: SelectToolSettings;
   onSelectionItemsChange: SelectionItemsChangeEventHandler;
+  selection: SelectionType | null;
+  onSelectionChange: React.Dispatch<React.SetStateAction<SelectionType | null>>;
+  onSelectionMenuOpen: (open: boolean) => void;
 };
 
 function SelectTool({
   active,
   toolSettings,
   onSelectionItemsChange,
+  selection,
+  onSelectionChange,
+  onSelectionMenuOpen,
 }: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
@@ -51,7 +58,6 @@ function SelectTool({
   const gridCellNormalizedSize = useGridCellNormalizedSize();
 
   const mapStageRef = useMapStage();
-  const [selection, setSelection] = useState<SelectionType | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
   // Use a ref here to prevent case where brush down event
@@ -85,7 +91,7 @@ function SelectTool({
         return;
       }
       if (toolSettings.type === "path") {
-        setSelection({
+        onSelectionChange({
           type: "path",
           items: [],
           data: { points: [brushPosition] },
@@ -93,7 +99,7 @@ function SelectTool({
           y: 0,
         });
       } else {
-        setSelection({
+        onSelectionChange({
           type: "rectangle",
           items: [],
           data: getDefaultShapeData("rectangle", brushPosition) as RectData,
@@ -111,7 +117,7 @@ function SelectTool({
       }
       if (isBrushDown && selection && mapImage) {
         if (selection.type === "path") {
-          setSelection((prevSelection) => {
+          onSelectionChange((prevSelection) => {
             if (prevSelection?.type !== "path") {
               return prevSelection;
             }
@@ -135,7 +141,7 @@ function SelectTool({
             };
           });
         } else {
-          setSelection((prevSelection) => {
+          onSelectionChange((prevSelection) => {
             if (prevSelection?.type !== "rectangle") {
               return prevSelection;
             }
@@ -163,24 +169,7 @@ function SelectTool({
         const tokensGroup = mapStage.findOne<Konva.Group>("#tokens");
         const notesGroup = mapStage.findOne<Konva.Group>("#notes");
         if (tokensGroup && notesGroup) {
-          let points: Vector2[] = [];
-          if (selection.type === "path") {
-            points = selection.data.points;
-          } else {
-            points.push({ x: selection.data.x, y: selection.data.y });
-            points.push({
-              x: selection.data.x + selection.data.width,
-              y: selection.data.y,
-            });
-            points.push({
-              x: selection.data.x + selection.data.width,
-              y: selection.data.y + selection.data.height,
-            });
-            points.push({
-              x: selection.data.x,
-              y: selection.data.y + selection.data.height,
-            });
-          }
+          const points = getSelectionPoints(selection);
           const intersection = new Intersection(
             {
               type: "path",
@@ -214,20 +203,21 @@ function SelectTool({
           }
 
           if (intersectingItems.length > 0) {
-            setSelection((prevSelection) => {
+            onSelectionChange((prevSelection) => {
               if (!prevSelection) {
                 return prevSelection;
               }
               return { ...prevSelection, items: intersectingItems };
             });
+            onSelectionMenuOpen(true);
           } else {
-            setSelection(null);
+            onSelectionChange(null);
           }
         } else {
-          setSelection(null);
+          onSelectionChange(null);
         }
       } else {
-        setSelection(null);
+        onSelectionChange(null);
       }
 
       setIsBrushDown(false);
@@ -237,7 +227,7 @@ function SelectTool({
       if (preventSelectionRef.current) {
         return;
       }
-      setSelection(null);
+      onSelectionChange(null);
     }
 
     interactionEmitter?.on("dragStart", handleBrushDown);
@@ -258,7 +248,7 @@ function SelectTool({
       {selection && (
         <Selection
           selection={selection}
-          onSelectionChange={setSelection}
+          onSelectionChange={onSelectionChange}
           onSelectionItemsChange={onSelectionItemsChange}
           onPreventSelectionChange={(prevent: boolean) =>
             (preventSelectionRef.current = prevent)
