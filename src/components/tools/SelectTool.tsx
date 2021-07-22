@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
+import Konva from "konva";
 
 import {
   useDebouncedStageScale,
@@ -28,7 +29,6 @@ import {
 } from "../../types/Select";
 import { RectData } from "../../types/Drawing";
 import { useGridCellNormalizedSize } from "../../contexts/GridContext";
-import Konva from "konva";
 import Selection from "../konva/Selection";
 import { SelectionItemsChangeEventHandler } from "../../types/Events";
 import { getSelectionPoints } from "../../helpers/selection";
@@ -223,12 +223,13 @@ function SelectTool({
       setIsBrushDown(false);
     }
 
-    function handlePointerClick() {
-      if (preventSelectionRef.current) {
-        return;
+    function handlePointerClick(event: Konva.KonvaEventObject<MouseEvent>) {
+      if (event.target.id() === "selection") {
+        onSelectionMenuOpen(true);
+      } else {
+        onSelectionChange(null);
+        onSelectionMenuOpen(false);
       }
-      onSelectionChange(null);
-      onSelectionMenuOpen(false);
     }
 
     interactionEmitter?.on("dragStart", handleBrushDown);

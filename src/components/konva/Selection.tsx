@@ -163,6 +163,7 @@ function Selection({
     // Increase stroke width when drawing a selection to
     // prevent deselection click event from firing
     hitStrokeWidth: hasItems ? undefined : 100,
+    id: "selection",
   };
   const x = selection.x * mapWidth;
   const y = selection.y * mapHeight;
