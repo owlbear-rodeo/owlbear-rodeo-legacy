@@ -228,6 +228,7 @@ function SelectTool({
         return;
       }
       onSelectionChange(null);
+      onSelectionMenuOpen(false);
     }
 
     interactionEmitter?.on("dragStart", handleBrushDown);
