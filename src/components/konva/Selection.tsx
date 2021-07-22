@@ -30,6 +30,8 @@ type SelectionProps = {
   onSelectionChange: (selection: SelectionType | null) => void;
   onSelectionItemsChange: SelectionItemsChangeEventHandler;
   onPreventSelectionChange: (preventSelection: boolean) => void;
+  onSelectionDragStart: () => void;
+  onSelectionDragEnd: () => void;
 } & Konva.ShapeConfig;
 
 function Selection({
@@ -37,6 +39,8 @@ function Selection({
   onSelectionChange,
   onSelectionItemsChange,
   onPreventSelectionChange,
+  onSelectionDragStart,
+  onSelectionDragEnd,
   ...props
 }: SelectionProps) {
   const userId = useUserId();
@@ -75,6 +79,7 @@ function Selection({
         }
       }
     }
+    onSelectionDragStart();
   }
 
   function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
@@ -119,6 +124,7 @@ function Selection({
     });
     intersectingNodesRef.current = [];
     onPreventSelectionChange(false);
+    onSelectionDragEnd();
   }
 
   function handlePointerDown() {

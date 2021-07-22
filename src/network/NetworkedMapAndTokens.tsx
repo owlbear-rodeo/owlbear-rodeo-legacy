@@ -330,6 +330,18 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
     ]);
   }
 
+  function handleSelectionItemsRemove(
+    tokenStateIds: string[],
+    noteIds: string[]
+  ) {
+    const tokenAction = new RemoveStatesAction<TokenState>(tokenStateIds);
+    const noteAction = new RemoveStatesAction<Note>(noteIds);
+    addActions([
+      { type: "tokens", action: tokenAction },
+      { type: "notes", action: noteAction },
+    ]);
+  }
+
   useEffect(() => {
     async function handlePeerData({ id, data, reply }: PeerDataEvent) {
       if (id === "assetRequest") {
@@ -394,6 +406,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
         onSelectionItemsChange={handleSelectionItemsChange}
+        onSelectionItemsRemove={handleSelectionItemsRemove}
         onMapChange={handleMapChange}
         onMapReset={handleMapReset}
         onMapDraw={handleMapDraw}

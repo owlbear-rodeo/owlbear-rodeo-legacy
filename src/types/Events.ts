@@ -63,3 +63,7 @@ export type SelectionItemsChangeEventHandler = (
   tokenChanges: Record<string, Partial<TokenState>>,
   noteChanges: Record<string, Partial<Note>>
 ) => void;
+export type SelectionItemsRemoveEventHandler = (
+  tokenStateIds: string[],
+  noteIds: string[]
+) => void;

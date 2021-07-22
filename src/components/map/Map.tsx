@@ -38,6 +38,7 @@ import {
   TokenStateChangeEventHandler,
   NoteCreateEventHander,
   SelectionItemsChangeEventHandler,
+  SelectionItemsRemoveEventHandler,
 } from "../../types/Events";
 
 import useMapTokens from "../../hooks/useMapTokens";
@@ -52,6 +53,7 @@ type MapProps = {
   onMapTokenStateChange: TokenStateChangeEventHandler;
   onMapTokenStateRemove: TokenStateRemoveHandler;
   onSelectionItemsChange: SelectionItemsChangeEventHandler;
+  onSelectionItemsRemove: SelectionItemsRemoveEventHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
   onMapDraw: (action: Action<DrawingState>) => void;
@@ -72,6 +74,7 @@ function Map({
   onMapTokenStateChange,
   onMapTokenStateRemove,
   onSelectionItemsChange,
+  onSelectionItemsRemove,
   onMapChange,
   onMapReset,
   onMapDraw,
@@ -149,13 +152,15 @@ function Map({
     !!(map?.owner === userId || mapState?.editFlags.includes("notes"))
   );
 
-  const { selectionTool, selectionMenu } = useMapSelection(
-    map,
-    mapState,
-    onSelectionItemsChange,
-    selectedToolId,
-    settings.select
-  );
+  const { selectionTool, selectionMenu, selectionDragOverlay } =
+    useMapSelection(
+      map,
+      mapState,
+      onSelectionItemsChange,
+      onSelectionItemsRemove,
+      selectedToolId,
+      settings.select
+    );
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -184,6 +189,7 @@ function Map({
             {selectionMenu}
             {tokenDragOverlay}
             {noteDragOverlay}
+            {selectionDragOverlay}
           </>
         }
         selectedToolId={selectedToolId}

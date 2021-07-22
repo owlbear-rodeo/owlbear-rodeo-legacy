@@ -40,6 +40,8 @@ type MapSelectProps = {
   selection: SelectionType | null;
   onSelectionChange: React.Dispatch<React.SetStateAction<SelectionType | null>>;
   onSelectionMenuOpen: (open: boolean) => void;
+  onSelectionDragStart: () => void;
+  onSelectionDragEnd: () => void;
 };
 
 function SelectTool({
@@ -49,6 +51,8 @@ function SelectTool({
   selection,
   onSelectionChange,
   onSelectionMenuOpen,
+  onSelectionDragStart,
+  onSelectionDragEnd,
 }: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
@@ -255,6 +259,8 @@ function SelectTool({
           onPreventSelectionChange={(prevent: boolean) =>
             (preventSelectionRef.current = prevent)
           }
+          onSelectionDragStart={onSelectionDragStart}
+          onSelectionDragEnd={onSelectionDragEnd}
         />
       )}
     </Group>

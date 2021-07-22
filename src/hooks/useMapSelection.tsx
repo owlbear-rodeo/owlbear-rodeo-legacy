@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import SelectionDragOverlay from "../components/selection/SelectionDragOverlay";
 import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
-import { SelectionItemsChangeEventHandler } from "../types/Events";
+import {
+  SelectionItemsChangeEventHandler,
+  SelectionItemsRemoveEventHandler,
+} from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
 import { MapState } from "../types/MapState";
 import { Selection } from "../types/Select";
@@ -11,11 +15,13 @@ function useMapSelection(
   map: Map | null,
   mapState: MapState | null,
   onSelectionItemsChange: SelectionItemsChangeEventHandler,
+  onSelectionItemsRemove: SelectionItemsRemoveEventHandler,
   selectedToolId: MapToolId,
   settings: SelectToolSettings
 ) {
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] =
     useState<boolean>(false);
+  const [isSelectionDragging, setIsSelectionDragging] = useState(false);
   const [selection, setSelection] = useState<Selection | null>(null);
 
   function handleSelectionMenuOpen(open: boolean) {
@@ -31,6 +37,22 @@ function useMapSelection(
     }
   }, [active]);
 
+  function handleSelectionDragStart() {
+    setIsSelectionDragging(true);
+  }
+
+  function handleSelectionDragEnd() {
+    setIsSelectionDragging(false);
+  }
+
+  function handleSelectionItemsRemove(
+    tokenStateIds: string[],
+    noteIds: string[]
+  ) {
+    setSelection(null);
+    onSelectionItemsRemove(tokenStateIds, noteIds);
+  }
+
   const selectionTool = (
     <SelectTool
       active={active}
@@ -39,6 +61,8 @@ function useMapSelection(
       selection={selection}
       onSelectionChange={setSelection}
       onSelectionMenuOpen={handleSelectionMenuOpen}
+      onSelectionDragStart={handleSelectionDragStart}
+      onSelectionDragEnd={handleSelectionDragEnd}
     />
   );
 
@@ -53,7 +77,15 @@ function useMapSelection(
     />
   );
 
-  return { selectionTool, selectionMenu };
+  const selectionDragOverlay = selection ? (
+    <SelectionDragOverlay
+      dragging={isSelectionDragging}
+      selection={selection}
+      onSelectionItemsRemove={handleSelectionItemsRemove}
+    />
+  ) : null;
+
+  return { selectionTool, selectionMenu, selectionDragOverlay };
 }
 
 export default useMapSelection;
