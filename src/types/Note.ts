@@ -23,7 +23,6 @@ export type NoteMenuOptions = {
 export type NoteDraggingOptions = {
   dragging: boolean;
   noteId: string;
-  noteGroup: Konva.Node;
 };
 
 export type Notes = Record<string, Note>;

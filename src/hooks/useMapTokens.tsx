@@ -55,13 +55,12 @@ function useMapTokens(
   }
 
   function handleTokenDragStart(
-    event: KonvaEventObject<DragEvent>,
+    _: KonvaEventObject<DragEvent>,
     tokenStateId: string
   ) {
     setTokenDraggingOptions({
       dragging: true,
       tokenStateId,
-      tokenNode: event.target,
     });
   }
 
@@ -122,7 +121,6 @@ function useMapTokens(
     <TokenDragOverlay
       onTokenStateRemove={handleTokenStateRemove}
       tokenState={tokenDraggingState}
-      tokenNode={tokenDraggingOptions.tokenNode}
       dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
     />
   );

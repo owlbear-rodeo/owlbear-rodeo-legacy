@@ -31,11 +31,8 @@ function useMapNotes(
     setIsNoteMenuOpen(true);
   }
 
-  function handleNoteDragStart(
-    event: KonvaEventObject<DragEvent>,
-    noteId: string
-  ) {
-    setNoteDraggingOptions({ dragging: true, noteId, noteGroup: event.target });
+  function handleNoteDragStart(_: KonvaEventObject<DragEvent>, noteId: string) {
+    setNoteDraggingOptions({ dragging: true, noteId });
   }
 
   function handleNoteDragEnd() {
@@ -86,7 +83,6 @@ function useMapNotes(
   const noteDragOverlay = noteDraggingOptions ? (
     <NoteDragOverlay
       dragging={noteDraggingOptions.dragging}
-      noteGroup={noteDraggingOptions.noteGroup}
       noteId={noteDraggingOptions.noteId}
       onNoteRemove={handleNoteRemove}
     />

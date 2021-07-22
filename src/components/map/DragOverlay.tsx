@@ -1,23 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, IconButton } from "theme-ui";
-import Konva from "konva";
 
 import RemoveTokenIcon from "../../icons/RemoveTokenIcon";
+import { useMapStage } from "../../contexts/MapStageContext";
 
 type DragOverlayProps = {
   dragging: boolean;
-  node: Konva.Node;
   onRemove: () => void;
 };
 
-function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
+function DragOverlay({ dragging, onRemove }: DragOverlayProps) {
   const [isRemoveHovered, setIsRemoveHovered] = useState(false);
   const removeTokenRef = useRef<HTMLDivElement>(null);
+
+  const mapStageRef = useMapStage();
 
   // Detect token hover on remove icon manually to support touch devices
   useEffect(() => {
     function detectRemoveHover() {
-      if (!node || !dragging || !removeTokenRef.current) {
+      const mapStage = mapStageRef.current;
+      if (!mapStage || !dragging || !removeTokenRef.current) {
         return;
       }
       const map = document.querySelector(".map");
@@ -25,11 +27,7 @@ function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
         return;
       }
       const mapRect = map.getBoundingClientRect();
-      const stage = node.getStage();
-      if (!stage) {
-        return;
-      }
-      const pointerPosition = stage.getPointerPosition();
+      const pointerPosition = mapStage.getPointerPosition();
       if (!pointerPosition) {
         return;
       }
@@ -54,7 +52,7 @@ function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
     }
 
     let handler: NodeJS.Timeout;
-    if (node && dragging) {
+    if (dragging) {
       handler = setInterval(detectRemoveHover, 100);
     }
 
@@ -63,11 +61,11 @@ function DragOverlay({ dragging, node, onRemove }: DragOverlayProps) {
         clearInterval(handler);
       }
     };
-  }, [isRemoveHovered, dragging, node]);
+  }, [isRemoveHovered, dragging, mapStageRef]);
 
   // Detect drag end of token image and remove it if it is over the remove icon
   useEffect(() => {
-    if (!dragging && node && isRemoveHovered) {
+    if (!dragging && isRemoveHovered) {
       onRemove();
     }
   });
