@@ -20,7 +20,7 @@ import PointerToolIcon from "../../icons/PointerToolIcon";
 import FullScreenIcon from "../../icons/FullScreenIcon";
 import FullScreenExitIcon from "../../icons/FullScreenExitIcon";
 import NoteToolIcon from "../../icons/NoteToolIcon";
-import SelectToolIcon from "../../icons/SelecToolIcon";
+import SelectToolIcon from "../../icons/SelectToolIcon";
 
 import UndoButton from "../controls/shared/UndoButton";
 import RedoButton from "../controls/shared/RedoButton";

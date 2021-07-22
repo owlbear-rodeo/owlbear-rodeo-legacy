@@ -67,7 +67,7 @@ function loadVersions(settings: Settings) {
   // v1.10.0 - Add select tool
   settings.version(8, (prev: any) => ({
     ...prev,
-    select: { type: "path" },
+    select: { type: "rectangle" },
   }));
 }
 
