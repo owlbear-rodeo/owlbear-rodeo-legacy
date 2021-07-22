@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
 import {
@@ -54,6 +54,10 @@ function SelectTool({
   const [selection, setSelection] = useState<SelectionType | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
 
+  // Use a ref here to prevent case where brush down event
+  // would fire before React state was refreshed
+  const preventSelectionRef = useRef(false);
+
   useEffect(() => {
     if (!active) {
       return;
@@ -77,7 +81,7 @@ function SelectTool({
 
     function handleBrushDown() {
       const brushPosition = getBrushPosition();
-      if (!brushPosition || selection) {
+      if (!brushPosition || preventSelectionRef.current) {
         return;
       }
       if (toolSettings.type === "path") {
@@ -102,7 +106,10 @@ function SelectTool({
 
     function handleBrushMove() {
       const brushPosition = getBrushPosition();
-      if (isBrushDown && selection && brushPosition && mapImage) {
+      if (!brushPosition || preventSelectionRef.current) {
+        return;
+      }
+      if (isBrushDown && selection && mapImage) {
         if (selection.type === "path") {
           setSelection((prevSelection) => {
             if (prevSelection?.type !== "path") {
@@ -149,6 +156,9 @@ function SelectTool({
     }
 
     function handleBrushUp() {
+      if (preventSelectionRef.current) {
+        return;
+      }
       if (selection && mapStage) {
         const tokensGroup = mapStage.findOne<Konva.Group>("#tokens");
         const notesGroup = mapStage.findOne<Konva.Group>("#notes");
@@ -223,14 +233,23 @@ function SelectTool({
       setIsBrushDown(false);
     }
 
+    function handlePointerClick() {
+      if (preventSelectionRef.current) {
+        return;
+      }
+      setSelection(null);
+    }
+
     interactionEmitter?.on("dragStart", handleBrushDown);
     interactionEmitter?.on("drag", handleBrushMove);
     interactionEmitter?.on("dragEnd", handleBrushUp);
+    mapStage?.on("click tap", handlePointerClick);
 
     return () => {
       interactionEmitter?.off("dragStart", handleBrushDown);
       interactionEmitter?.off("drag", handleBrushMove);
       interactionEmitter?.off("dragEnd", handleBrushUp);
+      mapStage?.off("click tap", handlePointerClick);
     };
   });
 
@@ -241,6 +260,9 @@ function SelectTool({
           selection={selection}
           onSelectionChange={setSelection}
           onSelectionItemsChange={onSelectionItemsChange}
+          onPreventSelectionChange={(prevent: boolean) =>
+            (preventSelectionRef.current = prevent)
+          }
         />
       )}
     </Group>
