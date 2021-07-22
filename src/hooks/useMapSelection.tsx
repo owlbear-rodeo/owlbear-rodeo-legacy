@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
 import { SelectionItemsChangeEventHandler } from "../types/Events";
@@ -22,9 +22,18 @@ function useMapSelection(
     setIsSelectionMenuOpen(open);
   }
 
+  const active = selectedToolId === "select";
+
+  useEffect(() => {
+    if (!active) {
+      setSelection(null);
+      setIsSelectionMenuOpen(false);
+    }
+  }, [active]);
+
   const selectionTool = (
     <SelectTool
-      active={selectedToolId === "select"}
+      active={active}
       toolSettings={settings}
       onSelectionItemsChange={onSelectionItemsChange}
       selection={selection}
