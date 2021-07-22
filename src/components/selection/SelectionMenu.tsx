@@ -56,7 +56,10 @@ function SelectionMenu({
       const points = getSelectionPoints(selection);
       const bounds = Vector2.getBoundingBox(points);
 
-      let menuPosition = new Vector2(bounds.center.x, bounds.max.y);
+      let menuPosition = new Vector2(
+        bounds.center.x + selection.x,
+        bounds.max.y + selection.y
+      );
       const mapImage = mapStage.findOne("#mapImage");
       if (!mapImage) {
         return;
