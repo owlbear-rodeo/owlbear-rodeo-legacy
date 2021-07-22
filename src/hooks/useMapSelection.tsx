@@ -3,11 +3,13 @@ import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
 import { SelectionItemsChangeEventHandler } from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
+import { MapState } from "../types/MapState";
 import { Selection } from "../types/Select";
 import { SelectToolSettings } from "../types/Select";
 
 function useMapSelection(
   map: Map | null,
+  mapState: MapState | null,
   onSelectionItemsChange: SelectionItemsChangeEventHandler,
   selectedToolId: MapToolId,
   settings: SelectToolSettings
@@ -38,6 +40,7 @@ function useMapSelection(
       selection={selection}
       onSelectionItemsChange={onSelectionItemsChange}
       map={map}
+      mapState={mapState}
     />
   );
 

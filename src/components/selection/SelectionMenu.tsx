@@ -23,6 +23,7 @@ import { Note } from "../../types/Note";
 import { getSelectionPoints } from "../../helpers/selection";
 import Vector2 from "../../helpers/Vector2";
 import { useMapStage } from "../../contexts/MapStageContext";
+import { MapState } from "../../types/MapState";
 
 type SelectionMenuProps = {
   isOpen: boolean;
@@ -30,6 +31,7 @@ type SelectionMenuProps = {
   selection: Selection | null;
   onSelectionItemsChange: SelectionItemsChangeEventHandler;
   map: Map | null;
+  mapState: MapState | null;
 };
 
 function SelectionMenu({
@@ -38,6 +40,7 @@ function SelectionMenu({
   selection,
   onSelectionItemsChange,
   map,
+  mapState,
 }: SelectionMenuProps) {
   const userId = useUserId();
 
@@ -100,6 +103,34 @@ function SelectionMenu({
     updateSelectedItems({ locked: !itemsLocked });
     setItemsLocked(!itemsLocked);
   }
+
+  useEffect(() => {
+    if (isOpen && selection && mapState) {
+      let allVisible = true;
+      let allLocked = true;
+      for (let item of selection.items) {
+        if (item.type === "token") {
+          const tokenState = mapState.tokens[item.id];
+          if (!tokenState.visible) {
+            allVisible = false;
+          }
+          if (!tokenState.locked) {
+            allLocked = false;
+          }
+        } else {
+          const note = mapState.notes[item.id];
+          if (!note.visible) {
+            allVisible = false;
+          }
+          if (!note.locked) {
+            allLocked = false;
+          }
+        }
+      }
+      setItemsVisible(allVisible);
+      setItemsLocked(allLocked);
+    }
+  }, [mapState, selection, isOpen]);
 
   function handleModalContent(node: HTMLElement) {
     if (node) {

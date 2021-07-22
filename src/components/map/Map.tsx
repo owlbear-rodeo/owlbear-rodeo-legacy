@@ -151,6 +151,7 @@ function Map({
 
   const { selectionTool, selectionMenu } = useMapSelection(
     map,
+    mapState,
     onSelectionItemsChange,
     selectedToolId,
     settings.select
