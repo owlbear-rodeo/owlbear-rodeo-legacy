@@ -29,6 +29,16 @@ function redo(event: KeyboardEvent): boolean {
   return (key === "z" || key === "Z") && (ctrlKey || metaKey) && shiftKey;
 }
 
+function copy(event: KeyboardEvent): boolean {
+  const { key, ctrlKey, metaKey, shiftKey } = event;
+  return (key === "c" || key === "C") && (ctrlKey || metaKey) && !shiftKey;
+}
+
+function paste(event: KeyboardEvent): boolean {
+  const { key, ctrlKey, metaKey, shiftKey } = event;
+  return (key === "v" || key === "V") && (ctrlKey || metaKey) && !shiftKey;
+}
+
 function zoomIn(event: KeyboardEvent): boolean {
   const { key, ctrlKey, metaKey } = event;
   return (key === "=" || key === "+") && !ctrlKey && !metaKey;
@@ -89,6 +99,8 @@ const shortcuts: Record<string, Shortcut> = {
   // Common
   undo,
   redo,
+  copy,
+  paste,
   delete: ({ key }) => key === "Backspace" || key === "Delete",
 };
 

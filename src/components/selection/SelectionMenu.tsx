@@ -32,6 +32,8 @@ import { MapState } from "../../types/MapState";
 import { isMapState } from "../../validators/MapState";
 import { isSelection } from "../../validators/Selection";
 import { getRelativePointerPosition } from "../../helpers/konva";
+import { useKeyboard } from "../../contexts/KeyboardContext";
+import shortcuts from "../../shortcuts";
 
 type SelectionMenuProps = {
   isOpen: boolean;
@@ -345,6 +347,19 @@ function SelectionMenu({
       addToast("Unable to paste");
     }
   }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (active) {
+      if (selection && shortcuts.copy(event)) {
+        handleCopy();
+      }
+      if (shortcuts.paste(event)) {
+        handlePaste();
+      }
+    }
+  }
+
+  useKeyboard(handleKeyDown);
 
   return (
     <MapMenu
