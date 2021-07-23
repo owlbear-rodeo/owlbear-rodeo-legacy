@@ -4,6 +4,7 @@ import { useThemeUI } from "theme-ui";
 import CSS from "csstype";
 
 import { RequestCloseEventHandler } from "../../types/Events";
+import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
 
 type MapMenuProps = {
   isOpen: boolean;
@@ -36,6 +37,22 @@ function MapMenu({
   // callback
   const [modalContentNode, setModalContentNode] = useState<Node | null>(null);
 
+  const interactionEmitter = useInteractionEmitter();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    function handleDragMove() {
+      onRequestClose();
+    }
+
+    interactionEmitter?.on("dragStart", handleDragMove);
+    return () => {
+      interactionEmitter?.off("dragStart", handleDragMove);
+    };
+  });
+
   useEffect(() => {
     // Close modal if interacting with any other element
     function handleInteraction(event: Event) {
@@ -47,20 +64,20 @@ function MapMenu({
         !(event.target instanceof HTMLTextAreaElement)
       ) {
         onRequestClose();
-        document.body.removeEventListener("pointerdown", handleInteraction);
+        document.body.removeEventListener("pointerup", handleInteraction);
         document.body.removeEventListener("wheel", handleInteraction);
       }
     }
 
     if (modalContentNode) {
-      document.body.addEventListener("pointerdown", handleInteraction);
+      document.body.addEventListener("pointerup", handleInteraction);
       // Check for wheel event to close modal as well
       document.body.addEventListener("wheel", handleInteraction);
     }
 
     return () => {
       if (modalContentNode) {
-        document.body.removeEventListener("pointerdown", handleInteraction);
+        document.body.removeEventListener("pointerup", handleInteraction);
       }
     };
   }, [modalContentNode, excludeNode, onRequestClose]);
