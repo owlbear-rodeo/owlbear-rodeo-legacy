@@ -17,4 +17,4 @@ export const Vector2Schema: JSONSchemaType<Vector2> = {
   type: "object",
 };
 
-export const isColor = ajv.compile<Vector2>(Vector2Schema);
+export const isVector2 = ajv.compile<Vector2>(Vector2Schema);

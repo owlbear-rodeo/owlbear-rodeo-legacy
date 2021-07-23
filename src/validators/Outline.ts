@@ -77,4 +77,4 @@ export const OutlineSchema = {
   },
 };
 
-export const isColor = ajv.compile<Outline>(OutlineSchema);
+export const isOutline = ajv.compile<Outline>(OutlineSchema);
