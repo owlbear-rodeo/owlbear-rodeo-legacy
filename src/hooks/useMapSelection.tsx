@@ -32,12 +32,19 @@ function useMapSelection(
 
   const active = selectedToolId === "select";
 
+  // Remove selection when changing tools
   useEffect(() => {
     if (!active) {
       setSelection(null);
       setIsSelectionMenuOpen(false);
     }
   }, [active]);
+
+  // Remove selection when changing maps
+  useEffect(() => {
+    setSelection(null);
+    setIsSelectionMenuOpen(false);
+  }, [map]);
 
   function handleSelectionDragStart() {
     setIsSelectionDragging(true);
