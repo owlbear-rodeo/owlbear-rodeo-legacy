@@ -4,6 +4,7 @@ import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
 import {
   SelectionItemsChangeEventHandler,
+  SelectionItemsCreateEventHandler,
   SelectionItemsRemoveEventHandler,
 } from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
@@ -16,6 +17,7 @@ function useMapSelection(
   mapState: MapState | null,
   onSelectionItemsChange: SelectionItemsChangeEventHandler,
   onSelectionItemsRemove: SelectionItemsRemoveEventHandler,
+  onSelectionItemsCreate: SelectionItemsCreateEventHandler,
   selectedToolId: MapToolId,
   settings: SelectToolSettings
 ) {
@@ -69,9 +71,13 @@ function useMapSelection(
   const selectionMenu = (
     <SelectionMenu
       isOpen={isSelectionMenuOpen}
+      active={active}
       onRequestClose={() => setIsSelectionMenuOpen(false)}
+      onRequestOpen={() => setIsSelectionMenuOpen(true)}
       selection={selection}
+      onSelectionChange={setSelection}
       onSelectionItemsChange={onSelectionItemsChange}
+      onSelectionItemsCreate={onSelectionItemsCreate}
       map={map}
       mapState={mapState}
     />

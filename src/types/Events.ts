@@ -67,3 +67,7 @@ export type SelectionItemsRemoveEventHandler = (
   tokenStateIds: string[],
   noteIds: string[]
 ) => void;
+export type SelectionItemsCreateEventHandler = (
+  tokenStates: TokenState[],
+  notes: Note[]
+) => void;

@@ -39,6 +39,7 @@ import {
   NoteCreateEventHander,
   SelectionItemsChangeEventHandler,
   SelectionItemsRemoveEventHandler,
+  SelectionItemsCreateEventHandler,
 } from "../../types/Events";
 
 import useMapTokens from "../../hooks/useMapTokens";
@@ -54,6 +55,7 @@ type MapProps = {
   onMapTokenStateRemove: TokenStateRemoveHandler;
   onSelectionItemsChange: SelectionItemsChangeEventHandler;
   onSelectionItemsRemove: SelectionItemsRemoveEventHandler;
+  onSelectionItemsCreate: SelectionItemsCreateEventHandler;
   onMapChange: MapChangeEventHandler;
   onMapReset: MapResetEventHandler;
   onMapDraw: (action: Action<DrawingState>) => void;
@@ -75,6 +77,7 @@ function Map({
   onMapTokenStateRemove,
   onSelectionItemsChange,
   onSelectionItemsRemove,
+  onSelectionItemsCreate,
   onMapChange,
   onMapReset,
   onMapDraw,
@@ -158,6 +161,7 @@ function Map({
       mapState,
       onSelectionItemsChange,
       onSelectionItemsRemove,
+      onSelectionItemsCreate,
       selectedToolId,
       settings.select
     );
