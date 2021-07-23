@@ -338,8 +338,6 @@ function SelectionMenu({
         });
 
         onRequestClose();
-
-        addSuccessToast("Pasted", clipboard.data.tokens, clipboard.data.notes);
       } else {
         addToast("Invalid data");
       }
