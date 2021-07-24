@@ -150,8 +150,7 @@ export function AssetURLsProvider({ children }: { children: React.ReactNode }) {
 
   // Get the new assets whenever the keys change
   const assets = useLiveQuery<Asset[]>(
-    () =>
-      database?.table("assets").where("id").anyOf(assetKeys).toArray() || [],
+    () => database?.table("assets").bulkGet(assetKeys) || [],
     [database, assetKeys]
   );
 
@@ -160,13 +159,14 @@ export function AssetURLsProvider({ children }: { children: React.ReactNode }) {
     if (!assets || assets.length === 0) {
       return;
     }
+
     // Assets are about to be loaded so clear the keys to load
     setAssetKeys([]);
 
     setAssetURLs((prevURLs) => {
       let newURLs = { ...prevURLs };
       for (let asset of assets) {
-        if (newURLs[asset.id]?.url === null) {
+        if (asset && newURLs[asset.id]?.url === null) {
           newURLs[asset.id] = {
             ...newURLs[asset.id],
             url: URL.createObjectURL(
