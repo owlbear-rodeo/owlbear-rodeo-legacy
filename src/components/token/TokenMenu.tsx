@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Box, Input, Flex, Text, IconButton } from "theme-ui";
 import Konva from "konva";
 
-import Slider from "../Slider";
-
 import MapMenu from "../map/MapMenu";
 
 import colors, { Color, colorOptions } from "../../helpers/colors";
@@ -33,7 +31,6 @@ type TokenMenuProps = {
   map: Map | null;
 };
 
-const defaultTokenMaxSize = 6;
 function TokenMenu({
   isOpen,
   onRequestClose,
@@ -46,12 +43,10 @@ function TokenMenu({
 
   const wasOpen = usePrevious(isOpen);
 
-  const [tokenMaxSize, setTokenMaxSize] = useState(defaultTokenMaxSize);
   const [menuLeft, setMenuLeft] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
   useEffect(() => {
     if (isOpen && !wasOpen && tokenState) {
-      setTokenMaxSize(Math.max(tokenState.size, defaultTokenMaxSize));
       // Update menu position
       if (tokenImage) {
         const imageRect = tokenImage.getClientRect();
@@ -87,19 +82,6 @@ function TokenMenu({
     onTokenStateChange({
       [tokenState.id]: { statuses: [...statuses] },
     });
-  }
-
-  function handleSizeChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newSize = parseFloat(event.target.value);
-    tokenState && onTokenStateChange({ [tokenState.id]: { size: newSize } });
-  }
-
-  function handleRotationChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newRotation = parseInt(event.target.value);
-    tokenState &&
-      onTokenStateChange({
-        [tokenState.id]: { rotation: newRotation },
-      });
   }
 
   function handleVisibleChange() {
@@ -223,42 +205,6 @@ function TokenMenu({
               </Box>
             ))}
         </Box>
-        <Flex sx={{ alignItems: "center" }}>
-          <Text
-            as="label"
-            variant="body2"
-            sx={{ width: "40%", fontSize: "16px" }}
-            p={1}
-          >
-            Size:
-          </Text>
-          <Slider
-            value={(tokenState && tokenState.size) || 1}
-            onChange={handleSizeChange}
-            step={0.5}
-            min={0.5}
-            max={tokenMaxSize}
-            mr={1}
-          />
-        </Flex>
-        <Flex sx={{ alignItems: "center" }}>
-          <Text
-            as="label"
-            variant="body2"
-            sx={{ width: "65%", fontSize: "16px" }}
-            p={1}
-          >
-            Rotate:
-          </Text>
-          <Slider
-            value={(tokenState && tokenState.rotation) || 0}
-            onChange={handleRotationChange}
-            step={15}
-            min={0}
-            max={360}
-            mr={1}
-          />
-        </Flex>
         {/* Only show hide and lock token actions to map owners */}
         {map && map.owner === userId && (
           <Flex sx={{ alignItems: "center", justifyContent: "space-around" }}>

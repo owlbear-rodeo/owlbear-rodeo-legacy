@@ -96,6 +96,10 @@ function useMapTokens(
             }
             fadeOnHover={selectedToolId === "drawing"}
             map={map}
+            selected={
+              !!tokenMenuOptions &&
+              tokenMenuOptions.tokenStateId === tokenState.id
+            }
           />
         ))}
     </Group>

@@ -31,6 +31,7 @@ import {
   TokenMenuOpenChangeEventHandler,
   TokenStateChangeEventHandler,
 } from "../../types/Events";
+import Transformer from "./Transformer";
 
 type MapTokenProps = {
   tokenState: TokenState;
@@ -41,6 +42,7 @@ type MapTokenProps = {
   draggable: boolean;
   fadeOnHover: boolean;
   map: Map;
+  selected: boolean;
 };
 
 function Token({
@@ -52,6 +54,7 @@ function Token({
   draggable,
   fadeOnHover,
   map,
+  selected,
 }: MapTokenProps) {
   const userId = useUserId();
 
@@ -193,6 +196,22 @@ function Token({
     }
   }
 
+  const tokenRef = useRef<Konva.Group>(null);
+  function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
+    if (tokenRef.current) {
+      const sizeChange = event.target.scaleX();
+      const rotation = event.target.rotation();
+      onTokenStateChange({
+        [tokenState.id]: {
+          size: tokenState.size * sizeChange,
+          rotation: rotation,
+        },
+      });
+      tokenRef.current.scaleX(1);
+      tokenRef.current.scaleY(1);
+    }
+  }
+
   const minCellSize = Math.min(
     gridCellPixelSize.width,
     gridCellPixelSize.height
@@ -228,68 +247,73 @@ function Token({
   }
 
   return (
-    <animated.Group
-      {...props}
-      width={tokenWidth}
-      height={tokenHeight}
-      draggable={draggable}
-      onMouseDown={handlePointerDown}
-      onMouseUp={handlePointerUp}
-      onMouseEnter={handlePointerEnter}
-      onMouseLeave={handlePointerLeave}
-      onTouchStart={handlePointerDown}
-      onTouchEnd={handlePointerUp}
-      onClick={handleClick}
-      onTap={handleClick}
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      opacity={tokenState.visible ? tokenOpacity : 0.5}
-      name={tokenName}
-      id={tokenState.id}
-    >
-      <Group
+    <>
+      <animated.Group
+        {...props}
         width={tokenWidth}
         height={tokenHeight}
-        x={0}
-        y={0}
-        rotation={tokenState.rotation}
-        offsetX={tokenWidth / 2}
-        offsetY={tokenHeight / 2}
+        draggable={draggable}
+        onMouseDown={handlePointerDown}
+        onMouseUp={handlePointerUp}
+        onMouseEnter={handlePointerEnter}
+        onMouseLeave={handlePointerLeave}
+        onTouchStart={handlePointerDown}
+        onTouchEnd={handlePointerUp}
+        onClick={handleClick}
+        onTap={handleClick}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        opacity={tokenState.visible ? tokenOpacity : 0.5}
+        name={tokenName}
+        id={tokenState.id}
       >
-        <TokenOutline
-          outline={getScaledOutline(tokenState, tokenWidth, tokenHeight)}
-          hidden={!!tokenImage}
-        />
-      </Group>
-      <KonvaImage
-        width={tokenWidth}
-        height={tokenHeight}
-        x={0}
-        y={0}
-        image={tokenImage}
-        rotation={tokenState.rotation}
-        offsetX={tokenWidth / 2}
-        offsetY={tokenHeight / 2}
-        hitFunc={() => {}}
+        <Group
+          ref={tokenRef}
+          rotation={tokenState.rotation}
+          offsetX={tokenWidth / 2}
+          offsetY={tokenHeight / 2}
+        >
+          <Group width={tokenWidth} height={tokenHeight} x={0} y={0}>
+            <TokenOutline
+              outline={getScaledOutline(tokenState, tokenWidth, tokenHeight)}
+              hidden={!!tokenImage}
+            />
+          </Group>
+          <KonvaImage
+            width={tokenWidth}
+            height={tokenHeight}
+            x={0}
+            y={0}
+            image={tokenImage}
+            hitFunc={() => {}}
+          />
+          <Group>
+            {tokenState.statuses?.length > 0 ? (
+              <TokenStatus
+                tokenState={tokenState}
+                width={tokenWidth}
+                height={tokenHeight}
+              />
+            ) : null}
+          </Group>
+        </Group>
+        <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
+          {tokenState.label ? (
+            <TokenLabel
+              tokenState={tokenState}
+              width={tokenWidth}
+              height={tokenHeight}
+            />
+          ) : null}
+        </Group>
+      </animated.Group>
+      <Transformer
+        active={selected}
+        nodeRef={tokenRef}
+        onTransformEnd={handleTransformEnd}
       />
-      <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
-        {tokenState.statuses?.length > 0 ? (
-          <TokenStatus
-            tokenState={tokenState}
-            width={tokenWidth}
-            height={tokenHeight}
-          />
-        ) : null}
-        {tokenState.label ? (
-          <TokenLabel
-            tokenState={tokenState}
-            width={tokenWidth}
-            height={tokenHeight}
-          />
-        ) : null}
-      </Group>
-    </animated.Group>
+    </>
   );
 }
 
