@@ -3,7 +3,10 @@ import { Transform } from "konva/lib/Util";
 import { useEffect, useRef } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
 
+import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useSetPreventMapInteraction } from "../../contexts/MapInteractionContext";
+import { roundTo } from "../../helpers/shared";
+import Vector2 from "../../helpers/Vector2";
 
 type ResizerProps = {
   active: boolean;
@@ -19,6 +22,8 @@ function Transformer({
   onTransformEnd,
 }: ResizerProps) {
   const setPreventMapInteraction = useSetPreventMapInteraction();
+
+  const gridCellPixelSize = useGridCellPixelSize();
 
   const transformerRef = useRef<Konva.Transformer>(null);
   useEffect(() => {
@@ -58,7 +63,34 @@ function Transformer({
         let snapBox = { ...newBox };
         const movingAnchor = movingAnchorRef.current;
         if (movingAnchor === "middle-left" || movingAnchor === "middle-right") {
-          const deltaWidth = newBox.width - oldBox.width;
+          const node = nodeRef.current;
+          const stage = node?.getStage();
+          const mapImage = stage?.findOne("#mapImage");
+          if (!mapImage) {
+            return oldBox;
+          }
+
+          // Get grid cell size in screen coordinates
+          const mapTransform = mapImage.getAbsoluteTransform();
+          const gridCellAbsoluteSize = Vector2.subtract(
+            mapTransform.point(gridCellPixelSize),
+            mapTransform.point({ x: 0, y: 0 })
+          );
+
+          // Account for grid snapping
+          const nearestCellWidth = roundTo(
+            snapBox.width,
+            gridCellAbsoluteSize.x
+          );
+          const distanceToSnap = Math.abs(snapBox.width - nearestCellWidth);
+          let snapping = false;
+          if (distanceToSnap < gridCellAbsoluteSize.x * 0.1) {
+            // TODO: use global grid snapping value
+            snapBox.width = nearestCellWidth;
+            snapping = true;
+          }
+
+          const deltaWidth = snapBox.width - oldBox.width;
           // Account for node ratio
           const inverseRatio =
             Math.round(oldBox.height) / Math.round(oldBox.width);
@@ -72,6 +104,11 @@ function Transformer({
           // Unrotate and add the resize amount
           let rotatedMin = rotator.point({ x: snapBox.x, y: snapBox.y });
           rotatedMin.y = rotatedMin.y - deltaHeight / 2;
+          // Snap x position if needed
+          if (snapping) {
+            const snapDelta = newBox.width - nearestCellWidth;
+            rotatedMin.x = rotatedMin.x + snapDelta / 2;
+          }
 
           // Rotated back
           rotator.invert();
