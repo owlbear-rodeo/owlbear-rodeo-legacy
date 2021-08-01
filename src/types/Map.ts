@@ -27,7 +27,6 @@ export type BaseMap = {
   grid: Grid;
   width: number;
   height: number;
-  type: string;
   lastModified: number;
   created: number;
   showGrid: boolean;
