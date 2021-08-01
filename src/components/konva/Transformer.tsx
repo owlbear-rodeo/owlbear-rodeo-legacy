@@ -1,12 +1,15 @@
 import Konva from "konva";
 import { Transform } from "konva/lib/Util";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
 
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useSetPreventMapInteraction } from "../../contexts/MapInteractionContext";
 import { roundTo } from "../../helpers/shared";
 import Vector2 from "../../helpers/Vector2";
+
+import scaleDark from "../../images/ScaleDark.png";
+import rotateDark from "../../images/RotateDark.png";
 
 type ResizerProps = {
   active: boolean;
@@ -25,14 +28,42 @@ function Transformer({
 
   const gridCellPixelSize = useGridCellPixelSize();
 
+  const anchorScale = useMemo(() => getAnchorImage(192, scaleDark), []);
+  const anchorRotate = useMemo(() => getAnchorImage(192, rotateDark), []);
+
   const transformerRef = useRef<Konva.Transformer>(null);
   useEffect(() => {
     if (active && transformerRef.current && nodeRef.current) {
       // we need to attach transformer manually
       transformerRef.current.nodes([nodeRef.current]);
+
+      const middleLeft =
+        transformerRef.current.findOne<Konva.Rect>(".middle-left");
+      const middleRight =
+        transformerRef.current.findOne<Konva.Rect>(".middle-right");
+      const rotater = transformerRef.current.findOne<Konva.Rect>(".rotater");
+
+      middleLeft.fillPriority("pattern");
+      middleLeft.fillPatternImage(anchorScale);
+      middleLeft.strokeEnabled(false);
+      middleLeft.fillPatternScaleX(-0.25);
+      middleLeft.fillPatternScaleY(0.25);
+
+      middleRight.fillPriority("pattern");
+      middleRight.fillPatternImage(anchorScale);
+      middleRight.strokeEnabled(false);
+      middleRight.fillPatternScaleX(0.25);
+      middleRight.fillPatternScaleY(0.25);
+
+      rotater.fillPriority("pattern");
+      rotater.fillPatternImage(anchorRotate);
+      rotater.strokeEnabled(false);
+      rotater.fillPatternScaleX(0.25);
+      rotater.fillPatternScaleY(0.25);
+
       transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [active, nodeRef]);
+  }, [active, nodeRef, anchorScale]);
 
   const movingAnchorRef = useRef<string>();
   function handleTransformStart(e: Konva.KonvaEventObject<Event>) {
@@ -132,19 +163,38 @@ function Transformer({
       centeredScaling={true}
       rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}
       rotateAnchorOffset={20}
-      anchorCornerRadius={10}
       enabledAnchors={["middle-left", "middle-right"]}
       flipEnabled={false}
       ignoreStroke={true}
-      borderStroke="transparent"
-      anchorStroke="hsl(210, 50%, 96%"
-      anchorFill="hsla(230, 25%, 15%, 80%)"
-      anchorStrokeWidth={3}
-      borderStrokeWidth={2}
-      anchorSize={15}
+      borderStroke="invisible"
+      anchorStroke="invisible"
+      anchorCornerRadius={24}
+      borderStrokeWidth={0}
+      anchorSize={48}
       useSingleNodeRotation={true}
     />
   );
+}
+
+function getAnchorImage(size: number, source: string) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const image = new Image();
+  image.src = source;
+  image.onload = () => {
+    const imageRatio = image.width / image.height;
+    const imageWidth = canvas.height * imageRatio;
+    ctx?.drawImage(
+      image,
+      canvas.width / 2 - imageWidth / 2,
+      0,
+      imageWidth,
+      canvas.height
+    );
+  };
+  return canvas;
 }
 
 export default Transformer;
