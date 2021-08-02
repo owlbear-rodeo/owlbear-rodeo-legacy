@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
-import { Group, Line, Text, Label, Tag } from "react-konva";
+import { Group } from "react-konva";
 
-import {
-  useDebouncedStageScale,
-  useMapWidth,
-  useMapHeight,
-  useInteractionEmitter,
-} from "../../contexts/MapInteractionContext";
+import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import {
   useGrid,
   useGridCellPixelSize,
   useGridCellNormalizedSize,
-  useGridStrokeWidth,
   useGridOffset,
 } from "../../contexts/GridContext";
 
@@ -23,6 +17,8 @@ import {
 import Vector2 from "../../helpers/Vector2";
 import { getRelativePointerPosition } from "../../helpers/konva";
 import { parseGridScale, gridDistance } from "../../helpers/grid";
+
+import Ruler from "../konva/Ruler";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 import { Map } from "../../types/Map";
@@ -36,15 +32,11 @@ type MapMeasureProps = {
 type MeasureData = { length: number; points: Vector2[] };
 
 function MeasureTool({ map, active }: MapMeasureProps) {
-  const stageScale = useDebouncedStageScale();
-  const mapWidth = useMapWidth();
-  const mapHeight = useMapHeight();
   const interactionEmitter = useInteractionEmitter();
 
   const grid = useGrid();
   const gridCellNormalizedSize = useGridCellNormalizedSize();
   const gridCellPixelSize = useGridCellPixelSize();
-  const gridStrokeWidth = useGridStrokeWidth();
   const gridOffset = useGridOffset();
 
   const mapStageRef = useMapStage();
@@ -147,58 +139,17 @@ function MeasureTool({ map, active }: MapMeasureProps) {
     };
   });
 
-  function renderShape(shapeData: MeasureData) {
-    const linePoints = shapeData.points.reduce(
-      (acc: number[], point) => [
-        ...acc,
-        point.x * mapWidth,
-        point.y * mapHeight,
-      ],
-      []
-    );
-
-    const lineCenter = Vector2.multiply(
-      Vector2.divide(Vector2.add(shapeData.points[0], shapeData.points[1]), 2),
-      { x: mapWidth, y: mapHeight }
-    );
-
-    return (
-      <Group>
-        <Line
-          points={linePoints}
-          strokeWidth={1.5 * gridStrokeWidth}
-          stroke="hsla(230, 25%, 18%, 0.8)"
-          lineCap="round"
+  return (
+    <Group>
+      {drawingShapeData && (
+        <Ruler
+          points={drawingShapeData.points}
+          scale={gridScale}
+          length={drawingShapeData.length}
         />
-        <Line
-          points={linePoints}
-          strokeWidth={0.25 * gridStrokeWidth}
-          stroke="white"
-          lineCap="round"
-        />
-        <Label
-          x={lineCenter.x}
-          y={lineCenter.y}
-          offsetX={26}
-          offsetY={26}
-          scaleX={1 / stageScale}
-          scaleY={1 / stageScale}
-        >
-          <Tag fill="hsla(230, 25%, 18%, 0.8)" cornerRadius={4} />
-          <Text
-            text={`${(shapeData.length * gridScale.multiplier).toFixed(
-              gridScale.digits
-            )}${gridScale.unit}`}
-            fill="white"
-            fontSize={24}
-            padding={4}
-          />
-        </Label>
-      </Group>
-    );
-  }
-
-  return <Group>{drawingShapeData && renderShape(drawingShapeData)}</Group>;
+      )}
+    </Group>
+  );
 }
 
 export default MeasureTool;
