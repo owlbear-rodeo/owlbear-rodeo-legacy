@@ -6,9 +6,9 @@ import { scaleAndFlattenPoints } from "../../helpers/konva";
 
 import { useGridStrokeWidth } from "../../contexts/GridContext";
 import {
-  useDebouncedStageScale,
   useMapHeight,
   useMapWidth,
+  useStageScale,
 } from "../../contexts/MapInteractionContext";
 import { useUserId } from "../../contexts/UserIdContext";
 
@@ -47,7 +47,7 @@ function Selection({
 
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
-  const stageScale = useDebouncedStageScale();
+  const stageScale = useStageScale();
   const gridStrokeWidth = useGridStrokeWidth();
 
   const snapPositionToGrid = useGridSnapping();
