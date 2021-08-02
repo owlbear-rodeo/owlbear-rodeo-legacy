@@ -54,6 +54,10 @@ function useMapTokens(
     setIsTokenMenuOpen(true);
   }
 
+  function handleTokenMenuClose() {
+    setIsTokenMenuOpen(false);
+  }
+
   function handleTokenDragStart(
     _: KonvaEventObject<DragEvent>,
     tokenStateId: string
@@ -87,6 +91,7 @@ function useMapTokens(
             tokenState={tokenState}
             onTokenStateChange={onTokenStateChange}
             onTokenMenuOpen={handleTokenMenuOpen}
+            onTokenMenuClose={handleTokenMenuClose}
             onTokenDragStart={handleTokenDragStart}
             onTokenDragEnd={handleTokenDragEnd}
             draggable={
@@ -98,6 +103,7 @@ function useMapTokens(
             map={map}
             selected={
               !!tokenMenuOptions &&
+              isTokenMenuOpen &&
               tokenMenuOptions.tokenStateId === tokenState.id
             }
           />
@@ -108,7 +114,7 @@ function useMapTokens(
   const tokenMenu = (
     <TokenMenu
       isOpen={isTokenMenuOpen}
-      onRequestClose={() => setIsTokenMenuOpen(false)}
+      onRequestClose={handleTokenMenuClose}
       onTokenStateChange={onTokenStateChange}
       tokenState={
         tokenMenuOptions && mapState?.tokens[tokenMenuOptions.tokenStateId]

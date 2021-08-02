@@ -28,6 +28,7 @@ import { TokenState } from "../../types/TokenState";
 import { Map } from "../../types/Map";
 import {
   TokenDragEventHandler,
+  TokenMenuCloseChangeEventHandler,
   TokenMenuOpenChangeEventHandler,
   TokenStateChangeEventHandler,
 } from "../../types/Events";
@@ -37,6 +38,7 @@ type MapTokenProps = {
   tokenState: TokenState;
   onTokenStateChange: TokenStateChangeEventHandler;
   onTokenMenuOpen: TokenMenuOpenChangeEventHandler;
+  onTokenMenuClose: TokenMenuCloseChangeEventHandler;
   onTokenDragStart: TokenDragEventHandler;
   onTokenDragEnd: TokenDragEventHandler;
   draggable: boolean;
@@ -49,6 +51,7 @@ function Token({
   tokenState,
   onTokenStateChange,
   onTokenMenuOpen,
+  onTokenMenuClose,
   onTokenDragStart,
   onTokenDragEnd,
   draggable,
@@ -197,6 +200,13 @@ function Token({
   }
 
   const tokenRef = useRef<Konva.Group>(null);
+
+  const [isTransforming, setIsTransforming] = useState(false);
+  function handleTransformStart() {
+    setIsTransforming(true);
+    onTokenMenuClose();
+  }
+
   function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
     if (tokenRef.current) {
       const sizeChange = event.target.scaleX();
@@ -209,7 +219,9 @@ function Token({
       });
       tokenRef.current.scaleX(1);
       tokenRef.current.scaleY(1);
+      onTokenMenuOpen(tokenState.id, event.target);
     }
+    setIsTransforming(false);
   }
 
   const minCellSize = Math.min(
@@ -288,7 +300,9 @@ function Token({
             image={tokenImage}
             hitFunc={() => {}}
           />
-          <Group>
+        </Group>
+        {!isTransforming ? (
+          <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
             {tokenState.statuses?.length > 0 ? (
               <TokenStatus
                 tokenState={tokenState}
@@ -296,22 +310,21 @@ function Token({
                 height={tokenHeight}
               />
             ) : null}
+            {tokenState.label ? (
+              <TokenLabel
+                tokenState={tokenState}
+                width={tokenWidth}
+                height={tokenHeight}
+              />
+            ) : null}
           </Group>
-        </Group>
-        <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
-          {tokenState.label ? (
-            <TokenLabel
-              tokenState={tokenState}
-              width={tokenWidth}
-              height={tokenHeight}
-            />
-          ) : null}
-        </Group>
+        ) : null}
       </animated.Group>
       <Transformer
-        active={selected}
+        active={selected || isTransforming}
         nodeRef={tokenRef}
         onTransformEnd={handleTransformEnd}
+        onTransformStart={handleTransformStart}
       />
     </>
   );

@@ -63,23 +63,19 @@ function Transformer({
 
       transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [active, nodeRef, anchorScale]);
+  }, [active, nodeRef, anchorScale, anchorRotate]);
 
   const movingAnchorRef = useRef<string>();
   function handleTransformStart(e: Konva.KonvaEventObject<Event>) {
     if (transformerRef.current) {
       movingAnchorRef.current = transformerRef.current._movingAnchorName;
-      if (active) {
-        setPreventMapInteraction(true);
-      }
+      setPreventMapInteraction(true);
       onTransformStart && onTransformStart(e);
     }
   }
 
   function handleTransformEnd(e: Konva.KonvaEventObject<Event>) {
-    if (active) {
-      setPreventMapInteraction(false);
-    }
+    setPreventMapInteraction(false);
     onTransformEnd && onTransformEnd(e);
   }
 

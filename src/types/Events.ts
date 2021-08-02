@@ -30,6 +30,7 @@ export type TokenMenuOpenChangeEventHandler = (
   tokenStateId: string,
   tokenImage: Konva.Node
 ) => void;
+export type TokenMenuCloseChangeEventHandler = () => void;
 export type TokenSettingsChangeEventHandler = (change: Partial<Token>) => void;
 export type TokenDragEventHandler = (
   event: Konva.KonvaEventObject<DragEvent>,
