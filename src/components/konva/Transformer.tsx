@@ -39,10 +39,14 @@ function Transformer({
         return { x: 0, y: 0 };
       }
 
+      // Use min side for hex grids
+      const minSize = Vector2.componentMin(gridCellPixelSize);
+      const size = new Vector2(minSize, minSize);
+
       // Get grid cell size in screen coordinates
       const mapTransform = mapImage.getAbsoluteTransform();
       const gridCellAbsoluteSize = Vector2.subtract(
-        mapTransform.point(gridCellPixelSize),
+        mapTransform.point(size),
         mapTransform.point({ x: 0, y: 0 })
       );
       return gridCellAbsoluteSize;
