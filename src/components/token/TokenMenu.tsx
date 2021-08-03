@@ -57,8 +57,8 @@ function TokenMenu({
           setMenuLeft(
             mapRect.left + imageRect.x + imageRect.width / 2 - 156 / 2
           );
-          // Y 12px from the bottom
-          setMenuTop(mapRect.top + imageRect.y + imageRect.height + 12);
+          // Y 20px from the bottom
+          setMenuTop(mapRect.top + imageRect.y + imageRect.height + 20);
         }
       }
     }

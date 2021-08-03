@@ -240,7 +240,7 @@ function Transformer({
       onTransformEnd={handleTransformEnd}
       centeredScaling={true}
       rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}
-      rotateAnchorOffset={20}
+      rotateAnchorOffset={16}
       enabledAnchors={["middle-left", "middle-right"]}
       flipEnabled={false}
       ignoreStroke={true}

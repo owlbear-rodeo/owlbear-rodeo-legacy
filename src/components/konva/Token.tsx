@@ -152,10 +152,9 @@ function Token({
     onTokenDragEnd(event, tokenState.id);
   }
 
-  function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
-    if (draggable) {
-      const tokenImage = event.target;
-      onTokenMenuOpen(tokenState.id, tokenImage);
+  function handleClick() {
+    if (draggable && tokenRef.current) {
+      onTokenMenuOpen(tokenState.id, tokenRef.current);
     }
   }
 
@@ -177,12 +176,11 @@ function Token({
     }
     // Check token click when locked and we are the map owner
     // We can't use onClick because that doesn't check pointer distance
-    if (tokenState.locked && map.owner === userId) {
+    if (tokenState.locked && map.owner === userId && tokenRef.current) {
       // If down and up time is small trigger a click
       const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
       if (delta < 300) {
-        const tokenImage = event.target;
-        onTokenMenuOpen(tokenState.id, tokenImage);
+        onTokenMenuOpen(tokenState.id, tokenRef.current);
       }
     }
   }
@@ -219,7 +217,7 @@ function Token({
       });
       tokenRef.current.scaleX(1);
       tokenRef.current.scaleY(1);
-      onTokenMenuOpen(tokenState.id, event.target);
+      onTokenMenuOpen(tokenState.id, tokenRef.current);
     }
     setIsTransforming(false);
   }
