@@ -10,12 +10,14 @@ import Vector2 from "../../helpers/Vector2";
 
 import scaleDark from "../../images/ScaleDark.png";
 import rotateDark from "../../images/RotateDark.png";
+import { parseGridScale } from "../../helpers/grid";
 
 type ResizerProps = {
   active: boolean;
   nodeRef: React.RefObject<Konva.Node>;
   onTransformStart?: (event: Konva.KonvaEventObject<Event>) => void;
   onTransformEnd?: (event: Konva.KonvaEventObject<Event>) => void;
+  gridScale: string;
 };
 
 function Transformer({
@@ -23,10 +25,32 @@ function Transformer({
   nodeRef,
   onTransformStart,
   onTransformEnd,
+  gridScale,
 }: ResizerProps) {
   const setPreventMapInteraction = useSetPreventMapInteraction();
 
   const gridCellPixelSize = useGridCellPixelSize();
+  const gridCellAbsoluteSize = useMemo(() => {
+    if (active) {
+      const node = nodeRef.current;
+      const stage = node?.getStage();
+      const mapImage = stage?.findOne("#mapImage");
+      if (!mapImage) {
+        return { x: 0, y: 0 };
+      }
+
+      // Get grid cell size in screen coordinates
+      const mapTransform = mapImage.getAbsoluteTransform();
+      const gridCellAbsoluteSize = Vector2.subtract(
+        mapTransform.point(gridCellPixelSize),
+        mapTransform.point({ x: 0, y: 0 })
+      );
+      return gridCellAbsoluteSize;
+    } else {
+      return { x: 0, y: 0 };
+    }
+  }, [active, nodeRef, gridCellPixelSize]);
+  const scale = parseGridScale(gridScale);
 
   const anchorScale = useMemo(() => getAnchorImage(192, scaleDark), []);
   const anchorRotate = useMemo(() => getAnchorImage(192, rotateDark), []);
@@ -66,16 +90,83 @@ function Transformer({
   }, [active, nodeRef, anchorScale, anchorRotate]);
 
   const movingAnchorRef = useRef<string>();
+  const transformTextRef = useRef<Konva.Group>();
   function handleTransformStart(e: Konva.KonvaEventObject<Event>) {
-    if (transformerRef.current) {
-      movingAnchorRef.current = transformerRef.current._movingAnchorName;
+    const transformer = transformerRef.current;
+    const node = nodeRef.current;
+    if (transformer && node) {
+      movingAnchorRef.current = transformer._movingAnchorName;
       setPreventMapInteraction(true);
+
+      const transformText = new Konva.Label();
+      const stageScale = node.getStage()?.scale() || { x: 1, y: 1 };
+      transformText.scale(Vector2.divide({ x: 1, y: 1 }, stageScale));
+
+      const tag = new Konva.Tag();
+      tag.fill("hsla(230, 25%, 15%, 0.8)");
+      tag.cornerRadius(4);
+      // @ts-ignore
+      tag.pointerDirection("down");
+      tag.pointerHeight(4);
+      tag.pointerWidth(4);
+
+      const text = new Konva.Text();
+      text.fontSize(16);
+      text.padding(4);
+      text.fill("white");
+
+      transformText.add(tag);
+      transformText.add(text);
+
+      node.getLayer()?.add(transformText);
+      transformTextRef.current = transformText;
+
+      updateTransformText();
+
       onTransformStart && onTransformStart(e);
     }
   }
 
+  function updateTransformText() {
+    const node = nodeRef.current;
+    const movingAnchor = movingAnchorRef.current;
+    const transformText = transformTextRef.current;
+    const transformer = transformerRef.current;
+    if (node && transformText && transformer) {
+      const text = transformText.getChildren()[1] as Konva.Text;
+      if (movingAnchor === "rotater") {
+        text.text(`${node.rotation().toFixed(0)}°`);
+      } else {
+        const nodeRect = node.getClientRect();
+        const nodeScale = Vector2.divide(
+          { x: nodeRect.width, y: nodeRect.height },
+          gridCellAbsoluteSize
+        );
+        text.text(
+          `${(nodeScale.x * scale.multiplier).toFixed(scale.digits)}${
+            scale.unit
+          }`
+        );
+      }
+
+      const nodePosition = node.getStage()?.getPointerPosition();
+      if (nodePosition) {
+        transformText.absolutePosition({
+          x: nodePosition.x,
+          y: nodePosition.y,
+        });
+      }
+    }
+  }
+
+  function handleTrasform() {
+    updateTransformText();
+  }
+
   function handleTransformEnd(e: Konva.KonvaEventObject<Event>) {
     setPreventMapInteraction(false);
+    transformTextRef.current?.destroy();
+    transformTextRef.current = undefined;
     onTransformEnd && onTransformEnd(e);
   }
 
@@ -90,20 +181,6 @@ function Transformer({
         let snapBox = { ...newBox };
         const movingAnchor = movingAnchorRef.current;
         if (movingAnchor === "middle-left" || movingAnchor === "middle-right") {
-          const node = nodeRef.current;
-          const stage = node?.getStage();
-          const mapImage = stage?.findOne("#mapImage");
-          if (!mapImage) {
-            return oldBox;
-          }
-
-          // Get grid cell size in screen coordinates
-          const mapTransform = mapImage.getAbsoluteTransform();
-          const gridCellAbsoluteSize = Vector2.subtract(
-            mapTransform.point(gridCellPixelSize),
-            mapTransform.point({ x: 0, y: 0 })
-          );
-
           // Account for grid snapping
           const nearestCellWidth = roundTo(
             snapBox.width,
@@ -155,6 +232,7 @@ function Transformer({
         return snapBox;
       }}
       onTransformStart={handleTransformStart}
+      onTransform={handleTrasform}
       onTransformEnd={handleTransformEnd}
       centeredScaling={true}
       rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}

@@ -325,6 +325,7 @@ function Token({
         nodeRef={tokenRef}
         onTransformEnd={handleTransformEnd}
         onTransformStart={handleTransformStart}
+        gridScale={map.grid.measurement.scale}
       />
     </>
   );
