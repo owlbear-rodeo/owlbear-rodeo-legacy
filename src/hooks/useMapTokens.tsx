@@ -99,6 +99,11 @@ function useMapTokens(
               !(tokenState.id in disabledTokens) &&
               !tokenState.locked
             }
+            selectable={
+              selectedToolId === "move" &&
+              ((!(tokenState.id in disabledTokens) && !tokenState.locked) ||
+                map.owner === userId)
+            }
             fadeOnHover={selectedToolId === "drawing"}
             map={map}
             selected={

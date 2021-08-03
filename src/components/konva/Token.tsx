@@ -42,6 +42,7 @@ type MapTokenProps = {
   onTokenDragStart: TokenDragEventHandler;
   onTokenDragEnd: TokenDragEventHandler;
   draggable: boolean;
+  selectable: boolean;
   fadeOnHover: boolean;
   map: Map;
   selected: boolean;
@@ -55,6 +56,7 @@ function Token({
   onTokenDragStart,
   onTokenDragEnd,
   draggable,
+  selectable,
   fadeOnHover,
   map,
   selected,
@@ -153,7 +155,7 @@ function Token({
   }
 
   function handleClick() {
-    if (draggable && tokenRef.current) {
+    if (selectable && tokenRef.current) {
       onTokenMenuOpen(tokenState.id, tokenRef.current);
     }
   }
@@ -165,7 +167,7 @@ function Token({
     if (draggable) {
       setPreventMapInteraction(true);
     }
-    if (tokenState.locked && map.owner === userId) {
+    if (tokenState.locked && selectable) {
       tokenPointerDownTimeRef.current = event.evt.timeStamp;
     }
   }
@@ -174,9 +176,9 @@ function Token({
     if (draggable) {
       setPreventMapInteraction(false);
     }
-    // Check token click when locked and we are the map owner
+    // Check token click when locked and selectable
     // We can't use onClick because that doesn't check pointer distance
-    if (tokenState.locked && map.owner === userId && tokenRef.current) {
+    if (tokenState.locked && selectable && tokenRef.current) {
       // If down and up time is small trigger a click
       const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
       if (delta < 300) {
