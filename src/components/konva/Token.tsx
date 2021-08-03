@@ -321,7 +321,7 @@ function Token({
         ) : null}
       </animated.Group>
       <Transformer
-        active={selected || isTransforming}
+        active={(!tokenState.locked && selected) || isTransforming}
         nodeRef={tokenRef}
         onTransformEnd={handleTransformEnd}
         onTransformStart={handleTransformStart}
