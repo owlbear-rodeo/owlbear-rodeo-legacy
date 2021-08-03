@@ -20,6 +20,7 @@ import {
   useGridStrokeWidth,
   useGridCellPixelOffset,
   useGridOffset,
+  useGridSnappingSensitivity,
 } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 
@@ -93,9 +94,10 @@ function FogTool({
   const gridCellPixelOffset = useGridCellPixelOffset();
   const gridOffset = useGridOffset();
 
-  const [gridSnappingSensitivity] = useSetting<number>(
-    "map.gridSnappingSensitivity"
-  );
+  const snappingSensitivity = useGridSnappingSensitivity();
+  // Clamp snapping to 0 to accound for -1 snapping override
+  const gridSnappingSensitivity = Math.max(snappingSensitivity, 0);
+
   const [showFogGuides] = useSetting<boolean>("fog.showGuides");
   const [editOpacity] = useSetting<number>("fog.editOpacity");
   const mapStageRef = useMapStage();

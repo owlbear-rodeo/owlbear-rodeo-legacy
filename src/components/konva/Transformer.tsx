@@ -3,7 +3,10 @@ import { Transform } from "konva/lib/Util";
 import { useEffect, useMemo, useRef } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
 
-import { useGridCellPixelSize } from "../../contexts/GridContext";
+import {
+  useGridCellPixelSize,
+  useGridSnappingSensitivity,
+} from "../../contexts/GridContext";
 import { useSetPreventMapInteraction } from "../../contexts/MapInteractionContext";
 import { roundTo } from "../../helpers/shared";
 import Vector2 from "../../helpers/Vector2";
@@ -55,6 +58,10 @@ function Transformer({
     }
   }, [active, nodeRef, gridCellPixelSize]);
   const scale = parseGridScale(gridScale);
+
+  const snappingSensitivity = useGridSnappingSensitivity();
+  // Clamp snapping to 0 to accound for -1 snapping override
+  const gridSnappingSensitivity = Math.max(snappingSensitivity, 0);
 
   const anchorScale = useMemo(() => getAnchorImage(192, scaleDark), []);
   const anchorRotate = useMemo(() => getAnchorImage(192, rotateDark), []);
@@ -192,8 +199,10 @@ function Transformer({
           );
           const distanceToSnap = Math.abs(snapBox.width - nearestCellWidth);
           let snapping = false;
-          if (distanceToSnap < gridCellAbsoluteSize.x * 0.1) {
-            // TODO: use global grid snapping value
+          if (
+            distanceToSnap <
+            gridCellAbsoluteSize.x * gridSnappingSensitivity
+          ) {
             snapBox.width = nearestCellWidth;
             snapping = true;
           }

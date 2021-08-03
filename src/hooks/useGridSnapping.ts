@@ -5,13 +5,12 @@ import {
   getCellCorners,
 } from "../helpers/grid";
 
-import useSetting from "./useSetting";
-
 import {
   useGrid,
   useGridOffset,
   useGridCellPixelSize,
   useGridCellPixelOffset,
+  useGridSnappingSensitivity,
 } from "../contexts/GridContext";
 
 /**
@@ -23,13 +22,16 @@ function useGridSnapping(
   snappingSensitivity: number | undefined = undefined,
   useCorners: boolean = true
 ) {
-  const [defaultSnappingSensitivity] = useSetting<number>(
-    "map.gridSnappingSensitivity"
-  );
-  let gridSnappingSensitivity =
-    snappingSensitivity === undefined
-      ? defaultSnappingSensitivity
-      : snappingSensitivity;
+  const defaultSnappingSensitivity = useGridSnappingSensitivity();
+  let gridSnappingSensitivity: number;
+  if (defaultSnappingSensitivity === -1) {
+    // Snapping disabled via shortcut
+    gridSnappingSensitivity = 0;
+  } else if (snappingSensitivity === undefined) {
+    gridSnappingSensitivity = defaultSnappingSensitivity;
+  } else {
+    gridSnappingSensitivity = snappingSensitivity;
+  }
 
   const grid = useGrid();
   const gridOffset = useGridOffset();

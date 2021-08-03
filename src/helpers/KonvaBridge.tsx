@@ -35,6 +35,7 @@ import {
   useGridCellPixelOffset,
   useGridOffset,
   useGridPixelSize,
+  useGridSnappingSensitivity,
   GridContext,
   GridPixelSizeContext,
   GridCellPixelSizeContext,
@@ -42,6 +43,7 @@ import {
   GridOffsetContext,
   GridStrokeWidthContext,
   GridCellPixelOffsetContext,
+  GridSnappingSensitivityContext,
 } from "../contexts/GridContext";
 import DatabaseContext, { useDatabase } from "../contexts/DatabaseContext";
 
@@ -83,6 +85,7 @@ function KonvaBridge({
   const gridStrokeWidth = useGridStrokeWidth();
   const gridCellPixelOffset = useGridCellPixelOffset();
   const gridOffset = useGridOffset();
+  const gridSnappingSensitivity = useGridSnappingSensitivity();
 
   const database = useDatabase();
 
@@ -128,7 +131,13 @@ function KonvaBridge({
                                                 <GridCellPixelOffsetContext.Provider
                                                   value={gridCellPixelOffset}
                                                 >
-                                                  {children}
+                                                  <GridSnappingSensitivityContext.Provider
+                                                    value={
+                                                      gridSnappingSensitivity
+                                                    }
+                                                  >
+                                                    {children}
+                                                  </GridSnappingSensitivityContext.Provider>
                                                 </GridCellPixelOffsetContext.Provider>
                                               </GridStrokeWidthContext.Provider>
                                             </GridOffsetContext.Provider>

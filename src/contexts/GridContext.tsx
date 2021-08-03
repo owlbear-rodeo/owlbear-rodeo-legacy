@@ -3,7 +3,14 @@ import React, { useContext, useState, useEffect } from "react";
 import Vector2 from "../helpers/Vector2";
 import Size from "../helpers/Size";
 import { getGridPixelSize, getCellPixelSize } from "../helpers/grid";
+
 import { Grid } from "../types/Grid";
+
+import useSetting from "../hooks/useSetting";
+
+import shortcuts from "../shortcuts";
+
+import { useBlur, useKeyboard } from "./KeyboardContext";
 
 /**
  * @typedef GridContextValue
@@ -23,6 +30,7 @@ type GridContextValue = {
   gridOffset: Vector2;
   gridStrokeWidth: number;
   gridCellPixelOffset: Vector2;
+  gridSnappingSensitivity: number;
 };
 
 /**
@@ -44,6 +52,7 @@ const defaultValue: GridContextValue = {
   gridOffset: new Vector2(0, 0),
   gridStrokeWidth: 0,
   gridCellPixelOffset: new Vector2(0, 0),
+  gridSnappingSensitivity: 0,
 };
 
 export const GridContext = React.createContext(defaultValue.grid);
@@ -62,6 +71,9 @@ export const GridStrokeWidthContext = React.createContext(
 );
 export const GridCellPixelOffsetContext = React.createContext(
   defaultValue.gridCellPixelOffset
+);
+export const GridSnappingSensitivityContext = React.createContext(
+  defaultValue.gridSnappingSensitivity
 );
 
 const defaultStrokeWidth = 1 / 10;
@@ -138,6 +150,40 @@ export function GridProvider({
     setGridCellPixelOffset(_gridCellPixelOffset);
   }, [grid, width, height]);
 
+  const [gridSnappingSensitivity, setGridSnappingSensitivity] = useState(
+    defaultValue.gridSnappingSensitivity
+  );
+  const [defaultSnappingSensitivity] = useSetting<number>(
+    "map.gridSnappingSensitivity"
+  );
+  useEffect(() => {
+    if (
+      gridSnappingSensitivity !== defaultSnappingSensitivity &&
+      gridSnappingSensitivity !== -1 // Snapping not disabled
+    ) {
+      setGridSnappingSensitivity(defaultSnappingSensitivity);
+    }
+  }, [defaultSnappingSensitivity, gridSnappingSensitivity]);
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (shortcuts.disableSnapping(event)) {
+      setGridSnappingSensitivity(-1);
+    }
+  }
+
+  function handleKeyUp(event: KeyboardEvent) {
+    if (shortcuts.disableSnapping(event)) {
+      setGridSnappingSensitivity(defaultSnappingSensitivity);
+    }
+  }
+
+  function handleBlur() {
+    setGridSnappingSensitivity(defaultSnappingSensitivity);
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+  useBlur(handleBlur);
+
   return (
     <GridContext.Provider value={grid}>
       <GridPixelSizeContext.Provider value={gridPixelSize}>
@@ -150,7 +196,11 @@ export function GridProvider({
                 <GridCellPixelOffsetContext.Provider
                   value={gridCellPixelOffset}
                 >
-                  {children}
+                  <GridSnappingSensitivityContext.Provider
+                    value={gridSnappingSensitivity}
+                  >
+                    {children}
+                  </GridSnappingSensitivityContext.Provider>
                 </GridCellPixelOffsetContext.Provider>
               </GridStrokeWidthContext.Provider>
             </GridOffsetContext.Provider>
@@ -216,6 +266,16 @@ export function useGridCellPixelOffset() {
   if (context === undefined) {
     throw new Error(
       "useGridCellPixelOffset must be used within a GridProvider"
+    );
+  }
+  return context;
+}
+
+export function useGridSnappingSensitivity() {
+  const context = useContext(GridSnappingSensitivityContext);
+  if (context === undefined) {
+    throw new Error(
+      "useGridSnappingSensitivity must be used within a GridProvider"
     );
   }
   return context;
