@@ -1,19 +1,19 @@
 import { Group, Rect } from "react-konva";
 import useImage from "use-image";
 
-import Vector2 from "../helpers/Vector2";
+import Vector2 from "../../helpers/Vector2";
 
 import {
   useGrid,
   useGridPixelSize,
   useGridOffset,
   useGridCellPixelSize,
-} from "../contexts/GridContext";
+} from "../../contexts/GridContext";
 
-import squarePatternDark from "../images/SquarePatternDark.png";
-import squarePatternLight from "../images/SquarePatternLight.png";
-import hexPatternDark from "../images/HexPatternDark.png";
-import hexPatternLight from "../images/HexPatternLight.png";
+import squarePatternDark from "../../images/SquarePatternDark.png";
+import squarePatternLight from "../../images/SquarePatternLight.png";
+import hexPatternDark from "../../images/HexPatternDark.png";
+import hexPatternLight from "../../images/HexPatternLight.png";
 
 function Grid({ stroke }: { stroke: "black" | "white" }) {
   const grid = useGrid();

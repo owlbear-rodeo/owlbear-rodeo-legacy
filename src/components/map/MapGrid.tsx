@@ -7,7 +7,7 @@ import { mapSources as defaultMapSources } from "../../maps";
 
 import { getImageLightness } from "../../helpers/image";
 
-import Grid from "../Grid";
+import Grid from "../konva/Grid";
 import { Map } from "../../types/Map";
 
 function MapGrid({ map }: { map: Map }) {

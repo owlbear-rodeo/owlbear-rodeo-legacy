@@ -18,7 +18,7 @@ import GridOffIcon from "../../icons/GridOffIcon";
 
 import { tokenSources } from "../../tokens";
 
-import Grid from "../Grid";
+import Grid from "../konva/Grid";
 import { Token } from "../../types/Token";
 
 type TokenPreviewProps = {
