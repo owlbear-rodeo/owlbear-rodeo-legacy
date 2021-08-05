@@ -177,25 +177,25 @@ function SelectTool({
         return;
       }
       if (selection && mapStage) {
-        const tokensGroup = mapStage.findOne<Konva.Group>("#tokens");
-        const notesGroup = mapStage.findOne<Konva.Group>("#notes");
-        if (tokensGroup && notesGroup) {
-          const points = getSelectionPoints(selection);
-          const intersection = new Intersection(
-            {
-              type: "path",
-              points: scaleAndFlattenPoints(points, {
-                x: mapWidth,
-                y: mapHeight,
-              }),
-            },
-            { x: selection.x, y: selection.y },
-            { x: 0, y: 0 },
-            0
-          );
+        const tokensGroups = mapStage.find<Konva.Group>("#tokens");
+        const notesGroups = mapStage.find<Konva.Group>("#notes");
+        const points = getSelectionPoints(selection);
+        const intersection = new Intersection(
+          {
+            type: "path",
+            points: scaleAndFlattenPoints(points, {
+              x: mapWidth,
+              y: mapHeight,
+            }),
+          },
+          { x: selection.x, y: selection.y },
+          { x: 0, y: 0 },
+          0
+        );
 
-          let intersectingItems: SelectionItem[] = [];
+        let intersectingItems: SelectionItem[] = [];
 
+        for (let tokensGroup of tokensGroups) {
           const tokens = tokensGroup.children;
           if (tokens) {
             for (let token of tokens) {
@@ -207,6 +207,9 @@ function SelectTool({
               }
             }
           }
+        }
+
+        for (let notesGroup of notesGroups) {
           const notes = notesGroup.children;
           if (notes) {
             for (let note of notes) {
@@ -218,18 +221,16 @@ function SelectTool({
               }
             }
           }
+        }
 
-          if (intersectingItems.length > 0) {
-            onSelectionChange((prevSelection) => {
-              if (!prevSelection) {
-                return prevSelection;
-              }
-              return { ...prevSelection, items: intersectingItems };
-            });
-            onSelectionMenuOpen(true);
-          } else {
-            onSelectionChange(null);
-          }
+        if (intersectingItems.length > 0) {
+          onSelectionChange((prevSelection) => {
+            if (!prevSelection) {
+              return prevSelection;
+            }
+            return { ...prevSelection, items: intersectingItems };
+          });
+          onSelectionMenuOpen(true);
         } else {
           onSelectionChange(null);
         }

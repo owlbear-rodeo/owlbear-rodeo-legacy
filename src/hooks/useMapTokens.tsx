@@ -76,38 +76,56 @@ function useMapTokens(
     setTokenDraggingOptions(undefined);
   }
 
+  function tokenFromTokenState(tokenState: TokenState) {
+    return (
+      map && (
+        <Token
+          key={tokenState.id}
+          tokenState={tokenState}
+          onTokenStateChange={onTokenStateChange}
+          onTokenMenuOpen={handleTokenMenuOpen}
+          onTokenMenuClose={handleTokenMenuClose}
+          onTokenDragStart={handleTokenDragStart}
+          onTokenDragEnd={handleTokenDragEnd}
+          draggable={
+            selectedToolId === "move" &&
+            !(tokenState.id in disabledTokens) &&
+            !tokenState.locked
+          }
+          selectable={
+            selectedToolId === "move" &&
+            ((!(tokenState.id in disabledTokens) && !tokenState.locked) ||
+              map.owner === userId)
+          }
+          fadeOnHover={
+            tokenState.category !== "prop" && selectedToolId === "drawing"
+          }
+          map={map}
+          selected={
+            !!tokenMenuOptions &&
+            isTokenMenuOpen &&
+            tokenMenuOptions.tokenStateId === tokenState.id
+          }
+        />
+      )
+    );
+  }
+
   const tokens = map && mapState && (
     <Group id="tokens">
       {Object.values(mapState.tokens)
+        .filter((tokenState) => tokenState.category !== "prop")
         .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
-        .map((tokenState) => (
-          <Token
-            key={tokenState.id}
-            tokenState={tokenState}
-            onTokenStateChange={onTokenStateChange}
-            onTokenMenuOpen={handleTokenMenuOpen}
-            onTokenMenuClose={handleTokenMenuClose}
-            onTokenDragStart={handleTokenDragStart}
-            onTokenDragEnd={handleTokenDragEnd}
-            draggable={
-              selectedToolId === "move" &&
-              !(tokenState.id in disabledTokens) &&
-              !tokenState.locked
-            }
-            selectable={
-              selectedToolId === "move" &&
-              ((!(tokenState.id in disabledTokens) && !tokenState.locked) ||
-                map.owner === userId)
-            }
-            fadeOnHover={selectedToolId === "drawing"}
-            map={map}
-            selected={
-              !!tokenMenuOptions &&
-              isTokenMenuOpen &&
-              tokenMenuOptions.tokenStateId === tokenState.id
-            }
-          />
-        ))}
+        .map(tokenFromTokenState)}
+    </Group>
+  );
+
+  const propTokens = map && mapState && (
+    <Group id="tokens">
+      {Object.values(mapState.tokens)
+        .filter((tokenState) => tokenState.category === "prop")
+        .sort((a, b) => sortMapTokenStates(a, b, tokenDraggingOptions))
+        .map(tokenFromTokenState)}
     </Group>
   );
 
@@ -135,7 +153,7 @@ function useMapTokens(
     />
   );
 
-  return { tokens, tokenMenu, tokenDragOverlay };
+  return { tokens, propTokens, tokenMenu, tokenDragOverlay };
 }
 
 export default useMapTokens;

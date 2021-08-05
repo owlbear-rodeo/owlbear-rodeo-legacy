@@ -137,7 +137,7 @@ function Map({
     onFogDraw(new EditStatesAction(shapes));
   }
 
-  const { tokens, tokenMenu, tokenDragOverlay } = useMapTokens(
+  const { tokens, propTokens, tokenMenu, tokenDragOverlay } = useMapTokens(
     map,
     mapState,
     onMapTokenStateChange,
@@ -199,6 +199,7 @@ function Map({
         onSelectedToolChange={setSelectedToolId}
       >
         {map && map.showGrid && <MapGrid map={map} />}
+        {propTokens}
         <DrawingTool
           map={map}
           drawings={drawShapes}
