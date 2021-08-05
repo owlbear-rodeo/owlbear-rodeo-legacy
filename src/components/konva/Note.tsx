@@ -191,6 +191,8 @@ function Note({
     return null;
   }
 
+  const noteName = `note${note.locked ? "-locked" : ""}`;
+
   return (
     <animated.Group
       {...props}
@@ -212,6 +214,7 @@ function Note({
       onMouseEnter={handlePointerEnter}
       onMouseLeave={handlePointerLeave}
       opacity={note.visible ? noteOpacity : 0.5}
+      name={noteName}
     >
       {!note.textOnly && (
         <Rect

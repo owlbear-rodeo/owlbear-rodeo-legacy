@@ -69,7 +69,8 @@ function Selection({
     if (stage) {
       for (let item of selection.items) {
         const node = stage.findOne(`#${item.id}`);
-        if (node) {
+        // Don't drag locked nodes
+        if (node && !node.name().endsWith("-locked")) {
           intersectingNodesRef.current.push({
             ...item,
             node,
