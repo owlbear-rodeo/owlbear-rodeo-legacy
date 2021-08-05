@@ -20,12 +20,15 @@ import { tokenSources } from "../../tokens";
 
 import Grid from "../konva/Grid";
 import { Token } from "../../types/Token";
+import SettingsContext, { useSettings } from "../../contexts/SettingsContext";
 
 type TokenPreviewProps = {
   token: Token;
 };
 
 function TokenPreview({ token }: TokenPreviewProps) {
+  const settings = useSettings();
+
   const tokenURL = useDataURL(token, tokenSources);
   const [tokenSourceImage] = useImage(tokenURL || "");
 
@@ -105,39 +108,41 @@ function TokenPreview({ token }: TokenPreviewProps) {
           scale={{ x: stageScale, y: stageScale }}
           ref={tokenStageRef}
         >
-          <Layer ref={tokenLayerRef}>
-            <Image
-              image={tokenSourceImage}
-              width={tokenWidth}
-              height={tokenHeight}
-            />
-            {showGridPreview && (
-              <Group offsetY={gridHeight - tokenHeight}>
-                <GridProvider
-                  grid={{
-                    size: { x: gridX, y: gridY },
-                    inset: {
-                      topLeft: { x: 0, y: 0 },
-                      bottomRight: { x: 1, y: 1 },
-                    },
-                    type: "square",
-                    measurement: { type: "chebyshev", scale: "5ft" },
-                  }}
-                  width={gridWidth}
-                  height={gridHeight}
-                >
-                  <Grid />
-                </GridProvider>
-                <Rect
-                  width={gridWidth}
-                  height={gridHeight}
-                  fill="transparent"
-                  stroke="rgba(255, 255, 255, 0.75)"
-                  strokeWidth={borderWidth}
-                />
-              </Group>
-            )}
-          </Layer>
+          <SettingsContext.Provider value={settings}>
+            <Layer ref={tokenLayerRef}>
+              <Image
+                image={tokenSourceImage}
+                width={tokenWidth}
+                height={tokenHeight}
+              />
+              {showGridPreview && (
+                <Group offsetY={gridHeight - tokenHeight}>
+                  <GridProvider
+                    grid={{
+                      size: { x: gridX, y: gridY },
+                      inset: {
+                        topLeft: { x: 0, y: 0 },
+                        bottomRight: { x: 1, y: 1 },
+                      },
+                      type: "square",
+                      measurement: { type: "chebyshev", scale: "5ft" },
+                    }}
+                    width={gridWidth}
+                    height={gridHeight}
+                  >
+                    <Grid />
+                  </GridProvider>
+                  <Rect
+                    width={gridWidth}
+                    height={gridHeight}
+                    fill="transparent"
+                    stroke="rgba(255, 255, 255, 0.75)"
+                    strokeWidth={borderWidth}
+                  />
+                </Group>
+              )}
+            </Layer>
+          </SettingsContext.Provider>
         </Stage>
       </ReactResizeDetector>
       <IconButton

@@ -147,12 +147,14 @@ export default useMapTokens;
 
 function getMapTokenCategoryWeight(category: TokenCategory) {
   switch (category) {
-    case "character":
+    case "attachment":
       return 0;
-    case "vehicle":
+    case "character":
       return 1;
-    case "prop":
+    case "vehicle":
       return 2;
+    case "prop":
+      return 3;
     default:
       return 0;
   }
@@ -164,7 +166,7 @@ function sortMapTokenStates(
   b: TokenState,
   tokenDraggingOptions?: TokenDraggingOptions
 ) {
-  // If categories are different sort in order "prop", "vehicle", "character"
+  // If categories are different sort in order "prop", "vehicle", "character", "attachment"
   if (b.category !== a.category) {
     const aWeight = getMapTokenCategoryWeight(a.category);
     const bWeight = getMapTokenCategoryWeight(b.category);

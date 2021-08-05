@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { Outline } from "./Outline";
 
-export type TokenCategory = "character" | "vehicle" | "prop";
+export type TokenCategory = "character" | "vehicle" | "prop" | "attachment";
 
 export type BaseToken = {
   id: string;

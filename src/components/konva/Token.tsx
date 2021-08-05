@@ -33,6 +33,7 @@ import {
   TokenStateChangeEventHandler,
 } from "../../types/Events";
 import Transformer from "./Transformer";
+import TokenAttachment from "./TokenAttachment";
 
 type MapTokenProps = {
   tokenState: TokenState;
@@ -76,14 +77,27 @@ function Token({
 
   const snapPositionToGrid = useGridSnapping();
 
-  const intersectingTokensRef = useRef<Konva.Node[]>([]);
+  const [dragging, setDragging] = useState(false);
   const previousDragPositionRef = useRef({ x: 0, y: 0 });
 
+  // Tokens that are attached to this token and should move when it moves
+  const attachedTokensRef = useRef<Konva.Node[]>([]);
+  // If this an attachment is it over a character
+  const [attachmentOverCharacter, setAttachmentOverCharacter] = useState(false);
+  // The characters that we're present when an attachment is dragged, used to highlight the attachment
+  const attachmentCharactersRef = useRef<Konva.Node[]>([]);
+  const attachmentThreshold = Vector2.componentMin(gridCellPixelSize) / 4;
+
   function handleDragStart(event: Konva.KonvaEventObject<DragEvent>) {
-    const tokenGroup = event.target;
+    const tokenGroup = event.target as Konva.Shape;
+    const layer = tokenGroup.getLayer();
+
+    if (!layer) {
+      return;
+    }
+    previousDragPositionRef.current = tokenGroup.position();
 
     if (tokenState.category === "vehicle") {
-      previousDragPositionRef.current = tokenGroup.position();
       const tokenIntersection = new Intersection(
         getScaledOutline(tokenState, tokenWidth, tokenHeight),
         { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
@@ -91,19 +105,44 @@ function Token({
         tokenState.rotation
       );
 
-      // Find all other tokens on the map
-      const layer = tokenGroup.getLayer() as Konva.Layer;
+      // Find all other characters on the map and check whether they're
+      // intersecting the vehicle
       const tokens = layer.find(".character");
       for (let other of tokens) {
         if (other === tokenGroup) {
           continue;
         }
         if (tokenIntersection.intersects(other.position())) {
-          intersectingTokensRef.current.push(other);
+          attachedTokensRef.current.push(other);
         }
       }
     }
 
+    if (tokenState.category === "attachment") {
+      // If we're dragging an attachment add all characters to the attachment characters
+      // So we can check for highlights
+      previousDragPositionRef.current = tokenGroup.position();
+      const characters = layer.find(".character");
+      attachmentCharactersRef.current = characters;
+    }
+
+    if (tokenState.category === "character") {
+      // Find all attachments and check whether they are close to the center of this token
+      const attachments = layer.find(".attachment");
+      for (let attachment of attachments) {
+        if (attachment === tokenGroup) {
+          continue;
+        }
+        const distance = Vector2.distance(
+          tokenGroup.position(),
+          attachment.position()
+        );
+        if (distance < attachmentThreshold) {
+          attachedTokensRef.current.push(attachment);
+        }
+      }
+    }
+    setDragging(true);
     onTokenDragStart(event, tokenState.id);
   }
 
@@ -113,37 +152,54 @@ function Token({
     if (map.snapToGrid) {
       tokenGroup.position(snapPositionToGrid(tokenGroup.position()));
     }
-    if (tokenState.category === "vehicle") {
+    if (attachedTokensRef.current.length > 0) {
       const deltaPosition = Vector2.subtract(
         tokenGroup.position(),
         previousDragPositionRef.current
       );
-      for (let other of intersectingTokensRef.current) {
+      for (let other of attachedTokensRef.current) {
         other.position(Vector2.add(other.position(), deltaPosition));
       }
       previousDragPositionRef.current = tokenGroup.position();
+    }
+    // Check whether an attachment is over a character
+    if (tokenState.category === "attachment") {
+      const characters = attachmentCharactersRef.current;
+      let overCharacter = false;
+      for (let character of characters) {
+        const distance = Vector2.distance(
+          tokenGroup.position(),
+          character.position()
+        );
+        if (distance < attachmentThreshold) {
+          overCharacter = true;
+          break;
+        }
+      }
+      if (attachmentOverCharacter !== overCharacter) {
+        setAttachmentOverCharacter(overCharacter);
+      }
     }
   }
 
   function handleDragEnd(event: Konva.KonvaEventObject<DragEvent>) {
     const tokenGroup = event.target;
 
-    const mountChanges: Record<string, Partial<TokenState>> = {};
-    if (tokenState.category === "vehicle") {
-      for (let other of intersectingTokensRef.current) {
-        mountChanges[other.id()] = {
+    const attachedTokenChanges: Record<string, Partial<TokenState>> = {};
+    if (attachedTokensRef.current.length > 0) {
+      for (let other of attachedTokensRef.current) {
+        attachedTokenChanges[other.id()] = {
           x: other.x() / mapWidth,
           y: other.y() / mapHeight,
           lastModifiedBy: userId,
           lastModified: Date.now(),
         };
       }
-      intersectingTokensRef.current = [];
     }
 
     setPreventMapInteraction(false);
     onTokenStateChange({
-      ...mountChanges,
+      ...attachedTokenChanges,
       [tokenState.id]: {
         x: tokenGroup.x() / mapWidth,
         y: tokenGroup.y() / mapHeight,
@@ -151,6 +207,12 @@ function Token({
         lastModified: Date.now(),
       },
     });
+
+    setDragging(false);
+    attachmentCharactersRef.current = [];
+    attachedTokensRef.current = [];
+    setAttachmentOverCharacter(false);
+
     onTokenDragEnd(event, tokenState.id);
   }
 
@@ -290,6 +352,10 @@ function Token({
             <TokenOutline
               outline={getScaledOutline(tokenState, tokenWidth, tokenHeight)}
               hidden={!!tokenImage}
+              // Disable hit detection for attachments
+              hitFunc={
+                tokenState.category === "attachment" ? () => {} : undefined
+              }
             />
           </Group>
           <KonvaImage
@@ -309,6 +375,18 @@ function Token({
                 width={tokenWidth}
                 height={tokenHeight}
               />
+            ) : null}
+            {tokenState.category === "attachment" ? (
+              <Group offsetX={-tokenWidth / 2} offsetY={-tokenHeight / 2}>
+                <Group rotation={tokenState.rotation}>
+                  <TokenAttachment
+                    tokenHeight={tokenHeight}
+                    dragging={dragging}
+                    highlight={attachmentOverCharacter}
+                    radius={attachmentThreshold * 2}
+                  />
+                </Group>
+              </Group>
             ) : null}
             {tokenState.label ? (
               <TokenLabel

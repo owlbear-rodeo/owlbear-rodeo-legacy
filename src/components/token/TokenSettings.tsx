@@ -12,6 +12,7 @@ const categorySettings: CategorySetting[] = [
   { value: "character", label: "Character" },
   { value: "prop", label: "Prop" },
   { value: "vehicle", label: "Vehicle / Mount" },
+  { value: "attachment", label: "Attachment" },
 ];
 
 type TokenSettingsProps = {

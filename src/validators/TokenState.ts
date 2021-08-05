@@ -16,7 +16,7 @@ export const TokenStateSchema = {
   ],
   definitions: {
     TokenCategory: {
-      enum: ["character", "prop", "vehicle"],
+      enum: ["character", "prop", "vehicle", "attachment"],
       type: "string",
     },
     BaseTokenState: {
