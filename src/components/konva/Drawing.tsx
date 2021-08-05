@@ -5,6 +5,8 @@ import {
   useMapWidth,
 } from "../../contexts/MapInteractionContext";
 import colors from "../../helpers/colors";
+import { scaleAndFlattenPoints } from "../../helpers/konva";
+import Vector2 from "../../helpers/Vector2";
 
 import { Drawing as DrawingType } from "../../types/Drawing";
 
@@ -15,6 +17,7 @@ type DrawingProps = {
 function Drawing({ drawing, ...props }: DrawingProps) {
   const mapWidth = useMapWidth();
   const mapHeight = useMapHeight();
+  const mapSize = new Vector2(mapWidth, mapHeight);
 
   const defaultProps = {
     fill: colors[drawing.color] || drawing.color,
@@ -25,14 +28,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
   if (drawing.type === "path") {
     return (
       <Line
-        points={drawing.data.points.reduce(
-          (acc: number[], point) => [
-            ...acc,
-            point.x * mapWidth,
-            point.y * mapHeight,
-          ],
-          []
-        )}
+        points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
         stroke={colors[drawing.color] || drawing.color}
         tension={0.5}
         closed={drawing.pathType === "fill"}
@@ -69,14 +65,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
     } else if (drawing.shapeType === "triangle") {
       return (
         <Line
-          points={drawing.data.points.reduce(
-            (acc: number[], point) => [
-              ...acc,
-              point.x * mapWidth,
-              point.y * mapHeight,
-            ],
-            []
-          )}
+          points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
           closed={true}
           {...defaultProps}
           {...props}
@@ -85,14 +74,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
     } else if (drawing.shapeType === "line") {
       return (
         <Line
-          points={drawing.data.points.reduce(
-            (acc: number[], point) => [
-              ...acc,
-              point.x * mapWidth,
-              point.y * mapHeight,
-            ],
-            []
-          )}
+          points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
           stroke={colors[drawing.color] || drawing.color}
           lineCap="round"
           {...defaultProps}
