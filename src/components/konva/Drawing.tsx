@@ -78,6 +78,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
           stroke={colors[drawing.color] || drawing.color}
           lineCap="round"
           {...defaultProps}
+          {...props}
         />
       );
     }
