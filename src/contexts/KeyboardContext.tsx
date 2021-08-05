@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
 import { EventEmitter } from "events";
 
-const KeyboardContext = React.createContext({ keyEmitter: new EventEmitter() });
+const keyboardEmitter = new EventEmitter();
+keyboardEmitter.setMaxListeners(100);
+
+const KeyboardContext = React.createContext({ keyEmitter: keyboardEmitter });
 
 export function KeyboardProvider({ children }: { children: React.ReactNode }) {
-  const [keyEmitter] = useState(new EventEmitter());
+  const [keyEmitter] = useState(keyboardEmitter);
   useEffect(() => {
     function handleKeyDown(event: Event) {
       // Ignore text input
