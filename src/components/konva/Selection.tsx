@@ -20,6 +20,7 @@ import { useEffect, useRef } from "react";
 import Vector2 from "../../helpers/Vector2";
 import { SelectionItemsChangeEventHandler } from "../../types/Events";
 import { TokenState } from "../../types/TokenState";
+import { Map } from "../../types/Map";
 import { Note } from "../../types/Note";
 import useGridSnapping from "../../hooks/useGridSnapping";
 
@@ -32,6 +33,7 @@ type SelectionProps = {
   onPreventSelectionChange: (preventSelection: boolean) => void;
   onSelectionDragStart: () => void;
   onSelectionDragEnd: () => void;
+  map: Map;
 } & Konva.ShapeConfig;
 
 function Selection({
@@ -41,6 +43,7 @@ function Selection({
   onPreventSelectionChange,
   onSelectionDragStart,
   onSelectionDragEnd,
+  map,
   ...props
 }: SelectionProps) {
   const userId = useUserId();
@@ -89,11 +92,14 @@ function Selection({
       initialDragPositionRef.current
     );
     for (let item of intersectingNodesRef.current) {
-      item.node.position(
-        snapPositionToGrid(
-          Vector2.add({ x: item.initialX, y: item.initialY }, deltaPosition)
-        )
+      let itemPosition = Vector2.add(
+        { x: item.initialX, y: item.initialY },
+        deltaPosition
       );
+      if (map.snapToGrid) {
+        itemPosition = snapPositionToGrid(itemPosition);
+      }
+      item.node.position(itemPosition);
     }
   }
 

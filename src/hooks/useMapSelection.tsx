@@ -81,7 +81,7 @@ function useMapSelection(
     onSelectionItemsRemove(tokenStateIds, noteIds);
   }
 
-  const selectionTool = (
+  const selectionTool = map ? (
     <SelectTool
       active={active}
       toolSettings={settings}
@@ -93,8 +93,9 @@ function useMapSelection(
       onSelectionDragEnd={handleSelectionDragEnd}
       disabledTokens={disabledTokens}
       disabledNotes={disabledNotes}
+      map={map}
     />
-  );
+  ) : null;
 
   const selectionMenu = (
     <SelectionMenu

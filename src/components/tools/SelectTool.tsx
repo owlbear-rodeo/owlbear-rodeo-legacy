@@ -28,6 +28,7 @@ import {
   SelectToolSettings,
 } from "../../types/Select";
 import { RectData } from "../../types/Drawing";
+import { Map } from "../../types/Map";
 import { useGridCellNormalizedSize } from "../../contexts/GridContext";
 import Selection from "../konva/Selection";
 import { SelectionItemsChangeEventHandler } from "../../types/Events";
@@ -44,6 +45,7 @@ type MapSelectProps = {
   onSelectionDragEnd: () => void;
   disabledTokens: Record<string, boolean>;
   disabledNotes: Record<string, boolean>;
+  map: Map;
 };
 
 function SelectTool({
@@ -57,6 +59,7 @@ function SelectTool({
   onSelectionDragEnd,
   disabledTokens,
   disabledNotes,
+  map,
 }: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
@@ -271,6 +274,7 @@ function SelectTool({
           }
           onSelectionDragStart={onSelectionDragStart}
           onSelectionDragEnd={onSelectionDragEnd}
+          map={map}
         />
       )}
     </Group>
