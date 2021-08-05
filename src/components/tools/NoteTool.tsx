@@ -18,8 +18,6 @@ import { Map } from "../../types/Map";
 import { Note as NoteType } from "../../types/Note";
 import {
   NoteCreateEventHander,
-  NoteChangeEventHandler,
-  NoteDragEventHandler,
   NoteMenuOpenEventHandler,
 } from "../../types/Events";
 
@@ -29,26 +27,16 @@ type MapNoteProps = {
   map: Map | null;
   active: boolean;
   onNoteCreate: NoteCreateEventHander;
-  onNoteChange: NoteChangeEventHandler;
-  notes: NoteType[];
   onNoteMenuOpen: NoteMenuOpenEventHandler;
-  draggable: boolean;
-  onNoteDragStart: NoteDragEventHandler;
-  onNoteDragEnd: NoteDragEventHandler;
-  fadeOnHover: boolean;
+  children: React.ReactNode;
 };
 
 function NoteTool({
   map,
   active,
   onNoteCreate,
-  onNoteChange,
-  notes,
   onNoteMenuOpen,
-  draggable,
-  onNoteDragStart,
-  onNoteDragEnd,
-  fadeOnHover,
+  children,
 }: MapNoteProps) {
   const interactionEmitter = useInteractionEmitter();
   const userId = useUserId();
@@ -101,6 +89,7 @@ function NoteTool({
         locked: false,
         color: "yellow",
         textOnly: false,
+        rotation: 0,
       });
       setIsBrushDown(true);
     }
@@ -147,21 +136,11 @@ function NoteTool({
 
   return (
     <Group id="notes">
-      {notes.map((note) => (
-        <Note
-          note={note}
-          map={map}
-          key={note.id}
-          onNoteMenuOpen={onNoteMenuOpen}
-          draggable={draggable && !note.locked}
-          onNoteChange={onNoteChange}
-          onNoteDragStart={onNoteDragStart}
-          onNoteDragEnd={onNoteDragEnd}
-          fadeOnHover={fadeOnHover}
-        />
-      ))}
+      {children}
       <Group ref={creatingNoteRef}>
-        {isBrushDown && noteData && <Note note={noteData} map={map} />}
+        {isBrushDown && noteData && (
+          <Note note={noteData} map={map} selected={false} />
+        )}
       </Group>
     </Group>
   );

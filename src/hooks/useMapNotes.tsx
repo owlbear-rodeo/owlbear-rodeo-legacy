@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useState } from "react";
+import Note from "../components/konva/Note";
 import NoteDragOverlay from "../components/note/NoteDragOverlay";
 import NoteMenu from "../components/note/NoteMenu";
 import NoteTool from "../components/tools/NoteTool";
@@ -12,7 +13,11 @@ import {
 } from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
 import { MapState } from "../types/MapState";
-import { Note, NoteDraggingOptions, NoteMenuOptions } from "../types/Note";
+import {
+  Note as NoteType,
+  NoteDraggingOptions,
+  NoteMenuOptions,
+} from "../types/Note";
 
 function useMapNotes(
   map: Map | null,
@@ -37,6 +42,10 @@ function useMapNotes(
     setIsNoteMenuOpen(true);
   }
 
+  function handleNoteMenuClose() {
+    setIsNoteMenuOpen(false);
+  }
+
   function handleNoteDragStart(_: KonvaEventObject<DragEvent>, noteId: string) {
     setNoteDraggingOptions({ dragging: true, noteId });
   }
@@ -56,29 +65,43 @@ function useMapNotes(
       map={map}
       active={selectedToolId === "note"}
       onNoteCreate={onNoteCreate}
-      onNoteChange={onNoteChange}
-      notes={
-        mapState
-          ? Object.values(mapState.notes).sort((a, b) =>
-              sortNotes(a, b, noteDraggingOptions)
-            )
-          : []
-      }
       onNoteMenuOpen={handleNoteMenuOpen}
-      draggable={
-        allowNoteEditing &&
-        (selectedToolId === "note" || selectedToolId === "move")
-      }
-      onNoteDragStart={handleNoteDragStart}
-      onNoteDragEnd={handleNoteDragEnd}
-      fadeOnHover={selectedToolId === "drawing"}
-    />
+    >
+      {(mapState
+        ? Object.values(mapState.notes).sort((a, b) =>
+            sortNotes(a, b, noteDraggingOptions)
+          )
+        : []
+      ).map((note) => (
+        <Note
+          note={note}
+          map={map}
+          key={note.id}
+          onNoteMenuOpen={handleNoteMenuOpen}
+          onNoteMenuClose={handleNoteMenuClose}
+          draggable={
+            allowNoteEditing &&
+            (selectedToolId === "note" || selectedToolId === "move") &&
+            !note.locked
+          }
+          onNoteChange={onNoteChange}
+          onNoteDragStart={handleNoteDragStart}
+          onNoteDragEnd={handleNoteDragEnd}
+          fadeOnHover={selectedToolId === "drawing"}
+          selected={
+            !!noteMenuOptions &&
+            isNoteMenuOpen &&
+            noteMenuOptions.noteId === note.id
+          }
+        />
+      ))}
+    </NoteTool>
   );
 
   const noteMenu = (
     <NoteMenu
       isOpen={isNoteMenuOpen}
-      onRequestClose={() => setIsNoteMenuOpen(false)}
+      onRequestClose={handleNoteMenuClose}
       onNoteChange={onNoteChange}
       note={noteMenuOptions && mapState?.notes[noteMenuOptions.noteId]}
       noteNode={noteMenuOptions?.noteNode}
@@ -100,8 +123,8 @@ function useMapNotes(
 export default useMapNotes;
 
 function sortNotes(
-  a: Note,
-  b: Note,
+  a: NoteType,
+  b: NoteType,
   noteDraggingOptions?: NoteDraggingOptions
 ) {
   if (

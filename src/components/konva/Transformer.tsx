@@ -148,7 +148,7 @@ function Transformer({
       if (movingAnchor === "rotater") {
         text.text(`${node.rotation().toFixed(0)}°`);
       } else {
-        const nodeRect = node.getClientRect();
+        const nodeRect = node.getClientRect({ skipShadow: true });
         const nodeScale = Vector2.divide(
           { x: nodeRect.width, y: nodeRect.height },
           gridCellAbsoluteSize

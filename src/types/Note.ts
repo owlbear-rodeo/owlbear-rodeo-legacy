@@ -13,6 +13,7 @@ export type Note = {
   visible: boolean;
   x: number;
   y: number;
+  rotation: number;
 };
 
 export type NoteMenuOptions = {

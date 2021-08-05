@@ -834,9 +834,22 @@ export const versions: Record<number, VersionCallback> = {
       _uncommittedChanges: null,
     });
   },
+  // v1.10.0 - Add rotation to notes
+  37(v, onUpgrade) {
+    v.stores({}).upgrade((tx) => {
+      onUpgrade?.(37);
+      tx.table("states")
+        .toCollection()
+        .modify((state) => {
+          for (let id in state.notes) {
+            state.notes[id].rotation = 0;
+          }
+        });
+    });
+  },
 };
 
-export const latestVersion = 36;
+export const latestVersion = 37;
 
 /**
  * Load versions onto a database up to a specific version number

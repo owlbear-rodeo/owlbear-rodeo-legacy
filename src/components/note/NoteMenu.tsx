@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Box, Flex, Text, IconButton } from "theme-ui";
+import { Box, Flex, IconButton } from "theme-ui";
 import Konva from "konva";
 
-import Slider from "../Slider";
 import TextareaAutosize from "../TextareaAutoSize";
 
 import MapMenu from "../map/MapMenu";
@@ -27,8 +26,6 @@ import {
 import { Note } from "../../types/Note";
 import { Map } from "../../types/Map";
 
-const defaultNoteMaxSize = 6;
-
 type NoteMenuProps = {
   isOpen: boolean;
   onRequestClose: RequestCloseEventHandler;
@@ -50,12 +47,10 @@ function NoteMenu({
 
   const wasOpen = usePrevious(isOpen);
 
-  const [noteMaxSize, setNoteMaxSize] = useState(defaultNoteMaxSize);
   const [menuLeft, setMenuLeft] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
   useEffect(() => {
     if (isOpen && !wasOpen && note) {
-      setNoteMaxSize(Math.max(note.size, defaultNoteMaxSize));
       // Update menu position
       if (noteNode) {
         const nodeRect = noteNode.getClientRect();
@@ -64,8 +59,8 @@ function NoteMenu({
           const mapRect = mapElement.getBoundingClientRect();
           // Center X for the menu which is 156px wide
           setMenuLeft(mapRect.left + nodeRect.x + nodeRect.width / 2 - 156 / 2);
-          // Y 12px from the bottom
-          setMenuTop(mapRect.top + nodeRect.y + nodeRect.height + 12);
+          // Y 20px from the bottom
+          setMenuTop(mapRect.top + nodeRect.y + nodeRect.height + 20);
         }
       }
     }
@@ -81,11 +76,6 @@ function NoteMenu({
       return;
     }
     onNoteChange({ [note.id]: { color: color } });
-  }
-
-  function handleSizeChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newSize = parseFloat(event.target.value);
-    note && onNoteChange({ [note.id]: { size: newSize } });
   }
 
   function handleVisibleChange() {
@@ -198,24 +188,6 @@ function NoteMenu({
               </Box>
             ))}
         </Box>
-        <Flex sx={{ alignItems: "center" }}>
-          <Text
-            as="label"
-            variant="body2"
-            sx={{ width: "40%", fontSize: "16px" }}
-            p={1}
-          >
-            Size:
-          </Text>
-          <Slider
-            value={(note && note.size) || 1}
-            onChange={handleSizeChange}
-            step={0.5}
-            min={0.5}
-            max={noteMaxSize}
-            mr={1}
-          />
-        </Flex>
         {/* Only show hide and lock token actions to map owners */}
         {map && map.owner === userId && (
           <Flex sx={{ alignItems: "center", justifyContent: "space-around" }}>

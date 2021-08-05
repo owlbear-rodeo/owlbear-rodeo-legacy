@@ -20,9 +20,12 @@ import { Note as NoteType } from "../../types/Note";
 import {
   NoteChangeEventHandler,
   NoteDragEventHandler,
+  NoteMenuCloseEventHandler,
   NoteMenuOpenEventHandler,
 } from "../../types/Events";
 import { Map } from "../../types/Map";
+
+import Transformer from "./Transformer";
 
 const defaultFontSize = 16;
 
@@ -31,10 +34,12 @@ type NoteProps = {
   map: Map | null;
   onNoteChange?: NoteChangeEventHandler;
   onNoteMenuOpen?: NoteMenuOpenEventHandler;
+  onNoteMenuClose?: NoteMenuCloseEventHandler;
   draggable: boolean;
   onNoteDragStart?: NoteDragEventHandler;
   onNoteDragEnd?: NoteDragEventHandler;
   fadeOnHover: boolean;
+  selected: boolean;
 };
 
 function Note({
@@ -42,10 +47,12 @@ function Note({
   map,
   onNoteChange,
   onNoteMenuOpen,
+  onNoteMenuClose,
   draggable,
   onNoteDragStart,
   onNoteDragEnd,
   fadeOnHover,
+  selected,
 }: NoteProps) {
   const userId = useUserId();
 
@@ -173,6 +180,30 @@ function Note({
 
   const textRef = useRef<Konva.Text>(null);
 
+  const noteRef = useRef<Konva.Group>(null);
+  const [isTransforming, setIsTransforming] = useState(false);
+  function handleTransformStart() {
+    setIsTransforming(true);
+    onNoteMenuClose?.();
+  }
+
+  function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
+    if (noteRef.current) {
+      const sizeChange = event.target.scaleX();
+      const rotation = event.target.rotation();
+      onNoteChange?.({
+        [note.id]: {
+          size: note.size * sizeChange,
+          rotation: rotation,
+        },
+      });
+      onNoteMenuOpen?.(note.id, noteRef.current);
+      noteRef.current.scaleX(1);
+      noteRef.current.scaleY(1);
+    }
+    setIsTransforming(false);
+  }
+
   // Animate to new note positions if edited by others
   const noteX = note.x * mapWidth;
   const noteY = note.y * mapHeight;
@@ -194,62 +225,73 @@ function Note({
   const noteName = `note${note.locked ? "-locked" : ""}`;
 
   return (
-    <animated.Group
-      {...props}
-      id={note.id}
-      onClick={handleClick}
-      onTap={handleClick}
-      width={noteWidth}
-      height={note.textOnly ? undefined : noteHeight}
-      offsetX={noteWidth / 2}
-      offsetY={noteHeight / 2}
-      draggable={draggable}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragMove={handleDragMove}
-      onMouseDown={handlePointerDown}
-      onMouseUp={handlePointerUp}
-      onTouchStart={handlePointerDown}
-      onTouchEnd={handlePointerUp}
-      onMouseEnter={handlePointerEnter}
-      onMouseLeave={handlePointerLeave}
-      opacity={note.visible ? noteOpacity : 0.5}
-      name={noteName}
-    >
-      {!note.textOnly && (
-        <Rect
-          width={noteWidth}
-          height={noteHeight}
-          shadowColor="rgba(0, 0, 0, 0.16)"
-          shadowOffset={{ x: 0, y: 3 }}
-          shadowBlur={6}
-          cornerRadius={0.25}
-          fill={colors[note.color]}
+    <>
+      <animated.Group
+        {...props}
+        id={note.id}
+        onClick={handleClick}
+        onTap={handleClick}
+        width={noteWidth}
+        height={note.textOnly ? undefined : noteHeight}
+        rotation={note.rotation}
+        offsetX={noteWidth / 2}
+        offsetY={noteHeight / 2}
+        draggable={draggable}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragMove={handleDragMove}
+        onMouseDown={handlePointerDown}
+        onMouseUp={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchEnd={handlePointerUp}
+        onMouseEnter={handlePointerEnter}
+        onMouseLeave={handlePointerLeave}
+        opacity={note.visible ? noteOpacity : 0.5}
+        name={noteName}
+        ref={noteRef}
+      >
+        {!note.textOnly && (
+          <Rect
+            width={noteWidth}
+            height={noteHeight}
+            shadowColor="rgba(0, 0, 0, 0.16)"
+            shadowOffset={{ x: 0, y: 3 }}
+            shadowBlur={6}
+            cornerRadius={0.25}
+            fill={colors[note.color]}
+          />
+        )}
+        <Text
+          text={note.text}
+          fill={
+            note.textOnly
+              ? colors[note.color]
+              : note.color === "black" || note.color === "darkGray"
+              ? "white"
+              : "black"
+          }
+          align="left"
+          verticalAlign="middle"
+          padding={notePadding / fontScale}
+          fontSize={defaultFontSize}
+          // Scale font instead of changing font size to avoid kerning issues with Firefox
+          scaleX={fontScale}
+          scaleY={fontScale}
+          width={noteWidth / fontScale}
+          height={note.textOnly ? undefined : noteHeight / fontScale}
+          wrap="word"
         />
-      )}
-      <Text
-        text={note.text}
-        fill={
-          note.textOnly
-            ? colors[note.color]
-            : note.color === "black" || note.color === "darkGray"
-            ? "white"
-            : "black"
-        }
-        align="left"
-        verticalAlign="middle"
-        padding={notePadding / fontScale}
-        fontSize={defaultFontSize}
-        // Scale font instead of changing font size to avoid kerning issues with Firefox
-        scaleX={fontScale}
-        scaleY={fontScale}
-        width={noteWidth / fontScale}
-        height={note.textOnly ? undefined : noteHeight / fontScale}
-        wrap="word"
+        {/* Use an invisible text block to work out text sizing */}
+        <Text visible={false} ref={textRef} text={note.text} wrap="none" />
+      </animated.Group>
+      <Transformer
+        active={(!note.locked && selected) || isTransforming}
+        nodeRef={noteRef}
+        onTransformEnd={handleTransformEnd}
+        onTransformStart={handleTransformStart}
+        gridScale={map?.grid.measurement.scale || ""}
       />
-      {/* Use an invisible text block to work out text sizing */}
-      <Text visible={false} ref={textRef} text={note.text} wrap="none" />
-    </animated.Group>
+    </>
   );
 }
 

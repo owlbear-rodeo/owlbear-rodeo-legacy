@@ -46,6 +46,7 @@ export type NoteMenuOpenEventHandler = (
   noteId: string,
   noteNode: Konva.Node
 ) => void;
+export type NoteMenuCloseEventHandler = () => void;
 export type NoteDragEventHandler = (
   event: Konva.KonvaEventObject<DragEvent>,
   noteId: string

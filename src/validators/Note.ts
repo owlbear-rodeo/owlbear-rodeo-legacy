@@ -40,6 +40,9 @@ export const NoteSchema: JSONSchemaType<Note> = {
     y: {
       type: "number",
     },
+    rotation: {
+      type: "number",
+    },
   },
   required: [
     "color",
@@ -53,6 +56,7 @@ export const NoteSchema: JSONSchemaType<Note> = {
     "visible",
     "x",
     "y",
+    "rotation",
   ],
   type: "object",
 };
