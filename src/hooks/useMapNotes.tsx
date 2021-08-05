@@ -4,6 +4,7 @@ import { useState } from "react";
 import NoteDragOverlay from "../components/note/NoteDragOverlay";
 import NoteMenu from "../components/note/NoteMenu";
 import NoteTool from "../components/tools/NoteTool";
+import { useUserId } from "../contexts/UserIdContext";
 import {
   NoteChangeEventHandler,
   NoteCreateEventHander,
@@ -19,13 +20,18 @@ function useMapNotes(
   onNoteCreate: NoteCreateEventHander,
   onNoteChange: NoteChangeEventHandler,
   onNoteRemove: NoteRemoveEventHander,
-  selectedToolId: MapToolId,
-  allowNoteEditing: boolean
+  selectedToolId: MapToolId
 ) {
+  const userId = useUserId();
+  const allowNoteEditing = !!(
+    map?.owner === userId || mapState?.editFlags.includes("notes")
+  );
+
   const [isNoteMenuOpen, setIsNoteMenuOpen] = useState<boolean>(false);
   const [noteMenuOptions, setNoteMenuOptions] = useState<NoteMenuOptions>();
   const [noteDraggingOptions, setNoteDraggingOptions] =
     useState<NoteDraggingOptions>();
+
   function handleNoteMenuOpen(noteId: string, noteNode: Konva.Node) {
     setNoteMenuOptions({ noteId, noteNode });
     setIsNoteMenuOpen(true);

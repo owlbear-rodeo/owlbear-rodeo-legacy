@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SelectionDragOverlay from "../components/selection/SelectionDragOverlay";
 import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
+import { useUserId } from "../contexts/UserIdContext";
 import {
   SelectionItemsChangeEventHandler,
   SelectionItemsCreateEventHandler,
@@ -21,6 +22,24 @@ function useMapSelection(
   selectedToolId: MapToolId,
   settings: SelectToolSettings
 ) {
+  const userId = useUserId();
+  const disabledTokens: Record<string, boolean> = {};
+  const disabledNotes: Record<string, boolean> = {};
+  if (mapState && map && map.owner !== userId) {
+    if (!mapState.editFlags.includes("tokens")) {
+      for (let token of Object.values(mapState.tokens)) {
+        if (token.owner !== userId) {
+          disabledTokens[token.id] = true;
+        }
+      }
+    }
+    if (!mapState.editFlags.includes("notes")) {
+      for (let note of Object.values(mapState.notes)) {
+        disabledNotes[note.id] = true;
+      }
+    }
+  }
+
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] =
     useState<boolean>(false);
   const [isSelectionDragging, setIsSelectionDragging] = useState(false);
@@ -72,6 +91,8 @@ function useMapSelection(
       onSelectionMenuOpen={handleSelectionMenuOpen}
       onSelectionDragStart={handleSelectionDragStart}
       onSelectionDragEnd={handleSelectionDragEnd}
+      disabledTokens={disabledTokens}
+      disabledNotes={disabledNotes}
     />
   );
 

@@ -151,8 +151,7 @@ function Map({
     onMapNoteCreate,
     onMapNoteChange,
     onMapNoteRemove,
-    selectedToolId,
-    !!(map?.owner === userId || mapState?.editFlags.includes("notes"))
+    selectedToolId
   );
 
   const { selectionTool, selectionMenu, selectionDragOverlay } =

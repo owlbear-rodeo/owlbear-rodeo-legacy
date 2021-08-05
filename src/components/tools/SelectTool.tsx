@@ -42,6 +42,8 @@ type MapSelectProps = {
   onSelectionMenuOpen: (open: boolean) => void;
   onSelectionDragStart: () => void;
   onSelectionDragEnd: () => void;
+  disabledTokens: Record<string, boolean>;
+  disabledNotes: Record<string, boolean>;
 };
 
 function SelectTool({
@@ -53,6 +55,8 @@ function SelectTool({
   onSelectionMenuOpen,
   onSelectionDragStart,
   onSelectionDragEnd,
+  disabledTokens,
+  disabledNotes,
 }: MapSelectProps) {
   const stageScale = useDebouncedStageScale();
   const mapWidth = useMapWidth();
@@ -192,7 +196,10 @@ function SelectTool({
           const tokens = tokensGroup.children;
           if (tokens) {
             for (let token of tokens) {
-              if (intersection.intersects(token.position())) {
+              if (
+                !(token.id() in disabledTokens) &&
+                intersection.intersects(token.position())
+              ) {
                 intersectingItems.push({ type: "token", id: token.id() });
               }
             }
@@ -200,7 +207,10 @@ function SelectTool({
           const notes = notesGroup.children;
           if (notes) {
             for (let note of notes) {
-              if (intersection.intersects(note.position())) {
+              if (
+                !(note.id() in disabledNotes) &&
+                intersection.intersects(note.position())
+              ) {
                 intersectingItems.push({ type: "note", id: note.id() });
               }
             }

@@ -27,27 +27,22 @@ function useMapTokens(
   onTokenStateRemove: TokenStateRemoveHandler,
   selectedToolId: MapToolId
 ) {
+  const userId = useUserId();
+  const disabledTokens: Record<string, boolean> = {};
+  if (mapState && map) {
+    if (!mapState.editFlags.includes("tokens") && map.owner !== userId) {
+      for (let token of Object.values(mapState.tokens)) {
+        if (token.owner !== userId) {
+          disabledTokens[token.id] = true;
+        }
+      }
+    }
+  }
+
   const [isTokenMenuOpen, setIsTokenMenuOpen] = useState<boolean>(false);
   const [tokenMenuOptions, setTokenMenuOptions] = useState<TokenMenuOptions>();
   const [tokenDraggingOptions, setTokenDraggingOptions] =
     useState<TokenDraggingOptions>();
-
-  const userId = useUserId();
-
-  const disabledTokens: Record<string, boolean> = {};
-  // If we have a map and state and have the token permission disabled
-  // and are not the map owner
-  if (
-    mapState &&
-    !mapState.editFlags.includes("tokens") &&
-    map?.owner !== userId
-  ) {
-    for (let token of Object.values(mapState.tokens)) {
-      if (token.owner !== userId) {
-        disabledTokens[token.id] = true;
-      }
-    }
-  }
 
   function handleTokenMenuOpen(tokenStateId: string, tokenImage: Konva.Node) {
     setTokenMenuOptions({ tokenStateId, tokenImage });
