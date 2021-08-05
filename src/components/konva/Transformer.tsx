@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { Transform } from "konva/lib/Util";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
 
 import {
@@ -63,12 +63,19 @@ function Transformer({
   // Clamp snapping to 0 to accound for -1 snapping override
   const gridSnappingSensitivity = Math.max(snappingSensitivity, 0);
 
-  const anchorScale = useMemo(() => getAnchorImage(192, scaleDark), []);
-  const anchorRotate = useMemo(() => getAnchorImage(192, rotateDark), []);
-
   const transformerRef = useRef<Konva.Transformer>(null);
+
+  const [anchorScale, anchorScaleStatus] = useAnchorImage(192, scaleDark);
+  const [anchorRotate, anchorRotateStatus] = useAnchorImage(192, rotateDark);
+
   useEffect(() => {
-    if (active && transformerRef.current && nodeRef.current) {
+    if (
+      active &&
+      transformerRef.current &&
+      nodeRef.current &&
+      anchorScaleStatus === "loaded" &&
+      anchorRotateStatus === "loaded"
+    ) {
       // we need to attach transformer manually
       transformerRef.current.nodes([nodeRef.current]);
 
@@ -98,7 +105,14 @@ function Transformer({
 
       transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [active, nodeRef, anchorScale, anchorRotate]);
+  }, [
+    active,
+    nodeRef,
+    anchorScale,
+    anchorRotate,
+    anchorScaleStatus,
+    anchorRotateStatus,
+  ]);
 
   const movingAnchorRef = useRef<string>();
   const transformTextRef = useRef<Konva.Group>();
@@ -263,25 +277,39 @@ function Transformer({
   );
 }
 
-function getAnchorImage(size: number, source: string) {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  const image = new Image();
-  image.src = source;
-  image.onload = () => {
-    const imageRatio = image.width / image.height;
-    const imageWidth = canvas.height * imageRatio;
-    ctx?.drawImage(
-      image,
-      canvas.width / 2 - imageWidth / 2,
-      0,
-      imageWidth,
-      canvas.height
-    );
-  };
-  return canvas;
+type AnchorImageStatus = "loading" | "loaded" | "failed";
+
+function useAnchorImage(
+  size: number,
+  source: string
+): [HTMLCanvasElement, AnchorImageStatus] {
+  const [canvas] = useState(document.createElement("canvas"));
+  const [status, setStatus] = useState<AnchorImageStatus>("loading");
+
+  useEffect(() => {
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    const image = new Image();
+    image.src = source;
+    image.onload = () => {
+      const imageRatio = image.width / image.height;
+      const imageWidth = canvas.height * imageRatio;
+      ctx?.drawImage(
+        image,
+        canvas.width / 2 - imageWidth / 2,
+        0,
+        imageWidth,
+        canvas.height
+      );
+      setStatus("loaded");
+    };
+    image.onerror = () => {
+      setStatus("failed");
+    };
+  }, [canvas, size, source]);
+
+  return [canvas, status];
 }
 
 export default Transformer;
