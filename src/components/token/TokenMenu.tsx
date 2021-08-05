@@ -12,6 +12,10 @@ import LockIcon from "../../icons/TokenLockIcon";
 import UnlockIcon from "../../icons/TokenUnlockIcon";
 import ShowIcon from "../../icons/TokenShowIcon";
 import HideIcon from "../../icons/TokenHideIcon";
+import TokenCharacterIcon from "../../icons/TokenCharacterIcon";
+import TokenPropIcon from "../../icons/TokenPropIcon";
+import TokenMountIcon from "../../icons/TokenMountIcon";
+import TokenAttachmentIcon from "../../icons/TokenAttachmentIcon";
 
 import { useUserId } from "../../contexts/UserIdContext";
 
@@ -21,6 +25,33 @@ import {
 } from "../../types/Events";
 import { TokenState } from "../../types/TokenState";
 import { Map } from "../../types/Map";
+import { TokenCategory } from "../../types/Token";
+
+const tokenCategories: Record<
+  TokenCategory,
+  { title: string; icon: React.ReactNode; next: TokenCategory }
+> = {
+  character: {
+    title: "Character",
+    icon: <TokenCharacterIcon />,
+    next: "prop",
+  },
+  prop: {
+    title: "Prop",
+    icon: <TokenPropIcon />,
+    next: "vehicle",
+  },
+  vehicle: {
+    title: "Mount",
+    icon: <TokenMountIcon />,
+    next: "attachment",
+  },
+  attachment: {
+    title: "Attachment",
+    icon: <TokenAttachmentIcon />,
+    next: "character",
+  },
+};
 
 type TokenMenuProps = {
   isOpen: boolean;
@@ -95,6 +126,15 @@ function TokenMenu({
     tokenState &&
       onTokenStateChange({
         [tokenState.id]: { locked: !tokenState.locked },
+      });
+  }
+
+  function handleCategoryChange() {
+    tokenState &&
+      onTokenStateChange({
+        [tokenState.id]: {
+          category: tokenCategories[tokenState.category].next,
+        },
       });
   }
 
@@ -206,29 +246,28 @@ function TokenMenu({
             ))}
         </Box>
         {/* Only show hide and lock token actions to map owners */}
-        {map && map.owner === userId && (
+        {map && map.owner === userId && tokenState && (
           <Flex sx={{ alignItems: "center", justifyContent: "space-around" }}>
             <IconButton
               onClick={handleVisibleChange}
-              title={
-                tokenState && tokenState.visible ? "Hide Token" : "Show Token"
-              }
-              aria-label={
-                tokenState && tokenState.visible ? "Hide Token" : "Show Token"
-              }
+              title={tokenState.visible ? "Hide Token" : "Show Token"}
+              aria-label={tokenState.visible ? "Hide Token" : "Show Token"}
             >
-              {tokenState && tokenState.visible ? <ShowIcon /> : <HideIcon />}
+              {tokenState.visible ? <ShowIcon /> : <HideIcon />}
             </IconButton>
             <IconButton
               onClick={handleLockChange}
-              title={
-                tokenState && tokenState.locked ? "Unlock Token" : "Lock Token"
-              }
-              aria-label={
-                tokenState && tokenState.locked ? "Unlock Token" : "Lock Token"
-              }
+              title={tokenState.locked ? "Unlock Token" : "Lock Token"}
+              aria-label={tokenState.locked ? "Unlock Token" : "Lock Token"}
             >
-              {tokenState && tokenState.locked ? <LockIcon /> : <UnlockIcon />}
+              {tokenState.locked ? <LockIcon /> : <UnlockIcon />}
+            </IconButton>
+            <IconButton
+              onClick={handleCategoryChange}
+              title={tokenCategories[tokenState.category].title}
+              aria-label={tokenCategories[tokenState.category].title}
+            >
+              {tokenCategories[tokenState.category].icon}
             </IconButton>
           </Flex>
         )}
