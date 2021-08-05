@@ -86,7 +86,7 @@ const shortcuts: Record<string, Shortcut> = {
   fogFinishPolygon: ({ key }) => key === "Enter",
   fogCancelPolygon: ({ key }) => key === "Escape",
   // Select tool
-  selectTool: (event) => singleKey(event, "l"),
+  selectTool: (event) => singleKey(event, "s"),
   selectPath: (event) => singleKey(event, "l"),
   selectRect: (event) => singleKey(event, "r"),
   // Stage interaction

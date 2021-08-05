@@ -126,7 +126,7 @@ function MapContols({
     select: {
       id: "select",
       icon: <SelectToolIcon />,
-      title: "Select Tool (L)",
+      title: "Select Tool (S)",
       SettingsComponent: SelectToolSettings,
     },
     fog: {
