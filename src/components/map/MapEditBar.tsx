@@ -52,8 +52,8 @@ function MapEditBar({
     for (let state of selectedMapStates) {
       if (
         Object.values(state.tokens).length > 0 ||
-        Object.values(state.drawShapes).length > 0 ||
-        Object.values(state.fogShapes).length > 0 ||
+        Object.values(state.drawings).length > 0 ||
+        Object.values(state.fogs).length > 0 ||
         Object.values(state.notes).length > 0
       ) {
         _hasMapState = true;

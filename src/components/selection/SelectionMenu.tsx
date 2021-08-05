@@ -252,9 +252,9 @@ function SelectionMenu({
       data: {
         tokens: {},
         notes: {},
-        drawShapes: {},
+        drawings: {},
         editFlags: [],
-        fogShapes: {},
+        fogs: {},
         mapId: mapState.mapId,
       },
     };

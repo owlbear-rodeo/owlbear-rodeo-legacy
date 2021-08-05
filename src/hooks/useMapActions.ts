@@ -50,9 +50,9 @@ function useMapActions(
   ): MapState {
     for (let mapAction of actions) {
       if (mapAction.type === "drawings") {
-        mapState.drawShapes = mapAction.action.execute(mapState.drawShapes);
+        mapState.drawings = mapAction.action.execute(mapState.drawings);
       } else if (mapAction.type === "fogs") {
-        mapState.fogShapes = mapAction.action.execute(mapState.fogShapes);
+        mapState.fogs = mapAction.action.execute(mapState.fogs);
       } else if (mapAction.type === "tokens") {
         mapState.tokens = mapAction.action.execute(mapState.tokens);
       } else if (mapAction.type === "notes") {
@@ -68,9 +68,9 @@ function useMapActions(
   ): MapState {
     for (let mapAction of actions) {
       if (mapAction.type === "drawings") {
-        mapState.drawShapes = mapAction.action.undo(mapState.drawShapes);
+        mapState.drawings = mapAction.action.undo(mapState.drawings);
       } else if (mapAction.type === "fogs") {
-        mapState.fogShapes = mapAction.action.undo(mapState.fogShapes);
+        mapState.fogs = mapAction.action.undo(mapState.fogs);
       } else if (mapAction.type === "tokens") {
         mapState.tokens = mapAction.action.undo(mapState.tokens);
       } else if (mapAction.type === "notes") {

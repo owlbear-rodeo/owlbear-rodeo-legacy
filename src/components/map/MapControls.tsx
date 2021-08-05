@@ -113,7 +113,7 @@ function MapContols({
   const disabledSettings: Partial<Record<keyof Settings, string[]>> = {
     drawing: [],
   };
-  if (mapState && isEmpty(mapState.drawShapes)) {
+  if (mapState && isEmpty(mapState.drawings)) {
     disabledSettings.drawing?.push("erase");
   }
 

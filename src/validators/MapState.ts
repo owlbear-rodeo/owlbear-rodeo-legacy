@@ -15,10 +15,10 @@ export const MapStateSchema: any = {
     tokens: {
       $ref: "#/definitions/TokenStates",
     },
-    drawShapes: {
+    drawings: {
       $ref: "#/definitions/DrawingState",
     },
-    fogShapes: {
+    fogs: {
       $ref: "#/definitions/FogState",
     },
     editFlags: {
@@ -35,14 +35,7 @@ export const MapStateSchema: any = {
       type: "string",
     },
   },
-  required: [
-    "drawShapes",
-    "editFlags",
-    "fogShapes",
-    "mapId",
-    "notes",
-    "tokens",
-  ],
+  required: ["drawings", "editFlags", "fogs", "mapId", "notes", "tokens"],
   type: "object",
   definitions: {
     TokenStates: {

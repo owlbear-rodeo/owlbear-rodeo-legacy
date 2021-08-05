@@ -104,8 +104,8 @@ function Map({
     }));
   }
 
-  const drawShapes = Object.values(mapState?.drawShapes || {});
-  const fogShapes = Object.values(mapState?.fogShapes || {});
+  const drawShapes = Object.values(mapState?.drawings || {});
+  const fogShapes = Object.values(mapState?.fogs || {});
 
   function handleToolAction(action: string) {
     if (action === "eraseAll") {

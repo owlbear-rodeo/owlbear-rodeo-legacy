@@ -7,8 +7,8 @@ export type EditFlag = "drawing" | "tokens" | "notes" | "fog";
 
 export type MapState = {
   tokens: TokenStates;
-  drawShapes: DrawingState;
-  fogShapes: FogState;
+  drawings: DrawingState;
+  fogs: FogState;
   editFlags: Array<EditFlag>;
   notes: Notes;
   mapId: string;

@@ -55,8 +55,8 @@ const MapDataContext =
 
 const defaultMapState: Omit<MapState, "mapId"> = {
   tokens: {},
-  drawShapes: {},
-  fogShapes: {},
+  drawings: {},
+  fogs: {},
   // Flags to determine what other people can edit
   editFlags: ["drawing", "tokens", "notes", "fog"],
   notes: {},

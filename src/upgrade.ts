@@ -847,9 +847,40 @@ export const versions: Record<number, VersionCallback> = {
         });
     });
   },
+  // v1.10.0 - Delete groups again
+  38(v, onUpgrade) {
+    v.stores({}).upgrade((tx) => {
+      onUpgrade?.(38);
+      tx.table("maps")
+        .toCollection()
+        .modify((map) => {
+          delete map.group;
+        });
+      tx.table("tokens")
+        .toCollection()
+        .modify((token) => {
+          delete token.group;
+        });
+    });
+  },
+  // v1.10.0 - Rename drawShapes and fogShapes in state
+  39(v, onUpgrade) {
+    v.stores({}).upgrade((tx) => {
+      onUpgrade?.(39);
+      tx.table("states")
+        .toCollection()
+        .modify((state) => {
+          state.drawings = state.drawShapes;
+          state.fogs = state.fogShapes;
+
+          delete state.drawShapes;
+          delete state.fogShapes;
+        });
+    });
+  },
 };
 
-export const latestVersion = 37;
+export const latestVersion = 39;
 
 /**
  * Load versions onto a database up to a specific version number

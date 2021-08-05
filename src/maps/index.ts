@@ -55,8 +55,8 @@ export function getDefaultMaps(userId: string): {
     const state: MapState = {
       mapId: id,
       tokens: {},
-      drawShapes: {},
-      fogShapes: {},
+      drawings: {},
+      fogs: {},
       editFlags: ["drawing", "tokens", "notes"],
       notes: {},
     };
