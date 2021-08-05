@@ -217,7 +217,7 @@ function Token({
   }
 
   function handleClick() {
-    if (selectable && tokenRef.current) {
+    if (selectable && draggable && tokenRef.current) {
       onTokenMenuOpen(tokenState.id, tokenRef.current);
     }
   }
