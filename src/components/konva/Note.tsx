@@ -27,7 +27,8 @@ import { Map } from "../../types/Map";
 
 import Transformer from "./Transformer";
 
-const defaultFontSize = 16;
+const defaultFontSize = 144;
+const minFontSize = 16;
 
 type NoteProps = {
   note: NoteType;
@@ -154,10 +155,10 @@ function Note({
       if (!text) {
         return;
       }
-      // Create an array from 1 / defaultFontSize of the note height to the full note height
+      // Create an array from 1 / minFontSize of the note height to the full note height
       let sizes = Array.from(
         { length: Math.ceil(noteHeight - notePadding * 2) },
-        (_, i) => i + Math.ceil(noteHeight / defaultFontSize)
+        (_, i) => i + Math.ceil(noteHeight / minFontSize)
       );
 
       if (sizes.length > 0) {

@@ -6,7 +6,8 @@ import useSetting from "../../hooks/useSetting";
 import { TokenState } from "../../types/TokenState";
 
 const maxTokenSize = 3;
-const defaultFontSize = 16;
+const defaultFontSize = 144;
+const minFontSize = 16;
 
 type TokenLabelProps = {
   tokenState: TokenState;
@@ -31,7 +32,7 @@ function TokenLabel({ tokenState, width, height }: TokenLabelProps) {
     }
 
     let fontSizes: number[] = [];
-    for (let size = 20 * labelSize; size >= 6; size--) {
+    for (let size = minFontSize * labelSize; size >= 6; size--) {
       const verticalSize = height / size / tokenState.size;
       const tokenSize = Math.min(tokenState.size, maxTokenSize);
       const fontSize = verticalSize * tokenSize * labelSize;
