@@ -200,6 +200,7 @@ function SelectTool({
           if (tokens) {
             for (let token of tokens) {
               if (
+                token.id() &&
                 !(token.id() in disabledTokens) &&
                 intersection.intersects(token.position())
               ) {
@@ -214,6 +215,7 @@ function SelectTool({
           if (notes) {
             for (let note of notes) {
               if (
+                note.id() &&
                 !(note.id() in disabledNotes) &&
                 intersection.intersects(note.position())
               ) {
