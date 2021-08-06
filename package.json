@@ -1,6 +1,6 @@
 {
   "name": "owlbear-rodeo",
-  "version": "1.10.0 (test)",
+  "version": "1.10.0 (preview)",
   "private": true,
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
