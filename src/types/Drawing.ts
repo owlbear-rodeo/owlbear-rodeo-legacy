@@ -14,6 +14,7 @@ export type DrawingToolSettings = {
   type: DrawingToolType;
   color: Color;
   useBlending: boolean;
+  useShapeFill: boolean;
 };
 
 export type PointsData = {

@@ -21,6 +21,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
 
   const defaultProps = {
     fill: colors[drawing.color] || drawing.color,
+    stroke: colors[drawing.color] || drawing.color,
     opacity: drawing.blend ? 0.5 : 1,
     id: drawing.id,
   };
@@ -29,7 +30,6 @@ function Drawing({ drawing, ...props }: DrawingProps) {
     return (
       <Line
         points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
-        stroke={colors[drawing.color] || drawing.color}
         tension={0.5}
         closed={drawing.pathType === "fill"}
         fillEnabled={drawing.pathType === "fill"}
@@ -47,6 +47,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
           y={drawing.data.y * mapHeight}
           width={drawing.data.width * mapWidth}
           height={drawing.data.height * mapHeight}
+          fillEnabled={props.strokeWidth === 0}
           {...defaultProps}
           {...props}
         />
@@ -58,6 +59,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
           x={drawing.data.x * mapWidth}
           y={drawing.data.y * mapHeight}
           radius={drawing.data.radius * minSide}
+          fillEnabled={props.strokeWidth === 0}
           {...defaultProps}
           {...props}
         />
@@ -67,6 +69,7 @@ function Drawing({ drawing, ...props }: DrawingProps) {
         <Line
           points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
           closed={true}
+          fillEnabled={props.strokeWidth === 0}
           {...defaultProps}
           {...props}
         />
@@ -75,7 +78,6 @@ function Drawing({ drawing, ...props }: DrawingProps) {
       return (
         <Line
           points={scaleAndFlattenPoints(drawing.data.points, mapSize)}
-          stroke={colors[drawing.color] || drawing.color}
           lineCap="round"
           {...defaultProps}
           {...props}

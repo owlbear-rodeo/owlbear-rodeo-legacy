@@ -69,6 +69,14 @@ function loadVersions(settings: Settings) {
     ...prev,
     select: { type: "rectangle" },
   }));
+  // v1.10.0 - Add use shape fill setting
+  settings.version(9, (prev: any) => ({
+    ...prev,
+    drawing: {
+      ...prev.drawing,
+      useShapeFill: true,
+    },
+  }));
 }
 
 export function getSettings() {

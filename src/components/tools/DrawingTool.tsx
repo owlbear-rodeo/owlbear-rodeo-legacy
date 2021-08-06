@@ -127,7 +127,8 @@ function DrawingTool({
           type: "shape",
           shapeType: type,
           data: getDefaultShapeData(type, brushPosition),
-          strokeWidth: toolSettings.type === "line" ? 1 : 0,
+          strokeWidth:
+            toolSettings.type === "line" || !toolSettings.useShapeFill ? 1 : 0,
           ...commonShapeData,
         } as Shape);
       }
@@ -237,11 +238,7 @@ function DrawingTool({
         onTouchStart={() => handleShapeOver(shape, true)}
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
-        strokeWidth={
-          shape.type === "path" || shape.shapeType === "line"
-            ? gridStrokeWidth * shape.strokeWidth
-            : 0
-        }
+        strokeWidth={gridStrokeWidth * shape.strokeWidth}
       />
     );
   }

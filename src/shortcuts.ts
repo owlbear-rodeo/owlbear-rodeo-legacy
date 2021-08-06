@@ -74,6 +74,7 @@ const shortcuts: Record<string, Shortcut> = {
   drawTriangle: (event) => singleKey(event, "t"),
   drawErase: (event) => singleKey(event, "e"),
   drawBlend: (event) => singleKey(event, "o"),
+  drawFill: (event) => singleKey(event, "g"),
   // Fog tool
   fogPolygon: (event) => singleKey(event, "p"),
   fogRectangle: (event) => singleKey(event, "r"),

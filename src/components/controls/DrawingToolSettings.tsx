@@ -7,6 +7,7 @@ import RadioIconButton from "../RadioIconButton";
 import ColorControl from "./shared/ColorControl";
 import AlphaBlendToggle from "./shared/AlphaBlendToggle";
 import ToolSection from "./shared/ToolSection";
+import ShapeFillToggle from "./shared/ShapeFillToggle";
 
 import BrushIcon from "../../icons/BrushToolIcon";
 import BrushPaintIcon from "../../icons/BrushPaintIcon";
@@ -59,6 +60,8 @@ function DrawingToolSettings({
       onSettingChange({ type: "erase" });
     } else if (shortcuts.drawBlend(event)) {
       onSettingChange({ useBlending: !settings.useBlending });
+    } else if (shortcuts.drawFill(event)) {
+      onSettingChange({ useShapeFill: !settings.useShapeFill });
     }
   }
   useKeyboard(handleKeyDown);
@@ -147,6 +150,10 @@ function DrawingToolSettings({
       <AlphaBlendToggle
         useBlending={settings.useBlending}
         onBlendingChange={(useBlending) => onSettingChange({ useBlending })}
+      />
+      <ShapeFillToggle
+        useShapeFill={settings.useShapeFill}
+        onShapeFillChange={(useShapeFill) => onSettingChange({ useShapeFill })}
       />
     </Flex>
   );
