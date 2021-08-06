@@ -106,3 +106,28 @@ export function shuffle<Type>(array: Type[]) {
 
   return temp;
 }
+
+/**
+ * Check that read and write permission is granted for clipboard.
+ * If permission has yet to be granted or denied request it.
+ * This will also return false if the browser does not support reading
+ * and writing to the clipboard e.g. for Safari or Firefox
+ */
+export async function clipboardSupported(): Promise<boolean> {
+  // @ts-ignore
+  if (navigator.clipboard?.readText && navigator.clipboard?.writeText) {
+    if (navigator.permissions) {
+      let query = await navigator.permissions.query({ name: "clipboard-read" });
+      if (query.state === "prompt") {
+        try {
+          await navigator.clipboard.readText();
+          query = await navigator.permissions.query({ name: "clipboard-read" });
+        } catch {
+          return false;
+        }
+      }
+      return query.state === "granted";
+    }
+  }
+  return false;
+}

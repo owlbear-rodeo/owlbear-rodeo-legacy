@@ -34,6 +34,7 @@ import { isSelection } from "../../validators/Selection";
 import { getRelativePointerPosition } from "../../helpers/konva";
 import { useKeyboard } from "../../contexts/KeyboardContext";
 import shortcuts from "../../shortcuts";
+import { clipboardSupported } from "../../helpers/shared";
 
 type SelectionMenuProps = {
   isOpen: boolean;
@@ -275,7 +276,7 @@ function SelectionMenu({
         clipboard.data.notes[item.id] = mapState.notes[item.id];
       }
     }
-    if (navigator.clipboard) {
+    if (await clipboardSupported()) {
       await navigator.clipboard.writeText(JSON.stringify(clipboard));
     } else {
       localClipboardDataRef.current = JSON.stringify(clipboard);
@@ -291,7 +292,7 @@ function SelectionMenu({
     }
     try {
       let clipboardText;
-      if (navigator.clipboard) {
+      if (await clipboardSupported()) {
         clipboardText = await navigator.clipboard.readText();
       } else {
         clipboardText = localClipboardDataRef.current;
