@@ -107,7 +107,9 @@ function Token({
 
       // Find all other characters on the map and check whether they're
       // intersecting the vehicle
-      const tokens = layer.find(".character");
+      const characters = layer.find(".character");
+      const attachments = layer.find(".attachment");
+      const tokens = [...characters, ...attachments];
       for (let other of tokens) {
         if (other === tokenGroup) {
           continue;
