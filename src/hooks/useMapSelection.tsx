@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
+
 import SelectionDragOverlay from "../components/selection/SelectionDragOverlay";
 import SelectionMenu from "../components/selection/SelectionMenu";
 import SelectTool from "../components/tools/SelectTool";
+import { useBlur, useKeyboard } from "../contexts/KeyboardContext";
 import { useUserId } from "../contexts/UserIdContext";
+import shortcuts from "../shortcuts";
 import {
   SelectionItemsChangeEventHandler,
   SelectionItemsCreateEventHandler,
@@ -10,8 +14,10 @@ import {
 } from "../types/Events";
 import { Map, MapToolId } from "../types/Map";
 import { MapState } from "../types/MapState";
+import { Note } from "../types/Note";
 import { Selection } from "../types/Select";
 import { SelectToolSettings } from "../types/Select";
+import { TokenState } from "../types/TokenState";
 
 function useMapSelection(
   map: Map | null,
@@ -66,6 +72,24 @@ function useMapSelection(
   }, [map]);
 
   function handleSelectionDragStart() {
+    if (duplicateSelection && selection) {
+      const tokenStates: TokenState[] = [];
+      const notes: Note[] = [];
+      for (let item of selection.items) {
+        if (item.type === "token") {
+          const token = mapState?.tokens[item.id];
+          if (token && !token.locked) {
+            tokenStates.push({ ...token, id: uuid() });
+          }
+        } else {
+          const note = mapState?.notes[item.id];
+          if (note && !note.locked) {
+            notes.push({ ...note, id: uuid() });
+          }
+        }
+      }
+      onSelectionItemsCreate(tokenStates, notes);
+    }
     setIsSelectionDragging(true);
   }
 
@@ -80,6 +104,26 @@ function useMapSelection(
     setSelection(null);
     onSelectionItemsRemove(tokenStateIds, noteIds);
   }
+
+  const [duplicateSelection, setDuplicateSelection] = useState(false);
+  function handleKeyDown(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateSelection(true);
+    }
+  }
+
+  function handleKeyUp(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateSelection(false);
+    }
+  }
+
+  function handleBlur() {
+    setDuplicateSelection(false);
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+  useBlur(handleBlur);
 
   const selectionTool = map ? (
     <SelectTool

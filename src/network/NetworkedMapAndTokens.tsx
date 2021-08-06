@@ -417,6 +417,7 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
         mapActions={mapActions}
         onMapTokenStateChange={handleMapTokenStateChange}
         onMapTokenStateRemove={handleMapTokenStateRemove}
+        onMapTokensStateCreate={handleMapTokensStateCreate}
         onSelectionItemsChange={handleSelectionItemsChange}
         onSelectionItemsRemove={handleSelectionItemsRemove}
         onSelectionItemsCreate={handleSelectionItemsCreate}

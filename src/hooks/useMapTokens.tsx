@@ -1,4 +1,5 @@
 import { Group } from "react-konva";
+import { v4 as uuid } from "uuid";
 
 import { Map, MapToolId } from "../types/Map";
 import { MapState } from "../types/MapState";
@@ -11,6 +12,7 @@ import { TokenState } from "../types/TokenState";
 import {
   TokenStateRemoveHandler,
   TokenStateChangeEventHandler,
+  TokensStateCreateHandler,
 } from "../types/Events";
 import { useState } from "react";
 import Konva from "konva";
@@ -19,12 +21,15 @@ import { KonvaEventObject } from "konva/lib/Node";
 import TokenMenu from "../components/token/TokenMenu";
 import TokenDragOverlay from "../components/token/TokenDragOverlay";
 import { useUserId } from "../contexts/UserIdContext";
+import { useBlur, useKeyboard } from "../contexts/KeyboardContext";
+import shortcuts from "../shortcuts";
 
 function useMapTokens(
   map: Map | null,
   mapState: MapState | null,
   onTokenStateChange: TokenStateChangeEventHandler,
   onTokenStateRemove: TokenStateRemoveHandler,
+  onTokensStateCreate: TokensStateCreateHandler,
   selectedToolId: MapToolId
 ) {
   const userId = useUserId();
@@ -57,6 +62,12 @@ function useMapTokens(
     _: KonvaEventObject<DragEvent>,
     tokenStateId: string
   ) {
+    if (duplicateToken) {
+      const state = mapState?.tokens[tokenStateId];
+      if (state) {
+        onTokensStateCreate([{ ...state, id: uuid() }]);
+      }
+    }
     setTokenDraggingOptions({
       dragging: true,
       tokenStateId,
@@ -75,6 +86,26 @@ function useMapTokens(
     onTokenStateRemove(tokenStateIds);
     setTokenDraggingOptions(undefined);
   }
+
+  const [duplicateToken, setDuplicateToken] = useState(false);
+  function handleKeyDown(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateToken(true);
+    }
+  }
+
+  function handleKeyUp(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateToken(false);
+    }
+  }
+
+  function handleBlur() {
+    setDuplicateToken(false);
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+  useBlur(handleBlur);
 
   function tokenFromTokenState(tokenState: TokenState) {
     return (

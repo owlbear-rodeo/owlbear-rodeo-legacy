@@ -1,11 +1,15 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useState } from "react";
+import { v4 as uuid } from "uuid";
+
 import Note from "../components/konva/Note";
 import NoteDragOverlay from "../components/note/NoteDragOverlay";
 import NoteMenu from "../components/note/NoteMenu";
 import NoteTool from "../components/tools/NoteTool";
+import { useBlur, useKeyboard } from "../contexts/KeyboardContext";
 import { useUserId } from "../contexts/UserIdContext";
+import shortcuts from "../shortcuts";
 import {
   NoteChangeEventHandler,
   NoteCreateEventHander,
@@ -47,6 +51,12 @@ function useMapNotes(
   }
 
   function handleNoteDragStart(_: KonvaEventObject<DragEvent>, noteId: string) {
+    if (duplicateNote) {
+      const note = mapState?.notes[noteId];
+      if (note) {
+        onNoteCreate([{ ...note, id: uuid() }]);
+      }
+    }
     setNoteDraggingOptions({ dragging: true, noteId });
   }
 
@@ -59,6 +69,26 @@ function useMapNotes(
     onNoteRemove(noteIds);
     setNoteDraggingOptions(undefined);
   }
+
+  const [duplicateNote, setDuplicateNote] = useState(false);
+  function handleKeyDown(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateNote(true);
+    }
+  }
+
+  function handleKeyUp(event: KeyboardEvent) {
+    if (shortcuts.duplicate(event)) {
+      setDuplicateNote(false);
+    }
+  }
+
+  function handleBlur() {
+    setDuplicateNote(false);
+  }
+
+  useKeyboard(handleKeyDown, handleKeyUp);
+  useBlur(handleBlur);
 
   const notes = (
     <NoteTool

@@ -104,6 +104,7 @@ const shortcuts: Record<string, Shortcut> = {
   paste,
   delete: ({ key }) => key === "Backspace" || key === "Delete",
   disableSnapping: ({ key }) => key === "Control" || key === "Meta",
+  duplicate: ({ key }) => key === "Alt",
 };
 
 export default shortcuts;
