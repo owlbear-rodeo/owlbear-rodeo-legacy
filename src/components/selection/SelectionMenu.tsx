@@ -123,11 +123,17 @@ function SelectionMenu({
       openOnDownRef.current = isOpen || !!selection;
       downPositionRef.current = { x: event.clientX, y: event.clientY };
     }
-    function handleMapElementClick(event: MouseEvent) {
-      const deltaPosition = Vector2.distance(
-        { x: event.clientX, y: event.clientY },
-        downPositionRef.current
-      );
+    function handlePointerUp(event: MouseEvent | TouchEvent) {
+      let position;
+      if (event instanceof MouseEvent) {
+        position = { x: event.clientX, y: event.clientY };
+      } else {
+        position = {
+          x: event.changedTouches[0].clientX,
+          y: event.changedTouches[0].clientY,
+        };
+      }
+      const deltaPosition = Vector2.distance(position, downPositionRef.current);
       if (
         !openOnDownRef.current &&
         !selection &&
@@ -139,11 +145,13 @@ function SelectionMenu({
     }
     const mapElement = document.querySelector<HTMLElement>(".map");
     mapElement?.addEventListener("pointerdown", handlePointerDown);
-    mapElement?.addEventListener("click", handleMapElementClick);
+    mapElement?.addEventListener("mouseup", handlePointerUp);
+    mapElement?.addEventListener("touchend", handlePointerUp);
 
     return () => {
       mapElement?.removeEventListener("pointerdown", handlePointerDown);
-      mapElement?.removeEventListener("click", handleMapElementClick);
+      mapElement?.removeEventListener("mouseup", handlePointerUp);
+      mapElement?.removeEventListener("touchend", handlePointerUp);
     };
   }, [isOpen, active, selection, onRequestOpen]);
 
@@ -241,6 +249,8 @@ function SelectionMenu({
     }
   }
 
+  // Keep a local copy of the clipboard if the device doesn't support the clipboard api i.e. iOS
+  const localClipboardDataRef = useRef<string>("");
   async function handleCopy() {
     let version = process.env.REACT_APP_VERSION;
     if (!version || !selection || !mapState) {
@@ -265,7 +275,11 @@ function SelectionMenu({
         clipboard.data.notes[item.id] = mapState.notes[item.id];
       }
     }
-    await navigator.clipboard.writeText(JSON.stringify(clipboard));
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(JSON.stringify(clipboard));
+    } else {
+      localClipboardDataRef.current = JSON.stringify(clipboard);
+    }
     addSuccessToast("Copied", clipboard.data.tokens, clipboard.data.notes);
   }
 
@@ -276,7 +290,12 @@ function SelectionMenu({
       return;
     }
     try {
-      const clipboardText = await navigator.clipboard.readText();
+      let clipboardText;
+      if (navigator.clipboard) {
+        clipboardText = await navigator.clipboard.readText();
+      } else {
+        clipboardText = localClipboardDataRef.current;
+      }
       const clipboard = JSON.parse(clipboardText);
       if (
         clipboard.version === version &&
