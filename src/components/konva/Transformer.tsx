@@ -2,6 +2,7 @@ import Konva from "konva";
 import { Transform } from "konva/lib/Util";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
+import { Portal } from "react-konva-utils";
 
 import {
   useGridCellPixelSize,
@@ -200,80 +201,85 @@ function Transformer({
   }
 
   return (
-    <KonvaTransformer
-      ref={transformerRef}
-      boundBoxFunc={(oldBox, newBox) => {
-        let snapBox = { ...newBox };
-        const movingAnchor = movingAnchorRef.current;
-        if (movingAnchor === "middle-left" || movingAnchor === "middle-right") {
-          // Account for grid snapping
-          const nearestCellWidth = roundTo(
-            snapBox.width,
-            gridCellAbsoluteSize.x
-          );
-          const distanceToSnap = Math.abs(snapBox.width - nearestCellWidth);
-          let snapping = false;
+    <Portal selector="#portal" enabled>
+      <KonvaTransformer
+        ref={transformerRef}
+        boundBoxFunc={(oldBox, newBox) => {
+          let snapBox = { ...newBox };
+          const movingAnchor = movingAnchorRef.current;
           if (
-            distanceToSnap <
-            gridCellAbsoluteSize.x * gridSnappingSensitivity
+            movingAnchor === "middle-left" ||
+            movingAnchor === "middle-right"
           ) {
-            snapBox.width = nearestCellWidth;
-            snapping = true;
+            // Account for grid snapping
+            const nearestCellWidth = roundTo(
+              snapBox.width,
+              gridCellAbsoluteSize.x
+            );
+            const distanceToSnap = Math.abs(snapBox.width - nearestCellWidth);
+            let snapping = false;
+            if (
+              distanceToSnap <
+              gridCellAbsoluteSize.x * gridSnappingSensitivity
+            ) {
+              snapBox.width = nearestCellWidth;
+              snapping = true;
+            }
+
+            const deltaWidth = snapBox.width - oldBox.width;
+            // Account for node ratio
+            const inverseRatio =
+              Math.round(oldBox.height) / Math.round(oldBox.width);
+            const deltaHeight = inverseRatio * deltaWidth;
+
+            // Account for node rotation
+            // Create a transform to unrotate the x,y position of the Box
+            const rotator = new Transform();
+            rotator.rotate(-snapBox.rotation);
+
+            // Unrotate and add the resize amount
+            let rotatedMin = rotator.point({ x: snapBox.x, y: snapBox.y });
+            rotatedMin.y = rotatedMin.y - deltaHeight / 2;
+            // Snap x position if needed
+            if (snapping) {
+              const snapDelta = newBox.width - nearestCellWidth;
+              rotatedMin.x = rotatedMin.x + snapDelta / 2;
+            }
+
+            // Rotated back
+            rotator.invert();
+            rotatedMin = rotator.point(rotatedMin);
+
+            snapBox = {
+              ...snapBox,
+              height: snapBox.height + deltaHeight,
+              x: rotatedMin.x,
+              y: rotatedMin.y,
+            };
           }
 
-          const deltaWidth = snapBox.width - oldBox.width;
-          // Account for node ratio
-          const inverseRatio =
-            Math.round(oldBox.height) / Math.round(oldBox.width);
-          const deltaHeight = inverseRatio * deltaWidth;
-
-          // Account for node rotation
-          // Create a transform to unrotate the x,y position of the Box
-          const rotator = new Transform();
-          rotator.rotate(-snapBox.rotation);
-
-          // Unrotate and add the resize amount
-          let rotatedMin = rotator.point({ x: snapBox.x, y: snapBox.y });
-          rotatedMin.y = rotatedMin.y - deltaHeight / 2;
-          // Snap x position if needed
-          if (snapping) {
-            const snapDelta = newBox.width - nearestCellWidth;
-            rotatedMin.x = rotatedMin.x + snapDelta / 2;
+          if (snapBox.width < 5 || snapBox.height < 5) {
+            return oldBox;
           }
-
-          // Rotated back
-          rotator.invert();
-          rotatedMin = rotator.point(rotatedMin);
-
-          snapBox = {
-            ...snapBox,
-            height: snapBox.height + deltaHeight,
-            x: rotatedMin.x,
-            y: rotatedMin.y,
-          };
-        }
-
-        if (snapBox.width < 5 || snapBox.height < 5) {
-          return oldBox;
-        }
-        return snapBox;
-      }}
-      onTransformStart={handleTransformStart}
-      onTransform={handleTrasform}
-      onTransformEnd={handleTransformEnd}
-      centeredScaling={true}
-      rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}
-      rotateAnchorOffset={16}
-      enabledAnchors={["middle-left", "middle-right"]}
-      flipEnabled={false}
-      ignoreStroke={true}
-      borderStroke="invisible"
-      anchorStroke="invisible"
-      anchorCornerRadius={24}
-      borderStrokeWidth={0}
-      anchorSize={48}
-      useSingleNodeRotation={true}
-    />
+          return snapBox;
+        }}
+        onTransformStart={handleTransformStart}
+        onTransform={handleTrasform}
+        onTransformEnd={handleTransformEnd}
+        centeredScaling={true}
+        rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}
+        rotateAnchorOffset={16}
+        enabledAnchors={["middle-left", "middle-right"]}
+        flipEnabled={false}
+        ignoreStroke={true}
+        borderStroke="invisible"
+        anchorStroke="invisible"
+        anchorCornerRadius={24}
+        borderStrokeWidth={0}
+        anchorSize={48}
+        useSingleNodeRotation={true}
+      />
+    </Portal>
   );
 }
 

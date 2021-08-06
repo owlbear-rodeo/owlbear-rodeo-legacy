@@ -11254,7 +11254,15 @@ react-is@^17.0.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.1.tgz#5b3531bd76a645a4c9fb6e693ed36419e3301339"
   integrity sha512-NAnt2iGDXohE5LI7uBnLnqvLQMtzhkiAOLXTmv+qnF9Ky7xAPcX8Up/xWIhxvLVGJvuLiNc4xQLtuqDRzb4fSA==
 
-react-konva@^17.0.2-5:
+react-konva-utils@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/react-konva-utils/-/react-konva-utils-0.1.7.tgz#f3feb6c0dd5a930020fd10a0f57d5c7a904166c8"
+  integrity sha512-wjNq4TsPXaig2Zufg6nBeFQpijR3FJ4iL2YrmtlwQN7Ase158eWHrpHKNySdMo2E4OSls8220sIaTY5TlrzqyA==
+  dependencies:
+    react-konva "^17.0.2-4"
+    use-image "^1.0.7"
+
+react-konva@^17.0.2-4, react-konva@^17.0.2-5:
   version "17.0.2-5"
   resolved "https://registry.yarnpkg.com/react-konva/-/react-konva-17.0.2-5.tgz#e70b0acf323402de0a540f27b300fbe7ed151849"
   integrity sha512-IyzdfqRDK8r1ulp/jbLPX18AuO+n5yNtL0+4T0QEUsgArRqIl/VRCG1imA5mYJBk0cBNC5+fWDHN+HWEW62ZEQ==

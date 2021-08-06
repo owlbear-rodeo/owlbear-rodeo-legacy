@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Box } from "theme-ui";
 import ReactResizeDetector from "react-resize-detector";
-import { Stage, Layer, Image } from "react-konva";
+import { Stage, Layer, Image, Group } from "react-konva";
 import Konva from "konva";
 import { EventEmitter } from "events";
 
@@ -215,8 +215,8 @@ function MapInteraction({
                   id="mapImage"
                   ref={mapImageRef}
                 />
-
                 {mapLoaded && children}
+                <Group id="portal" />
               </Layer>
             </KonvaBridge>
           </ReactResizeDetector>
