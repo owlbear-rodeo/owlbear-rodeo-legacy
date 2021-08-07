@@ -217,7 +217,7 @@ export function renameGroup(
 ): Group[] {
   let newGroups = cloneDeep(groups);
   const groupIndex = newGroups.findIndex((group) => group.id === groupId);
-  const group = groups[groupIndex];
+  const group = newGroups[groupIndex];
   if (group.type !== "group") {
     throw new Error(`Unable to rename group ${groupId}, not of type group`);
   }
