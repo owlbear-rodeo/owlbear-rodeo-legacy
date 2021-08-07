@@ -56,7 +56,10 @@ function useImageDrop(
         }
         const response = await fetch(url);
         if (response.ok) {
-          const file = new File([await response.blob()], name);
+          const blob = await response.blob();
+          const file = new File([blob], name, {
+            type: blob.type,
+          });
           if (supportFileTypes.includes(file.type)) {
             imageFiles.push(file);
           } else {
