@@ -26,7 +26,7 @@ function TokenBarTokenGroup({
   draggable,
 }: TokenBarTokenGroupProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: group.id,
+    id: draggable ? group.id : "",
     disabled: !draggable,
   });
   const [isOpen, setIsOpen] = useState(false);
