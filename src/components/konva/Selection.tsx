@@ -144,6 +144,39 @@ function Selection({
 
   const hasItems = selection.items.length > 0;
 
+  // Update cursor when mouse enter and out of selection
+  function handleMouseEnter(event: Konva.KonvaEventObject<MouseEvent>) {
+    let style = event.target.getStage()?.content?.style;
+    if (style && hasItems) {
+      style.cursor = "move";
+    }
+  }
+
+  function handleMouseOut(event: Konva.KonvaEventObject<MouseEvent>) {
+    let style = event.target.getStage()?.content?.style;
+    if (style) {
+      style.cursor = "";
+    }
+  }
+
+  // Update cursor to move when selection is made
+  useEffect(() => {
+    if (hasItems) {
+      var node: Konva.Node | null = null;
+      if (lineRef.current) {
+        node = lineRef.current;
+      } else if (rectRef.current) {
+        node = rectRef.current;
+      }
+      if (node) {
+        let style = node.getStage()?.content?.style;
+        if (style) {
+          style.cursor = "move";
+        }
+      }
+    }
+  }, [hasItems]);
+
   const requestRef = useRef<number>();
   const lineRef = useRef<Konva.Line>(null);
   const rectRef = useRef<Konva.Rect>(null);
@@ -190,6 +223,8 @@ function Selection({
     onMouseUp: handlePointerUp,
     onTouchStart: handlePointerDown,
     onTouchEnd: handlePointerUp,
+    onMouseEnter: handleMouseEnter,
+    onMouseOut: handleMouseOut,
     // Increase stroke width when drawing a selection to
     // prevent deselection click event from firing
     hitStrokeWidth: hasItems ? undefined : 100,
