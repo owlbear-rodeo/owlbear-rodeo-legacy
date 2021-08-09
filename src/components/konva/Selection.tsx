@@ -146,35 +146,36 @@ function Selection({
 
   // Update cursor when mouse enter and out of selection
   function handleMouseEnter(event: Konva.KonvaEventObject<MouseEvent>) {
-    let style = event.target.getStage()?.content?.style;
-    if (style && hasItems) {
-      style.cursor = "move";
+    let stage = event.target.getStage();
+    if (stage && hasItems) {
+      stage.content.style.cursor = "move";
     }
   }
 
   function handleMouseOut(event: Konva.KonvaEventObject<MouseEvent>) {
-    let style = event.target.getStage()?.content?.style;
-    if (style) {
-      style.cursor = "";
+    let stage = event.target.getStage();
+    if (stage) {
+      stage.content.style.cursor = "";
     }
   }
 
-  // Update cursor to move when selection is made
+  // Update cursor to move when selection is made or removed
   useEffect(() => {
-    if (hasItems) {
-      var node: Konva.Node | null = null;
-      if (lineRef.current) {
-        node = lineRef.current;
-      } else if (rectRef.current) {
-        node = rectRef.current;
-      }
-      if (node) {
-        let style = node.getStage()?.content?.style;
-        if (style) {
-          style.cursor = "move";
-        }
-      }
+    var node: Konva.Node | null = null;
+    if (lineRef.current) {
+      node = lineRef.current;
+    } else if (rectRef.current) {
+      node = rectRef.current;
     }
+    let stage = node?.getStage();
+    if (stage && hasItems) {
+      stage.content.style.cursor = "move";
+    }
+    return () => {
+      if (stage) {
+        stage.content.style.cursor = "";
+      }
+    };
   }, [hasItems]);
 
   const requestRef = useRef<number>();
