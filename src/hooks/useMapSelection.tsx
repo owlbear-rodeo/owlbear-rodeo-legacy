@@ -110,6 +110,19 @@ function useMapSelection(
     if (shortcuts.duplicate(event)) {
       setDuplicateSelection(true);
     }
+    if (shortcuts.delete(event) && selection && active) {
+      const tokenIds: string[] = [];
+      const noteIds: string[] = [];
+      for (let item of selection.items) {
+        if (item.type === "token") {
+          tokenIds.push(item.id);
+        } else {
+          noteIds.push(item.id);
+        }
+      }
+      handleSelectionItemsRemove(tokenIds, noteIds);
+      setIsSelectionMenuOpen(false);
+    }
   }
 
   function handleKeyUp(event: KeyboardEvent) {
