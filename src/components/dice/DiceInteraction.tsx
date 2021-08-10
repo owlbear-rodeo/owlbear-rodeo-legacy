@@ -4,8 +4,7 @@ import { Scene } from "@babylonjs/core/scene";
 import { Vector3, Color4, Matrix } from "@babylonjs/core/Maths/math";
 import { AmmoJSPlugin } from "@babylonjs/core/Physics/Plugins/ammoJSPlugin";
 import { TargetCamera } from "@babylonjs/core/Cameras/targetCamera";
-//@ts-ignore
-import * as AMMO from "ammo.js";
+import Ammo from "ammo.js";
 
 import "@babylonjs/core/Physics/physicsEngineComponent";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
@@ -65,10 +64,9 @@ function DiceInteraction({
       const scene = new Scene(engine);
       scene.clearColor = new Color4(0, 0, 0, 0);
       // Enable physics
-      scene.enablePhysics(
-        new Vector3(0, -98, 0),
-        new AmmoJSPlugin(false, AMMO)
-      );
+      Ammo().then(() => {
+        scene.enablePhysics(new Vector3(0, -98, 0), new AmmoJSPlugin(false));
+      });
 
       let camera = new TargetCamera("camera", new Vector3(0, 33.5, 0), scene);
       camera.fov = 0.65;
