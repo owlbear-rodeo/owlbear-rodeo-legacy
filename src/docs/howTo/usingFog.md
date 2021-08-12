@@ -18,5 +18,3 @@ A summary of the Fog Tool options are listed below.
 | Fog Cutting   | Enables/Disables fog cutting                       |
 | Layer Toggle  | Changes between single layer and multilayer fog    |
 | Fog Preview   | Enables/Disables a preview of the final fog shapes |
-| Undo          | Undo a fog action                                  |
-| Redo          | Redo a fog action                                  |
