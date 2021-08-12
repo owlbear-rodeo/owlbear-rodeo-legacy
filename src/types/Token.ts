@@ -39,4 +39,5 @@ export type TokenMenuOptions = {
 export type TokenDraggingOptions = {
   dragging: boolean;
   tokenStateId: string;
+  attachedTokenStateIds: string[];
 };

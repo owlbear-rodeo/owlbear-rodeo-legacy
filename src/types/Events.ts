@@ -34,7 +34,8 @@ export type TokenMenuCloseChangeEventHandler = () => void;
 export type TokenSettingsChangeEventHandler = (change: Partial<Token>) => void;
 export type TokenDragEventHandler = (
   event: Konva.KonvaEventObject<DragEvent>,
-  tokenStateId: string
+  tokenStateId: string,
+  attachedTokenStateIds: string[]
 ) => void;
 
 export type NoteCreateEventHander = (notes: Note[]) => void;

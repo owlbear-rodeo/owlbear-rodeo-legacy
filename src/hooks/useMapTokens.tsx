@@ -60,17 +60,23 @@ function useMapTokens(
 
   function handleTokenDragStart(
     _: KonvaEventObject<DragEvent>,
-    tokenStateId: string
+    tokenStateId: string,
+    attachedTokenStateIds: string[]
   ) {
     if (duplicateToken) {
-      const state = mapState?.tokens[tokenStateId];
-      if (state) {
-        onTokensStateCreate([{ ...state, id: uuid() }]);
+      let newStates: TokenState[] = [];
+      for (let id of [tokenStateId, ...attachedTokenStateIds]) {
+        const state = mapState?.tokens[id];
+        if (state) {
+          newStates.push({ ...state, id: uuid() });
+        }
       }
+      onTokensStateCreate(newStates);
     }
     setTokenDraggingOptions({
       dragging: true,
       tokenStateId,
+      attachedTokenStateIds,
     });
   }
 
@@ -173,14 +179,10 @@ function useMapTokens(
     />
   );
 
-  const tokenDraggingState =
-    tokenDraggingOptions && mapState?.tokens[tokenDraggingOptions.tokenStateId];
-
-  const tokenDragOverlay = tokenDraggingOptions && tokenDraggingState && (
+  const tokenDragOverlay = tokenDraggingOptions && (
     <TokenDragOverlay
       onTokenStateRemove={handleTokenStateRemove}
-      tokenState={tokenDraggingState}
-      dragging={!!(tokenDraggingOptions && tokenDraggingOptions.dragging)}
+      draggingOptions={tokenDraggingOptions}
     />
   );
 

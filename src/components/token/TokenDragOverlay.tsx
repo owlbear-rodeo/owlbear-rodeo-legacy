@@ -1,23 +1,29 @@
 import DragOverlay from "../map/DragOverlay";
 import { TokenStateRemoveHandler } from "../../types/Events";
-import { TokenState } from "../../types/TokenState";
+import { TokenDraggingOptions } from "../../types/Token";
 
 type TokenDragOverlayProps = {
   onTokenStateRemove: TokenStateRemoveHandler;
-  tokenState: TokenState;
-  dragging: boolean;
+  draggingOptions: TokenDraggingOptions;
 };
 
 function TokenDragOverlay({
   onTokenStateRemove,
-  tokenState,
-  dragging,
+  draggingOptions,
 }: TokenDragOverlayProps) {
   function handleTokenRemove() {
-    onTokenStateRemove([tokenState.id]);
+    onTokenStateRemove([
+      draggingOptions.tokenStateId,
+      ...draggingOptions.attachedTokenStateIds,
+    ]);
   }
 
-  return <DragOverlay dragging={dragging} onRemove={handleTokenRemove} />;
+  return (
+    <DragOverlay
+      dragging={draggingOptions.dragging}
+      onRemove={handleTokenRemove}
+    />
+  );
 }
 
 export default TokenDragOverlay;

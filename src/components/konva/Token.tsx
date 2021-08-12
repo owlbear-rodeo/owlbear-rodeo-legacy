@@ -145,7 +145,11 @@ function Token({
       }
     }
     setDragging(true);
-    onTokenDragStart(event, tokenState.id);
+    onTokenDragStart(
+      event,
+      tokenState.id,
+      attachedTokensRef.current.map((token) => token.id())
+    );
   }
 
   function handleDragMove(event: Konva.KonvaEventObject<DragEvent>) {
@@ -211,11 +215,16 @@ function Token({
     });
 
     setDragging(false);
+
+    onTokenDragEnd(
+      event,
+      tokenState.id,
+      attachedTokensRef.current.map((token) => token.id())
+    );
+
     attachmentCharactersRef.current = [];
     attachedTokensRef.current = [];
     setAttachmentOverCharacter(false);
-
-    onTokenDragEnd(event, tokenState.id);
   }
 
   function handleClick() {
