@@ -58,6 +58,7 @@ type TokenMenuProps = {
   onRequestClose: RequestCloseEventHandler;
   tokenState?: TokenState;
   tokenImage?: Konva.Node;
+  focus: boolean;
   onTokenStateChange: TokenStateChangeEventHandler;
   map: Map | null;
 };
@@ -67,6 +68,7 @@ function TokenMenu({
   onRequestClose,
   tokenState,
   tokenImage,
+  focus,
   onTokenStateChange,
   map,
 }: TokenMenuProps) {
@@ -143,7 +145,7 @@ function TokenMenu({
       // Focus input
       const tokenLabelInput =
         node.querySelector<HTMLInputElement>("#changeTokenLabel");
-      if (tokenLabelInput) {
+      if (tokenLabelInput && focus) {
         tokenLabelInput.focus();
         tokenLabelInput.select();
       }
@@ -275,5 +277,9 @@ function TokenMenu({
     </MapMenu>
   );
 }
+
+TokenMenu.defaultProps = {
+  focus: false,
+};
 
 export default TokenMenu;

@@ -104,7 +104,7 @@ function Note({
   function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
     if (draggable) {
       const noteNode = event.target;
-      onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode);
+      onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode, true);
     }
   }
 
@@ -130,7 +130,7 @@ function Note({
       const delta = event.evt.timeStamp - notePointerDownTimeRef.current;
       if (delta < 300) {
         const noteNode = event.target;
-        onNoteMenuOpen?.(note.id, noteNode);
+        onNoteMenuOpen?.(note.id, noteNode, true);
       }
     }
   }
@@ -198,7 +198,7 @@ function Note({
           rotation: rotation,
         },
       });
-      onNoteMenuOpen?.(note.id, noteRef.current);
+      onNoteMenuOpen?.(note.id, noteRef.current, false);
       noteRef.current.scaleX(1);
       noteRef.current.scaleY(1);
     }

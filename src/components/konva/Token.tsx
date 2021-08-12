@@ -229,7 +229,7 @@ function Token({
 
   function handleClick() {
     if (selectable && draggable && tokenRef.current) {
-      onTokenMenuOpen(tokenState.id, tokenRef.current);
+      onTokenMenuOpen(tokenState.id, tokenRef.current, true);
     }
   }
 
@@ -255,7 +255,7 @@ function Token({
       // If down and up time is small trigger a click
       const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
       if (delta < 300) {
-        onTokenMenuOpen(tokenState.id, tokenRef.current);
+        onTokenMenuOpen(tokenState.id, tokenRef.current, true);
       }
     }
   }
@@ -292,7 +292,7 @@ function Token({
       });
       tokenRef.current.scaleX(1);
       tokenRef.current.scaleY(1);
-      onTokenMenuOpen(tokenState.id, tokenRef.current);
+      onTokenMenuOpen(tokenState.id, tokenRef.current, false);
     }
     setIsTransforming(false);
   }

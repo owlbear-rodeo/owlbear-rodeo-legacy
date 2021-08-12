@@ -49,8 +49,12 @@ function useMapTokens(
   const [tokenDraggingOptions, setTokenDraggingOptions] =
     useState<TokenDraggingOptions>();
 
-  function handleTokenMenuOpen(tokenStateId: string, tokenImage: Konva.Node) {
-    setTokenMenuOptions({ tokenStateId, tokenImage });
+  function handleTokenMenuOpen(
+    tokenStateId: string,
+    tokenImage: Konva.Node,
+    focus: boolean
+  ) {
+    setTokenMenuOptions({ tokenStateId, tokenImage, focus });
     setIsTokenMenuOpen(true);
   }
 
@@ -174,6 +178,7 @@ function useMapTokens(
       tokenState={
         tokenMenuOptions && mapState?.tokens[tokenMenuOptions.tokenStateId]
       }
+      focus={tokenMenuOptions?.focus}
       tokenImage={tokenMenuOptions?.tokenImage}
       map={map}
     />

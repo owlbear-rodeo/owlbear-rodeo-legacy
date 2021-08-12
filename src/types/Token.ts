@@ -34,6 +34,7 @@ export type Token = DefaultToken | FileToken;
 export type TokenMenuOptions = {
   tokenStateId: string;
   tokenImage: Konva.Node;
+  focus: boolean;
 };
 
 export type TokenDraggingOptions = {

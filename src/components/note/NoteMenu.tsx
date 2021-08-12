@@ -31,6 +31,7 @@ type NoteMenuProps = {
   onRequestClose: RequestCloseEventHandler;
   note?: Note;
   noteNode?: Konva.Node;
+  focus: boolean;
   onNoteChange: NoteChangeEventHandler;
   map: Map | null;
 };
@@ -40,6 +41,7 @@ function NoteMenu({
   onRequestClose,
   note,
   noteNode,
+  focus,
   onNoteChange,
   map,
 }: NoteMenuProps) {
@@ -95,7 +97,7 @@ function NoteMenu({
       // Focus input
       const tokenLabelInput =
         node.querySelector<HTMLInputElement>("#changeNoteText");
-      if (tokenLabelInput) {
+      if (tokenLabelInput && focus) {
         tokenLabelInput.focus();
         tokenLabelInput.select();
       }
@@ -218,5 +220,9 @@ function NoteMenu({
     </MapMenu>
   );
 }
+
+NoteMenu.defaultProps = {
+  focus: false,
+};
 
 export default NoteMenu;

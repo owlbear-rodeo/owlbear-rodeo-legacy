@@ -41,8 +41,12 @@ function useMapNotes(
   const [noteDraggingOptions, setNoteDraggingOptions] =
     useState<NoteDraggingOptions>();
 
-  function handleNoteMenuOpen(noteId: string, noteNode: Konva.Node) {
-    setNoteMenuOptions({ noteId, noteNode });
+  function handleNoteMenuOpen(
+    noteId: string,
+    noteNode: Konva.Node,
+    focus: boolean
+  ) {
+    setNoteMenuOptions({ noteId, noteNode, focus });
     setIsNoteMenuOpen(true);
   }
 
@@ -135,6 +139,7 @@ function useMapNotes(
       onNoteChange={onNoteChange}
       note={noteMenuOptions && mapState?.notes[noteMenuOptions.noteId]}
       noteNode={noteMenuOptions?.noteNode}
+      focus={noteMenuOptions?.focus}
       map={map}
     />
   );

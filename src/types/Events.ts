@@ -28,7 +28,8 @@ export type TokenStateChangeEventHandler = (
 ) => void;
 export type TokenMenuOpenChangeEventHandler = (
   tokenStateId: string,
-  tokenImage: Konva.Node
+  tokenImage: Konva.Node,
+  focus: boolean
 ) => void;
 export type TokenMenuCloseChangeEventHandler = () => void;
 export type TokenSettingsChangeEventHandler = (change: Partial<Token>) => void;
@@ -45,7 +46,8 @@ export type NoteChangeEventHandler = (
 ) => void;
 export type NoteMenuOpenEventHandler = (
   noteId: string,
-  noteNode: Konva.Node
+  noteNode: Konva.Node,
+  focus: boolean
 ) => void;
 export type NoteMenuCloseEventHandler = () => void;
 export type NoteDragEventHandler = (

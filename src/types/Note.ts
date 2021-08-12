@@ -19,6 +19,7 @@ export type Note = {
 export type NoteMenuOptions = {
   noteId: string;
   noteNode: Konva.Node;
+  focus: boolean;
 };
 
 export type NoteDraggingOptions = {

@@ -117,7 +117,7 @@ function NoteTool({
     function handleBrushUp() {
       if (noteData && creatingNoteRef.current) {
         onNoteCreate([noteData]);
-        onNoteMenuOpen(noteData.id, creatingNoteRef.current);
+        onNoteMenuOpen(noteData.id, creatingNoteRef.current, true);
       }
       setNoteData(null);
       setIsBrushDown(false);
