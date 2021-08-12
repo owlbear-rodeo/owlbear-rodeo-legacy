@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { Transform } from "konva/lib/Util";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Transformer as KonvaTransformer } from "react-konva";
 import { Portal } from "react-konva-utils";
 
@@ -34,30 +34,10 @@ function Transformer({
   const setPreventMapInteraction = useSetPreventMapInteraction();
 
   const gridCellPixelSize = useGridCellPixelSize();
-  const gridCellAbsoluteSize = useMemo(() => {
-    if (active) {
-      const node = nodeRef.current;
-      const stage = node?.getStage();
-      const mapImage = stage?.findOne("#mapImage");
-      if (!mapImage) {
-        return { x: 0, y: 0 };
-      }
-
-      // Use min side for hex grids
-      const minSize = Vector2.componentMin(gridCellPixelSize);
-      const size = new Vector2(minSize, minSize);
-
-      // Get grid cell size in screen coordinates
-      const mapTransform = mapImage.getAbsoluteTransform();
-      const gridCellAbsoluteSize = Vector2.subtract(
-        mapTransform.point(size),
-        mapTransform.point({ x: 0, y: 0 })
-      );
-      return gridCellAbsoluteSize;
-    } else {
-      return { x: 0, y: 0 };
-    }
-  }, [active, nodeRef, gridCellPixelSize]);
+  const gridCellAbsoluteSizeRef = useRef({
+    x: 0,
+    y: 0,
+  });
   const scale = parseGridScale(gridScale);
 
   const snappingSensitivity = useGridSnappingSensitivity();
@@ -115,6 +95,30 @@ function Transformer({
     anchorRotateStatus,
   ]);
 
+  function updateGridCellAbsoluteSize() {
+    if (active) {
+      const node = nodeRef.current;
+      const stage = node?.getStage();
+      const mapImage = stage?.findOne("#mapImage");
+      if (!mapImage) {
+        return;
+      }
+
+      // Use min side for hex grids
+      const minSize = Vector2.componentMin(gridCellPixelSize);
+      const size = new Vector2(minSize, minSize);
+
+      // Get grid cell size in screen coordinates
+      const mapTransform = mapImage.getAbsoluteTransform();
+      const absoluteSize = Vector2.subtract(
+        mapTransform.point(size),
+        mapTransform.point({ x: 0, y: 0 })
+      );
+
+      gridCellAbsoluteSizeRef.current = absoluteSize;
+    }
+  }
+
   const movingAnchorRef = useRef<string>();
   const transformTextRef = useRef<Konva.Group>();
   function handleTransformStart(e: Konva.KonvaEventObject<Event>) {
@@ -147,6 +151,7 @@ function Transformer({
       node.getLayer()?.add(transformText);
       transformTextRef.current = transformText;
 
+      updateGridCellAbsoluteSize();
       updateTransformText();
 
       onTransformStart && onTransformStart(e);
@@ -166,7 +171,7 @@ function Transformer({
         const nodeRect = node.getClientRect({ skipShadow: true });
         const nodeScale = Vector2.divide(
           { x: nodeRect.width, y: nodeRect.height },
-          gridCellAbsoluteSize
+          gridCellAbsoluteSizeRef.current
         );
         text.text(
           `${(nodeScale.x * scale.multiplier).toFixed(scale.digits)}${
@@ -214,13 +219,13 @@ function Transformer({
             // Account for grid snapping
             const nearestCellWidth = roundTo(
               snapBox.width,
-              gridCellAbsoluteSize.x
+              gridCellAbsoluteSizeRef.current.x
             );
             const distanceToSnap = Math.abs(snapBox.width - nearestCellWidth);
             let snapping = false;
             if (
               distanceToSnap <
-              gridCellAbsoluteSize.x * gridSnappingSensitivity
+              gridCellAbsoluteSizeRef.current.x * gridSnappingSensitivity
             ) {
               snapBox.width = nearestCellWidth;
               snapping = true;
