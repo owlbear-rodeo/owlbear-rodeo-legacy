@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect, useMemo } from "react";
 import { IconButton, Flex, Box } from "theme-ui";
 
 import RadioIconButton from "../RadioIconButton";
@@ -78,44 +78,56 @@ function MapContols({
 
   const userId = useUserId();
 
-  const isOwner = map && map.owner === userId;
+  const disabledControls = useMemo(() => {
+    const isOwner = map && map.owner === userId;
+    const allowMapDrawing = isOwner || mapState?.editFlags.includes("drawing");
+    const allowFogDrawing = isOwner || mapState?.editFlags.includes("fog");
+    const allowNoteEditing = isOwner || mapState?.editFlags.includes("notes");
 
-  const allowMapDrawing = isOwner || mapState?.editFlags.includes("drawing");
-  const allowFogDrawing = isOwner || mapState?.editFlags.includes("fog");
-  const allowNoteEditing = isOwner || mapState?.editFlags.includes("notes");
+    const disabled: MapToolId[] = [];
+    if (!map || !allowMapChange) {
+      disabled.push("map");
+    }
+    if (!map) {
+      disabled.push("move");
+      disabled.push("measure");
+      disabled.push("pointer");
+      disabled.push("select");
+    }
+    if (!map || !allowMapDrawing) {
+      disabled.push("drawing");
+    }
+    if (!map || !allowFogDrawing) {
+      disabled.push("fog");
+    }
+    if (!map || !allowNoteEditing) {
+      disabled.push("note");
+    }
+    if (!map || mapActions.actionIndex < 0) {
+      disabled.push("undo");
+    }
+    if (!map || mapActions.actionIndex === mapActions.actions.length - 1) {
+      disabled.push("redo");
+    }
+    return disabled;
+  }, [map, mapState, mapActions, allowMapChange, userId]);
 
-  const disabledControls: MapToolId[] = [];
-  if (!allowMapDrawing) {
-    disabledControls.push("drawing");
-  }
-  if (!map) {
-    disabledControls.push("move");
-    disabledControls.push("measure");
-    disabledControls.push("pointer");
-    disabledControls.push("select");
-  }
-  if (!allowFogDrawing) {
-    disabledControls.push("fog");
-  }
-  if (!allowMapChange) {
-    disabledControls.push("map");
-  }
-  if (!allowNoteEditing) {
-    disabledControls.push("note");
-  }
-  if (!map || mapActions.actionIndex < 0) {
-    disabledControls.push("undo");
-  }
-  if (!map || mapActions.actionIndex === mapActions.actions.length - 1) {
-    disabledControls.push("redo");
-  }
+  // Change back to move tool if selected tool becomes disabled
+  useEffect(() => {
+    if (disabledControls.includes(selectedToolId)) {
+      onSelectedToolChange("move");
+    }
+  }, [selectedToolId, disabledControls, onSelectedToolChange]);
 
-  const disabledSettings: Partial<Record<keyof Settings, string[]>> = {
-    drawing: [],
-  };
-  if (mapState && isEmpty(mapState.drawings)) {
-    disabledSettings.drawing?.push("erase");
-  }
+  const disabledSettings = useMemo(() => {
+    const disabled: Partial<Record<keyof Settings, string[]>> = {
+      drawing: [],
+    };
+    if (mapState && isEmpty(mapState.drawings)) {
+      disabled.drawing?.push("erase");
+    }
+    return disabled;
+  }, [mapState]);
 
   const toolsById: Record<string, MapTool> = {
     move: {
