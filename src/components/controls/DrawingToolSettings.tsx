@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Flex, IconButton } from "theme-ui";
+import { Flex } from "theme-ui";
 import { useMedia } from "react-media";
 
 import RadioIconButton from "../RadioIconButton";
@@ -15,7 +15,6 @@ import BrushLineIcon from "../../icons/BrushLineIcon";
 import BrushRectangleIcon from "../../icons/BrushRectangleIcon";
 import BrushCircleIcon from "../../icons/BrushCircleIcon";
 import BrushTriangleIcon from "../../icons/BrushTriangleIcon";
-import EraseAllIcon from "../../icons/EraseAllIcon";
 import EraseIcon from "../../icons/EraseToolIcon";
 
 import Divider from "../Divider";
@@ -28,6 +27,7 @@ import {
   DrawingToolSettings as DrawingToolSettingsType,
   DrawingToolType,
 } from "../../types/Drawing";
+import EraseAllButton from "./shared/EraseAllButton";
 
 type DrawingToolSettingsProps = {
   settings: DrawingToolSettingsType;
@@ -138,14 +138,10 @@ function DrawingToolSettings({
       >
         <EraseIcon />
       </RadioIconButton>
-      <IconButton
-        aria-label="Erase All"
-        title="Erase All"
-        onClick={() => onToolAction("eraseAll")}
+      <EraseAllButton
+        onToolAction={onToolAction}
         disabled={disabledActions.includes("erase")}
-      >
-        <EraseAllIcon />
-      </IconButton>
+      />
       <Divider vertical />
       <AlphaBlendToggle
         useBlending={settings.useBlending}
