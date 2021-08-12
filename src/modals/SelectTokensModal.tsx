@@ -8,6 +8,7 @@ import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
+import DatabaseDisabledMessage from "../components/DatabaseDisabledMessage";
 
 import ImageDrop from "../components/image/ImageDrop";
 
@@ -34,6 +35,7 @@ import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
 import { useMapStage } from "../contexts/MapStageContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import { TokenState } from "../types/TokenState";
 import {
@@ -53,6 +55,8 @@ function SelectTokensModal({
   onMapTokensStateCreate,
 }: SelectTokensModalProps) {
   const { addToast } = useToasts();
+
+  const { databaseStatus } = useDatabase();
 
   const userId = useUserId();
   const {
@@ -277,6 +281,9 @@ function SelectTokensModal({
                   onDragCancel={() => setIsDraggingToken(false)}
                 >
                   <TilesContainer>
+                    {databaseStatus === "disabled" && (
+                      <DatabaseDisabledMessage type="Token" />
+                    )}
                     <TokenTiles
                       tokensById={tokensById}
                       onTokenEdit={setEditingTokenId}

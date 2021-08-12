@@ -8,6 +8,7 @@ import ConfirmModal from "./ConfirmModal";
 
 import Modal from "../components/Modal";
 import LoadingOverlay from "../components/LoadingOverlay";
+import DatabaseDisabledMessage from "../components/DatabaseDisabledMessage";
 
 import ImageDrop from "../components/image/ImageDrop";
 
@@ -29,6 +30,7 @@ import { useUserId } from "../contexts/UserIdContext";
 import { useAssets } from "../contexts/AssetsContext";
 import { GroupProvider } from "../contexts/GroupContext";
 import { TileDragProvider } from "../contexts/TileDragContext";
+import { useDatabase } from "../contexts/DatabaseContext";
 
 import { Map } from "../types/Map";
 import {
@@ -54,6 +56,8 @@ function SelectMapModal({
   currentMap,
 }: SelectMapProps) {
   const { addToast } = useToasts();
+
+  const { databaseStatus } = useDatabase();
 
   const userId = useUserId();
   const {
@@ -274,6 +278,9 @@ function SelectMapModal({
                   onDragCancel={() => setIsDraggingMap(false)}
                 >
                   <TilesContainer>
+                    {databaseStatus === "disabled" && (
+                      <DatabaseDisabledMessage type="Map" />
+                    )}
                     <MapTiles
                       mapsById={mapsById}
                       onMapEdit={setEditingMapId}
