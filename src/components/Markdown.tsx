@@ -6,7 +6,7 @@ import {
   ImageProps,
   Link as UILink,
   Message,
-  Embed,
+  Box,
 } from "theme-ui";
 import ReactMarkdown from "react-markdown";
 
@@ -30,7 +30,33 @@ function Heading({ level, ...props }: { level: number } & TextProps) {
 
 function Image(props: ImageProps) {
   if (props.alt === "embed:") {
-    return <Embed as="span" sx={{ display: "block" }} src={props.src} my={2} />;
+    return (
+      <Box
+        as="span"
+        sx={{
+          display: "block",
+          width: "100%",
+          height: 0,
+          paddingBottom: "56.25%",
+          position: "relative",
+        }}
+        my={2}
+      >
+        <iframe
+          src={props.src}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            border: 0,
+          }}
+          title="Video"
+        />
+      </Box>
+    );
   }
   if (props.src?.endsWith(".mp4")) {
     return (
