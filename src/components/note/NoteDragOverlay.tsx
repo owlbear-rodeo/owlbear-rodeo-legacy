@@ -1,23 +1,27 @@
 import { NoteRemoveEventHander } from "../../types/Events";
+import { NoteDraggingOptions } from "../../types/Note";
 
 import DragOverlay from "../map/DragOverlay";
 
 type NoteDragOverlayProps = {
   onNoteRemove: NoteRemoveEventHander;
-  noteId: string;
-  dragging: boolean;
+  draggingOptions: NoteDraggingOptions;
 };
 
 function NoteDragOverlay({
   onNoteRemove,
-  noteId,
-  dragging,
+  draggingOptions,
 }: NoteDragOverlayProps) {
   function handleNoteRemove() {
-    onNoteRemove([noteId]);
+    onNoteRemove([draggingOptions.noteId]);
   }
 
-  return <DragOverlay dragging={dragging} onRemove={handleNoteRemove} />;
+  return (
+    <DragOverlay
+      dragging={draggingOptions.dragging}
+      onRemove={handleNoteRemove}
+    />
+  );
 }
 
 export default NoteDragOverlay;

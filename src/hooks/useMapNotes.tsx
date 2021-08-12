@@ -141,8 +141,7 @@ function useMapNotes(
 
   const noteDragOverlay = noteDraggingOptions ? (
     <NoteDragOverlay
-      dragging={noteDraggingOptions.dragging}
-      noteId={noteDraggingOptions.noteId}
+      draggingOptions={noteDraggingOptions}
       onNoteRemove={handleNoteRemove}
     />
   ) : null;
