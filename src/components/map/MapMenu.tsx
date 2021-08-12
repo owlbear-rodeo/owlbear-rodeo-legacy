@@ -78,6 +78,7 @@ function MapMenu({
     return () => {
       if (modalContentNode) {
         document.body.removeEventListener("pointerup", handleInteraction);
+        document.body.removeEventListener("wheel", handleInteraction);
       }
     };
   }, [modalContentNode, excludeNode, onRequestClose]);
