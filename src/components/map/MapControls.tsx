@@ -85,7 +85,7 @@ function MapContols({
     const allowNoteEditing = isOwner || mapState?.editFlags.includes("notes");
 
     const disabled: MapToolId[] = [];
-    if (!map || !allowMapChange) {
+    if (!allowMapChange) {
       disabled.push("map");
     }
     if (!map) {
