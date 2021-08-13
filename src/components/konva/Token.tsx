@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { Image as KonvaImage, Group } from "react-konva";
 import { useSpring, animated } from "@react-spring/konva";
 import Konva from "konva";
@@ -31,9 +31,11 @@ import {
   TokenMenuCloseChangeEventHandler,
   TokenMenuOpenChangeEventHandler,
   TokenStateChangeEventHandler,
+  TokenTransformEventHandler,
 } from "../../types/Events";
 import Transformer from "./Transformer";
 import TokenAttachment from "./TokenAttachment";
+import { MapState } from "../../types/MapState";
 
 type MapTokenProps = {
   tokenState: TokenState;
@@ -42,10 +44,14 @@ type MapTokenProps = {
   onTokenMenuClose: TokenMenuCloseChangeEventHandler;
   onTokenDragStart: TokenDragEventHandler;
   onTokenDragEnd: TokenDragEventHandler;
+  onTokenTransformStart: TokenTransformEventHandler;
+  onTokenTransformEnd: TokenTransformEventHandler;
+  transforming: boolean;
   draggable: boolean;
   selectable: boolean;
   fadeOnHover: boolean;
   map: Map;
+  mapState: MapState;
   selected: boolean;
 };
 
@@ -56,10 +62,14 @@ function Token({
   onTokenMenuClose,
   onTokenDragStart,
   onTokenDragEnd,
+  onTokenTransformStart,
+  onTokenTransformEnd,
+  transforming,
   draggable,
   selectable,
   fadeOnHover,
   map,
+  mapState,
   selected,
 }: MapTokenProps) {
   const userId = useUserId();
@@ -86,64 +96,24 @@ function Token({
   const [attachmentOverCharacter, setAttachmentOverCharacter] = useState(false);
   // The characters that we're present when an attachment is dragged, used to highlight the attachment
   const attachmentCharactersRef = useRef<Konva.Node[]>([]);
-  const attachmentThreshold = Vector2.componentMin(gridCellPixelSize) / 4;
+  const attachmentThreshold = useMemo(
+    () => Vector2.componentMin(gridCellPixelSize) / 4,
+    [gridCellPixelSize]
+  );
 
   function handleDragStart(event: Konva.KonvaEventObject<DragEvent>) {
     const tokenGroup = event.target as Konva.Shape;
-    const layer = tokenGroup.getLayer();
-
-    if (!layer) {
-      return;
-    }
     previousDragPositionRef.current = tokenGroup.position();
 
-    if (tokenState.category === "vehicle") {
-      const tokenIntersection = new Intersection(
-        getScaledOutline(tokenState, tokenWidth, tokenHeight),
-        { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
-        { x: tokenX, y: tokenY },
-        tokenState.rotation
-      );
-
-      // Find all other characters on the map and check whether they're
-      // intersecting the vehicle
-      const characters = layer.find(".character");
-      const attachments = layer.find(".attachment");
-      const tokens = [...characters, ...attachments];
-      for (let other of tokens) {
-        if (other === tokenGroup) {
-          continue;
-        }
-        if (tokenIntersection.intersects(other.position())) {
-          attachedTokensRef.current.push(other);
-        }
-      }
-    }
+    attachedTokensRef.current = getAttachedTokens();
 
     if (tokenState.category === "attachment") {
       // If we're dragging an attachment add all characters to the attachment characters
       // So we can check for highlights
-      previousDragPositionRef.current = tokenGroup.position();
-      const characters = layer.find(".character");
+      const characters = tokenGroup.getLayer()?.find(".character") || [];
       attachmentCharactersRef.current = characters;
     }
 
-    if (tokenState.category === "character") {
-      // Find all attachments and check whether they are close to the center of this token
-      const attachments = layer.find(".attachment");
-      for (let attachment of attachments) {
-        if (attachment === tokenGroup) {
-          continue;
-        }
-        const distance = Vector2.distance(
-          tokenGroup.position(),
-          attachment.position()
-        );
-        if (distance < attachmentThreshold) {
-          attachedTokensRef.current.push(attachment);
-        }
-      }
-    }
     setDragging(true);
     onTokenDragStart(
       event,
@@ -228,8 +198,8 @@ function Token({
   }
 
   function handleClick() {
-    if (selectable && draggable && tokenRef.current) {
-      onTokenMenuOpen(tokenState.id, tokenRef.current, true);
+    if (selectable && draggable && transformRootRef.current) {
+      onTokenMenuOpen(tokenState.id, transformRootRef.current, true);
     }
   }
 
@@ -251,11 +221,11 @@ function Token({
     }
     // Check token click when locked and selectable
     // We can't use onClick because that doesn't check pointer distance
-    if (tokenState.locked && selectable && tokenRef.current) {
+    if (tokenState.locked && selectable && transformRootRef.current) {
       // If down and up time is small trigger a click
       const delta = event.evt.timeStamp - tokenPointerDownTimeRef.current;
       if (delta < 300) {
-        onTokenMenuOpen(tokenState.id, tokenRef.current, true);
+        onTokenMenuOpen(tokenState.id, transformRootRef.current, true);
       }
     }
   }
@@ -272,30 +242,7 @@ function Token({
     }
   }
 
-  const tokenRef = useRef<Konva.Group>(null);
-
-  const [isTransforming, setIsTransforming] = useState(false);
-  function handleTransformStart() {
-    setIsTransforming(true);
-    onTokenMenuClose();
-  }
-
-  function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
-    if (tokenRef.current) {
-      const sizeChange = event.target.scaleX();
-      const rotation = event.target.rotation();
-      onTokenStateChange({
-        [tokenState.id]: {
-          size: tokenState.size * sizeChange,
-          rotation: rotation,
-        },
-      });
-      tokenRef.current.scaleX(1);
-      tokenRef.current.scaleY(1);
-      onTokenMenuOpen(tokenState.id, tokenRef.current, false);
-    }
-    setIsTransforming(false);
-  }
+  const transformRootRef = useRef<Konva.Group>(null);
 
   const minCellSize = Math.min(
     gridCellPixelSize.width,
@@ -316,6 +263,132 @@ function Token({
     y: tokenY,
     immediate: skipAnimation,
   });
+
+  const getAttachedTokens = useCallback(() => {
+    const transformRoot = transformRootRef.current;
+    const tokenGroup = transformRoot?.parent;
+    const layer = transformRoot?.getLayer();
+    let attachedTokens: Konva.Node[] = [];
+    if (tokenGroup && layer) {
+      if (tokenState.category === "vehicle") {
+        const tokenIntersection = new Intersection(
+          getScaledOutline(tokenState, tokenWidth, tokenHeight),
+          { x: tokenX - tokenWidth / 2, y: tokenY - tokenHeight / 2 },
+          { x: tokenX, y: tokenY },
+          tokenState.rotation
+        );
+
+        // Find all other characters on the map and check whether they're
+        // intersecting the vehicle
+        const characters = layer.find(".character");
+        const attachments = layer.find(".attachment");
+        const tokens = [...characters, ...attachments];
+        for (let other of tokens) {
+          const id = other.id();
+          if (id in mapState.tokens) {
+            const position = {
+              x: mapState.tokens[id].x * mapWidth,
+              y: mapState.tokens[id].y * mapHeight,
+            };
+            if (tokenIntersection.intersects(position)) {
+              attachedTokens.push(other);
+            }
+          }
+        }
+      }
+
+      if (tokenState.category === "character") {
+        // Find all attachments and check whether they are close to the center of this token
+        const attachments = layer.find(".attachment");
+        for (let attachment of attachments) {
+          const id = attachment.id();
+          if (id in mapState.tokens) {
+            const position = {
+              x: mapState.tokens[id].x * mapWidth,
+              y: mapState.tokens[id].y * mapHeight,
+            };
+            const distance = Vector2.distance(tokenGroup.position(), position);
+            if (distance < attachmentThreshold) {
+              attachedTokens.push(attachment);
+            }
+          }
+        }
+      }
+    }
+
+    return attachedTokens;
+  }, [
+    attachmentThreshold,
+    tokenHeight,
+    tokenWidth,
+    tokenState,
+    tokenX,
+    tokenY,
+    mapState,
+    mapWidth,
+    mapHeight,
+  ]);
+
+  // Override transform active to always show this transformer when using it
+  const [overrideTransformActive, setOverrideTransformActive] = useState(false);
+
+  function handleTransformStart(event: Konva.KonvaEventObject<Event>) {
+    setOverrideTransformActive(true);
+    onTokenTransformStart(event);
+    onTokenMenuClose();
+  }
+
+  function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
+    const transformer = event.currentTarget as Konva.Transformer;
+    const nodes = transformer.nodes();
+    const tokenChanges: Record<string, Partial<TokenState>> = {};
+    for (let node of nodes) {
+      const id = node.id();
+      if (id in mapState.tokens) {
+        const sizeChange = node.scaleX();
+        const rotation = node.rotation();
+        const xChange = node.x() / mapWidth;
+        const yChange = node.y() / mapHeight;
+        tokenChanges[id] = {
+          size: mapState.tokens[id].size * sizeChange,
+          rotation: rotation,
+          x: mapState.tokens[id].x + xChange,
+          y: mapState.tokens[id].y + yChange,
+        };
+      }
+      node.scaleX(1);
+      node.scaleY(1);
+      node.x(0);
+      node.y(0);
+    }
+
+    onTokenStateChange(tokenChanges);
+    if (transformRootRef.current) {
+      onTokenMenuOpen(tokenState.id, transformRootRef.current, false);
+    }
+    setOverrideTransformActive(false);
+    onTokenTransformEnd(event);
+  }
+
+  const transformerActive = useMemo(
+    () => (!tokenState.locked && selected) || overrideTransformActive,
+    [tokenState, selected, overrideTransformActive]
+  );
+
+  const transformerNodes = useMemo(
+    () => () => {
+      if (transformRootRef.current) {
+        // Find attached transform roots
+        const attached = getAttachedTokens().map((node) =>
+          (node as Konva.Group).findOne(".transform-root")
+        );
+        return [transformRootRef.current, ...attached];
+      } else {
+        return [];
+      }
+    },
+    [getAttachedTokens]
+  );
 
   // When a token is hidden if you aren't the map owner hide it completely
   if (map && !tokenState.visible && map.owner !== userId) {
@@ -354,7 +427,9 @@ function Token({
         id={tokenState.id}
       >
         <Group
-          ref={tokenRef}
+          ref={transformRootRef}
+          id={tokenState.id}
+          name="transform-root"
           rotation={tokenState.rotation}
           offsetX={tokenWidth / 2}
           offsetY={tokenHeight / 2}
@@ -378,7 +453,7 @@ function Token({
             hitFunc={() => {}}
           />
         </Group>
-        {!isTransforming ? (
+        {!transforming ? (
           <Group offsetX={tokenWidth / 2} offsetY={tokenHeight / 2}>
             {tokenState.statuses?.length > 0 ? (
               <TokenStatus
@@ -410,8 +485,8 @@ function Token({
         ) : null}
       </animated.Group>
       <Transformer
-        active={(!tokenState.locked && selected) || isTransforming}
-        nodeRef={tokenRef}
+        active={transformerActive}
+        nodes={transformerNodes}
         onTransformEnd={handleTransformEnd}
         onTransformStart={handleTransformStart}
         gridScale={map.grid.measurement.scale}

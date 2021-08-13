@@ -117,9 +117,23 @@ function useMapTokens(
   useKeyboard(handleKeyDown, handleKeyUp);
   useBlur(handleBlur);
 
+  const [transformingTokensIds, setTransformingTokenIds] = useState<string[]>(
+    []
+  );
+  function handleTokenTransformStart(event: Konva.KonvaEventObject<Event>) {
+    const transformer = event.currentTarget as Konva.Transformer;
+    const nodes = transformer.nodes();
+    setTransformingTokenIds(nodes.map((node) => node.id()));
+  }
+
+  function handleTokenTransformEnd() {
+    setTransformingTokenIds([]);
+  }
+
   function tokenFromTokenState(tokenState: TokenState) {
     return (
-      map && (
+      map &&
+      mapState && (
         <Token
           key={tokenState.id}
           tokenState={tokenState}
@@ -128,6 +142,9 @@ function useMapTokens(
           onTokenMenuClose={handleTokenMenuClose}
           onTokenDragStart={handleTokenDragStart}
           onTokenDragEnd={handleTokenDragEnd}
+          onTokenTransformStart={handleTokenTransformStart}
+          onTokenTransformEnd={handleTokenTransformEnd}
+          transforming={transformingTokensIds.includes(tokenState.id)}
           draggable={
             selectedToolId === "move" &&
             !(tokenState.id in disabledTokens) &&
@@ -142,6 +159,7 @@ function useMapTokens(
             tokenState.category !== "prop" && selectedToolId === "drawing"
           }
           map={map}
+          mapState={mapState}
           selected={
             !!tokenMenuOptions &&
             isTokenMenuOpen &&

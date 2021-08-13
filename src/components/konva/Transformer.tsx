@@ -16,9 +16,9 @@ import scaleDark from "../../images/ScaleDark.png";
 import rotateDark from "../../images/RotateDark.png";
 import { parseGridScale } from "../../helpers/grid";
 
-type ResizerProps = {
+type TransformerProps = {
   active: boolean;
-  nodeRef: React.RefObject<Konva.Node>;
+  nodes: () => Konva.Node[];
   onTransformStart?: (event: Konva.KonvaEventObject<Event>) => void;
   onTransformEnd?: (event: Konva.KonvaEventObject<Event>) => void;
   gridScale: string;
@@ -26,11 +26,11 @@ type ResizerProps = {
 
 function Transformer({
   active,
-  nodeRef,
+  nodes,
   onTransformStart,
   onTransformEnd,
   gridScale,
-}: ResizerProps) {
+}: TransformerProps) {
   const setPreventMapInteraction = useSetPreventMapInteraction();
 
   const gridCellPixelSize = useGridCellPixelSize();
@@ -50,21 +50,25 @@ function Transformer({
   const [anchorRotate, anchorRotateStatus] = useAnchorImage(96, rotateDark);
 
   useEffect(() => {
+    const transformer = transformerRef.current;
     if (
       active &&
-      transformerRef.current &&
-      nodeRef.current &&
+      transformer &&
       anchorScaleStatus === "loaded" &&
       anchorRotateStatus === "loaded"
     ) {
       // we need to attach transformer manually
-      transformerRef.current.nodes([nodeRef.current]);
+      const n = nodes();
+      // Slice the nodes to only attach a single node to allow useSingleNodeRotation to
+      // control the transformer rotation
+      transformer.setNodes(n.slice(0, 1));
+      // Update the private _nodes to allow transforming all the added nodes
+      // TODO: Look at subclassing Konva.Transformer and remove this hack
+      transformer._nodes = n;
 
-      const middleLeft =
-        transformerRef.current.findOne<Konva.Rect>(".middle-left");
-      const middleRight =
-        transformerRef.current.findOne<Konva.Rect>(".middle-right");
-      const rotater = transformerRef.current.findOne<Konva.Rect>(".rotater");
+      const middleLeft = transformer.findOne<Konva.Rect>(".middle-left");
+      const middleRight = transformer.findOne<Konva.Rect>(".middle-right");
+      const rotater = transformer.findOne<Konva.Rect>(".rotater");
 
       middleLeft.fillPriority("pattern");
       middleLeft.fillPatternImage(anchorScale);
@@ -84,11 +88,11 @@ function Transformer({
       rotater.fillPatternScaleX(0.5);
       rotater.fillPatternScaleY(0.5);
 
-      transformerRef.current.getLayer()?.batchDraw();
+      transformer.getLayer()?.batchDraw();
     }
   }, [
     active,
-    nodeRef,
+    nodes,
     anchorScale,
     anchorRotate,
     anchorScaleStatus,
@@ -97,8 +101,8 @@ function Transformer({
 
   function updateGridCellAbsoluteSize() {
     if (active) {
-      const node = nodeRef.current;
-      const stage = node?.getStage();
+      const transformer = transformerRef.current;
+      const stage = transformer?.getStage();
       const mapImage = stage?.findOne("#mapImage");
       if (!mapImage) {
         return;
@@ -123,13 +127,12 @@ function Transformer({
   const transformTextRef = useRef<Konva.Group>();
   function handleTransformStart(e: Konva.KonvaEventObject<Event>) {
     const transformer = transformerRef.current;
-    const node = nodeRef.current;
-    if (transformer && node) {
+    if (transformer) {
       movingAnchorRef.current = transformer._movingAnchorName;
       setPreventMapInteraction(true);
 
       const transformText = new Konva.Label();
-      const stageScale = node.getStage()?.scale() || { x: 1, y: 1 };
+      const stageScale = transformer.getStage()?.scale() || { x: 1, y: 1 };
       transformText.scale(Vector2.divide({ x: 1, y: 1 }, stageScale));
 
       const tag = new Konva.Tag();
@@ -148,7 +151,7 @@ function Transformer({
       transformText.add(tag);
       transformText.add(text);
 
-      node.getLayer()?.add(transformText);
+      transformer.getLayer()?.add(transformText);
       transformTextRef.current = transformText;
 
       updateGridCellAbsoluteSize();
@@ -159,10 +162,10 @@ function Transformer({
   }
 
   function updateTransformText() {
-    const node = nodeRef.current;
     const movingAnchor = movingAnchorRef.current;
     const transformText = transformTextRef.current;
     const transformer = transformerRef.current;
+    const node = transformer?.nodes()[0];
     if (node && transformText && transformer) {
       const text = transformText.getChildren()[1] as Konva.Text;
       if (movingAnchor === "rotater") {
@@ -286,7 +289,6 @@ function Transformer({
         anchorCornerRadius={24}
         borderStrokeWidth={0}
         anchorSize={48}
-        useSingleNodeRotation={true}
       />
     </Portal>
   );
