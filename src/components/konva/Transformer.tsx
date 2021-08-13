@@ -272,7 +272,11 @@ function Transformer({
         onTransform={handleTrasform}
         onTransformEnd={handleTransformEnd}
         centeredScaling={true}
-        rotationSnaps={[...Array(24).keys()].map((n) => n * 15)}
+        rotationSnaps={
+          snappingSensitivity === -1
+            ? [] // Disabled rotation snapping if grid snapping disabled with shortcut
+            : [...Array(24).keys()].map((n) => n * 15)
+        }
         rotateAnchorOffset={16}
         enabledAnchors={["middle-left", "middle-right"]}
         flipEnabled={false}
