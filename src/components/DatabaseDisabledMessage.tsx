@@ -8,7 +8,7 @@ function DatabaseDisabledMessage({ type }: { type: string }) {
       sx={{
         textAlign: "center",
         borderRadius: "2px",
-        gridArea: "1 / 1 / span 1 / span 3",
+        gridArea: "1 / 1 / span 1 / span 4",
       }}
       bg="highlight"
       p={1}
