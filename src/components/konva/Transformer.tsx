@@ -46,8 +46,8 @@ function Transformer({
 
   const transformerRef = useRef<Konva.Transformer>(null);
 
-  const [anchorScale, anchorScaleStatus] = useAnchorImage(192, scaleDark);
-  const [anchorRotate, anchorRotateStatus] = useAnchorImage(192, rotateDark);
+  const [anchorScale, anchorScaleStatus] = useAnchorImage(96, scaleDark);
+  const [anchorRotate, anchorRotateStatus] = useAnchorImage(96, rotateDark);
 
   useEffect(() => {
     if (
@@ -69,20 +69,20 @@ function Transformer({
       middleLeft.fillPriority("pattern");
       middleLeft.fillPatternImage(anchorScale);
       middleLeft.strokeEnabled(false);
-      middleLeft.fillPatternScaleX(-0.25);
-      middleLeft.fillPatternScaleY(0.25);
+      middleLeft.fillPatternScaleX(-0.5);
+      middleLeft.fillPatternScaleY(0.5);
 
       middleRight.fillPriority("pattern");
       middleRight.fillPatternImage(anchorScale);
       middleRight.strokeEnabled(false);
-      middleRight.fillPatternScaleX(0.25);
-      middleRight.fillPatternScaleY(0.25);
+      middleRight.fillPatternScaleX(0.5);
+      middleRight.fillPatternScaleY(0.5);
 
       rotater.fillPriority("pattern");
       rotater.fillPatternImage(anchorRotate);
       rotater.strokeEnabled(false);
-      rotater.fillPatternScaleX(0.25);
-      rotater.fillPatternScaleY(0.25);
+      rotater.fillPatternScaleX(0.5);
+      rotater.fillPatternScaleY(0.5);
 
       transformerRef.current.getLayer()?.batchDraw();
     }
