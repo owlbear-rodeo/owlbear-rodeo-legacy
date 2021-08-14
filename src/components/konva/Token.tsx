@@ -31,7 +31,7 @@ import {
   TokenMenuCloseChangeEventHandler,
   TokenMenuOpenChangeEventHandler,
   TokenStateChangeEventHandler,
-  TokenTransformEventHandler,
+  CustomTransformEventHandler,
 } from "../../types/Events";
 import Transformer from "./Transformer";
 import TokenAttachment from "./TokenAttachment";
@@ -44,8 +44,8 @@ type MapTokenProps = {
   onTokenMenuClose: TokenMenuCloseChangeEventHandler;
   onTokenDragStart: TokenDragEventHandler;
   onTokenDragEnd: TokenDragEventHandler;
-  onTokenTransformStart: TokenTransformEventHandler;
-  onTokenTransformEnd: TokenTransformEventHandler;
+  onTokenTransformStart: CustomTransformEventHandler;
+  onTokenTransformEnd: CustomTransformEventHandler;
   transforming: boolean;
   draggable: boolean;
   selectable: boolean;
@@ -332,15 +332,21 @@ function Token({
   // Override transform active to always show this transformer when using it
   const [overrideTransformActive, setOverrideTransformActive] = useState(false);
 
-  function handleTransformStart(event: Konva.KonvaEventObject<Event>) {
+  function handleTransformStart(
+    event: Konva.KonvaEventObject<Event>,
+    attachments: Konva.Node[]
+  ) {
     setOverrideTransformActive(true);
-    onTokenTransformStart(event);
+    onTokenTransformStart(event, attachments);
     onTokenMenuClose();
   }
 
-  function handleTransformEnd(event: Konva.KonvaEventObject<Event>) {
+  function handleTransformEnd(
+    event: Konva.KonvaEventObject<Event>,
+    attachments: Konva.Node[]
+  ) {
     const transformer = event.currentTarget as Konva.Transformer;
-    const nodes = transformer.nodes();
+    const nodes = [...transformer.nodes(), ...attachments];
     const tokenChanges: Record<string, Partial<TokenState>> = {};
     for (let node of nodes) {
       const id = node.id();
@@ -367,7 +373,7 @@ function Token({
       onTokenMenuOpen(tokenState.id, transformRootRef.current, false);
     }
     setOverrideTransformActive(false);
-    onTokenTransformEnd(event);
+    onTokenTransformEnd(event, attachments);
   }
 
   const transformerActive = useMemo(
@@ -375,20 +381,16 @@ function Token({
     [tokenState, selected, overrideTransformActive]
   );
 
-  const transformerNodes = useMemo(
-    () => () => {
-      if (transformRootRef.current) {
-        // Find attached transform roots
-        const attached = getAttachedTokens().map((node) =>
-          (node as Konva.Group).findOne(".transform-root")
-        );
-        return [transformRootRef.current, ...attached];
-      } else {
-        return [];
-      }
-    },
-    [getAttachedTokens]
-  );
+  const transformerAttachments = useMemo(() => {
+    if (transformerActive) {
+      // Find attached transform roots
+      return getAttachedTokens().map((node) =>
+        (node as Konva.Group).findOne(".transform-root")
+      );
+    } else {
+      return [];
+    }
+  }, [getAttachedTokens, transformerActive]);
 
   // When a token is hidden if you aren't the map owner hide it completely
   if (map && !tokenState.visible && map.owner !== userId) {
@@ -486,7 +488,12 @@ function Token({
       </animated.Group>
       <Transformer
         active={transformerActive}
-        nodes={transformerNodes}
+        nodes={
+          transformRootRef.current
+            ? [transformRootRef.current as Konva.Node]
+            : []
+        }
+        attachments={transformerAttachments}
         onTransformEnd={handleTransformEnd}
         onTransformStart={handleTransformStart}
         gridScale={map.grid.measurement.scale}

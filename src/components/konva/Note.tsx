@@ -287,7 +287,7 @@ function Note({
       </animated.Group>
       <Transformer
         active={(!note.locked && selected) || isTransforming}
-        nodes={() => (noteRef.current ? [noteRef.current] : [])}
+        nodes={noteRef.current ? [noteRef.current] : []}
         onTransformEnd={handleTransformEnd}
         onTransformStart={handleTransformStart}
         gridScale={map?.grid.measurement.scale || ""}

@@ -38,9 +38,6 @@ export type TokenDragEventHandler = (
   tokenStateId: string,
   attachedTokenStateIds: string[]
 ) => void;
-export type TokenTransformEventHandler = (
-  event: Konva.KonvaEventObject<Event>
-) => void;
 
 export type NoteCreateEventHander = (notes: Note[]) => void;
 export type NoteRemoveEventHander = (noteIds: string[]) => void;
@@ -78,4 +75,9 @@ export type SelectionItemsRemoveEventHandler = (
 export type SelectionItemsCreateEventHandler = (
   tokenStates: TokenState[],
   notes: Note[]
+) => void;
+
+export type CustomTransformEventHandler = (
+  event: Konva.KonvaEventObject<Event>,
+  attachments: Konva.Node[]
 ) => void;

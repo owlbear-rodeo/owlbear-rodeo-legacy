@@ -120,10 +120,15 @@ function useMapTokens(
   const [transformingTokensIds, setTransformingTokenIds] = useState<string[]>(
     []
   );
-  function handleTokenTransformStart(event: Konva.KonvaEventObject<Event>) {
+  function handleTokenTransformStart(
+    event: Konva.KonvaEventObject<Event>,
+    attachments: Konva.Node[]
+  ) {
     const transformer = event.currentTarget as Konva.Transformer;
     const nodes = transformer.nodes();
-    setTransformingTokenIds(nodes.map((node) => node.id()));
+    setTransformingTokenIds(
+      [...nodes, ...attachments].map((node) => node.id())
+    );
   }
 
   function handleTokenTransformEnd() {
