@@ -19,6 +19,7 @@ import { getDefaultMaps } from "./maps";
 import { getDefaultTokens } from "./tokens";
 import { Outline } from "./types/Outline";
 import { Group, GroupContainer } from "./types/Group";
+import cloneDeep from "lodash.clonedeep";
 
 export type UpgradeEventHandler = (versionNumber: number) => void;
 
@@ -878,9 +879,27 @@ export const versions: Record<number, VersionCallback> = {
         });
     });
   },
+  // v1.10.0 (patch 1) - Rename drawShapes and fogShapes in state again (some people's didn't work)
+  40(v, onUpgrade) {
+    v.stores({}).upgrade((tx) => {
+      onUpgrade?.(40);
+      tx.table("states")
+        .toCollection()
+        .modify((state) => {
+          if (state.drawShapes) {
+            state.drawings = cloneDeep(state.drawShapes);
+            delete state.drawShapes;
+          }
+          if (state.fogShapes) {
+            state.fogs = cloneDeep(state.fogShapes);
+            delete state.fogShapes;
+          }
+        });
+    });
+  },
 };
 
-export const latestVersion = 39;
+export const latestVersion = 40;
 
 /**
  * Load versions onto a database up to a specific version number
