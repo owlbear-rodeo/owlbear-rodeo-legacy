@@ -52,7 +52,7 @@ function ReleaseNotes() {
           Release Notes
         </Text>
         <div id="v1100">
-          <Accordion heading="v1.10.0" defaultOpen>
+          <Accordion heading="v1.10.0 (Preview)" defaultOpen>
             <Markdown source={v1100} />
           </Accordion>
         </div>
