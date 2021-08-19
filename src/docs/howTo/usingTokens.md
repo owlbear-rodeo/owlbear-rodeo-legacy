@@ -18,10 +18,11 @@ An overview of each setting is listed below:
 
 - Label: allows you to write text that is then displayed at the bottom of the token.
 - Status: allows you to overlay a coloured ring on top of the token, these can be useful for showing status effects.
-- Size: controls the size of the token each notch represents how many grid cells the token takes up in the horizontal direction.
-- Rotation: the direction the token faces, restrained to 15 degree increments.
 - Hide / Show (GM Only): toggle the visibility of the token, useful for tracking invisible enemies.
 - Lock / Unlock (GM Only): when a token is locked it can't be moved until it is unlocked again.
+- Category (GM Only): Change the token category. See Editing Tokens for more information about token categories.
+
+Tokens can be resized by using the controls on the left and right of the token or rotated with the control on the top.
 
 To delete a token drag in into the delete button that appears when dragging.
 
@@ -55,7 +56,8 @@ Next you can change the Category of your token, a summary of the options is belo
 
 - Character - when selected this token will render on top of all other tokens. Used for things like players or enemies.
 - Prop - when selected this token will render beneath all other tokens. Used for things like items or markers.
-- Vehicle / Mount - when selected this token will render beneath characters but above props and when moved a character on top of this token will also be moved.
+- Mount - when selected this token will render beneath characters but above props and when moved a character on top of this token will also be moved.
+- Attachment - when selected this token will attach to any character underneath it. Used for auras or markers.
 
 Lastly you can adjust the default size that is used when adding the token to the map by adjusting the Default Size Input.
 
