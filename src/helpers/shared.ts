@@ -122,14 +122,9 @@ export async function clipboardSupported(): Promise<boolean> {
         try {
           await navigator.clipboard.readText();
           query = await navigator.permissions.query({ name: "clipboard-read" });
-          // Focus window after permission dialog closed to allow further calls the api
-          window.focus();
-          if (
-            document.activeElement &&
-            document.activeElement instanceof HTMLElement
-          ) {
-            document.activeElement.blur();
-          }
+          // Wait 300ms before returning when permission has been accepted to prevent immediate calls
+          // to the clipboard api to fail with a document not focused error
+          await timeout(300);
         } catch {
           return false;
         }
@@ -138,4 +133,8 @@ export async function clipboardSupported(): Promise<boolean> {
     }
   }
   return false;
+}
+
+export function timeout(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
