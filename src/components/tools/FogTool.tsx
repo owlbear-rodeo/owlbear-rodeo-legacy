@@ -223,15 +223,11 @@ function FogTool({
           ) {
             return prevShape;
           }
-          const simplified = simplifyPoints(
-            [...prevPoints, brushPosition],
-            1 / 1000 / stageScale
-          );
           return {
             ...prevShape,
             data: {
               ...prevShape.data,
-              points: simplified,
+              points: [...prevPoints, brushPosition],
             },
           };
         });
@@ -267,8 +263,15 @@ function FogTool({
         (toolSettings.type === "brush" || toolSettings.type === "rectangle") &&
         drawingShape
       ) {
+        let simplifiedShape = { ...drawingShape };
+        if (toolSettings.type === "brush") {
+          simplifiedShape.data.points = simplifyPoints(
+            simplifiedShape.data.points,
+            1 / 1000 / stageScale
+          );
+        }
         const cut = toolSettings.useFogCut;
-        let drawingShapes = [drawingShape];
+        let drawingShapes = [simplifiedShape];
 
         // Filter out hidden or visible shapes if single layer enabled
         if (!toolSettings.multilayer) {
@@ -277,7 +280,7 @@ function FogTool({
           );
           const subtractAction = new SubtractFogAction(shapesToSubtract);
           const state = subtractAction.execute({
-            [drawingShape.id]: drawingShape,
+            [simplifiedShape.id]: simplifiedShape,
           });
           drawingShapes = Object.values(state)
             .filter((shape) => shape.data.points.length > 2)
