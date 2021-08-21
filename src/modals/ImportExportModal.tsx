@@ -356,7 +356,6 @@ function ImportExportModal({
     }
     await importDB.delete();
     importDB.close();
-    db.close();
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
   }

@@ -5752,15 +5752,15 @@ dexie-react-hooks@^1.0.7:
   resolved "https://registry.yarnpkg.com/dexie-react-hooks/-/dexie-react-hooks-1.0.7.tgz#50316a7829a6dfa013b8471f66b010cc77f00d3e"
   integrity sha512-hqXGFbfgu1rdfcGHQUPwW2G0iWyupoNWnk3ODvqr+HdZt2ip3y1e/dcWIOsEnlUWWCWk6a3+ok0fvECU05eE2A==
 
-dexie@3.1.0-beta.13:
-  version "3.1.0-beta.13"
-  resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.1.0-beta.13.tgz#54b3438e2aca3b60f87a823a535ce1b4313056ec"
-  integrity sha512-pUcX9YyX1VDjF1oMqiOys6N2zoXIA/CeTghB3P4Ee77U8n9q0qa2pmNYoHyyYPKLU58+gzsMJuOc6HLPJDQrQQ==
-
 "dexie@^3.0.0-alpha.5 || ^2.0.4":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.0.3.tgz#ede63849dfe5f07e13e99bb72a040e8ac1d29dab"
   integrity sha512-BSFhGpngnCl1DOr+8YNwBDobRMH0ziJs2vts69VilwetHYOtEDcLqo7d/XiIphM0tJZ2rPPyAGd31lgH2Ln3nw==
+
+dexie@^3.2.0-beta.3:
+  version "3.2.0-beta.3"
+  resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.2.0-beta.3.tgz#6e14328b2257929d93f7d597307186cb982691f7"
+  integrity sha512-gfnFMoUIxXxoY8rtMaiW1ryAOJL663irbXLutPB2bFjbegIvsHGUbJf4a20eqcF0RYbBZUg6otML0pRTWAppig==
 
 diff-sequences@^26.6.2:
   version "26.6.2"
