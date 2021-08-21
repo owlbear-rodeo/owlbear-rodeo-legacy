@@ -23,7 +23,7 @@
     "color": "^3.2.1",
     "comlink": "^4.3.1",
     "deep-diff": "^1.0.2",
-    "dexie": "3.1.0-beta.13",
+    "dexie": "^3.2.0-beta.3",
     "dexie-react-hooks": "^1.0.7",
     "err-code": "^3.0.1",
     "fake-indexeddb": "^3.1.3",

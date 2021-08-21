@@ -897,9 +897,28 @@ export const versions: Record<number, VersionCallback> = {
         });
     });
   },
+  // v1.10.0 (patch 2) - Rename drawShapes and fogShapes in state again again (some people's still didn't work)
+  41(v, onUpgrade) {
+    v.stores({}).upgrade((tx) => {
+      onUpgrade?.(41);
+      return tx
+        .table("states")
+        .toCollection()
+        .modify((state) => {
+          if (state.drawShapes) {
+            state.drawings = cloneDeep(state.drawShapes);
+            delete state.drawShapes;
+          }
+          if (state.fogShapes) {
+            state.fogs = cloneDeep(state.fogShapes);
+            delete state.fogShapes;
+          }
+        });
+    });
+  },
 };
 
-export const latestVersion = 40;
+export const latestVersion = 41;
 
 /**
  * Load versions onto a database up to a specific version number
