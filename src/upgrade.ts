@@ -813,7 +813,7 @@ export const versions: Record<number, VersionCallback> = {
   },
   // v1.9.0 - Remove map and token group in respective tables
   35(v, onUpgrade) {
-    v.stores({}).upgrade((tx) => {
+    v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(35);
       tx.table("maps")
         .toCollection()
@@ -850,7 +850,7 @@ export const versions: Record<number, VersionCallback> = {
   },
   // v1.10.0 - Delete groups again
   38(v, onUpgrade) {
-    v.stores({}).upgrade((tx) => {
+    v.stores({}).upgrade(async (tx) => {
       onUpgrade?.(38);
       tx.table("maps")
         .toCollection()
