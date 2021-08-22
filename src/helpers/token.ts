@@ -6,7 +6,7 @@ import blobToBuffer from "./blobToBuffer";
 import { createThumbnail, getImageOutline } from "./image";
 import Vector2 from "./Vector2";
 
-import { Token, FileToken } from "../types/Token";
+import { Token, FileToken, TokenCategory } from "../types/Token";
 import { TokenState, BaseTokenState } from "../types/TokenState";
 import { Asset } from "../types/Asset";
 import { Outline } from "../types/Outline";
@@ -58,6 +58,7 @@ export async function createTokenFromFile(
     return Promise.reject();
   }
   let name = "Unknown Token";
+  let category: TokenCategory = "character";
   let defaultSize = 1;
   if (file.name) {
     if (file.name.matchAll) {
@@ -75,6 +76,14 @@ export async function createTokenFromFile(
           defaultSize = matchX;
         }
       }
+    }
+    // Match only the category e.g mount and not mountain
+    if (/prop([^a-z]+|$)/.test(file.name.toLowerCase())) {
+      category = "prop";
+    } else if (/mount([^a-z]+|$)/.test(file.name.toLowerCase())) {
+      category = "vehicle";
+    } else if (/attachment([^a-z]+|$)/.test(file.name.toLowerCase())) {
+      category = "attachment";
     }
     // Remove file extension
     name = file.name.replace(/\.[^/.]+$/, "");
@@ -126,7 +135,7 @@ export async function createTokenFromFile(
         created: Date.now(),
         lastModified: Date.now(),
         owner: userId,
-        defaultCategory: "character",
+        defaultCategory: category,
         defaultLabel: "",
         hideInSidebar: false,
         width: image.width,
