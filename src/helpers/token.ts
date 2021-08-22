@@ -61,10 +61,12 @@ export async function createTokenFromFile(
   let category: TokenCategory = "character";
   let defaultSize = 1;
   if (file.name) {
-    if (file.name.matchAll) {
+    name = file.name.toLowerCase();
+    // @ts-ignore Check match all exists
+    if (name.matchAll) {
       // Match against a regex to find the grid size in the file name
       // e.g. Cave 22x23 will return [["22x22", "22", "x", "23"]]
-      const sizeMatches = [...file.name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
+      const sizeMatches = [...name.matchAll(/(\d+) ?(x|X) ?(\d+)/g)];
       for (let match of sizeMatches) {
         const matchX = parseInt(match[1]);
         const matchY = parseInt(match[3]);
@@ -78,15 +80,18 @@ export async function createTokenFromFile(
       }
     }
     // Match only the category e.g mount and not mountain
-    if (/prop([^a-z]+|$)/.test(file.name.toLowerCase())) {
+    if (/(\b|_)prop(\b|_)/.test(name)) {
       category = "prop";
-    } else if (/mount([^a-z]+|$)/.test(file.name.toLowerCase())) {
+      name = name.replace(/(\b|_)prop(\b|_)/, "");
+    } else if (/(\b|_)mount(\b|_)/.test(name)) {
       category = "vehicle";
-    } else if (/attachment([^a-z]+|$)/.test(file.name.toLowerCase())) {
+      name = name.replace(/(\b|_)mount(\b|_)/, "");
+    } else if (/(\b|_)attachment(\b|_)/.test(name)) {
       category = "attachment";
+      name = name.replace(/(\b|_)attachment(\b|_)/, "");
     }
     // Remove file extension
-    name = file.name.replace(/\.[^/.]+$/, "");
+    name = name.replace(/\.[^/.]+$/, "");
     // Removed grid size expression
     name = name.replace(/(\[ ?|\( ?)?\d+ ?(x|X) ?\d+( ?\]| ?\))?/, "");
     // Clean string
