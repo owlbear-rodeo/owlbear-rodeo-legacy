@@ -34,6 +34,9 @@ if (process.env.REACT_APP_LOGGING === "true") {
     // Ignore dexie error todo: fix
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
+      "ResizeObserver loop completed with undelivered notifications",
+      // Konva error with FireFox 78
+      "CanvasPattern.setTransform: Argument 1 does not implement interface SVGMatrix",
       "QuotaExceededError",
       "DatabaseClosedError",
       "XDR encoding failure",
