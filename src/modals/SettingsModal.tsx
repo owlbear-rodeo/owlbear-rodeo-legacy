@@ -101,6 +101,24 @@ function SettingsModal({ isOpen, onRequestClose }: SettingsModalProps) {
           await database.table("assets").delete(asset.id);
         }
       }
+
+      // TODO: Remove this when 1.11 comes out
+      // Hack to fix broken database upgrade
+      for (let state of states) {
+        if ((state as any).drawShapes) {
+          await database.table("states").update(state.mapId, {
+            drawShapes: undefined,
+            drawings: (state as any).drawShapes,
+          });
+        }
+
+        if ((state as any).fogShapes) {
+          await database.table("states").update(state.mapId, {
+            fogShapes: undefined,
+            fogs: (state as any).fogShapes,
+          });
+        }
+      }
     }
 
     window.location.reload();
