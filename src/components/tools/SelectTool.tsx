@@ -7,6 +7,8 @@ import {
   useMapWidth,
   useMapHeight,
   useInteractionEmitter,
+  MapDragEvent,
+  leftMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 
@@ -96,7 +98,10 @@ function SelectTool({
       });
     }
 
-    function handleBrushDown() {
+    function handleBrushDown(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition || preventSelectionRef.current) {
         return;
@@ -121,7 +126,10 @@ function SelectTool({
       setIsBrushDown(true);
     }
 
-    function handleBrushMove() {
+    function handleBrushMove(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition || preventSelectionRef.current) {
         return;
@@ -172,7 +180,10 @@ function SelectTool({
       }
     }
 
-    function handleBrushUp() {
+    function handleBrushUp(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (preventSelectionRef.current) {
         return;
       }

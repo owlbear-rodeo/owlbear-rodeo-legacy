@@ -3,17 +3,20 @@ import { Box } from "theme-ui";
 import ReactResizeDetector from "react-resize-detector";
 import { Stage, Layer, Image, Group } from "react-konva";
 import Konva from "konva";
-import { EventEmitter } from "events";
 
 import useMapImage from "../../hooks/useMapImage";
 import usePreventOverscroll from "../../hooks/usePreventOverscroll";
 import useStageInteraction from "../../hooks/useStageInteraction";
 import useImageCenter from "../../hooks/useImageCenter";
+import usePreventContextMenu from "../../hooks/usePreventContextMenu";
 
 import { getGridMaxZoom } from "../../helpers/grid";
 import KonvaBridge from "../../helpers/KonvaBridge";
 
-import { MapInteractionProvider } from "../../contexts/MapInteractionContext";
+import {
+  MapInteractionEmitter,
+  MapInteractionProvider,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import { GridProvider } from "../../contexts/GridContext";
 import { useKeyboard } from "../../contexts/KeyboardContext";
@@ -72,6 +75,7 @@ function MapInteraction({
 
   const containerRef = useRef<HTMLDivElement>(null);
   usePreventOverscroll(containerRef);
+  usePreventContextMenu(containerRef);
 
   const [mapWidth, mapHeight] = useImageCenter(
     map,
@@ -85,8 +89,9 @@ function MapInteraction({
   );
 
   const previousSelectedToolRef = useRef(selectedToolId);
+  const [currentMouseButtons, setCurentMouseButtons] = useState(0);
 
-  const [interactionEmitter] = useState(new EventEmitter());
+  const [interactionEmitter] = useState(new MapInteractionEmitter());
 
   useStageInteraction(
     mapStageRef,
@@ -106,13 +111,17 @@ function MapInteraction({
       onPinchEnd: () => {
         onSelectedToolChange(previousSelectedToolRef.current);
       },
-      onDrag: ({ first, last }) => {
+      onDrag: (props) => {
+        const { first, last, buttons } = props;
+        if (buttons !== currentMouseButtons) {
+          setCurentMouseButtons(buttons);
+        }
         if (first) {
-          interactionEmitter.emit("dragStart");
+          interactionEmitter.emit("dragStart", props);
         } else if (last) {
-          interactionEmitter.emit("dragEnd");
+          interactionEmitter.emit("dragEnd", props);
         } else {
-          interactionEmitter.emit("drag");
+          interactionEmitter.emit("drag", props);
         }
       },
     }
@@ -143,6 +152,11 @@ function MapInteraction({
   useKeyboard(handleKeyDown, handleKeyUp);
 
   function getCursorForTool(tool: MapToolId) {
+    if (currentMouseButtons === 2) {
+      return "crosshair";
+    } else if (currentMouseButtons > 2) {
+      return "move";
+    }
     switch (tool) {
       case "move":
         return "move";

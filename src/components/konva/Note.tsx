@@ -102,6 +102,9 @@ function Note({
   }
 
   function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
+    if (event.evt.button !== 0) {
+      return;
+    }
     if (draggable) {
       const noteNode = event.target;
       onNoteMenuOpen && onNoteMenuOpen(note.id, noteNode, true);
@@ -111,6 +114,9 @@ function Note({
   // Store note pointer down time to check for a click when note is locked
   const notePointerDownTimeRef = useRef<number>(0);
   function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
+    if (event.evt.button !== 0) {
+      return;
+    }
     if (draggable) {
       setPreventMapInteraction(true);
     }
@@ -120,6 +126,9 @@ function Note({
   }
 
   function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
+    if (event.evt.button !== 0) {
+      return;
+    }
     if (draggable) {
       setPreventMapInteraction(false);
     }

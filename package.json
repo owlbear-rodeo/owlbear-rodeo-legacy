@@ -67,6 +67,7 @@
     "socket.io-msgpack-parser": "^3.0.1",
     "source-map-explorer": "^2.5.2",
     "theme-ui": "^0.10.0",
+    "tiny-typed-emitter": "^2.1.0",
     "use-image": "^1.0.8",
     "uuid": "^8.3.2",
     "webrtc-adapter": "^8.1.0"

@@ -3,7 +3,11 @@ import shortid from "shortid";
 import { Group } from "react-konva";
 import Konva from "konva";
 
-import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
+import {
+  useInteractionEmitter,
+  MapDragEvent,
+  leftMouseButton,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import { useUserId } from "../../contexts/UserIdContext";
 
@@ -72,7 +76,10 @@ function NoteTool({
       });
     }
 
-    function handleBrushDown() {
+    function handleBrushDown(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition || !userId) {
         return;
@@ -94,7 +101,10 @@ function NoteTool({
       setIsBrushDown(true);
     }
 
-    function handleBrushMove() {
+    function handleBrushMove(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (noteData) {
         const brushPosition = getBrushPosition();
         if (!brushPosition) {
@@ -114,7 +124,10 @@ function NoteTool({
       }
     }
 
-    function handleBrushUp() {
+    function handleBrushUp(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (noteData && creatingNoteRef.current) {
         onNoteCreate([noteData]);
         onNoteMenuOpen(noteData.id, creatingNoteRef.current, true);

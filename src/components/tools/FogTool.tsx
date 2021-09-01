@@ -3,6 +3,7 @@ import shortid from "shortid";
 import { Group, Line } from "react-konva";
 import useImage from "use-image";
 import Color from "color";
+import Konva from "konva";
 
 import diagonalPattern from "../../images/DiagonalPattern.png";
 
@@ -11,6 +12,8 @@ import {
   useMapWidth,
   useMapHeight,
   useInteractionEmitter,
+  MapDragEvent,
+  leftMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import {
@@ -160,7 +163,10 @@ function FogTool({
       });
     }
 
-    function handleBrushDown() {
+    function handleBrushDown(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (toolSettings.type === "brush") {
         const brushPosition = getBrushPosition();
         if (!brushPosition) {
@@ -203,7 +209,10 @@ function FogTool({
       setIsBrushDown(true);
     }
 
-    function handleBrushMove() {
+    function handleBrushMove(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (toolSettings.type === "brush" && isBrushDown && drawingShape) {
         const brushPosition = getBrushPosition();
         if (!brushPosition) {
@@ -258,7 +267,10 @@ function FogTool({
       }
     }
 
-    function handleBrushUp() {
+    function handleBrushUp(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (
         (toolSettings.type === "brush" || toolSettings.type === "rectangle") &&
         drawingShape
@@ -318,7 +330,13 @@ function FogTool({
       setIsBrushDown(false);
     }
 
-    function handlePointerClick() {
+    function handlePointerClick(
+      event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
+    ) {
+      // Left click only
+      if (event.evt instanceof MouseEvent && event.evt.button !== 0) {
+        return;
+      }
       if (toolSettings.type === "polygon") {
         const brushPosition = getBrushPosition();
         if (brushPosition) {

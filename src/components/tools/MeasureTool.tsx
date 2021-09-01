@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Group } from "react-konva";
 
-import { useInteractionEmitter } from "../../contexts/MapInteractionContext";
+import {
+  useInteractionEmitter,
+  MapDragEvent,
+  leftMouseButton,
+} from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import {
   useGrid,
@@ -40,8 +44,9 @@ function MeasureTool({ map, active }: MapMeasureProps) {
   const gridOffset = useGridOffset();
 
   const mapStageRef = useMapStage();
-  const [drawingShapeData, setDrawingShapeData] =
-    useState<MeasureData | null>(null);
+  const [drawingShapeData, setDrawingShapeData] = useState<MeasureData | null>(
+    null
+  );
   const [isBrushDown, setIsBrushDown] = useState(false);
 
   const gridScale = parseGridScale(active ? grid.measurement.scale : null);
@@ -75,7 +80,10 @@ function MeasureTool({ map, active }: MapMeasureProps) {
       });
     }
 
-    function handleBrushDown() {
+    function handleBrushDown(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition) {
         return;
@@ -89,7 +97,10 @@ function MeasureTool({ map, active }: MapMeasureProps) {
       setIsBrushDown(true);
     }
 
-    function handleBrushMove() {
+    function handleBrushMove(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (isBrushDown && drawingShapeData && brushPosition && mapImage) {
         const { points } = getUpdatedShapeData(
@@ -123,7 +134,10 @@ function MeasureTool({ map, active }: MapMeasureProps) {
       }
     }
 
-    function handleBrushUp() {
+    function handleBrushUp(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       setDrawingShapeData(null);
       setIsBrushDown(false);
     }
