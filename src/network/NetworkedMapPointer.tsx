@@ -152,10 +152,10 @@ function NetworkedMapPointer({ session, active }: NetworkedMapPointerProps) {
       }
     }
 
-    session.socket.on("player_pointer", handleSocketPlayerPointer);
+    session.socket?.on("player_pointer", handleSocketPlayerPointer);
 
     return () => {
-      session.socket.off("player_pointer", handleSocketPlayerPointer);
+      session.socket?.off("player_pointer", handleSocketPlayerPointer);
     };
   }, [session]);
 

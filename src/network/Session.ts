@@ -1,4 +1,4 @@
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
@@ -32,11 +32,10 @@ export type PeerReply = (id: string, data: PeerData, chunkId?: string) => void;
 class Session extends EventEmitter {
   /**
    * The socket io connection
+   *
+   * @type {io.Socket}
    */
-  socket = io(process.env.REACT_APP_BROKER_URL!, {
-    withCredentials: true,
-    parser: msgParser,
-  });
+  socket?: Socket;
 
   /**
    * A mapping of socket ids to session peers
@@ -46,7 +45,7 @@ class Session extends EventEmitter {
   peers: Record<string, SessionPeer>;
 
   get id() {
-    return this.socket.id;
+    return this.socket?.id || "";
   }
 
   _iceServers: RTCIceServer[] = [];
@@ -77,6 +76,14 @@ class Session extends EventEmitter {
       const data = await response.json();
       this._iceServers = data.iceServers;
 
+      if (!process.env.REACT_APP_BROKER_URL) {
+        return;
+      }
+      this.socket = io(process.env.REACT_APP_BROKER_URL, {
+        withCredentials: true,
+        parser: msgParser,
+      });
+
       this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
       this.socket.on("player_left", this._handlePlayerLeft.bind(this));
       this.socket.on("joined_game", this._handleJoinedGame.bind(this));
@@ -95,7 +102,7 @@ class Session extends EventEmitter {
   }
 
   disconnect() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
   }
 
   /**
@@ -184,7 +191,7 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit(
+    this.socket?.emit(
       "join_game",
       gameId,
       password,
@@ -217,7 +224,7 @@ class Session extends EventEmitter {
       };
 
       const handleSignal = (signal: SignalData) => {
-        this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
+        this.socket?.emit("signal", JSON.stringify({ to: peer.id, signal }));
       };
 
       const handleConnect = () => {
@@ -366,7 +373,7 @@ class Session extends EventEmitter {
   }
 
   _handleForceUpdate() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
     this.emit("status", "needs_update");
   }
 }
