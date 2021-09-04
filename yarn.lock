@@ -3723,9 +3723,9 @@ alphanum-sort@^1.0.0:
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
   integrity sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=
 
-ammo.js@kripken/ammo.js:
+ammo.js@kripken/ammo.js#85c0614cd5338aa0843814fe7bbd2df48164ece7:
   version "0.0.2"
-  resolved "https://codeload.github.com/kripken/ammo.js/tar.gz/c40aee525f2e3d4d2917938bf4e0b21d27f40d3c"
+  resolved "https://codeload.github.com/kripken/ammo.js/tar.gz/85c0614cd5338aa0843814fe7bbd2df48164ece7"
 
 ansi-colors@^3.0.0:
   version "3.2.4"
