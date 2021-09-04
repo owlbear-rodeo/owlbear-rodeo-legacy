@@ -1,5 +1,6 @@
-import io, { Socket } from "socket.io-client";
-import msgParser from "socket.io-msgpack-parser";
+// import io, { Socket } from "socket.io-client";
+// import msgParser from "socket.io-msgpack-parser";
+import { Socket } from "socket.io-client";
 import { EventEmitter } from "events";
 
 import Connection, { DataProgressEvent } from "./Connection";
@@ -65,40 +66,41 @@ class Session extends EventEmitter {
    * Connect to the websocket
    */
   async connect() {
-    try {
-      if (!process.env.REACT_APP_ICE_SERVERS_URL) {
-        return;
-      }
-      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
-      if (!response.ok) {
-        throw Error("Unable to fetch ICE servers");
-      }
-      const data = await response.json();
-      this._iceServers = data.iceServers;
+    this.emit("status", "offline");
+    // try {
+    //   if (!process.env.REACT_APP_ICE_SERVERS_URL) {
+    //     return;
+    //   }
+    //   const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+    //   if (!response.ok) {
+    //     throw Error("Unable to fetch ICE servers");
+    //   }
+    //   const data = await response.json();
+    //   this._iceServers = data.iceServers;
 
-      if (!process.env.REACT_APP_BROKER_URL) {
-        return;
-      }
-      this.socket = io(process.env.REACT_APP_BROKER_URL, {
-        withCredentials: true,
-        parser: msgParser,
-      });
+    //   if (!process.env.REACT_APP_BROKER_URL) {
+    //     return;
+    //   }
+    //   this.socket = io(process.env.REACT_APP_BROKER_URL, {
+    //     withCredentials: true,
+    //     parser: msgParser,
+    //   });
 
-      this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
-      this.socket.on("player_left", this._handlePlayerLeft.bind(this));
-      this.socket.on("joined_game", this._handleJoinedGame.bind(this));
-      this.socket.on("signal", this._handleSignal.bind(this));
-      this.socket.on("auth_error", this._handleAuthError.bind(this));
-      this.socket.on("game_expired", this._handleGameExpired.bind(this));
-      this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
-      this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
-      this.socket.on("force_update", this._handleForceUpdate.bind(this));
+    //   this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
+    //   this.socket.on("player_left", this._handlePlayerLeft.bind(this));
+    //   this.socket.on("joined_game", this._handleJoinedGame.bind(this));
+    //   this.socket.on("signal", this._handleSignal.bind(this));
+    //   this.socket.on("auth_error", this._handleAuthError.bind(this));
+    //   this.socket.on("game_expired", this._handleGameExpired.bind(this));
+    //   this.socket.on("disconnect", this._handleSocketDisconnect.bind(this));
+    //   this.socket.io.on("reconnect", this._handleSocketReconnect.bind(this));
+    //   this.socket.on("force_update", this._handleForceUpdate.bind(this));
 
-      this.emit("status", "ready");
-    } catch (error) {
-      logError(error);
-      this.emit("status", "offline");
-    }
+    //   this.emit("status", "ready");
+    // } catch (error) {
+    //   logError(error);
+    //   this.emit("status", "offline");
+    // }
   }
 
   disconnect() {
