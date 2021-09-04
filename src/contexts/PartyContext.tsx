@@ -23,10 +23,10 @@ export function PartyProvider({ session, children }: PartyProviderProps) {
       }
     }
 
-    session.socket?.on("party_state", handleSocketPartyState);
+    session.socket.on("party_state", handleSocketPartyState);
 
     return () => {
-      session.socket?.off("party_state", handleSocketPartyState);
+      session.socket.off("party_state", handleSocketPartyState);
     };
   });
 

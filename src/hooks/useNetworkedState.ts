@@ -60,7 +60,7 @@ function useNetworkedState<S extends { readonly [x: string]: any } | null>(
   const debouncedState = useDebounce(state, debounceRate);
   const lastSyncedStateRef = useRef<S>();
   useEffect(() => {
-    if (session.socket && dirtyRef.current) {
+    if (dirtyRef.current) {
       // If partial updates enabled, send just the changes to the socket
       if (
         lastSyncedStateRef.current &&
@@ -112,11 +112,11 @@ function useNetworkedState<S extends { readonly [x: string]: any } | null>(
       });
     }
 
-    session.socket?.on(eventName, handleSocketEvent);
-    session.socket?.on(`${eventName}_update`, handleSocketUpdateEvent);
+    session.socket.on(eventName, handleSocketEvent);
+    session.socket.on(`${eventName}_update`, handleSocketUpdateEvent);
     return () => {
-      session.socket?.off(eventName, handleSocketEvent);
-      session.socket?.off(`${eventName}_update`, handleSocketUpdateEvent);
+      session.socket.off(eventName, handleSocketEvent);
+      session.socket.off(`${eventName}_update`, handleSocketUpdateEvent);
     };
   }, [session.socket, eventName, partialUpdatesKey]);
 
