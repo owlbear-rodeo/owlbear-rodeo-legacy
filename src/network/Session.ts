@@ -84,6 +84,8 @@ class Session extends EventEmitter {
         parser: msgParser,
       });
 
+      this.socket.sendBuffer = [];
+
       this.socket.on("player_joined", this._handlePlayerJoined.bind(this));
       this.socket.on("player_left", this._handlePlayerLeft.bind(this));
       this.socket.on("joined_game", this._handleJoinedGame.bind(this));
@@ -367,6 +369,9 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
+    if (this.socket && this.socket.connected) {
+      this.socket.sendBuffer = [];
+    }
     if (this._gameId) {
       this.joinGame(this._gameId, this._password);
     }
