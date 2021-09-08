@@ -29,6 +29,7 @@ import NetworkedMapAndTokens from "../network/NetworkedMapAndTokens";
 import NetworkedParty from "../network/NetworkedParty";
 
 import Session, { PeerErrorEvent, SessionStatus } from "../network/Session";
+import MaintenanceModal from "../modals/MaintenanceModal";
 
 function Game() {
   const { id: gameId }: { id: string } = useParams();
@@ -37,17 +38,6 @@ function Game() {
 
   const [session] = useState(new Session());
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>();
-
-  useEffect(() => {
-    async function connect() {
-      await session.connect();
-    }
-    connect();
-
-    return () => {
-      session.disconnect();
-    };
-  }, [session]);
 
   // Handle session errors
   const [peerError, setPeerError] = useState<string | null>(null);
@@ -90,6 +80,8 @@ function Game() {
     };
   }, [session]);
 
+  const [maintenance, setMaintenance] = useState(true);
+
   // Join game
   useEffect(() => {
     if (
@@ -105,6 +97,17 @@ function Game() {
       session.joinGame(gameId, newPassword);
     }
   }
+
+  useEffect(() => {
+    async function connect() {
+      await session.connect();
+    }
+    connect();
+
+    return () => {
+      session.disconnect();
+    };
+  }, [session]);
 
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
@@ -154,6 +157,10 @@ function Game() {
                     />
                     <ForceUpdateModal
                       isOpen={sessionStatus === "needs_update"}
+                    />
+                    <MaintenanceModal
+                      isOpen={maintenance}
+                      onRequestClose={() => setMaintenance(false)}
                     />
                     {!sessionStatus && <LoadingOverlay />}
                     {sessionStatus && databaseStatus === "upgrading" && (
