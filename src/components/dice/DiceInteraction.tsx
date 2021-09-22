@@ -60,6 +60,9 @@ function DiceInteraction({
       const engine = new Engine(canvas, true, {
         preserveDrawingBuffer: true,
         stencil: true,
+        // Prevent XR from loading as Safari 15 crashes with this enabled
+        // TODO: Remove when https://github.com/BabylonJS/Babylon.js/pull/11121/files released
+        xrCompatible: false
       });
       const scene = new Scene(engine);
       scene.clearColor = new Color4(0, 0, 0, 0);
