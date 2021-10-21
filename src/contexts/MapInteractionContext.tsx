@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { FullGestureState } from "react-use-gesture/dist/types";
 import useDebounce from "../hooks/useDebounce";
 import { TypedEmitter } from "tiny-typed-emitter";
+import Konva from "konva";
 
 export type MapDragEvent = Omit<FullGestureState<"drag">, "event"> & {
   event: React.PointerEvent<Element> | PointerEvent;
@@ -172,8 +173,23 @@ export function useDebouncedStageScale() {
   return context;
 }
 
-export function leftMouseButton(event: MapDragEvent) {
-  return event.buttons <= 1;
+export function leftMouseButton(event: MapDragEvent): boolean;
+export function leftMouseButton(
+  event: Konva.KonvaEventObject<PointerEvent>
+): boolean;
+export function leftMouseButton(
+  event: Konva.KonvaEventObject<MouseEvent>
+): boolean;
+
+export function leftMouseButton(event: any) {
+  if (event.evt) {
+    // Konva events
+    // Check for undefined (touch) and mouse left click (0)
+    return event.evt.button === undefined || event.evt.button === 0;
+  } else {
+    // Drag event
+    return event.buttons <= 1;
+  }
 }
 
 export function middleMouseButton(event: MapDragEvent) {

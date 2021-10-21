@@ -12,6 +12,7 @@ import {
   useSetPreventMapInteraction,
   useMapWidth,
   useMapHeight,
+  leftMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useDataURL } from "../../contexts/AssetsContext";
@@ -198,7 +199,7 @@ function Token({
   }
 
   function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (selectable && draggable && transformRootRef.current) {
@@ -210,7 +211,7 @@ function Token({
   // Store token pointer down time to check for a click when token is locked
   const tokenPointerDownTimeRef = useRef<number>(0);
   function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (draggable) {
@@ -222,7 +223,7 @@ function Token({
   }
 
   function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (draggable) {

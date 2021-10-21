@@ -8,6 +8,7 @@ import {
   useSetPreventMapInteraction,
   useMapWidth,
   useMapHeight,
+  leftMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 
@@ -102,7 +103,7 @@ function Note({
   }
 
   function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (draggable) {
@@ -114,7 +115,7 @@ function Note({
   // Store note pointer down time to check for a click when note is locked
   const notePointerDownTimeRef = useRef<number>(0);
   function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (draggable) {
@@ -126,7 +127,7 @@ function Note({
   }
 
   function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
-    if (event.evt.button !== 0) {
+    if (!leftMouseButton(event)) {
       return;
     }
     if (draggable) {
