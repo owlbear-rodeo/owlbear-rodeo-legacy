@@ -33,10 +33,7 @@ class Session extends EventEmitter {
   /**
    * The socket io connection
    */
-  socket = io(process.env.REACT_APP_BROKER_URL!, {
-    withCredentials: true,
-    parser: msgParser,
-  });
+  socket?: Socket;
 
   /**
    * A mapping of socket ids to session peers
@@ -46,7 +43,7 @@ class Session extends EventEmitter {
   peers: Record<string, SessionPeer>;
 
   get id() {
-    return this.socket.id;
+    return this.socket?.id || "";
   }
 
   _iceServers: RTCIceServer[] = [];
@@ -184,7 +181,7 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit(
+    this.socket?.emit(
       "join_game",
       gameId,
       password,
@@ -217,7 +214,7 @@ class Session extends EventEmitter {
       };
 
       const handleSignal = (signal: SignalData) => {
-        this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
+        this.socket?.emit("signal", JSON.stringify({ to: peer.id, signal }));
       };
 
       const handleConnect = () => {
@@ -366,7 +363,7 @@ class Session extends EventEmitter {
   }
 
   _handleForceUpdate() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
     this.emit("status", "needs_update");
   }
 }
