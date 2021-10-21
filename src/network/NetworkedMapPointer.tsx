@@ -74,7 +74,7 @@ function NetworkedMapPointer({ session, active }: NetworkedMapPointerProps) {
           sessionRef.current &&
           sessionRef.current.socket
         ) {
-          sessionRef.current.socket.emit(
+          sessionRef.current.socket.volatile.emit(
             "player_pointer",
             ownPointerUpdateRef.current
           );
