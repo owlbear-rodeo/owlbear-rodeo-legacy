@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { Group } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
@@ -95,12 +96,7 @@ function useMapNotes(
   useBlur(handleBlur);
 
   const notes = (
-    <NoteTool
-      map={map}
-      active={selectedToolId === "note"}
-      onNoteCreate={onNoteCreate}
-      onNoteMenuOpen={handleNoteMenuOpen}
-    >
+    <Group id="notes">
       {(mapState
         ? Object.values(mapState.notes).sort((a, b) =>
             sortNotes(a, b, noteDraggingOptions)
@@ -129,7 +125,13 @@ function useMapNotes(
           }
         />
       ))}
-    </NoteTool>
+      <NoteTool
+        map={map}
+        active={selectedToolId === "note"}
+        onNoteCreate={onNoteCreate}
+        onNoteMenuOpen={handleNoteMenuOpen}
+      />
+    </Group>
   );
 
   const noteMenu = (

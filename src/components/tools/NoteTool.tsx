@@ -16,7 +16,7 @@ import { getRelativePointerPosition } from "../../helpers/konva";
 
 import useGridSnapping from "../../hooks/useGridSnapping";
 
-import Note from "../konva/Note";
+import BlankNote from "../konva/BlankNote";
 
 import { Map } from "../../types/Map";
 import { Note as NoteType } from "../../types/Note";
@@ -32,20 +32,12 @@ type MapNoteProps = {
   active: boolean;
   onNoteCreate: NoteCreateEventHander;
   onNoteMenuOpen: NoteMenuOpenEventHandler;
-  children: React.ReactNode;
 };
 
-function NoteTool({
-  map,
-  active,
-  onNoteCreate,
-  onNoteMenuOpen,
-  children,
-}: MapNoteProps) {
+function NoteTool({ map, active, onNoteCreate, onNoteMenuOpen }: MapNoteProps) {
   const interactionEmitter = useInteractionEmitter();
   const userId = useUserId();
   const mapStageRef = useMapStage();
-  const [isBrushDown, setIsBrushDown] = useState(false);
   const [noteData, setNoteData] = useState<NoteType | null>(null);
 
   const creatingNoteRef = useRef<Konva.Group>(null);
@@ -98,7 +90,9 @@ function NoteTool({
         textOnly: false,
         rotation: 0,
       });
-      setIsBrushDown(true);
+      if (creatingNoteRef.current) {
+        creatingNoteRef.current.visible(true);
+      }
     }
 
     function handleBrushMove(props: MapDragEvent) {
@@ -120,7 +114,6 @@ function NoteTool({
             y: brushPosition.y,
           };
         });
-        setIsBrushDown(true);
       }
     }
 
@@ -131,9 +124,10 @@ function NoteTool({
       if (noteData && creatingNoteRef.current) {
         onNoteCreate([noteData]);
         onNoteMenuOpen(noteData.id, creatingNoteRef.current, true);
+        // Hide creating note tool here as settings noteData to null
+        // was causing performance issues in FireFox
+        creatingNoteRef.current.visible(false);
       }
-      setNoteData(null);
-      setIsBrushDown(false);
     }
 
     interactionEmitter?.on("dragStart", handleBrushDown);
@@ -148,13 +142,8 @@ function NoteTool({
   });
 
   return (
-    <Group id="notes">
-      {children}
-      <Group ref={creatingNoteRef}>
-        {isBrushDown && noteData && (
-          <Note note={noteData} map={map} selected={false} />
-        )}
-      </Group>
+    <Group ref={creatingNoteRef}>
+      {noteData && <BlankNote note={noteData} />}
     </Group>
   );
 }
