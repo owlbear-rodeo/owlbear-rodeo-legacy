@@ -88,7 +88,7 @@ class Session extends EventEmitter {
       this.socket.on("force_update", this._handleForceUpdate.bind(this));
 
       this.emit("status", "ready");
-    } catch (error) {
+    } catch (error: any) {
       logError(error);
       this.emit("status", "offline");
     }
@@ -302,7 +302,7 @@ class Session extends EventEmitter {
       this.peers[id] = peer;
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logError(error);
       this.emit("peerError", { error });
       for (let peer of Object.values(this.peers)) {
@@ -360,6 +360,7 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
+    this.socket.sendBuffer = [];
     if (this._gameId) {
       this.joinGame(this._gameId, this._password);
     }
