@@ -107,7 +107,7 @@ function FogTool({
 
   const [drawingShape, setDrawingShape] = useState<Fog | null>(null);
   const [isBrushDown, setIsBrushDown] = useState(false);
-  const [editingShapes, setEditingShapes] = useState<Fog[]>([]);
+  const [hoveredShapes, setHoveredShapes] = useState<Fog[]>([]);
 
   // Shapes that have been merged for fog
   const [fogShapes, setFogShapes] = useState(shapes);
@@ -330,11 +330,8 @@ function FogTool({
       setIsBrushDown(false);
     }
 
-    function handlePointerClick(
-      event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
-    ) {
-      // Left click only
-      if (event.evt instanceof MouseEvent && event.evt.button !== 0) {
+    function handlePointerClick(event: Konva.KonvaEventObject<MouseEvent>) {
+      if (!leftMouseButton(event)) {
         return;
       }
       if (toolSettings.type === "polygon") {
@@ -571,25 +568,25 @@ function FogTool({
 
   function eraseHoveredShapes() {
     // Erase
-    if (editingShapes.length > 0) {
+    if (hoveredShapes.length > 0) {
       if (toolSettings.type === "remove") {
-        onShapesRemove(editingShapes.map((shape) => shape.id));
+        onShapesRemove(hoveredShapes.map((shape) => shape.id));
       } else if (toolSettings.type === "toggle") {
         onShapesEdit(
-          editingShapes.map((shape) => ({
+          hoveredShapes.map((shape) => ({
             id: shape.id,
             visible: !shape.visible,
           }))
         );
       }
-      setEditingShapes([]);
+      setHoveredShapes([]);
     }
   }
 
   function handleShapeOver(shape: Fog, isDown: boolean) {
     if (shouldHover && isDown) {
-      if (editingShapes.findIndex((s) => s.id === shape.id) === -1) {
-        setEditingShapes((prevShapes) => [...prevShapes, shape]);
+      if (hoveredShapes.findIndex((s) => s.id === shape.id) === -1) {
+        setHoveredShapes((prevShapes) => [...prevShapes, shape]);
       }
     }
   }
@@ -627,12 +624,33 @@ function FogTool({
     );
   }
 
-  function renderEditingShape(shape: Fog) {
+  function renderHoveredShape(shape: Fog) {
     const editingShape: Fog = {
       ...shape,
       color: "primary",
     };
     return renderShape(editingShape);
+  }
+
+  function renderDrawingShape(shape: Fog) {
+    const opacity = editable ? editOpacity : 1;
+    const stroke =
+      editable && active
+        ? colors.lightGray
+        : colors[shape.color] || shape.color;
+    const fill = new Color(colors[shape.color] || shape.color)
+      .alpha(opacity)
+      .string();
+    return (
+      <FogShape
+        fog={shape}
+        fill={fill}
+        stroke={stroke}
+        opacity={opacity}
+        strokeWidth={gridStrokeWidth * shape.strokeWidth}
+        hitFunc={() => {}}
+      />
+    );
   }
 
   function renderPolygonAcceptTick(shape: Fog) {
@@ -699,12 +717,12 @@ function FogTool({
     <Group>
       <Group>{fogShapes.map(renderShape)}</Group>
       {shouldRenderGuides && renderGuides()}
-      {drawingShape && renderShape(drawingShape)}
+      {drawingShape && renderDrawingShape(drawingShape)}
       {drawingShape &&
         toolSettings &&
         toolSettings.type === "polygon" &&
         renderPolygonAcceptTick(drawingShape)}
-      {editingShapes.length > 0 && editingShapes.map(renderEditingShape)}
+      {hoveredShapes.length > 0 && hoveredShapes.map(renderHoveredShape)}
     </Group>
   );
 }
