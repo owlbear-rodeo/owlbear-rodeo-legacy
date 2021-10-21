@@ -1,21 +1,23 @@
 ## General
 
-| Shortcut         | Description             |
-| ---------------- | ----------------------- |
-| W                | Move Tool               |
-| Space Bar (Hold) | Move Tool               |
-| F                | Fog Tool                |
-| D                | Drawing Tool            |
-| M                | Measure Tool            |
-| Q                | Pointer Tool            |
-| N                | Note Tool               |
-| +                | Zoom In                 |
-| -                | Zoom Out                |
-| Shift + Zoom     | Precision Zoom          |
-| Ctrl + Z         | Undo                    |
-| Ctrl + Shift + Z | Redo                    |
-| Ctrl (Hold)      | Disabled Grid Snapping  |
-| Alt + Drag       | Duplicate Token or Note |
+| Shortcut            | Description             |
+| ------------------- | ----------------------- |
+| W                   | Move Tool               |
+| Space Bar (Hold)    | Move Tool               |
+| Middle Mouse Button | Move Tool               |
+| F                   | Fog Tool                |
+| D                   | Drawing Tool            |
+| M                   | Measure Tool            |
+| Q                   | Pointer Tool            |
+| Right Mouse Button  | Pointer Tool            |
+| N                   | Note Tool               |
+| +                   | Zoom In                 |
+| -                   | Zoom Out                |
+| Shift + Zoom        | Precision Zoom          |
+| Ctrl + Z            | Undo                    |
+| Ctrl + Shift + Z    | Redo                    |
+| Ctrl (Hold)         | Disabled Grid Snapping  |
+| Alt + Drag          | Duplicate Token or Note |
 
 ## Select Tool
 

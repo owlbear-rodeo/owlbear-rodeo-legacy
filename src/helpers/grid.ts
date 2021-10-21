@@ -325,7 +325,7 @@ export function gridDistance(
       const delta = Vector2.abs(Vector2.subtract(aCoord, bCoord));
       const max = Vector2.componentMax(delta);
       const min = Vector2.componentMin(delta);
-      return max - min + Math.floor(1.5 * min);
+      return max + Math.floor(0.5 * min);
     } else if (grid.measurement.type === "euclidean") {
       return Vector2.magnitude(
         Vector2.divide(Vector2.subtract(a, b), cellSize)

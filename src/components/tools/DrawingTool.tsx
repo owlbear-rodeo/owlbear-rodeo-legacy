@@ -7,6 +7,8 @@ import {
   useMapWidth,
   useMapHeight,
   useInteractionEmitter,
+  leftMouseButton,
+  MapDragEvent,
 } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import {
@@ -103,7 +105,10 @@ function DrawingTool({
       });
     }
 
-    function handleBrushDown() {
+    function handleBrushDown(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition) {
         return;
@@ -135,7 +140,10 @@ function DrawingTool({
       setIsBrushDown(true);
     }
 
-    function handleBrushMove() {
+    function handleBrushMove(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       const brushPosition = getBrushPosition();
       if (!brushPosition) {
         return;
@@ -186,7 +194,10 @@ function DrawingTool({
       }
     }
 
-    function handleBrushUp() {
+    function handleBrushUp(props: MapDragEvent) {
+      if (!leftMouseButton(props)) {
+        return;
+      }
       if (isBrush && drawing && drawing.type === "path") {
         if (drawing.data.points.length > 1) {
           onShapeAdd(drawing);

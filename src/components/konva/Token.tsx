@@ -12,6 +12,7 @@ import {
   useSetPreventMapInteraction,
   useMapWidth,
   useMapHeight,
+  leftMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useGridCellPixelSize } from "../../contexts/GridContext";
 import { useDataURL } from "../../contexts/AssetsContext";
@@ -197,7 +198,10 @@ function Token({
     setAttachmentOverCharacter(false);
   }
 
-  function handleClick() {
+  function handleClick(event: Konva.KonvaEventObject<MouseEvent>) {
+    if (!leftMouseButton(event)) {
+      return;
+    }
     if (selectable && draggable && transformRootRef.current) {
       onTokenMenuOpen(tokenState.id, transformRootRef.current, true);
     }
@@ -207,6 +211,9 @@ function Token({
   // Store token pointer down time to check for a click when token is locked
   const tokenPointerDownTimeRef = useRef<number>(0);
   function handlePointerDown(event: Konva.KonvaEventObject<PointerEvent>) {
+    if (!leftMouseButton(event)) {
+      return;
+    }
     if (draggable) {
       setPreventMapInteraction(true);
     }
@@ -216,6 +223,9 @@ function Token({
   }
 
   function handlePointerUp(event: Konva.KonvaEventObject<PointerEvent>) {
+    if (!leftMouseButton(event)) {
+      return;
+    }
     if (draggable) {
       setPreventMapInteraction(false);
     }

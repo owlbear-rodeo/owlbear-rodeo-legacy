@@ -27,6 +27,7 @@ const v180 = raw("../docs/releaseNotes/v1.8.0.md");
 const v181 = raw("../docs/releaseNotes/v1.8.1.md");
 const v190 = raw("../docs/releaseNotes/v1.9.0.md");
 const v1100 = raw("../docs/releaseNotes/v1.10.0.md");
+const v1101 = raw("../docs/releaseNotes/v1.10.1.md");
 
 function ReleaseNotes() {
   const location = useLocation();
@@ -51,6 +52,11 @@ function ReleaseNotes() {
         <Text mb={2} variant="heading" as="h1" sx={{ fontSize: 5 }}>
           Release Notes
         </Text>
+        <div id="v1101">
+          <Accordion heading="v1.10.1" defaultOpen>
+            <Markdown source={v1101} />
+          </Accordion>
+        </div>
         <div id="v1100">
           <Accordion heading="v1.10.0" defaultOpen>
             <Markdown source={v1100} />

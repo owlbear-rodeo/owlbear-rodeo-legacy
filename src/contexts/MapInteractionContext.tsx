@@ -1,6 +1,22 @@
 import React, { useContext } from "react";
-import { EventEmitter } from "stream";
+import { FullGestureState } from "react-use-gesture/dist/types";
 import useDebounce from "../hooks/useDebounce";
+import { TypedEmitter } from "tiny-typed-emitter";
+import Konva from "konva";
+
+export type MapDragEvent = Omit<FullGestureState<"drag">, "event"> & {
+  event: React.PointerEvent<Element> | PointerEvent;
+};
+
+export type MapDragEventHandler = (props: MapDragEvent) => void;
+
+export interface MapInteractionEvents {
+  dragStart: MapDragEventHandler;
+  drag: MapDragEventHandler;
+  dragEnd: MapDragEventHandler;
+}
+
+export class MapInteractionEmitter extends TypedEmitter<MapInteractionEvents> {}
 
 type MapInteraction = {
   stageScale: number;
@@ -9,29 +25,33 @@ type MapInteraction = {
   setPreventMapInteraction: React.Dispatch<React.SetStateAction<boolean>>;
   mapWidth: number;
   mapHeight: number;
-  interactionEmitter: EventEmitter | null;
+  interactionEmitter: MapInteractionEmitter | null;
 };
 
-export const StageScaleContext =
-  React.createContext<MapInteraction["stageScale"] | undefined>(undefined);
-export const DebouncedStageScaleContext =
-  React.createContext<MapInteraction["stageScale"] | undefined>(undefined);
-export const StageWidthContext =
-  React.createContext<MapInteraction["stageWidth"] | undefined>(undefined);
-export const StageHeightContext =
-  React.createContext<MapInteraction["stageHeight"] | undefined>(undefined);
-export const SetPreventMapInteractionContext =
-  React.createContext<MapInteraction["setPreventMapInteraction"] | undefined>(
-    undefined
-  );
-export const MapWidthContext =
-  React.createContext<MapInteraction["mapWidth"] | undefined>(undefined);
-export const MapHeightContext =
-  React.createContext<MapInteraction["mapHeight"] | undefined>(undefined);
-export const InteractionEmitterContext =
-  React.createContext<MapInteraction["interactionEmitter"] | undefined>(
-    undefined
-  );
+export const StageScaleContext = React.createContext<
+  MapInteraction["stageScale"] | undefined
+>(undefined);
+export const DebouncedStageScaleContext = React.createContext<
+  MapInteraction["stageScale"] | undefined
+>(undefined);
+export const StageWidthContext = React.createContext<
+  MapInteraction["stageWidth"] | undefined
+>(undefined);
+export const StageHeightContext = React.createContext<
+  MapInteraction["stageHeight"] | undefined
+>(undefined);
+export const SetPreventMapInteractionContext = React.createContext<
+  MapInteraction["setPreventMapInteraction"] | undefined
+>(undefined);
+export const MapWidthContext = React.createContext<
+  MapInteraction["mapWidth"] | undefined
+>(undefined);
+export const MapHeightContext = React.createContext<
+  MapInteraction["mapHeight"] | undefined
+>(undefined);
+export const InteractionEmitterContext = React.createContext<
+  MapInteraction["interactionEmitter"] | undefined
+>(undefined);
 
 export function MapInteractionProvider({
   value,
@@ -151,4 +171,31 @@ export function useDebouncedStageScale() {
     );
   }
   return context;
+}
+
+export function leftMouseButton(event: MapDragEvent): boolean;
+export function leftMouseButton(
+  event: Konva.KonvaEventObject<PointerEvent>
+): boolean;
+export function leftMouseButton(
+  event: Konva.KonvaEventObject<MouseEvent>
+): boolean;
+
+export function leftMouseButton(event: any) {
+  if (event.evt) {
+    // Konva events
+    // Check for undefined (touch) and mouse left click (0)
+    return event.evt.button === undefined || event.evt.button === 0;
+  } else {
+    // Drag event
+    return event.buttons <= 1;
+  }
+}
+
+export function middleMouseButton(event: MapDragEvent) {
+  return event.buttons === 4;
+}
+
+export function rightMouseButton(event: MapDragEvent) {
+  return event.buttons === 2;
 }

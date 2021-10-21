@@ -1,10 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Group } from "react-konva";
 
 import {
   useMapWidth,
   useMapHeight,
   useInteractionEmitter,
+  MapDragEvent,
+  leftMouseButton,
+  rightMouseButton,
 } from "../../contexts/MapInteractionContext";
 import { useMapStage } from "../../contexts/MapStageContext";
 import { useGridStrokeWidth } from "../../contexts/GridContext";
@@ -41,11 +44,9 @@ function PointerTool({
   const gridStrokeWidth = useGridStrokeWidth();
   const mapStageRef = useMapStage();
 
-  useEffect(() => {
-    if (!active) {
-      return;
-    }
+  const brushDownRef = useRef(false);
 
+  useEffect(() => {
     const mapStage = mapStageRef.current;
 
     function getBrushPosition() {
@@ -56,19 +57,27 @@ function PointerTool({
       return getRelativePointerPositionNormalized(mapImage);
     }
 
-    function handleBrushDown() {
-      const brushPosition = getBrushPosition();
-      brushPosition && onPointerDown?.(brushPosition);
+    function handleBrushDown(props: MapDragEvent) {
+      if ((leftMouseButton(props) && active) || rightMouseButton(props)) {
+        const brushPosition = getBrushPosition();
+        brushPosition && onPointerDown?.(brushPosition);
+        brushDownRef.current = true;
+      }
     }
 
     function handleBrushMove() {
-      const brushPosition = getBrushPosition();
-      brushPosition && visible && onPointerMove?.(brushPosition);
+      if (brushDownRef.current) {
+        const brushPosition = getBrushPosition();
+        brushPosition && visible && onPointerMove?.(brushPosition);
+      }
     }
 
     function handleBrushUp() {
-      const brushPosition = getBrushPosition();
-      brushPosition && onPointerUp?.(brushPosition);
+      if (brushDownRef.current) {
+        const brushPosition = getBrushPosition();
+        brushPosition && onPointerUp?.(brushPosition);
+        brushDownRef.current = false;
+      }
     }
 
     interactionEmitter?.on("dragStart", handleBrushDown);

@@ -9,10 +9,12 @@ import useNetworkedState, {
 import Session, { SessionStatus } from "../network/Session";
 import { PlayerState } from "../types/PlayerState";
 
-export const PlayerStateContext =
-  React.createContext<PlayerState | undefined>(undefined);
-export const PlayerUpdaterContext =
-  React.createContext<SetNetworkedState<PlayerState> | undefined>(undefined);
+export const PlayerStateContext = React.createContext<PlayerState | undefined>(
+  undefined
+);
+export const PlayerUpdaterContext = React.createContext<
+  SetNetworkedState<PlayerState> | undefined
+>(undefined);
 
 type PlayerProviderProps = {
   session: Session;
@@ -104,13 +106,13 @@ export function PlayerProvider({ session, children }: PlayerProviderProps) {
     }
 
     session.on("status", handleSocketStatus);
-    session.socket?.on("connect", handleSocketConnect);
-    session.socket?.io.on("reconnect", handleSocketConnect);
+    session.socket.on("connect", handleSocketConnect);
+    session.socket.io.on("reconnect", handleSocketConnect);
 
     return () => {
       session.off("status", handleSocketStatus);
-      session.socket?.off("connect", handleSocketConnect);
-      session.socket?.io.off("reconnect", handleSocketConnect);
+      session.socket.off("connect", handleSocketConnect);
+      session.socket.io.off("reconnect", handleSocketConnect);
     };
   });
 

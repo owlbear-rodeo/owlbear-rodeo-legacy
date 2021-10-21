@@ -67,6 +67,7 @@ function useStageInteraction(
           return;
         }
         const { event, last } = props;
+        // Prevent double zoom on wheel end
         if (!last) {
           const { pixelY } = normalizeWheel(event);
 
@@ -178,7 +179,7 @@ function useStageInteraction(
         gesture.onDragStart && gesture.onDragStart(props);
       },
       onDrag: (props) => {
-        const { delta, pinching } = props;
+        const { delta, pinching, buttons } = props;
         const stage = stageRef.current;
         if (
           preventInteraction ||
@@ -191,7 +192,8 @@ function useStageInteraction(
 
         const [dx, dy] = delta;
         const stageTranslate = stageTranslateRef.current;
-        if (tool === "move") {
+        // Move with move tool and left click or any mouse button but right click
+        if ((tool === "move" && buttons < 2) || buttons > 2) {
           const newTranslate = {
             x: stageTranslate.x + dx,
             y: stageTranslate.y + dy,
