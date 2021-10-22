@@ -1,4 +1,4 @@
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
@@ -33,11 +33,7 @@ class Session extends EventEmitter {
   /**
    * The socket io connection
    */
-  socket = io(process.env.REACT_APP_BROKER_URL!, {
-    withCredentials: true,
-    parser: msgParser,
-    transports: ["websocket"],
-  });
+  socket: Socket;
 
   /**
    * A mapping of socket ids to session peers
@@ -59,6 +55,12 @@ class Session extends EventEmitter {
   constructor() {
     super();
     this.peers = {};
+    this.socket = io(process.env.REACT_APP_BROKER_URL!, {
+      withCredentials: true,
+      parser: msgParser,
+      transports: ["websocket"],
+      autoConnect: process.env.REACT_APP_MAINTENANCE === "false",
+    });
     // Signal connected peers of a closure on refresh
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
   }
@@ -68,7 +70,11 @@ class Session extends EventEmitter {
    */
   async connect() {
     try {
-      if (!process.env.REACT_APP_ICE_SERVERS_URL) {
+      if (
+        !process.env.REACT_APP_ICE_SERVERS_URL ||
+        process.env.REACT_APP_MAINTENANCE === "true"
+      ) {
+        this.emit("status", "offline");
         return;
       }
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);

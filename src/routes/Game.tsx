@@ -14,6 +14,7 @@ import UpgradingLoadingOverlay from "../components/UpgradingLoadingOverlay";
 import AuthModal from "../modals/AuthModal";
 import GameExpiredModal from "../modals/GameExpiredModal";
 import ForceUpdateModal from "../modals/ForceUpdateModal";
+import MaintenanceModal from "../modals/MaintenanceModal";
 
 import { useAuth } from "../contexts/AuthContext";
 import { MapStageProvider } from "../contexts/MapStageContext";
@@ -38,16 +39,9 @@ function Game() {
   const [session] = useState(new Session());
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>();
 
-  useEffect(() => {
-    async function connect() {
-      await session.connect();
-    }
-    connect();
-
-    return () => {
-      session.disconnect();
-    };
-  }, [session]);
+  const [maintenance, setMaintenance] = useState(
+    process.env.REACT_APP_MAINTENANCE === "true"
+  );
 
   // Handle session errors
   const [peerError, setPeerError] = useState<string | null>(null);
@@ -106,6 +100,17 @@ function Game() {
     }
   }
 
+  useEffect(() => {
+    async function connect() {
+      await session.connect();
+    }
+    connect();
+
+    return () => {
+      session.disconnect();
+    };
+  }, [session]);
+
   // A ref to the Konva stage
   // the ref will be assigned in the MapInteraction component
   const mapStageRef = useRef<Konva.Stage | null>(null);
@@ -159,6 +164,10 @@ function Game() {
                     {sessionStatus && databaseStatus === "upgrading" && (
                       <UpgradingLoadingOverlay />
                     )}
+                    <MaintenanceModal
+                      isOpen={maintenance}
+                      onRequestClose={() => setMaintenance(false)}
+                    />
                     <MapLoadingOverlay />
                   </MapStageProvider>
                 </PartyProvider>
