@@ -15,7 +15,7 @@ export function PartyProvider({ session, children }: PartyProviderProps) {
 
   useEffect(() => {
     function handleSocketPartyState(partyState: PartyState) {
-      if (partyState) {
+      if (partyState && session.id) {
         const { [session.id]: _, ...otherMembersState } = partyState;
         setPartyState(otherMembersState);
       } else {
@@ -23,10 +23,10 @@ export function PartyProvider({ session, children }: PartyProviderProps) {
       }
     }
 
-    session.socket.on("party_state", handleSocketPartyState);
+    session.socket?.on("party_state", handleSocketPartyState);
 
     return () => {
-      session.socket.off("party_state", handleSocketPartyState);
+      session.socket?.off("party_state", handleSocketPartyState);
     };
   });
 

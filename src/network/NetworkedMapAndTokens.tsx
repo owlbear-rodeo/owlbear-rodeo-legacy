@@ -202,12 +202,12 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
   ) {
     // Clear map before sending new one
     setCurrentMap(null);
-    session.socket.emit("map", null);
+    session.socket?.emit("map", null);
 
     setCurrentMapState(newMapState, true, true);
     setCurrentMap(newMap);
 
-    session.socket.emit("map", newMap);
+    session.socket?.emit("map", newMap);
 
     if (!newMap || !newMapState) {
       setAssetManifest(null, true, true);
@@ -395,12 +395,12 @@ function NetworkedMapAndTokens({ session }: { session: Session }) {
 
     session.on("peerData", handlePeerData);
     session.on("peerDataProgress", handlePeerDataProgress);
-    session.socket.on("map", handleSocketMap);
+    session.socket?.on("map", handleSocketMap);
 
     return () => {
       session.off("peerData", handlePeerData);
       session.off("peerDataProgress", handlePeerDataProgress);
-      session.socket.off("map", handleSocketMap);
+      session.socket?.off("map", handleSocketMap);
     };
   });
 

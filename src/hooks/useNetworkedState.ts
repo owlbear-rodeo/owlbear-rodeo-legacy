@@ -74,10 +74,10 @@ function useNetworkedState<S extends { readonly [x: string]: any } | null>(
             return;
           }
           const update = { id: debouncedState[partialUpdatesKey], changes };
-          session.socket.emit(`${eventName}_update`, update);
+          session.socket?.emit(`${eventName}_update`, update);
         }
       } else {
-        session.socket.emit(eventName, debouncedState);
+        session.socket?.emit(eventName, debouncedState);
       }
       dirtyRef.current = false;
       forceUpdateRef.current = false;
@@ -112,11 +112,11 @@ function useNetworkedState<S extends { readonly [x: string]: any } | null>(
       });
     }
 
-    session.socket.on(eventName, handleSocketEvent);
-    session.socket.on(`${eventName}_update`, handleSocketUpdateEvent);
+    session.socket?.on(eventName, handleSocketEvent);
+    session.socket?.on(`${eventName}_update`, handleSocketUpdateEvent);
     return () => {
-      session.socket.off(eventName, handleSocketEvent);
-      session.socket.off(`${eventName}_update`, handleSocketUpdateEvent);
+      session.socket?.off(eventName, handleSocketEvent);
+      session.socket?.off(`${eventName}_update`, handleSocketUpdateEvent);
     };
   }, [session.socket, eventName, partialUpdatesKey]);
 

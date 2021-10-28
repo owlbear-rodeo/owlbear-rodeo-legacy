@@ -106,13 +106,13 @@ export function PlayerProvider({ session, children }: PlayerProviderProps) {
     }
 
     session.on("status", handleSocketStatus);
-    session.socket.on("connect", handleSocketConnect);
-    session.socket.io.on("reconnect", handleSocketConnect);
+    session.socket?.on("connect", handleSocketConnect);
+    session.socket?.io.on("reconnect", handleSocketConnect);
 
     return () => {
       session.off("status", handleSocketStatus);
-      session.socket.off("connect", handleSocketConnect);
-      session.socket.io.off("reconnect", handleSocketConnect);
+      session.socket?.off("connect", handleSocketConnect);
+      session.socket?.io.off("reconnect", handleSocketConnect);
     };
   });
 

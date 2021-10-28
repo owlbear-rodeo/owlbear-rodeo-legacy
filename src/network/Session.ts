@@ -33,7 +33,7 @@ class Session extends EventEmitter {
   /**
    * The socket io connection
    */
-  socket: Socket;
+  socket?: Socket;
 
   /**
    * A mapping of socket ids to session peers
@@ -43,7 +43,7 @@ class Session extends EventEmitter {
   peers: Record<string, SessionPeer>;
 
   get id() {
-    return this.socket.id;
+    return this.socket?.id;
   }
 
   _iceServers: RTCIceServer[] = [];
@@ -55,12 +55,6 @@ class Session extends EventEmitter {
   constructor() {
     super();
     this.peers = {};
-    this.socket = io(process.env.REACT_APP_BROKER_URL!, {
-      withCredentials: true,
-      parser: msgParser,
-      transports: ["websocket"],
-      autoConnect: process.env.REACT_APP_MAINTENANCE === "false",
-    });
     // Signal connected peers of a closure on refresh
     window.addEventListener("beforeunload", this._handleUnload.bind(this));
   }
@@ -77,6 +71,11 @@ class Session extends EventEmitter {
         this.emit("status", "offline");
         return;
       }
+      this.socket = io(process.env.REACT_APP_BROKER_URL!, {
+        withCredentials: true,
+        parser: msgParser,
+        transports: ["websocket"],
+      });
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
@@ -102,7 +101,7 @@ class Session extends EventEmitter {
   }
 
   disconnect() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
   }
 
   /**
@@ -191,7 +190,7 @@ class Session extends EventEmitter {
 
     this._gameId = gameId;
     this._password = password;
-    this.socket.emit(
+    this.socket?.emit(
       "join_game",
       gameId,
       password,
@@ -224,7 +223,7 @@ class Session extends EventEmitter {
       };
 
       const handleSignal = (signal: SignalData) => {
-        this.socket.emit("signal", JSON.stringify({ to: peer.id, signal }));
+        this.socket?.emit("signal", JSON.stringify({ to: peer.id, signal }));
       };
 
       const handleConnect = () => {
@@ -367,14 +366,14 @@ class Session extends EventEmitter {
   }
 
   _handleSocketReconnect() {
-    this.socket.sendBuffer = [];
+    if (this.socket) this.socket.sendBuffer = [];
     if (this._gameId) {
       this.joinGame(this._gameId, this._password);
     }
   }
 
   _handleForceUpdate() {
-    this.socket.disconnect();
+    this.socket?.disconnect();
     this.emit("status", "needs_update");
   }
 }
