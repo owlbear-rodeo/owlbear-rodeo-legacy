@@ -1,5 +1,5 @@
 import io, { Socket } from "socket.io-client";
-import msgParser from "socket.io-msgpack-parser";
+// import msgParser from "socket.io-msgpack-parser";
 import { EventEmitter } from "events";
 
 import Connection, { DataProgressEvent } from "./Connection";
@@ -73,7 +73,7 @@ class Session extends EventEmitter {
       }
       this.socket = io(process.env.REACT_APP_BROKER_URL!, {
         withCredentials: true,
-        parser: msgParser,
+        // parser: msgParser,
         transports: ["websocket"],
       });
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
