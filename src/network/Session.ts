@@ -75,8 +75,15 @@ class Session extends EventEmitter {
         withCredentials: true,
         // parser: msgParser,
         transports: ["websocket"],
+        query: {
+          "room": "13.250.60.135:9000"
+        }
       });
-      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL, {
+        headers: {
+          "x-envoy-original-dst-host": "13.250.60.135:9000"
+        }
+      });
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
       }
