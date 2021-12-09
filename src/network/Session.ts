@@ -83,7 +83,7 @@ class Session extends EventEmitter {
         mode: "cors",
         credentials: "omit",
         headers: {
-          "x-envoy-original-dst-host": "13.212.54.6:7658"
+          "X-Envoy-Original-Dst-Host": "13.212.54.6:7658",
         }
       });
       if (!response.ok) {
