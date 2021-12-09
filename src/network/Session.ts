@@ -76,12 +76,12 @@ class Session extends EventEmitter {
         // parser: msgParser,
         transports: ["websocket"],
         query: {
-          "room": "54.255.153.124:7658"
+          "room": "18.140.98.140:7658"
         }
       });
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL, {
         headers: {
-          "x-envoy-original-dst-host": "54.255.153.124:7658"
+          "x-envoy-original-dst-host": "18.140.98.140:7658"
         }
       });
       if (!response.ok) {
