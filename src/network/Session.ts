@@ -79,14 +79,11 @@ class Session extends EventEmitter {
           "room": "13.212.54.6:7658"
         }
       });
-      const response = await fetch(`${process.env.REACT_APP_ICE_SERVERS_URL}/`, {
+      const response = await fetch(`${process.env.REACT_APP_ICE_SERVERS_URL}/?room=13.212.54.6:7658`, {
         method: "GET",
         mode: "cors",
         cache: "no-store",
         credentials: "omit",
-        headers: {
-          'x-envoy-original-dst-host': '13.212.54.6:7658',
-        }
       });
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
