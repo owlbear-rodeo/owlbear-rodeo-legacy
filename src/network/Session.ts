@@ -79,13 +79,13 @@ class Session extends EventEmitter {
           "room": "13.212.54.6:7658"
         }
       });
-      const response = await fetch(`${process.env.REACT_APP_ICE_SERVERS_URL}/?room=13.212.54.6:7658`, {
+      const response = await fetch(`${process.env.REACT_APP_ICE_SERVERS_URL}/`, {
         method: "GET",
         mode: "cors",
-        cache: "no-cache",
+        cache: "no-store",
         credentials: "omit",
         headers: {
-          "X-Envoy-Original-Dst-Host": "13.212.54.6:7658",
+          'x-envoy-original-dst-host': '13.212.54.6:7658',
         }
       });
       if (!response.ok) {
