@@ -80,7 +80,9 @@ class Session extends EventEmitter {
         }
       });
       const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL, {
+        method: "GET",
         mode: "cors",
+        cache: "no-cache",
         credentials: "omit",
         headers: {
           "X-Envoy-Original-Dst-Host": "13.212.54.6:7658",
