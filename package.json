@@ -3,8 +3,8 @@
   "version": "1.10.1.1",
   "private": true,
   "dependencies": {
-    "@babylonjs/core": "^4.2.0",
-    "@babylonjs/loaders": "^4.2.0",
+    "@babylonjs/core": "4.2.1",
+    "@babylonjs/loaders": "4.2.1",
     "@dnd-kit/core": "^3.1.1",
     "@dnd-kit/sortable": "^4.0.0",
     "@mitchemmc/dexie-export-import": "^1.0.1",
