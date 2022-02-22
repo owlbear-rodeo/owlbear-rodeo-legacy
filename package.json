@@ -31,7 +31,7 @@
     "fuse.js": "^6.4.6",
     "image-outline": "^0.1.0",
     "intersection-observer": "^0.12.0",
-    "konva": "^8.3.1",
+    "konva": "^8.3.2",
     "lodash.chunk": "^4.2.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.get": "^4.4.2",
@@ -49,7 +49,7 @@
     "react-konva-utils": "^0.1.7",
     "react-markdown": "4",
     "react-media": "^2.0.0-rc.1",
-    "react-modal": "^3.14.3",
+    "react-modal": "^3.14.4",
     "react-resize-detector": "^6.7.4",
     "react-router-dom": "^5.1.2",
     "react-router-hash-link": "^2.4.3",
@@ -60,8 +60,8 @@
     "react-toast-notifications": "^2.5.1",
     "react-use-gesture": "^9.1.3",
     "shortid": "^2.2.15",
-    "simple-peer": "^9.11.0",
-    "simplebar-react": "^2.3.5",
+    "simple-peer": "^9.11.1",
+    "simplebar-react": "^2.3.6",
     "simplify-js": "^1.2.4",
     "socket.io-client": "^4.1.3",
     "socket.io-msgpack-parser": "^3.0.1",
@@ -70,7 +70,7 @@
     "tiny-typed-emitter": "^2.1.0",
     "use-image": "^1.0.8",
     "uuid": "^8.3.2",
-    "webrtc-adapter": "^8.1.0"
+    "webrtc-adapter": "^8.1.1"
   },
   "resolutions": {
     "simple-peer/get-browser-rtc": "substack/get-browser-rtc#4/head"
@@ -114,7 +114,7 @@
     "@types/react-router-dom": "^5.1.7",
     "@types/react-select": "^4.0.17",
     "@types/shortid": "^0.0.29",
-    "@types/simple-peer": "^9.11.1",
+    "@types/simple-peer": "^9.11.4",
     "@types/uuid": "^8.3.1",
     "typescript": "^4.2.4",
     "worker-loader": "^3.0.8"
