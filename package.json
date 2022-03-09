@@ -31,7 +31,7 @@
     "fuse.js": "^6.4.6",
     "image-outline": "^0.1.0",
     "intersection-observer": "^0.12.0",
-    "konva": "^8.3.2",
+    "konva": "8.3.3",
     "lodash.chunk": "^4.2.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.get": "^4.4.2",
@@ -68,7 +68,7 @@
     "source-map-explorer": "^2.5.2",
     "theme-ui": "^0.10.0",
     "tiny-typed-emitter": "^2.1.0",
-    "use-image": "^1.0.8",
+    "use-image": "1.0.10",
     "uuid": "^8.3.2",
     "webrtc-adapter": "^8.1.1"
   },
