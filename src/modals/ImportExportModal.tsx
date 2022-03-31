@@ -103,15 +103,17 @@ function ImportExportModal({
     } catch (e) {
       setIsLoading(false);
       backgroundTaskRunningRef.current = false;
-      if (e.message.startsWith("Max buffer length exceeded")) {
-        setError(
-          new Error(
-            "Max image size exceeded ensure your database doesn't have an image over 100MB"
-          )
-        );
-      } else {
-        console.error(e);
-        setError(e);
+      if (e instanceof(Error)) {
+        if (e.message.startsWith("Max buffer length exceeded")) {
+          setError(
+            new Error(
+              "Max image size exceeded ensure your database doesn't have an image over 100MB"
+            )
+          );
+        } else {
+          console.error(e);
+          setError(e);
+        }
       }
     }
     // Set file input to null to allow adding the same data 2 times in a row
@@ -393,9 +395,11 @@ function ImportExportModal({
       const blob = new Blob([buffer]);
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps, checkedTokens);
-    } catch (e) {
-      console.error(e);
-      setError(e);
+    } catch (e: unknown) {
+      if (e instanceof(Error)) {
+        console.error(e);
+        setError(e);
+      }
     }
     setIsLoading(false);
     backgroundTaskRunningRef.current = false;
