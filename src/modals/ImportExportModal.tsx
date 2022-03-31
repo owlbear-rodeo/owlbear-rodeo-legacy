@@ -68,6 +68,23 @@ function ImportExportModal({
       addToast(`${message} ${tokenText}`);
     }
   }
+  
+  function addWarningToast(
+    message: string,
+    mapNames: string[],
+  ) {
+    let mapText = "";
+
+    if (mapNames.length > 0) {
+      for (let map in mapNames) {
+        console.log(mapNames[map]);
+        mapText += `${mapNames[map]}, `
+      }
+    }
+    // mapText.trimEnd();
+    mapText = mapText.replace(/,\s*$/, "");
+    addToast(`${message} ${mapText}`);
+  }
 
   function openFileDialog() {
     if (fileInputRef.current) {
@@ -172,6 +189,9 @@ function ImportExportModal({
       let newTokenIds: Record<string, string> = {};
       // Mapping of old asset ids to new asset ids
       let newAssetIds: Record<string, string> = {};
+      // Mapping of old asset ids to old maps
+      let oldAssetIds: Record<string, { mapName: string, assetType: string }> = {};
+
       // Mapping of old maps ids to new map ids
       let newMapIds: Record<string, string> = {};
 
@@ -236,10 +256,15 @@ function ImportExportModal({
             const newThumbnailId = uuid();
             newAssetIds[map.file] = newFileId;
             newAssetIds[map.thumbnail] = newThumbnailId;
+
+            oldAssetIds[map.file] = { mapName: map.name, assetType: "file" };
+            oldAssetIds[map.thumbnail] = { mapName: map.name, assetType: "thumbnail" };
+
             const newResolutionIds: Record<string, string> = {};
             for (let res of Object.keys(map.resolutions)) {
               newResolutionIds[res] = uuid();
               newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+              oldAssetIds[map.resolutions[res]] = { mapName: map.name, assetType: "resolution" };
             }
             // Change ids and owner
             newMaps.push({
@@ -261,6 +286,7 @@ function ImportExportModal({
         .table("assets")
         .bulkGet(Object.keys(newAssetIds));
       let newAssets: Asset[] = [];
+      const processedAssetIds: string[] = []
       for (let asset of assetsToAdd) {
         if (asset) {
           newAssets.push({
@@ -268,9 +294,22 @@ function ImportExportModal({
             id: newAssetIds[asset.id],
             owner: userId,
           });
-        } else {
-          throw new MissingAssetError("Import missing assets");
+          processedAssetIds.push(asset.id)
         }
+      }
+
+      const unprocessed = Object.keys(newAssetIds).filter(item => processedAssetIds.indexOf(item) < 0);
+      const unprocessedMaps: string[] = []
+      if (unprocessed.length > 0) {
+        for (let item of unprocessed) {
+          let unprocessedMapAsset = oldAssetIds[item]
+
+          if (!unprocessedMaps.includes(unprocessedMapAsset.mapName)) {
+            unprocessedMaps.push(unprocessedMapAsset.mapName)
+          }
+        }
+
+        addWarningToast("Could not import ", unprocessedMaps)
       }
 
       // Add map groups with new ids
