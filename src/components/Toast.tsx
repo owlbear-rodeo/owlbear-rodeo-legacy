@@ -5,11 +5,11 @@ import { AppearanceTypes, ToastProvider as DefaultToastProvider } from "react-to
 function getToastAppearance(appearance: AppearanceTypes) {
   let colour = "overlay"
   if (appearance === "error") {
-    colour = "secondary"
+    colour = "highlight"
   } else if (appearance === "info") {
     colour = "overlay"
   } else if (appearance === "warning") {
-    colour = "highlight"
+    colour = "secondary"
   } else if (appearance === "success") {
     colour = "primary"
   }
