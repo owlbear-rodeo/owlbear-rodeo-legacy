@@ -203,9 +203,6 @@ function ImportExportModal({
         const tokenIds = checkedTokens.map((token) => token.id);
         const tokensToAdd: Token[] = await importDB.table("tokens").bulkGet(tokenIds);
         for (let token of tokensToAdd) {
-          if (token.name === "Vorkhal") {
-            console.log("found")
-          }
           if (token) {
             // Generate new ids
             const newId = uuid();
