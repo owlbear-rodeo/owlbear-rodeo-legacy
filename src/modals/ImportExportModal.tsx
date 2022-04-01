@@ -71,21 +71,21 @@ function ImportExportModal({
   
   function addWarningToast(
     message: string,
-    mapNames: string[],
+    items: string[],
   ) {
-    let mapText = "";
+    let text = "";
 
-    if (mapNames.length > 0) {
-      if (mapNames.length === 1) {
-        mapText += `${mapNames[0]}`
+    if (items.length > 0) {
+      if (items.length === 1) {
+        text += `${items[0]}`
       } else {
-        for (let map in mapNames) {
-          mapText += `${mapNames[map]}, `
+        for (let item in items) {
+          text += `${items[item]}, `
         }
-        mapText = mapText.replace(/,\s*$/, "");
+        text = text.replace(/,\s*$/, "");
       }
     }
-    const toastMessage = <span>{message} <b>{mapText}</b></span>
+    const toastMessage = <span>{message} <b>{text}</b></span>
     addToast(toastMessage, {appearance: "warning", autoDismiss: true });
   }
 
