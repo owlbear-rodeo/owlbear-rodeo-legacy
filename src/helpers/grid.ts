@@ -562,7 +562,9 @@ export async function getGridSizeFromImage(image: HTMLImageElement) {
   try {
     prediction = await gridSizeML(image, candidates);
   } catch (error) {
-    logError(error);
+    if (error instanceof  Error) {
+      logError(error);
+    }
   }
 
   if (!prediction) {

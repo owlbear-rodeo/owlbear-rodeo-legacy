@@ -108,7 +108,9 @@ function DiceInteraction({
         }
       });
     } catch (error) {
-      setError(error);
+      if (error instanceof Error) {
+        setError(error);
+      }
     }
   }, [onSceneMount]);
 
