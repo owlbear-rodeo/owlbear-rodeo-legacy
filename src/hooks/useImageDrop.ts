@@ -67,10 +67,12 @@ function useImageDrop(
           }
         }
       } catch (e) {
-        if (e.message === "Failed to fetch") {
-          addToast("Unable to import image: failed to fetch");
-        } else {
-          addToast("Unable to import image");
+        if (e instanceof Error) {
+          if (e.message === "Failed to fetch") {
+            addToast("Unable to import image: failed to fetch");
+          } else {
+            addToast("Unable to import image");
+          }
         }
       }
     }
