@@ -16,14 +16,14 @@ function getToastAppearance(appearance: AppearanceTypes) {
   return colour;
 }
 
-function CustomToast({ appearance, children }: { appearance: AppearanceTypes, children: React.ReactNode}) {
+function CustomToast({ appearance, children }: { appearance: AppearanceTypes, children: React.ReactNode }) {
   return (
     <Box
       m={2}
       mb={0}
-      bg={ appearance ? getToastAppearance(appearance) : "overlay"}
+      bg={appearance ? getToastAppearance(appearance) : "overlay"}
       sx={{ borderRadius: "4px", padding: "12px 16px" }}
-      >
+    >
       <Text as="p" variant="body2">
         {children}
       </Text>
