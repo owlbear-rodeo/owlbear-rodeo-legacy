@@ -201,7 +201,7 @@ function ImportExportModal({
       let newTokens: Token[] = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd: Token[] = await importDB.table("tokens").bulkGet(tokenIds);
+        const tokensToAdd: Token[] = await importDB.table<Token>("tokens").bulkGet(tokenIds);
         for (let token of tokensToAdd) {
           if (token) {
             // Generate new ids
@@ -240,7 +240,7 @@ function ImportExportModal({
       let newStates: MapState[] = [];
       if (checkedMaps.length > 0) {
         const mapIds = checkedMaps.map((map) => map.id);
-        const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
+        const mapsToAdd = await importDB.table<Map>("maps").bulkGet(mapIds);
         for (let map of mapsToAdd) {
           let state: MapState = await importDB.table("states").get(map.id);
           // Apply new token ids to imported state
@@ -295,7 +295,7 @@ function ImportExportModal({
 
       // Add assets with new ids
       const assetsToAdd = await importDB
-        .table("assets")
+        .table<Asset>("assets")
         .bulkGet(Object.keys(newAssetIds));
       let newAssets: Asset[] = [];
       const processedAssetIds: string[] = []
@@ -380,26 +380,26 @@ function ImportExportModal({
         ],
         async () => {
           if (newTokens.length > 0) {
-            await db.table("tokens").bulkAdd(newTokens);
+            await db.table<Token>("tokens").bulkAdd(newTokens);
           }
           if (newMaps.length > 0) {
-            await db.table("maps").bulkAdd(newMaps);
+            await db.table<Map>("maps").bulkAdd(newMaps);
           }
           if (newStates.length > 0) {
             await db.table("states").bulkAdd(newStates);
           }
           if (newAssets.length > 0) {
-            await db.table("assets").bulkAdd(newAssets);
+            await db.table<Asset>("assets").bulkAdd(newAssets);
           }
           if (newMapGroups.length > 0) {
             const mapGroup = await db.table("groups").get("maps");
             await db
-              .table("groups")
+              .table<Group>("groups")
               .update("maps", { items: [...newMapGroups, ...mapGroup.items] });
           }
           if (newTokenGroups.length > 0) {
             const tokenGroup = await db.table("groups").get("tokens");
-            await db.table("groups").update("tokens", {
+            await db.table<Group>("groups").update("tokens", {
               items: [...newTokenGroups, ...tokenGroup.items],
             });
           }

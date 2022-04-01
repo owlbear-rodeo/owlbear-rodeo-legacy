@@ -12,6 +12,7 @@ import blobToBuffer from "../helpers/blobToBuffer";
 
 import { Map } from "../types/Map";
 import { Token } from "../types/Token";
+import { Asset } from "../types/Asset";
 
 type ProgressCallback = (progress: ExportProgress) => boolean;
 
@@ -34,7 +35,7 @@ let service = {
         // Load entire table
         let items: T[] = [];
         // Use a cursor instead of toArray to prevent IPC max size error
-        await db.table(table).each((item) => {
+        await db.table(table).each((item: any) => {
           items.push(item);
         });
 
@@ -77,7 +78,7 @@ let service = {
     let db = getDatabase({});
 
     // Add assets for selected maps and tokens
-    const maps = await db
+    const maps: Map[] = await db
       .table<Map>("maps")
       .where("id")
       .anyOf(mapIds)
@@ -125,7 +126,7 @@ let service = {
       return false;
     };
 
-    const data = await exportDB(db as any, {
+    const data = await exportDB(db, {
       progressCallback,
       filter,
       numRowsPerChunk: 1,
@@ -176,7 +177,7 @@ let service = {
       importMeta.data.databaseVersion,
       false
     );
-    await importInto(importDB as any, data, {
+    await importInto(importDB, data, {
       progressCallback,
       acceptNameDiff: true,
       overwriteValues: true,
@@ -207,10 +208,10 @@ let service = {
 
       const assetSizes: { id: string; size: number }[] = [];
       await db
-        .table("assets")
+        .table<Asset>("assets")
         .where("owner")
         .notEqual(userId)
-        .each((asset) => {
+        .each((asset: Asset) => {
           assetSizes.push({ id: asset.id, size: asset.file.byteLength });
         });
       const totalSize = assetSizes.reduce((acc, cur) => acc + cur.size, 0);
@@ -226,7 +227,7 @@ let service = {
             break;
           }
         }
-        await db.table("assets").bulkDelete(assetsToDelete);
+        await db.table<Asset>("assets").bulkDelete(assetsToDelete);
       }
     } catch {}
   },
