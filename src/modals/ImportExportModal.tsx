@@ -193,7 +193,7 @@ function ImportExportModal({
       // Mapping of old asset ids to new asset ids
       let newAssetIds: Record<string, string> = {};
       // Mapping of old asset ids to old maps
-      let oldAssetIds: Record<string, { mapName: string, assetType: string }> = {};
+      let oldAssetIds: Record<string, { itemName: string, item: "map" | "token", assetType: string }> = {};
 
       // Mapping of old maps ids to new map ids
       let newMapIds: Record<string, string> = {};
@@ -201,28 +201,40 @@ function ImportExportModal({
       let newTokens: Token[] = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd = await importDB.table("tokens").bulkGet(tokenIds);
+        const tokensToAdd: Token[] = await importDB.table("tokens").bulkGet(tokenIds);
         for (let token of tokensToAdd) {
-          // Generate new ids
-          const newId = uuid();
-          newTokenIds[token.id] = newId;
+          if (token.name === "Vorkhal") {
+            console.log("found")
+          }
+          if (token) {
+            // Generate new ids
+            const newId = uuid();
+            newTokenIds[token.id] = newId;
+  
+            if (token.type === "default") {
+              if (userId) {
+                newTokens.push({ ...token, id: newId, owner: userId });
+              }
+            } else {
+              const newFileId = uuid();
+              const newThumbnailId = uuid();
+              newAssetIds[token.file] = newFileId;
+              newAssetIds[token.thumbnail] = newThumbnailId;
 
-          if (token.type === "default") {
-            newTokens.push({ ...token, id: newId, owner: userId });
-          } else {
-            const newFileId = uuid();
-            const newThumbnailId = uuid();
-            newAssetIds[token.file] = newFileId;
-            newAssetIds[token.thumbnail] = newThumbnailId;
+              oldAssetIds[token.file] = { itemName: token.name, item: "token", assetType: "file" };
+              oldAssetIds[token.thumbnail] = { itemName: token.name, item: "token", assetType: "thumbnail" };
 
-            // Change ids and owner
-            newTokens.push({
-              ...token,
-              id: newId,
-              owner: userId,
-              file: newFileId,
-              thumbnail: newThumbnailId,
-            });
+              // Change ids and owner
+              if (userId) {
+                newTokens.push({
+                  ...token,
+                  id: newId,
+                  owner: userId,
+                  file: newFileId,
+                  thumbnail: newThumbnailId,
+                });
+              }
+            }
           }
         }
       }
@@ -260,14 +272,14 @@ function ImportExportModal({
             newAssetIds[map.file] = newFileId;
             newAssetIds[map.thumbnail] = newThumbnailId;
 
-            oldAssetIds[map.file] = { mapName: map.name, assetType: "file" };
-            oldAssetIds[map.thumbnail] = { mapName: map.name, assetType: "thumbnail" };
+            oldAssetIds[map.file] = { itemName: map.name, item: "map", assetType: "file" };
+            oldAssetIds[map.thumbnail] = { itemName: map.name, item: "map", assetType: "thumbnail" };
 
             const newResolutionIds: Record<string, string> = {};
             for (let res of Object.keys(map.resolutions)) {
               newResolutionIds[res] = uuid();
               newAssetIds[map.resolutions[res]] = newResolutionIds[res];
-              oldAssetIds[map.resolutions[res]] = { mapName: map.name, assetType: "resolution" };
+              oldAssetIds[map.resolutions[res]] = { itemName: map.name, item: "map", assetType: "resolution" };
             }
             // Change ids and owner
             newMaps.push({
@@ -301,18 +313,25 @@ function ImportExportModal({
         }
       }
 
-      const unprocessed = Object.keys(newAssetIds).filter(item => processedAssetIds.indexOf(item) < 0);
-      const unprocessedMaps: string[] = []
-      if (unprocessed.length > 0) {
-        for (let item of unprocessed) {
-          let unprocessedMapAsset = oldAssetIds[item]
+      const unprocessedAssets = Object.keys(newAssetIds).filter(item => processedAssetIds.indexOf(item) < 0);
+      let unprocessedMaps = 0
+      let unprocessedTokens = 0
+      if (unprocessedAssets.length > 0) {
+        const unprocessedItems: string[] = []
+        for (let item of unprocessedAssets) {
+          let unprocessedItem = oldAssetIds[item]
 
-          if (!unprocessedMaps.includes(unprocessedMapAsset.mapName)) {
-            unprocessedMaps.push(unprocessedMapAsset.mapName)
+          if (!unprocessedItems.includes(unprocessedItem.itemName)) {
+            unprocessedItems.push(unprocessedItem.itemName)
+            if (unprocessedItem.item === "map") {
+              unprocessedMaps += 1
+            } else if (unprocessedItem.item === "token") {
+              unprocessedTokens += 1
+            }
           }
         }
 
-        addWarningToast("Could not import ", unprocessedMaps)
+        addWarningToast("Could not import item(s)", unprocessedItems)
       }
 
       // Add map groups with new ids
@@ -389,8 +408,9 @@ function ImportExportModal({
           }
         }
       );
-      const totalImportedMaps = checkedMaps.length - unprocessedMaps.length
-      addSuccessToast("Imported", totalImportedMaps, checkedTokens.length);
+      const totalImportedMaps = checkedMaps.length - unprocessedMaps
+      const totalImportedTokens = checkedTokens.length - unprocessedTokens
+      addSuccessToast("Imported", totalImportedMaps, totalImportedTokens);
     } catch (e) {
       console.error(e);
       if (e instanceof MissingAssetError) {
