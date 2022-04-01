@@ -55,16 +55,16 @@ function ImportExportModal({
   const { addToast } = useToasts();
   function addSuccessToast(
     message: string,
-    maps: SelectData[],
-    tokens: SelectData[]
+    maps: number,
+    tokens: number
   ) {
-    const mapText = `${maps.length} map${maps.length > 1 ? "s" : ""}`;
-    const tokenText = `${tokens.length} token${tokens.length > 1 ? "s" : ""}`;
-    if (maps.length > 0 && tokens.length > 0) {
+    const mapText = `${maps} map${maps > 1 ? "s" : ""}`;
+    const tokenText = `${tokens} token${tokens > 1 ? "s" : ""}`;
+    if (maps > 0 && tokens > 0) {
       addToast(`${message} ${mapText} and ${tokenText}`);
-    } else if (maps.length > 0) {
+    } else if (maps > 0) {
       addToast(`${message} ${mapText}`);
-    } else if (tokens.length > 0) {
+    } else if (tokens > 0) {
       addToast(`${message} ${tokenText}`);
     }
   }
@@ -76,14 +76,17 @@ function ImportExportModal({
     let mapText = "";
 
     if (mapNames.length > 0) {
-      for (let map in mapNames) {
-        console.log(mapNames[map]);
-        mapText += `${mapNames[map]}, `
+      if (mapNames.length === 1) {
+        mapText += `${mapNames[0]}`
+      } else {
+        for (let map in mapNames) {
+          mapText += `${mapNames[map]}, `
+        }
+        mapText = mapText.replace(/,\s*$/, "");
       }
     }
-    // mapText.trimEnd();
-    mapText = mapText.replace(/,\s*$/, "");
-    addToast(`${message} ${mapText}`);
+    const toastMessage = <span>{message} <b>{mapText}</b></span>
+    addToast(toastMessage, {appearance: "warning", autoDismiss: true });
   }
 
   function openFileDialog() {
@@ -386,7 +389,8 @@ function ImportExportModal({
           }
         }
       );
-      addSuccessToast("Imported", checkedMaps, checkedTokens);
+      const totalImportedMaps = checkedMaps.length - unprocessedMaps.length
+      addSuccessToast("Imported", totalImportedMaps, checkedTokens.length);
     } catch (e) {
       console.error(e);
       if (e instanceof MissingAssetError) {
@@ -433,7 +437,7 @@ function ImportExportModal({
       );
       const blob = new Blob([buffer]);
       saveAs(blob, `${shortid.generate()}.owlbear`);
-      addSuccessToast("Exported", checkedMaps, checkedTokens);
+      addSuccessToast("Exported", checkedMaps.length, checkedTokens.length);
     } catch (e: unknown) {
       if (e instanceof(Error)) {
         console.error(e);
