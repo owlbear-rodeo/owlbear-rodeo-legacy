@@ -68,7 +68,7 @@ function ImportExportModal({
       addToast(`${message} ${tokenText}`);
     }
   }
-  
+
   function addWarningToast(
     message: string,
     items: string[],
@@ -86,7 +86,7 @@ function ImportExportModal({
       }
     }
     const toastMessage = <span>{message} <b>{text}</b></span>
-    addToast(toastMessage, {appearance: "warning", autoDismiss: true });
+    addToast(toastMessage, { appearance: "warning", autoDismiss: true });
   }
 
   function openFileDialog() {
@@ -123,7 +123,7 @@ function ImportExportModal({
     } catch (e) {
       setIsLoading(false);
       backgroundTaskRunningRef.current = false;
-      if (e instanceof(Error)) {
+      if (e instanceof (Error)) {
         if (e.message.startsWith("Max buffer length exceeded")) {
           setError(
             new Error(
@@ -201,35 +201,38 @@ function ImportExportModal({
       let newTokens: Token[] = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd: Token[] = await importDB.table<Token>("tokens").bulkGet(tokenIds);
-        for (let token of tokensToAdd) {
-          if (token) {
-            // Generate new ids
-            const newId = uuid();
-            newTokenIds[token.id] = newId;
-  
-            if (token.type === "default") {
-              if (userId) {
-                newTokens.push({ ...token, id: newId, owner: userId });
-              }
-            } else {
-              const newFileId = uuid();
-              const newThumbnailId = uuid();
-              newAssetIds[token.file] = newFileId;
-              newAssetIds[token.thumbnail] = newThumbnailId;
+        const tokensToAdd: Token[] | undefined = await importDB.table<Token>("tokens").bulkGet(tokenIds);
 
-              oldAssetIds[token.file] = { itemName: token.name, item: "token", assetType: "file" };
-              oldAssetIds[token.thumbnail] = { itemName: token.name, item: "token", assetType: "thumbnail" };
+        if (tokensToAdd) {
+          for (let token of tokensToAdd) {
+            if (token) {
+              // Generate new ids
+              const newId = uuid();
+              newTokenIds[token.id] = newId;
 
-              // Change ids and owner
-              if (userId) {
-                newTokens.push({
-                  ...token,
-                  id: newId,
-                  owner: userId,
-                  file: newFileId,
-                  thumbnail: newThumbnailId,
-                });
+              if (token.type === "default") {
+                if (userId) {
+                  newTokens.push({ ...token, id: newId, owner: userId });
+                }
+              } else {
+                const newFileId = uuid();
+                const newThumbnailId = uuid();
+                newAssetIds[token.file] = newFileId;
+                newAssetIds[token.thumbnail] = newThumbnailId;
+
+                oldAssetIds[token.file] = { itemName: token.name, item: "token", assetType: "file" };
+                oldAssetIds[token.thumbnail] = { itemName: token.name, item: "token", assetType: "thumbnail" };
+
+                // Change ids and owner
+                if (userId) {
+                  newTokens.push({
+                    ...token,
+                    id: newId,
+                    owner: userId,
+                    file: newFileId,
+                    thumbnail: newThumbnailId,
+                  });
+                }
               }
             }
           }
@@ -456,7 +459,7 @@ function ImportExportModal({
       saveAs(blob, `${shortid.generate()}.owlbear`);
       addSuccessToast("Exported", checkedMaps.length, checkedTokens.length);
     } catch (e: unknown) {
-      if (e instanceof(Error)) {
+      if (e instanceof (Error)) {
         console.error(e);
         setError(e);
       }
