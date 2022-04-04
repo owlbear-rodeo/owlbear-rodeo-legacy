@@ -126,7 +126,7 @@ let service = {
       return false;
     };
 
-    const data = await exportDB(db, {
+    const data = await exportDB(db as any, {
       progressCallback,
       filter,
       numRowsPerChunk: 1,
@@ -177,7 +177,7 @@ let service = {
       importMeta.data.databaseVersion,
       false
     );
-    await importInto(importDB, data, {
+    await importInto(importDB as any, data, {
       progressCallback,
       acceptNameDiff: true,
       overwriteValues: true,
@@ -208,7 +208,7 @@ let service = {
 
       const assetSizes: { id: string; size: number }[] = [];
       await db
-        .table<Asset>("assets")
+        .table("assets")
         .where("owner")
         .notEqual(userId)
         .each((asset: Asset) => {
@@ -227,7 +227,7 @@ let service = {
             break;
           }
         }
-        await db.table<Asset>("assets").bulkDelete(assetsToDelete);
+        await db.table("assets").bulkDelete(assetsToDelete);
       }
     } catch {}
   },
