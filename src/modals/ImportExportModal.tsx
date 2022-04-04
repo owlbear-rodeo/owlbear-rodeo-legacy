@@ -201,7 +201,7 @@ function ImportExportModal({
       let newTokens: Token[] = [];
       if (checkedTokens.length > 0) {
         const tokenIds = checkedTokens.map((token) => token.id);
-        const tokensToAdd: Token[] | undefined = await importDB.table<Token>("tokens").bulkGet(tokenIds);
+        const tokensToAdd: Token[] | undefined = await importDB.table("tokens").bulkGet(tokenIds);
 
         if (tokensToAdd) {
           for (let token of tokensToAdd) {
@@ -243,73 +243,85 @@ function ImportExportModal({
       let newStates: MapState[] = [];
       if (checkedMaps.length > 0) {
         const mapIds = checkedMaps.map((map) => map.id);
-        const mapsToAdd = await importDB.table<Map>("maps").bulkGet(mapIds);
-        for (let map of mapsToAdd) {
-          let state: MapState = await importDB.table("states").get(map.id);
-          // Apply new token ids to imported state
-          for (let tokenState of Object.values(state.tokens)) {
-            if (tokenState.tokenId in newTokenIds) {
-              tokenState.tokenId = newTokenIds[tokenState.tokenId];
-            }
-            // Change token state file asset id
-            if (tokenState.type === "file" && tokenState.file in newAssetIds) {
-              tokenState.file = newAssetIds[tokenState.file];
-            }
-            // Change token state owner if owned by the user of the map
-            if (tokenState.owner === map.owner && userId) {
-              tokenState.owner = userId;
+        const mapsToAdd = await importDB.table("maps").bulkGet(mapIds);
+        if (mapsToAdd) {
+
+          for (let map of mapsToAdd) {
+            if (map) {
+              let state: MapState = await importDB.table("states").get(map.id);
+              // Apply new token ids to imported state
+              for (let tokenState of Object.values(state.tokens)) {
+                if (tokenState.tokenId in newTokenIds) {
+                  tokenState.tokenId = newTokenIds[tokenState.tokenId];
+                }
+                // Change token state file asset id
+                if (tokenState.type === "file" && tokenState.file in newAssetIds) {
+                  tokenState.file = newAssetIds[tokenState.file];
+                }
+                // Change token state owner if owned by the user of the map
+                if (tokenState.owner === map.owner && userId) {
+                  tokenState.owner = userId;
+                }
+              }
+              // Generate new ids
+              const newId = uuid();
+              newMapIds[map.id] = newId;
+
+              if (map.type === "default") {
+                if (userId) {
+                  newMaps.push({ ...map, id: newId, owner: userId });
+                }
+              } else {
+                const newFileId = uuid();
+                const newThumbnailId = uuid();
+                newAssetIds[map.file] = newFileId;
+                newAssetIds[map.thumbnail] = newThumbnailId;
+
+                oldAssetIds[map.file] = { itemName: map.name, item: "map", assetType: "file" };
+                oldAssetIds[map.thumbnail] = { itemName: map.name, item: "map", assetType: "thumbnail" };
+
+                const newResolutionIds: Record<string, string> = {};
+                for (let res of Object.keys(map.resolutions)) {
+                  newResolutionIds[res] = uuid();
+                  newAssetIds[map.resolutions[res]] = newResolutionIds[res];
+                  oldAssetIds[map.resolutions[res]] = { itemName: map.name, item: "map", assetType: "resolution" };
+                }
+
+                if (userId) {
+                  // Change ids and owner
+                  newMaps.push({
+                    ...map,
+                    id: newId,
+                    owner: userId,
+                    file: newFileId,
+                    thumbnail: newThumbnailId,
+                    resolutions: newResolutionIds,
+                  });
+                }
+              }
+
+              newStates.push({ ...state, mapId: newId });
             }
           }
-          // Generate new ids
-          const newId = uuid();
-          newMapIds[map.id] = newId;
-
-          if (map.type === "default") {
-            newMaps.push({ ...map, id: newId, owner: userId });
-          } else {
-            const newFileId = uuid();
-            const newThumbnailId = uuid();
-            newAssetIds[map.file] = newFileId;
-            newAssetIds[map.thumbnail] = newThumbnailId;
-
-            oldAssetIds[map.file] = { itemName: map.name, item: "map", assetType: "file" };
-            oldAssetIds[map.thumbnail] = { itemName: map.name, item: "map", assetType: "thumbnail" };
-
-            const newResolutionIds: Record<string, string> = {};
-            for (let res of Object.keys(map.resolutions)) {
-              newResolutionIds[res] = uuid();
-              newAssetIds[map.resolutions[res]] = newResolutionIds[res];
-              oldAssetIds[map.resolutions[res]] = { itemName: map.name, item: "map", assetType: "resolution" };
-            }
-            // Change ids and owner
-            newMaps.push({
-              ...map,
-              id: newId,
-              owner: userId,
-              file: newFileId,
-              thumbnail: newThumbnailId,
-              resolutions: newResolutionIds,
-            });
-          }
-
-          newStates.push({ ...state, mapId: newId });
         }
       }
 
       // Add assets with new ids
-      const assetsToAdd = await importDB
-        .table<Asset>("assets")
+      const assetsToAdd: Asset[] | undefined = await importDB
+        .table("assets")
         .bulkGet(Object.keys(newAssetIds));
       let newAssets: Asset[] = [];
       const processedAssetIds: string[] = []
-      for (let asset of assetsToAdd) {
-        if (asset) {
-          newAssets.push({
-            ...asset,
-            id: newAssetIds[asset.id],
-            owner: userId,
-          });
-          processedAssetIds.push(asset.id)
+      if (assetsToAdd) {
+        for (let asset of assetsToAdd) {
+          if (asset && userId) {
+            newAssets.push({
+              ...asset,
+              id: newAssetIds[asset.id],
+              owner: userId,
+            });
+            processedAssetIds.push(asset.id)
+          }
         }
       }
 
