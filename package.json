@@ -63,7 +63,7 @@
     "simple-peer": "^9.11.1",
     "simplebar-react": "^2.3.6",
     "simplify-js": "^1.2.4",
-    "socket.io-client": "^4.1.3",
+    "socket.io-client": "^4.4.1",
     "socket.io-msgpack-parser": "^3.0.1",
     "source-map-explorer": "^2.5.2",
     "theme-ui": "^0.10.0",
