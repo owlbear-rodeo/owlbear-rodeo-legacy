@@ -325,24 +325,39 @@ function ImportExportModal({
         }
       }
 
+      // compare items added to newAssetIds against those that were processed
       const unprocessedAssets = Object.keys(newAssetIds).filter(item => processedAssetIds.indexOf(item) < 0);
       let unprocessedMaps = 0
       let unprocessedTokens = 0
+      // check if there are any items that have been unprocessed
       if (unprocessedAssets.length > 0) {
         const unprocessedItems: { id: string, name: string }[] = []
         for (let item of unprocessedAssets) {
+          // get information of unprocessed item from oldAssetIds list
           let unprocessedItem = oldAssetIds[item]
 
+          // should only remove corrupted asset once (one map can have multiple unprocessed assets)
           if (!!!(unprocessedItems.some(value => value.id === unprocessedItem.itemId))) {
             unprocessedItems.push({ id: unprocessedItem.itemId, name: unprocessedItem.itemName })
             if (unprocessedItem.item === "map") {
               unprocessedMaps += 1
+
+              // remove corrupt map from newMaps list -> otherwise corrupt data will be imported
               const index = newMaps.findIndex(map => map.id === unprocessedItem.newId)
-              newMaps.splice(index, 1)
+              if (index !== -1) {
+                newMaps.splice(index, 1)
+              }
+
+              const stateIndex = newStates.findIndex(state => state.mapId === unprocessedItem.newId)
+              if (stateIndex !== -1) {
+                newStates.splice(stateIndex, 1)
+              }
             } else if (unprocessedItem.item === "token") {
               unprocessedTokens += 1
               const index = newTokens.findIndex(token => token.id === unprocessedItem.newId)
-              newTokens.splice(index, 1)
+              if (index !== -1) {
+                newTokens.splice(index, 1)
+              }
             }
           }
         }
