@@ -325,7 +325,7 @@ function FogTool({
         setDrawingShape(null);
       }
 
-      eraseHoveredShapes();
+      eraseHoveredShapes(props);
 
       setIsBrushDown(false);
     }
@@ -566,7 +566,10 @@ function FogTool({
     });
   }, [toolSettings.useFogCut]);
 
-  function eraseHoveredShapes() {
+  function eraseHoveredShapes(event: any) {
+    if (!leftMouseButton(event)) {
+      return;
+    }
     // Erase
     if (hoveredShapes.length > 0) {
       if (toolSettings.type === "remove") {
@@ -605,9 +608,14 @@ function FogTool({
       <FogShape
         key={shape.id}
         fog={shape}
-        onMouseMove={() => handleShapeOver(shape, isBrushDown)}
+        onMouseMove={(e: Konva.KonvaEventObject<MouseEvent>) =>
+          (!isBrushDown || leftMouseButton(e)) &&
+          handleShapeOver(shape, isBrushDown)
+        }
         onTouchOver={() => handleShapeOver(shape, isBrushDown)}
-        onMouseDown={() => handleShapeOver(shape, true)}
+        onMouseDown={(e: Konva.KonvaEventObject<MouseEvent>) =>
+          leftMouseButton(e) && handleShapeOver(shape, true)
+        }
         onTouchStart={() => handleShapeOver(shape, true)}
         onMouseUp={eraseHoveredShapes}
         onTouchEnd={eraseHoveredShapes}
