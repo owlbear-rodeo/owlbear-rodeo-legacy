@@ -65,6 +65,18 @@ function Home() {
           Owlbear Rodeo
         </Text>
         <Image src={owlington} m={2} />
+        <Message mb={4}>
+          <Paragraph
+            sx={{
+              fontSize: "12px",
+              fontFamily:
+                "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif",
+            }}
+          >
+            Check out our new <Link href="https://blog.owlbear.rodeo/">blog</Link>{" "}
+            for all the news on the next version of Owlbear Rodeo
+          </Paragraph>
+        </Message>
         <Button
           variant="secondary"
           m={2}
@@ -150,18 +162,6 @@ function Home() {
           onRequestClose={() => setIsGettingStartedModalOpen(false)}
         />
       </Flex>
-      <Message mb={4}>
-        <Paragraph
-          sx={{
-            fontSize: "12px",
-            fontFamily:
-              "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif",
-          }}
-        >
-          Check out our new <Link href="https://blog.owlbear.rodeo/">blog</Link>{" "}
-          for all the news on the next version of Owlbear Rodeo
-        </Paragraph>
-      </Message>
       <Footer />
     </Flex>
   );
