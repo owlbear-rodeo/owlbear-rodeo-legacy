@@ -86,6 +86,8 @@ export function groupBy(array: Record<PropertyKey, any>[], key: string) {
 
 export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
+export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 export function shuffle<Type>(array: Type[]) {
   let temp = [...array];
   var currentIndex = temp.length,
