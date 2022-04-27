@@ -59,12 +59,12 @@ function ReleaseNotes() {
           </Accordion>
         </div>
         <div id="v1101">
-          <Accordion heading="v1.10.1" defaultOpen>
+          <Accordion heading="v1.10.1" defaultOpen={location.hash === "#v1101"}>
             <Markdown source={v1101} />
           </Accordion>
         </div>
         <div id="v1100">
-          <Accordion heading="v1.10.0" defaultOpen>
+          <Accordion heading="v1.10.0" defaultOpen={location.hash === "#v1100"}>
             <Markdown source={v1100} />
           </Accordion>
         </div>
