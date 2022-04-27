@@ -20,6 +20,7 @@ import usePreventTouch from "../../hooks/usePreventTouch";
 
 import ErrorBanner from "../banner/ErrorBanner";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
+import { isSafari } from "../../helpers/shared";
 
 const diceThrowSpeed = 2;
 
@@ -57,7 +58,9 @@ function DiceInteraction({
     }
 
     try {
-      const engine = new Engine(canvas, true, {
+      // iOS 15.4 introduced a bug - animation trails ar visible on dice in Safari. Have to disable antialiasing on Safari
+      // https://forum.babylonjs.com/t/render-loop-issue-on-iphone-11-unwanted-animation-trails/29742
+      const engine = new Engine(canvas, !isSafari, {
         preserveDrawingBuffer: true,
         stencil: true,
         // Prevent XR from loading as Safari 15 crashes with this enabled
@@ -108,7 +111,9 @@ function DiceInteraction({
         }
       });
     } catch (error) {
-      setError(error);
+      if (error instanceof Error) {
+        setError(error);
+      }
     }
   }, [onSceneMount]);
 

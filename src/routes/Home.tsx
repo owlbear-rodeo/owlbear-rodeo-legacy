@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Flex, Button, Image, Text, IconButton, Link } from "theme-ui";
+import {
+  Flex,
+  Button,
+  Image,
+  Text,
+  IconButton,
+  Link,
+  Message,
+  Paragraph,
+} from "theme-ui";
 import { useHistory } from "react-router-dom";
 
 import Footer from "../components/Footer";
@@ -56,6 +65,18 @@ function Home() {
           Owlbear Rodeo
         </Text>
         <Image src={owlington} m={2} />
+        <Message mb={4}>
+          <Paragraph
+            sx={{
+              fontSize: "12px",
+              fontFamily:
+                "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif",
+            }}
+          >
+            Check out our new <Link href="https://blog.owlbear.rodeo/">blog</Link>{" "}
+            for all the news on the next version of Owlbear Rodeo
+          </Paragraph>
+        </Message>
         <Button
           variant="secondary"
           m={2}
