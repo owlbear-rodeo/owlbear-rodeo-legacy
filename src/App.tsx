@@ -8,7 +8,6 @@ import About from "./routes/About";
 import FAQ from "./routes/FAQ";
 import ReleaseNotes from "./routes/ReleaseNotes";
 import HowTo from "./routes/HowTo";
-import Donate from "./routes/Donate";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
@@ -27,9 +26,6 @@ function App() {
             <ToastProvider>
               <Router>
                 <Switch>
-                  <Route path="/donate">
-                    <Donate />
-                  </Route>
                   {/* Legacy support camel case routes */}
                   <Route path={["/howTo", "/how-to"]}>
                     <HowTo />

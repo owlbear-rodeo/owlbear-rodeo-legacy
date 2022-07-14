@@ -9,7 +9,6 @@ import {
   Message,
   Paragraph,
 } from "theme-ui";
-import { useHistory } from "react-router-dom";
 
 import Footer from "../components/Footer";
 
@@ -24,7 +23,6 @@ import { useAuth } from "../contexts/AuthContext";
 import RedditIcon from "../icons/SocialRedditIcon";
 import TwitterIcon from "../icons/SocialTwitterIcon";
 import YouTubeIcon from "../icons/SocialYouTubeIcon";
-import DonateIcon from "../icons/DonateIcon";
 import PatreonIcon from "../icons/SocialPatreonIcon";
 
 import owlington from "../images/Owlington.png";
@@ -40,8 +38,6 @@ function Home() {
   useEffect(() => {
     setPassword("");
   }, [setPassword]);
-
-  const history = useHistory();
 
   return (
     <Flex
@@ -73,8 +69,9 @@ function Home() {
                 "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif",
             }}
           >
-            Check out our new <Link href="https://blog.owlbear.rodeo/">blog</Link>{" "}
-            for all the news on the next version of Owlbear Rodeo
+            Check out our new{" "}
+            <Link href="https://blog.owlbear.rodeo/">blog</Link> for all the
+            news on the next version of Owlbear Rodeo
           </Paragraph>
         </Message>
         <Button
@@ -112,25 +109,6 @@ function Home() {
           }}
         >
           Patreon <PatreonIcon />
-        </Button>
-        <Button
-          as="a"
-          // @ts-ignore
-          href="/donate"
-          mt={2}
-          mb={4}
-          mx={2}
-          onClick={(e) => {
-            e.preventDefault();
-            history.push("/donate");
-          }}
-          sx={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-          }}
-        >
-          Donate <DonateIcon />
         </Button>
         <Flex mb={4} mt={0} sx={{ justifyContent: "center" }}>
           <Link href="https://www.reddit.com/r/OwlbearRodeo/">
