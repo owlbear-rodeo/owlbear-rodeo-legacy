@@ -15,7 +15,6 @@ import Footer from "../components/Footer";
 import ErrorBanner from "../components/banner/ErrorBanner";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-import { logError } from "../helpers/logging";
 import { Stripe } from "@stripe/stripe-js";
 
 type Price = { price?: string; name: string; value: number };
@@ -45,7 +44,6 @@ function Donate() {
           }
         })
         .catch((error) => {
-          logError(error);
           // TODO: check setError -> cannot work with value as a string
           setError(error.message);
           setLoading(false);
