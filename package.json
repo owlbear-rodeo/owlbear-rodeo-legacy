@@ -72,9 +72,6 @@
     "uuid": "^8.3.2",
     "webrtc-adapter": "^8.1.1"
   },
-  "resolutions": {
-    "simple-peer/get-browser-rtc": "substack/get-browser-rtc#4/head"
-  },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts start",
