@@ -16,7 +16,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
     "ajv": "^8.11.2",
-    "ammo.js": "kripken/ammo.js#85c0614cd5338aa0843814fe7bbd2df48164ece7",
+    "ammo.js": "kripken/ammo.js#b0fef83e7ca389cdb36b41c06fe22b34fea5a2cd",
     "case": "^1.6.3",
     "color": "^4.2.3",
     "comlink": "^4.3.1",
