@@ -4329,9 +4329,9 @@ ajv@^8.0.0, ajv@^8.11.2, ajv@^8.6.0, ajv@^8.8.0:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-ammo.js@kripken/ammo.js#b0fef83e7ca389cdb36b41c06fe22b34fea5a2cd:
+ammo.js@kripken/ammo.js#85c0614cd5338aa0843814fe7bbd2df48164ece7:
   version "0.0.2"
-  resolved "https://codeload.github.com/kripken/ammo.js/tar.gz/b0fef83e7ca389cdb36b41c06fe22b34fea5a2cd"
+  resolved "https://codeload.github.com/kripken/ammo.js/tar.gz/85c0614cd5338aa0843814fe7bbd2df48164ece7"
 
 ansi-escapes@^4.2.1, ansi-escapes@^4.3.1:
   version "4.3.1"
