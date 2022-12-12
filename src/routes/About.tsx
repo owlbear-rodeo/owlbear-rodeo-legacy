@@ -49,8 +49,8 @@ function About() {
         </Text>
         <Text variant="body2" as="p">
           For questions or feedback email{" "}
-          <ExternalLink href="mailto:contact@owlbear.rodeo">
-            contact@owlbear.rodeo
+          <ExternalLink href="mailto:support@owlbear.rodeo">
+            support@owlbear.rodeo
           </ExternalLink>
         </Text>
       </Flex>
