@@ -23,7 +23,7 @@ import { useAuth } from "../contexts/AuthContext";
 import RedditIcon from "../icons/SocialRedditIcon";
 import TwitterIcon from "../icons/SocialTwitterIcon";
 import YouTubeIcon from "../icons/SocialYouTubeIcon";
-import PatreonIcon from "../icons/SocialPatreonIcon";
+import SocialPatreonIcon from "../icons/SocialPatreonIcon";
 
 import owlington from "../images/Owlington.png";
 
@@ -69,9 +69,8 @@ function Home() {
                 "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif",
             }}
           >
-            Check out our new{" "}
-            <Link href="https://blog.owlbear.rodeo/">blog</Link> for all the
-            news on the next version of Owlbear Rodeo
+            Check out our <Link href="https://blog.owlbear.rodeo/">blog</Link>{" "}
+            for all the news on the next version of Owlbear Rodeo
           </Paragraph>
         </Message>
         <Button
@@ -98,7 +97,7 @@ function Home() {
         <Button
           as="a"
           // @ts-ignore
-          href="https://patreon.com/owlbearrodeo"
+          href="https://owlbear.app/"
           mt={4}
           mx={2}
           mb={2}
@@ -108,7 +107,7 @@ function Home() {
             justifyContent: "center",
           }}
         >
-          Patreon <PatreonIcon />
+          Owlbear Rodeo 2.0 Beta
         </Button>
         <Flex mb={4} mt={0} sx={{ justifyContent: "center" }}>
           <Link href="https://www.reddit.com/r/OwlbearRodeo/">
@@ -124,6 +123,11 @@ function Home() {
           <Link href="https://www.youtube.com/channel/UCePe1wJC53_7fbBbSECG7YQ">
             <IconButton title="YouTube" aria-label="YouTube">
               <YouTubeIcon />
+            </IconButton>
+          </Link>
+          <Link href="https://patreon.com/owlbearrodeo">
+            <IconButton title="Patreon" aria-label="Patreon">
+              <SocialPatreonIcon />
             </IconButton>
           </Link>
         </Flex>

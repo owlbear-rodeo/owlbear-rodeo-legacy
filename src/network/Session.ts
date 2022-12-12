@@ -5,7 +5,6 @@ import { EventEmitter } from "events";
 import Connection, { DataProgressEvent } from "./Connection";
 
 import { omit } from "../helpers/shared";
-import { logError } from "../helpers/logging";
 import { SignalData } from "simple-peer";
 
 /**
@@ -95,7 +94,6 @@ class Session extends EventEmitter {
 
       this.emit("status", "ready");
     } catch (error: any) {
-      logError(error);
       this.emit("status", "offline");
     }
   }
@@ -309,7 +307,6 @@ class Session extends EventEmitter {
 
       return true;
     } catch (error: any) {
-      logError(error);
       this.emit("peerError", { error });
       for (let peer of Object.values(this.peers)) {
         peer.connection && peer.connection.destroy();

@@ -86,7 +86,9 @@ export function groupBy(array: Record<PropertyKey, any>[], key: string) {
 
 export const isMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
-export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+export const isSafari = /^((?!chrome|android).)*safari/i.test(
+  navigator.userAgent
+);
 
 export function shuffle<Type>(array: Type[]) {
   let temp = [...array];
@@ -116,13 +118,16 @@ export function shuffle<Type>(array: Type[]) {
  * and writing to the clipboard e.g. for Safari or Firefox
  */
 export async function clipboardSupported(): Promise<boolean> {
+  // Reason: we're already handling the case where clipboard-read is not supported
   // @ts-ignore
   if (navigator.clipboard?.readText && navigator.clipboard?.writeText) {
     if (navigator.permissions) {
+      // @ts-ignore
       let query = await navigator.permissions.query({ name: "clipboard-read" });
       if (query.state === "prompt") {
         try {
           await navigator.clipboard.readText();
+          // @ts-ignore
           query = await navigator.permissions.query({ name: "clipboard-read" });
           // Wait 300ms before returning when permission has been accepted to prevent immediate calls
           // to the clipboard api to fail with a document not focused error

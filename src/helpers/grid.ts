@@ -3,7 +3,6 @@ import Vector3 from "./Vector3";
 import Vector2 from "./Vector2";
 import Size from "./Size";
 
-import { logError } from "./logging";
 import { Grid, GridInset, GridScale } from "../types/Grid";
 
 const SQRT3 = 1.73205;
@@ -562,8 +561,8 @@ export async function getGridSizeFromImage(image: HTMLImageElement) {
   try {
     prediction = await gridSizeML(image, candidates);
   } catch (error) {
-    if (error instanceof  Error) {
-      logError(error);
+    if (error instanceof Error) {
+      console.error(error);
     }
   }
 
