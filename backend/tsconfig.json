@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "outDir": "./build",
+      "allowJs": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "es6", 
+      "noFallthroughCasesInSwitch": true, 
+      "noEmitOnError": true,
+      "pretty": true,
+      "moduleResolution": "node",
+      "strict": true,
+      "sourceMap": true,
+      "skipLibCheck": true
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["node_modules/**/*", "./build/**/*"]
+  }

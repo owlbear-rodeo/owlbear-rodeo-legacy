@@ -1,0 +1,10 @@
+services:
+  owlbearrodeo:
+    build: ./
+    stop_grace_period: 30s
+    init: true
+    ports: 
+      - 9000:9000
+    environment:
+      PORT: 9000
+      ALLOW_ORIGIN: ".*"
