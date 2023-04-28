@@ -8,8 +8,8 @@ export function MigrationNotification() {
   useEffect(() => {
     const message = (
       <span>
-        The new era of Owlbear Rodeo is coming on July 19th. Make sure to
-        migrate your data before July 19th. <Link href="#">Read more</Link>
+        The new era of Owlbear Rodeo is coming on July 18th. Make sure to
+        migrate your data before July 18th. <Link href="#">Read more</Link>
       </span>
     );
     addToast(message, {
