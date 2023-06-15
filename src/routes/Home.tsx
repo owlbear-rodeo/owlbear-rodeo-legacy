@@ -71,7 +71,7 @@ function Home() {
           Join Game
         </Button>
         <Text variant="caption" as="p" sx={{ textAlign: "center" }}>
-          Beta v{process.env.REACT_APP_VERSION}
+          Legacy v{process.env.REACT_APP_VERSION}
         </Text>
         <Button
           as="a"
