@@ -1,17 +1,19 @@
 {
-    "compilerOptions": {
-      "outDir": "./build",
-      "allowJs": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "es6", 
-      "noFallthroughCasesInSwitch": true, 
-      "noEmitOnError": true,
-      "pretty": true,
-      "moduleResolution": "node",
-      "strict": true,
-      "sourceMap": true,
-      "skipLibCheck": true
-    },
-    "include": ["./src/**/*"],
-    "exclude": ["node_modules/**/*", "./build/**/*"]
-  }
+  "compilerOptions": {
+    "outDir": "./build",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es6",
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": true,
+    "pretty": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "module": "es2022",
+    "resolveJsonModule": true
+  },
+  "include": ["./src/**/*", "ice.json"],
+  "exclude": ["node_modules/**/*", "./build/**/*"]
+}

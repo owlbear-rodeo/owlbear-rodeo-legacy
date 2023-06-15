@@ -11,16 +11,6 @@
     "start": "node --es-module-specifier-resolution=node ./build/index.js",
     "lint": "eslint src/**/*.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mitchemmc/owlbear-rodeo.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mitchemmc/owlbear-rodeo/issues"
-  },
-  "homepage": "https://github.com/mitchemmc/owlbear-rodeo#readme",
   "dependencies": {
     "bcrypt": "^5.0.0",
     "cors": "^2.8.5",

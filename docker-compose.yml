@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend/
+    stop_grace_period: 30s
+    init: true
+    ports: 
+      - 9000:9000
+    environment:
+      PORT: 9000
+      ALLOW_ORIGIN: ".*"
+  frontend:
+    build: 
+      context: ./
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+    environment:
+      REACT_APP_BROKER_URL: "http://localhost:9000"
+      REACT_APP_ICE_SERVERS_URL: "http://localhost:9000/iceservers"
+      REACT_APP_VERSION: "1.10.2"
+      REACT_APP_MAINTENANCE: "false"
+

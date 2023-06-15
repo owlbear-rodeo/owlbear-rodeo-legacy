@@ -30,6 +30,7 @@ export default class IceServerController extends Controller {
       const servers = await this.iceServer.getIceServers();
       res.send(JSON.stringify(servers));
     } catch (error) {
+      console.error(JSON.stringify(error));
       res.status(500).send({ error });
     }
   }
