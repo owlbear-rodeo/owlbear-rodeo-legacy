@@ -83,6 +83,18 @@ Once deployed Render will provide a URL for you to share with your players.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
+## Troubleshooting
+
+**Custom Images Aren't Showing on Other Computers**
+
+Custom images are transferred using WebRTC in order to navigate some networks you must define a STUN/TURN server.
+
+You can read more about this topic here https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols
+
+While there are some freely available STUN servers, most TURN servers charge you for the bandwidth used.
+
+To change the STUN/TURN configuration you can edit the `/backend/ice.json` file.
+
 ---
 
 ## License
