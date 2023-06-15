@@ -25,11 +25,11 @@ services:
         value: noindex
   # A Docker web service
   - type: web
-    name: obr-backend
+    name: Owlbear Rodeo Backend
     env: docker
     region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
     plan: free
-    branch: master # optional (defaults to master)
+    branch: feature/open-source # optional (defaults to master)
     rootDir: ./backend
     dockerfilePath: ./backend/Dockerfile
     numInstances: 1 # optional (defaults to 1)
