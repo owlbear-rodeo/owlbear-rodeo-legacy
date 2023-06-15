@@ -23,10 +23,20 @@ services:
       - path: /*
         name: X-Robots-Tag
         value: noindex
+    envVars:
+        - key: REACT_APP_BROKER_URL
+          fromService:
+            type: web
+            name: "Owlbear Rodeo Backend"
+            envVarKey: RENDER_EXTERNAL_URL
+        - key: REACT_APP_MAINTENANCE
+          value: false
+        - key: REACT_APP_VERSION
+          value: "1.10.2"
   # A Docker web service
   - type: web
     name: Owlbear Rodeo Backend
-    env: docker
+    runtime: docker
     region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
     plan: free
     branch: "feature/open-source" # optional (defaults to master)
@@ -36,6 +46,6 @@ services:
     healthCheckPath: /health
     envVars:
       - key: ORIGIN_WHITELIST
-        value: $RENDER_EXTERNAL_HOSTNAME
+        value: RENDER_EXTERNAL_HOSTNAME
       - key: PORT
         value: 9000
