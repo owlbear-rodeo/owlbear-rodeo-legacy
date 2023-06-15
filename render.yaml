@@ -5,6 +5,7 @@ services:
     buildCommand: yarn build
     staticPublishPath: ./build
     pullRequestPreviewsEnabled: false
+    branch: feature/open-source
     buildFilter:
       paths:
       - src/**/*.js
