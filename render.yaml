@@ -30,7 +30,7 @@ services:
     region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
     plan: free
     branch: feature/open-source # optional (defaults to master)
-    rootDir: ./backend
+    rootDir: .
     dockerfilePath: ./backend/Dockerfile
     numInstances: 1 # optional (defaults to 1)
     healthCheckPath: /health
