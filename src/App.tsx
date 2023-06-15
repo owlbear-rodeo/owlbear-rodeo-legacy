@@ -16,6 +16,7 @@ import { DatabaseProvider } from "./contexts/DatabaseContext";
 import { UserIdProvider } from "./contexts/UserIdContext";
 
 import { ToastProvider } from "./components/Toast";
+import { MigrationNotification } from "./MigrationNotification";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <AuthProvider>
           <KeyboardProvider>
             <ToastProvider>
+              <MigrationNotification />
               <Router>
                 <Switch>
                   {/* Legacy support camel case routes */}
