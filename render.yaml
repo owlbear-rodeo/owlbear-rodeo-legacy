@@ -46,9 +46,6 @@ services:
     healthCheckPath: /health
     envVars:
       - key: ORIGIN_WHITELIST
-        fromService:
-          type: web
-          name: "Owlbear Rodeo Legacy"
-          envVarKey: RENDER_EXTERNAL_HOSTNAME
+        sync: false
       - key: PORT
         value: 9000
