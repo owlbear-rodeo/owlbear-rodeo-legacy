@@ -76,7 +76,7 @@ function Home() {
         <Button
           as="a"
           // @ts-ignore
-          href="https://owlbear.app/"
+          href="https://owlbear.rodeo/"
           mt={4}
           mx={2}
           mb={2}
@@ -86,7 +86,7 @@ function Home() {
             justifyContent: "center",
           }}
         >
-          Owlbear Rodeo 2.0 Beta
+          Owlbear Rodeo 2.0
         </Button>
         <Flex mb={4} mt={0} sx={{ justifyContent: "center" }}>
           <Link href="https://www.reddit.com/r/OwlbearRodeo/">
