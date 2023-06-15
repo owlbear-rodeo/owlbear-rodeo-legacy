@@ -18,21 +18,16 @@ export default class Game {
   }
 
   getPartyState(): PartyState {
-    // const result = await this.redis.json_hgetall(`game:${gameId}:partyState`);
     const result = this.partyState;
     return result;
   }
 
   getGamePasswordHash(): string {
-    // const result = await this.redis.get(`game:${gameId}:passwordHash`);
-
     const result = this.passwordHash;
     return result;
   }
 
   setGamePasswordHash(hash: string): void {
-    // const result = await this.redis.set(`game:${gameId}:passwordHash`, hash);
-
     this.passwordHash = hash;
   }
 
