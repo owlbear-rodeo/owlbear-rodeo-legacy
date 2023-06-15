@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: Owlbear Rodeo v1
+    name: Owlbear Rodeo Legacy
     runtime: static
     buildCommand: yarn build
     staticPublishPath: ./build
