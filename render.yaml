@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: Owlbear Rodeo v1
+    runtime: static
+    buildCommand: yarn build
+    staticPublishPath: ./build
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - src/**/*.js
+      - src/**/*.ts
+      ignoredPaths:
+      - src/**/*.test.js
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: sameorigin
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex
+  # A Docker web service
+  - type: web
+    name: obr-backend
+    env: docker
+    region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
+    plan: free
+    branch: master # optional (defaults to master)
+    rootDir: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    numInstances: 1 # optional (defaults to 1)
+    healthCheckPath: /health
+    envVars:
+      - key: ORIGIN_WHITELIST
+        value: $RENDER_EXTERNAL_HOSTNAME
+      - key: PORT
+        value: 9000
