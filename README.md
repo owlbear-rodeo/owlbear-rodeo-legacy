@@ -100,8 +100,11 @@ To change the STUN/TURN configuration you can edit the `/backend/ice.json` file.
 ## License
 
 This project is for **personal** use only.
+
 We do not offer a license for commercial use.
+
 You may not modify, publish, transmit, participate in the transfer or sale of, reproduce, create new works from, display, communicate to the public or in any way exploit, any part of this project in any way for commercial purposes.
+
 If you're interested in using Owlbear Rodeo for commercial purposes you can contact us about version 2.0 [here](contact@owlbear.rodeo).
 
 ## Contributing
