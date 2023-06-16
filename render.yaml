@@ -5,7 +5,7 @@ services:
     buildCommand: yarn build
     staticPublishPath: ./build
     pullRequestPreviewsEnabled: false
-    branch: "feature/open-source"
+    branch: main
     buildFilter:
       paths:
       - src/**/*.js
@@ -39,10 +39,10 @@ services:
     runtime: docker
     region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
     plan: free
-    branch: "feature/open-source" # optional (defaults to master)
+    branch: main
     rootDir: ./backend
     dockerfilePath: ./Dockerfile
-    numInstances: 1 # optional (defaults to 1)
+    numInstances: 1
     healthCheckPath: /health
     envVars:
       - key: ORIGIN_WHITELIST
