@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: Owlbear Rodeo Legacy
+    runtime: static
+    buildCommand: yarn build
+    staticPublishPath: ./build
+    pullRequestPreviewsEnabled: false
+    branch: "feature/open-source"
+    buildFilter:
+      paths:
+      - src/**/*.js
+      - src/**/*.ts
+      ignoredPaths:
+      - src/**/*.test.js
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: sameorigin
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex
+    envVars:
+        - key: REACT_APP_BROKER_URL
+          fromService:
+            type: web
+            name: "Owlbear Rodeo Backend"
+            envVarKey: RENDER_EXTERNAL_URL
+        - key: REACT_APP_MAINTENANCE
+          value: false
+        - key: REACT_APP_VERSION
+          value: "1.10.2"
+  # A Docker web service
+  - type: web
+    name: Owlbear Rodeo Backend
+    runtime: docker
+    region: oregon # optional (defaults to oregon) check other regions here: https://render.com/docs/regions
+    plan: free
+    branch: "feature/open-source" # optional (defaults to master)
+    rootDir: ./backend
+    dockerfilePath: ./Dockerfile
+    numInstances: 1 # optional (defaults to 1)
+    healthCheckPath: /health
+    envVars:
+      - key: ORIGIN_WHITELIST
+        fromService:
+          type: web
+          name: "Owlbear Rodeo Legacy"
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: PORT
+        value: 9000

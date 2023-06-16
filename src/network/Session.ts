@@ -64,7 +64,7 @@ class Session extends EventEmitter {
   async connect() {
     try {
       if (
-        !process.env.REACT_APP_ICE_SERVERS_URL ||
+        !process.env.REACT_APP_BROKER_URL ||
         process.env.REACT_APP_MAINTENANCE === "true"
       ) {
         this.emit("status", "offline");
@@ -75,7 +75,9 @@ class Session extends EventEmitter {
         parser: msgParser,
         transports: ["websocket"],
       });
-      const response = await fetch(process.env.REACT_APP_ICE_SERVERS_URL);
+      const response = await fetch(
+        `${process.env.REACT_APP_BROKER_URL}/iceservers`
+      );
       if (!response.ok) {
         throw Error("Unable to fetch ICE servers");
       }

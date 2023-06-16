@@ -10,7 +10,6 @@
     "@mitchemmc/dexie-export-import": "^1.0.1",
     "@msgpack/msgpack": "^2.8.0",
     "@react-spring/konva": "9.4.4",
-    "@stripe/stripe-js": "^1.44.1",
     "@tensorflow/tfjs": "^3.15.0",
     "@testing-library/jest-dom": "^5.16.3",
     "@testing-library/react": "^13.0.0",
