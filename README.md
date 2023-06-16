@@ -2,7 +2,7 @@
 
 ![Demo Image](/demo.jpg)
 
-This is the source code for Owlbear Rodeo 1.0 released for your non-profit use.
+This is the source code for Owlbear Rodeo 1.0 released for your non-profit, non-commercial, private use.
 
 This code won't be maintained or supported by us as we've moved all our time to maintaining and building the new Owlbear Rodeo.
 
@@ -100,8 +100,8 @@ To change the STUN/TURN configuration you can edit the `/backend/ice.json` file.
 ## License
 
 This project is for **personal** use only.
-We do not offer a [license](https://choosealicense.com/no-permission/) for commercial use.
-This includes using the project as is or modifying/using the code here in any way for commercial purposes.
+We do not offer a license for commercial use.
+You may not modify, publish, transmit, participate in the transfer or sale of, reproduce, create new works from, display, communicate to the public or in any way exploit, any part of this project in any way for commercial purposes.
 If you're interested in using Owlbear Rodeo for commercial purposes you can contact us about version 2.0 [here](contact@owlbear.rodeo).
 
 ## Contributing
