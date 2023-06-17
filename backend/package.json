@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --project ./",
-    "start:dev": "node --es-module-specifier-resolution=node -r dotenv/config ./build/index.js",
-    "start": "node --es-module-specifier-resolution=node ./build/index.js",
+    "start:dev": "node --es-module-specifier-resolution=node -r dotenv/config ./build/src/index.js",
+    "start": "node --es-module-specifier-resolution=node ./build/src/index.js",
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
