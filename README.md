@@ -41,7 +41,7 @@ The pointer tool has a nice network interpolation model. This idea was expanded 
 
 The easiest way to host Owlbear Rodeo is by using a cloud provider.
 
-To make this easier we have provided a blueprint that will allow you to host it on [Render](https://render.com/).
+To make this even easier we have provided a blueprint that will allow you to host it on [Render](https://render.com/).
 
 Clicking the button bellow will open the Render website where you can create an account and setup a server for free.
 Once deployed Render will provide a URL for you to share with your players.
