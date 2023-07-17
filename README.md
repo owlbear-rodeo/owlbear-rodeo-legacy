@@ -37,6 +37,17 @@ The pointer tool has a nice network interpolation model. This idea was expanded 
 
 ## Install
 
+### Production (or for non-developers)
+
+The easiest way to host Owlbear Rodeo is by using a cloud provider.
+
+To make this easier we have provided a blueprint that will allow you to host it on [Render](https://render.com/).
+
+Clicking the button bellow will open the Render website where you can create an account and setup a server for free.
+Once deployed Render will provide a URL for you to share with your players.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
 ### Locally
 
 #### **Docker**
@@ -72,16 +83,6 @@ To run the frontend in the root folder run:
 ```
 yarn start
 ```
-
-### Production
-
-Owlbear Rodeo is designed to be hosted in a cloud environment.
-
-To make this easier we have provided a blueprint that will allow you to host it on [Render](https://render.com/).
-
-Once deployed Render will provide a URL for you to share with your players.
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ## Troubleshooting
 
