@@ -1,22 +1,11 @@
-import { Box, Button, Text } from "theme-ui";
-import Modal from "../components/Modal";
-
-import { useState } from "react";
+import { Box, Button, Container, Text } from "theme-ui";
 
 function MigrationModal() {
-  const [open, setOpen] = useState(true);
-
   return (
-    <Modal
-      isOpen={open}
-      onRequestClose={() => {
-        setOpen(false);
-      }}
-      style={{ content: { maxWidth: "450px" } }}
-    >
+    <Container>
       <Box>
-        <Text py={2} sx={{ textAlign: "center" }}>
-          <h1>Migrate Now</h1>
+        <Text py={2} sx={{ textAlign: "center", mc: "auto" }}>
+          <h1>Owlbear Rodeo 2.0 is coming!</h1>
         </Text>
         <img
           src="/nestling.png"
@@ -28,7 +17,7 @@ function MigrationModal() {
           variant="body"
           sx={{ flexGrow: 1, textAlign: "center", mt: 3 }}
         >
-          Make sure to migrate your data before July 18th.
+          Migration is now taking place
         </Text>
         <Button
           //@ts-ignore
@@ -41,14 +30,17 @@ function MigrationModal() {
             backgroundColor: "hsl(260, 100%, 80%)",
             color: "black",
             border: "none",
-            width: "100%",
+            alignContent: "center",
+            width: "50%",
+            mx: "auto",
+            display: "block",
             mt: 4,
           }}
         >
           Read more
         </Button>
       </Box>
-    </Modal>
+    </Container>
   );
 }
 
