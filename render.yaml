@@ -33,6 +33,8 @@ services:
           value: false
         - key: REACT_APP_VERSION
           value: "1.10.2"
+        - key: NODE_VERSION
+          value: "16.16.0"
   # A Docker web service
   - type: web
     name: Owlbear Rodeo Backend
@@ -52,3 +54,5 @@ services:
           envVarKey: RENDER_EXTERNAL_HOSTNAME
       - key: PORT
         value: 9000
+      - key: NODE_VERSION
+        value: "16.16.0"
